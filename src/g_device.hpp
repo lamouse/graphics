@@ -21,6 +21,8 @@ namespace g{
         void createDevice();
         void queryQueueFamilyIndices();
         void getQueues();
+        Device(const ::vk::Instance& instance, ::vk::SurfaceKHR vkSurfaceKHR);
+        static ::std::unique_ptr<Device> instance;
     public:
 
         struct QueueFamilyIndices final{
@@ -29,9 +31,13 @@ namespace g{
             ::std::optional<uint32_t> presentQueue;
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
+
+        static void init(const ::vk::Instance& vkInstance, ::vk::SurfaceKHR vkSurfaceKHR);
+        static Device& getInstance(){return *instance;}
+        static void quit();
         QueueFamilyIndices queueFamilyIndices;
-        Device(const ::vk::Instance& instance, CreateSurfaceFunc func);
-        ::vk::Instance& getInstance();
+        
+        ::vk::Instance& getVKInstance();
         ::vk::SurfaceKHR& getSurface();
         ::vk::PhysicalDevice& getPhysicalDevice();
         ::vk::Queue& getGraphicsQueue();

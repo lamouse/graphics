@@ -1,6 +1,5 @@
 #ifndef G_SWAPCHAIN_HPP
 #define G_SWAPCHAIN_HPP
-#include "g_device.hpp"
 #include<vulkan/vulkan.hpp>
 #include <memory>
 
@@ -18,7 +17,6 @@ private:
         ::vk::SurfaceTransformFlagsKHR transForm;
         ::vk::PresentModeKHR present;
     };
-    ::std::shared_ptr<Device> device;
     SwapchainInfo swapchainInfo;
     ::vk::SwapchainKHR swapchain;
     ::std::vector<::vk::Image> images;
@@ -26,9 +24,13 @@ private:
     void getImages();
     void createImageViews();
     void querySwapchainInfo(int width, int height);
+    Swapchain(int width, int height);
+    static ::std::unique_ptr<Swapchain> instance;
 public:
-    Swapchain(::std::shared_ptr<Device> device, int width, int height);
-
+    
+    static void init(int width, int height);
+    static void quit();
+    static Swapchain& getInstance(){return *instance;}
     ~Swapchain();
 };
 

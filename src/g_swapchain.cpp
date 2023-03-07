@@ -1,9 +1,10 @@
 #include "g_swapchain.hpp"
-
+#include "g_device.hpp"
 namespace g
 {
+::std::unique_ptr<Swapchain> Swapchain::instance = nullptr;
 
-Swapchain::Swapchain(::std::shared_ptr<Device> device, int width, int height):device(device)
+Swapchain::Swapchain( int width, int height)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
@@ -12,13 +13,13 @@ Swapchain::Swapchain(::std::shared_ptr<Device> device, int width, int height):de
             .setImageArrayLayers(1)
             .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
             .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-            .setSurface(device->getSurface())
+            .setSurface(Device::getInstance().getSurface())
             .setImageColorSpace(swapchainInfo.formatKHR.colorSpace)
             .setImageFormat(swapchainInfo.formatKHR.format)
             .setImageExtent(swapchainInfo.extent2D)
             .setMinImageCount(swapchainInfo.imageCount)
             .setPresentMode(swapchainInfo.present);
-    auto& queueIndices = device->queueFamilyIndices;
+    auto& queueIndices = Device::getInstance().queueFamilyIndices;
     if(queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()){
         createInfo.setQueueFamilyIndexCount(queueIndices.graphicsQueue.value())
                     .setImageSharingMode(::vk::SharingMode::eExclusive);
@@ -28,15 +29,24 @@ Swapchain::Swapchain(::std::shared_ptr<Device> device, int width, int height):de
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
 
-    swapchain = device->getVKDevice().createSwapchainKHR(createInfo);
+    swapchain = Device::getInstance().getVKDevice().createSwapchainKHR(createInfo);
 
     createImageViews();
 }
 
+void Swapchain::init(int width, int height)
+{
+    instance.reset(new Swapchain(width, height));
+}
+void Swapchain::quit()
+{
+    instance.reset();
+}
+
 void Swapchain::querySwapchainInfo(int width, int height)
 {
-    auto& phyDevice = device->getPhysicalDevice();
-    auto& surface = device->getSurface();
+    auto& phyDevice = Device::getInstance().getPhysicalDevice();
+    auto& surface = Device::getInstance().getSurface();
     auto  formats = phyDevice.getSurfaceFormatsKHR(surface);
     auto format = ::std::find_if(formats.begin(), formats.end(), [](auto format){
         return format.format == vk::Format::eB8G8R8A8Srgb && 
@@ -69,19 +79,19 @@ void Swapchain::querySwapchainInfo(int width, int height)
 Swapchain::~Swapchain()
 {
     for(auto& view : imageViews){
-        device->getVKDevice().destroyImageView(view);
+        Device::getInstance().getVKDevice().destroyImageView(view);
     }
 
     for(auto& image : images){
-        device->getVKDevice().destroyImage(image);
+        Device::getInstance().getVKDevice().destroyImage(image);
     }
     
-    device->getVKDevice().destroySwapchainKHR(swapchain);
+    Device::getInstance().getVKDevice().destroySwapchainKHR(swapchain);
 }
 
 void Swapchain::getImages()
 {
-    images = device->getVKDevice().getSwapchainImagesKHR(swapchain);
+    images = Device::getInstance().getVKDevice().getSwapchainImagesKHR(swapchain);
 }
 void Swapchain::createImageViews()
 {
@@ -101,7 +111,7 @@ void Swapchain::createImageViews()
                             .setViewType(vk::ImageViewType::e2D)
                             .setComponents(mapping)
                             .setSubresourceRange(range);
-        imageViews[i] = device->getVKDevice().createImageView(createImageViewInfo);
+        imageViews[i] = Device::getInstance().getVKDevice().createImageView(createImageViewInfo);
     }
 }
 

@@ -1,17 +1,26 @@
 #include "g_device.hpp"
 #include <algorithm>
 namespace g{
-    
-Device::Device(const ::vk::Instance& instance, CreateSurfaceFunc func):
-                    vkInstance{instance}
+
+::std::unique_ptr<Device> Device::instance = nullptr;
+
+Device::Device(const ::vk::Instance& instance, ::vk::SurfaceKHR vkSurfaceKHR):
+                    vkInstance{instance}, vkSurfaceKHR{vkSurfaceKHR}
 {   
-    vkSurfaceKHR = func(vkInstance);
     pickupPhyiscalDevice();
     queryQueueFamilyIndices();
     createDevice();
     getQueues();
 }
 
+void Device::init(const ::vk::Instance& vkInstance, ::vk::SurfaceKHR vkSurfaceKHR)
+{
+    instance.reset(new Device(vkInstance, vkSurfaceKHR));
+}
+void Device::quit()
+{
+    instance.reset();
+}
 Device::~Device()
 {
     device.destroy();
@@ -84,7 +93,7 @@ void Device::getQueues()
     graphicsQueue = device.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
 }
 
-::vk::Instance& Device::getInstance()
+::vk::Instance& Device::getVKInstance()
 {
     return vkInstance;
 }

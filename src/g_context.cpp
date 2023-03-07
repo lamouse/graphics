@@ -5,25 +5,26 @@
 namespace g{
 
 
-std::unique_ptr<Context> Context::pInstance = nullptr;
+::std::unique_ptr<Context> Context::pInstance = nullptr;
 int Context::width = 800;
 int Context::height = 600;
 
 Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
 {
-    pDevice.reset(new Device(createInstance(instanceExtends), createFunc));
-    pSwapchain.reset(new Swapchain(pDevice, width, height));
+    auto vkInstance = createInstance(instanceExtends);
+    Device::init(vkInstance, createFunc(vkInstance));
+    Swapchain::init( width, height);
 
     ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
-    pipline = new Pipline{full_path + "simple_shader.vert.spv", 
-            full_path + "simple_shader.frag.spv", pDevice};
+    Shader::init(full_path + "simple_shader.vert.spv", 
+            full_path + "simple_shader.frag.spv");
 }
 
 Context::~Context()
 {
-    delete pipline;
-    pSwapchain.reset();
-    pDevice.reset();
+    Shader::quit();
+    Swapchain::quit();
+    Device::quit();
 }
 
 void Context::init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, int width, int height)
@@ -58,11 +59,6 @@ vk::Instance Context::createInstance(const std::vector<const char*>& instanceExt
                 .setPEnabledExtensionNames(externs);
     
     return ::vk::createInstance(createInfo);
-}
-
-Device& Context::getDevice()noexcept
-{
-    return *pDevice;
 }
 
 }

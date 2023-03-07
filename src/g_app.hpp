@@ -1,8 +1,6 @@
 #ifndef G_APP_HPP
 #define G_APP_HPP
 #include "g_window.hpp"
-#include "g_pipline.hpp"
-#include <filesystem>
 #include<iostream>
 
 namespace g
