@@ -13,10 +13,15 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
 {
     pDevice.reset(new Device(createInstance(instanceExtends), createFunc));
     pSwapchain.reset(new Swapchain(pDevice, width, height));
+
+    ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
+    pipline = new Pipline{full_path + "simple_shader.vert.spv", 
+            full_path + "simple_shader.frag.spv", pDevice};
 }
 
 Context::~Context()
 {
+    delete pipline;
     pSwapchain.reset();
     pDevice.reset();
 }

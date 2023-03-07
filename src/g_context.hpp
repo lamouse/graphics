@@ -2,7 +2,7 @@
 #define G_CONTEXT_HPP
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
-#include <vulkan/vulkan.hpp>
+#include "g_pipline.hpp"
 #include<memory>
 #include <functional>
 
@@ -17,6 +17,7 @@ namespace g{
         static ::std::unique_ptr<Context> pInstance;
         vk::Instance createInstance(const std::vector<const char*>& instanceExtends);
         ::std::unique_ptr<Swapchain> pSwapchain;
+        Pipline *pipline;
         static int width;
         static int height;
     public:

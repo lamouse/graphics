@@ -17,7 +17,6 @@ namespace g
             ~App();
         private:
             Window window{WIDTH, HEIGHT, "vulkan"};
-            Pipline *pipline;
     };
 }
 
