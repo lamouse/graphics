@@ -8,9 +8,9 @@ namespace g
     {
     private:
         ::vk::Pipeline pipline;
-        void initPipeline();
+        void initPipeline(int width, int height);
     public:
-        RenderProcess(/* args */);
+        RenderProcess(int width, int height);
         ~RenderProcess();
     };
     

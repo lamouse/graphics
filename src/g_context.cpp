@@ -18,6 +18,8 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
     ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
     Shader::init(full_path + "simple_shader.vert.spv", 
             full_path + "simple_shader.frag.spv");
+
+    renderProcess.reset(new RenderProcess(width, height));
 }
 
 Context::~Context()

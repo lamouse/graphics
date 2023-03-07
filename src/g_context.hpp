@@ -3,6 +3,7 @@
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
 #include "g_shader.hpp""
+#include "g_render.hpp"
 #include<memory>
 #include <functional>
 
@@ -14,7 +15,8 @@ namespace g{
         Context(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
 
         static ::std::unique_ptr<Context> pInstance;
-        vk::Instance createInstance(const std::vector<const char*>& instanceExtends);
+        ::vk::Instance createInstance(const std::vector<const char*>& instanceExtends);
+        ::std::unique_ptr<RenderProcess> renderProcess;
         static int width;
         static int height;
     public:
