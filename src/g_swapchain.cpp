@@ -29,6 +29,8 @@ Swapchain::Swapchain(::std::shared_ptr<Device> device, int width, int height):de
     }
 
     swapchain = device->getVKDevice().createSwapchainKHR(createInfo);
+
+    createImageViews();
 }
 
 void Swapchain::querySwapchainInfo(int width, int height)
@@ -66,8 +68,41 @@ void Swapchain::querySwapchainInfo(int width, int height)
 
 Swapchain::~Swapchain()
 {
+    for(auto& view : imageViews){
+        device->getVKDevice().destroyImageView(view);
+    }
+
+    for(auto& image : images){
+        device->getVKDevice().destroyImage(image);
+    }
+    
     device->getVKDevice().destroySwapchainKHR(swapchain);
 }
 
+void Swapchain::getImages()
+{
+    images = device->getVKDevice().getSwapchainImagesKHR(swapchain);
+}
+void Swapchain::createImageViews()
+{
+    getImages();
+    imageViews.resize(images.size());
+    for(int i = 0; i < images.size(); i++)
+    {
+        ::vk::ComponentMapping mapping;
+        ::vk::ImageViewCreateInfo createImageViewInfo;
+        ::vk::ImageSubresourceRange range;
+        range.setBaseMipLevel(0)
+            .setLevelCount(VK_REMAINING_MIP_LEVELS)
+            .setBaseArrayLayer(VK_IMAGE_VIEW_TYPE_2D)
+            .setLayerCount(1)
+            .setAspectMask(vk::ImageAspectFlagBits::eColor);
+        createImageViewInfo.setImage(images[i])
+                            .setViewType(vk::ImageViewType::e2D)
+                            .setComponents(mapping)
+                            .setSubresourceRange(range);
+        imageViews[i] = device->getVKDevice().createImageView(createImageViewInfo);
+    }
+}
 
 }

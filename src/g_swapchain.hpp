@@ -21,9 +21,14 @@ private:
     ::std::shared_ptr<Device> device;
     SwapchainInfo swapchainInfo;
     ::vk::SwapchainKHR swapchain;
+    ::std::vector<::vk::Image> images;
+    ::std::vector<::vk::ImageView> imageViews;
+    void getImages();
+    void createImageViews();
     void querySwapchainInfo(int width, int height);
 public:
     Swapchain(::std::shared_ptr<Device> device, int width, int height);
+
     ~Swapchain();
 };
 
