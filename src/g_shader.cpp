@@ -58,11 +58,12 @@ void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std
 
 ::std::vector<::vk::PipelineShaderStageCreateInfo> Shader::getShaderStage()
 {
+    shaderStages.resize(2);
     shaderStages[0].setStage(::vk::ShaderStageFlagBits::eVertex)
                 .setModule(vertexModule)
                 .setPName("main");
 
-    shaderStages[1].setStage(::vk::ShaderStageFlagBits::eVertex)
+    shaderStages[1].setStage(::vk::ShaderStageFlagBits::eFragment)
                 .setModule(fragmentModule)
                 .setPName("main");
     return shaderStages;

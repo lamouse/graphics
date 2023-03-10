@@ -66,7 +66,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
 
     swapchainInfo.transForm = cpabilities.currentTransform;
 
-    auto presents = phyDevice.getSurfacePresentModesKHR(surface);
+    auto presents = phyDevice.getSurfacePresentModesKHR (surface);
 
     auto present = ::std::find_if(presents.begin(), presents.end(), [](auto present){
         return present == vk::PresentModeKHR::eMailbox;
@@ -81,10 +81,6 @@ Swapchain::~Swapchain()
     for(auto& view : imageViews){
         Device::getInstance().getVKDevice().destroyImageView(view);
     }
-
-    for(auto& image : images){
-        Device::getInstance().getVKDevice().destroyImage(image);
-    }
     
     Device::getInstance().getVKDevice().destroySwapchainKHR(swapchain);
 }
@@ -93,6 +89,7 @@ void Swapchain::getImages()
 {
     images = Device::getInstance().getVKDevice().getSwapchainImagesKHR(swapchain);
 }
+
 void Swapchain::createImageViews()
 {
     getImages();
@@ -104,13 +101,14 @@ void Swapchain::createImageViews()
         ::vk::ImageSubresourceRange range;
         range.setBaseMipLevel(0)
             .setLevelCount(VK_REMAINING_MIP_LEVELS)
-            .setBaseArrayLayer(VK_IMAGE_VIEW_TYPE_2D)
+            .setBaseArrayLayer(VK_IMAGE_VIEW_TYPE_1D)
             .setLayerCount(1)
             .setAspectMask(vk::ImageAspectFlagBits::eColor);
         createImageViewInfo.setImage(images[i])
                             .setViewType(vk::ImageViewType::e2D)
                             .setComponents(mapping)
-                            .setSubresourceRange(range);
+                            .setSubresourceRange(range)
+                            .setFormat(vk::Format::eB8G8R8A8Srgb);
         imageViews[i] = Device::getInstance().getVKDevice().createImageView(createImageViewInfo);
     }
 }

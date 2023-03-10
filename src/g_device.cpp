@@ -40,19 +40,20 @@ void Device::createDevice()
     queryQueueFamilyIndices();
     ::vk::DeviceCreateInfo createInfo;
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
-    ::std::vector<const char*> extends{"VK_KHR_portability_subset", VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-    float priorities = 1.0;
-
+    // "VK_KHR_portability_subset" macos
+    ::std::vector<const char*> extends{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    float priorities = 0.5;
+    uint32_t queueCount = 1;
     ::vk::DeviceQueueCreateInfo queueInfo;
-    queueInfo.setQueuePriorities(priorities)
-            .setQueueCount(queueFamilyIndices.queueCount.value())
+    queueInfo.setPQueuePriorities(&priorities)
+            .setQueueCount(1)
             .setQueueFamilyIndex(queueFamilyIndices.graphicsQueue.value());
     queueInfos.push_back(::std::move(queueInfo));
 
     if(queueFamilyIndices.graphicsQueue.value() != queueFamilyIndices.presentQueue.value()){
         ::vk::DeviceQueueCreateInfo queueInfo;
-        queueInfo.setQueuePriorities(priorities)
-                .setQueueCount(queueFamilyIndices.queueCount.value())
+        queueInfo.setPQueuePriorities(&priorities)
+                .setQueueCount(queueCount)
                 .setQueueFamilyIndex(queueFamilyIndices.presentQueue.value());
         queueInfos.push_back(::std::move(queueInfo));
     }

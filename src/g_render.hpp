@@ -8,7 +8,11 @@ namespace g
     {
     private:
         ::vk::Pipeline pipline;
+        ::vk::PipelineLayout layout;
+        ::vk::RenderPass renderPass;
         void initPipeline(int width, int height);
+        void initLayout();
+        void initRenderPass();
     public:
         RenderProcess(int width, int height);
         ~RenderProcess();

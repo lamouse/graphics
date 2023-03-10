@@ -10,7 +10,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
 
 if(WIN32)
-include_directories("D:/Program/vulkanSDK/Include", "D:/Program/vcpkg/installed/x64-windows/include")
+        include_directories("D:/Program/vulkanSDK/Include", "D:/Program/vcpkg/installed/x64-windows/include")
 endif()
 
 aux_source_directory(./src SRC)

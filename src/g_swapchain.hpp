@@ -7,8 +7,7 @@ namespace g{
 
 class Swapchain
 {
-private:
-
+public:
     struct SwapchainInfo{
         ::vk::Extent2D extent2D;
         ::vk::Extent3D extent3D;
@@ -17,6 +16,14 @@ private:
         ::vk::SurfaceTransformFlagsKHR transForm;
         ::vk::PresentModeKHR present;
     };
+    ::vk::SwapchainKHR getSwapchain()const {return swapchain;}
+    SwapchainInfo getSwapchainInfo()const {return swapchainInfo;}
+    static void init(int width, int height);
+    static void quit();
+    static Swapchain& getInstance(){return *instance;}
+
+    ~Swapchain();
+private:
     SwapchainInfo swapchainInfo;
     ::vk::SwapchainKHR swapchain;
     ::std::vector<::vk::Image> images;
@@ -26,12 +33,6 @@ private:
     void querySwapchainInfo(int width, int height);
     Swapchain(int width, int height);
     static ::std::unique_ptr<Swapchain> instance;
-public:
-    
-    static void init(int width, int height);
-    static void quit();
-    static Swapchain& getInstance(){return *instance;}
-    ~Swapchain();
 };
 
 

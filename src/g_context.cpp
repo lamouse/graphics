@@ -13,9 +13,10 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
 {
     auto vkInstance = createInstance(instanceExtends);
     Device::init(vkInstance, createFunc(vkInstance));
-    Swapchain::init( width, height);
+    Swapchain::init(width, height);
 
-    ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
+    //::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
+    ::std::string full_path{"E:/project/cpp/graphics/src/shader/"};
     Shader::init(full_path + "simple_shader.vert.spv", 
             full_path + "simple_shader.frag.spv");
 
@@ -24,8 +25,9 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
 
 Context::~Context()
 {
-    Shader::quit();
+    renderProcess.reset();
     Swapchain::quit();
+    Shader::quit();
     Device::quit();
 }
 
@@ -57,8 +59,8 @@ vk::Instance Context::createInstance(const std::vector<const char*>& instanceExt
      appInfo.setApiVersion(VK_API_VERSION_1_3);
      createInfo.setPEnabledLayerNames(layers)
                 .setPApplicationInfo(&appInfo)
-                .setFlags(flags)
-                .setPEnabledExtensionNames(externs);
+                //.setFlags(flags)
+                .setPEnabledExtensionNames(instanceExtends);
     
     return ::vk::createInstance(createInfo);
 }
