@@ -6,26 +6,17 @@ set(EXECUTE_NAME graphics)
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(librariesList
-    GLFW
-    vulkan
-)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
 
-find_library(${librariesList})
-include_directories("/usr/local/include")
-link_directories("/usr/local/lib")
+if(WIN32)
+include_directories("D:/Program/vulkanSDK/Include", "D:/Program/vcpkg/installed/x64-windows/include")
+endif()
 
-add_executable(${EXECUTE_NAME} 
-        src/main.cpp 
-        src/g_app.cpp 
-        src/g_window.cpp 
-        src/g_pipline.cpp 
-        src/g_context.cpp 
-        src/g_device.cpp
-)
+aux_source_directory(./src SRC)
+add_executable(${EXECUTE_NAME} ${SRC})
 
-target_link_libraries(${EXECUTE_NAME} ${librariesList})
-
+target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan)
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
 set(CPACK_GENERATOR "ZIP;TGZ")

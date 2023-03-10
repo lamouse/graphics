@@ -65,7 +65,7 @@ void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std
     shaderStages[1].setStage(::vk::ShaderStageFlagBits::eVertex)
                 .setModule(fragmentModule)
                 .setPName("main");
-
+    return shaderStages;
 }
 
 
