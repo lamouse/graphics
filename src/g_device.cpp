@@ -41,7 +41,13 @@ void Device::createDevice()
     ::vk::DeviceCreateInfo createInfo;
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
     // "VK_KHR_portability_subset" macos
+    
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+   ::std::vector<const char*> extends{VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+#else
     ::std::vector<const char*> extends{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+#endif
+
     float priorities = 0.5;
     uint32_t queueCount = 1;
     ::vk::DeviceQueueCreateInfo queueInfo;

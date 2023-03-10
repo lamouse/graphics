@@ -14,7 +14,6 @@ target("graphics")
     set_kind("binary")
     add_files("src/*.cpp")
     add_packages("vulkan", "glfw", "glm")
+    add_defines("VK_USE_PLATFORM_MACOS_MVK")
     copy("shader/*.spv")
-
-
     

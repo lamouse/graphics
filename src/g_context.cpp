@@ -15,8 +15,12 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
     Device::init(vkInstance, createFunc(vkInstance));
     Swapchain::init(width, height);
 
-    //::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
+#else
     ::std::string full_path{"E:/project/cpp/graphics/src/shader/"};
+#endif
+    
     Shader::init(full_path + "simple_shader.vert.spv", 
             full_path + "simple_shader.frag.spv");
 
@@ -51,16 +55,21 @@ Context& Context::getInstance()
 vk::Instance Context::createInstance(const std::vector<const char*>& instanceExtends)
 {
     ::std::vector<const char*> layers{"VK_LAYER_KHRONOS_validation"};
-    ::std::vector<const char*> externs = {"VK_KHR_portability_enumeration"};
-    externs.insert(externs.end(), instanceExtends.begin(), instanceExtends.end());
+    ::std::vector<const char*> externs = {instanceExtends.begin(), instanceExtends.end()};
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    externs.push_back("VK_KHR_portability_enumeration");
     ::vk::InstanceCreateFlags flags{VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR};
+#endif
+ 
     ::vk::InstanceCreateInfo createInfo;
     ::vk::ApplicationInfo appInfo;
      appInfo.setApiVersion(VK_API_VERSION_1_3);
      createInfo.setPEnabledLayerNames(layers)
                 .setPApplicationInfo(&appInfo)
-                //.setFlags(flags)
-                .setPEnabledExtensionNames(instanceExtends);
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+                .setFlags(flags)
+#endif
+                .setPEnabledExtensionNames(externs);
     
     return ::vk::createInstance(createInfo);
 }

@@ -25,7 +25,8 @@ void Window::initWindow()
     }
     Context::init(extends, [&](vk::Instance instance){
         VkSurfaceKHR surface;
-        if(::glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS){
+        auto result = ::glfwCreateWindowSurface(instance, window, nullptr, &surface);
+        if(result != VK_SUCCESS){
             throw ::std::runtime_error("createWindowSurface Fail ");
         }
         return surface;

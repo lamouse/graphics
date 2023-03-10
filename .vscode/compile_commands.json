@@ -1,0 +1,41 @@
+[
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_app.cpp.o", "src/g_app.cpp"],
+  "file": "src/g_app.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_swapchain.cpp.o", "src/g_swapchain.cpp"],
+  "file": "src/g_swapchain.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_context.cpp.o", "src/g_context.cpp"],
+  "file": "src/g_context.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_render.cpp.o", "src/g_render.cpp"],
+  "file": "src/g_render.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_device.cpp.o", "src/g_device.cpp"],
+  "file": "src/g_device.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_shader.cpp.o", "src/g_shader.cpp"],
+  "file": "src/g_shader.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/g_window.cpp.o", "src/g_window.cpp"],
+  "file": "src/g_window.cpp"
+},
+{
+  "directory": "/Users/sora/project/cpp/test/xmake/graphics",
+  "arguments": ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang", "-c", "-Qunused-arguments", "-target", "x86_64-apple-macos12.6", "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk", "-g", "-O0", "-std=c++2b", "-DVK_USE_PLATFORM_MACOS_MVK", "-DGL_SILENCE_DEPRECATION", "-framework", "OpenGL", "-I", "/usr/local/include", "-I", "/usr/local/Cellar/glfw/3.3.8/include", "-I", "/usr/local/Cellar/glm/0.9.9.8/include", "-o", "build/.objs/graphics/macosx/x86_64/debug/src/main.cpp.o", "src/main.cpp"],
+  "file": "src/main.cpp"
+}]
