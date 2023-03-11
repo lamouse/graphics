@@ -13,11 +13,17 @@ namespace g
         void initPipeline(int width, int height);
         void initLayout();
         void initRenderPass();
-    public:
         RenderProcess(int width, int height);
+        static ::std::unique_ptr<RenderProcess> instance;
+    public:
+        static RenderProcess& getInstance(){return *instance;}
+        static void init(int width, int height);
+        static void quit();
+        void render();
+        ::vk::RenderPass getRenderPass(){return renderPass;};
         ~RenderProcess();
     };
-    
+
 }
 
 #endif

@@ -2,13 +2,24 @@
 #include "g_shader.hpp"
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
+#include "g_command.hpp"
 
 namespace g{
+::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;
 RenderProcess::RenderProcess(int width, int height)
 {
     initRenderPass();
     initLayout();
     initPipeline(width, height);
+}
+
+void RenderProcess::init(int width, int height)
+{
+    instance.reset(new RenderProcess(width, height));
+}
+
+void RenderProcess::quit(){
+    instance.reset();
 }
 
 RenderProcess::~RenderProcess()
@@ -44,7 +55,7 @@ void RenderProcess::initPipeline(int width, int height)
     ::vk::PipelineRasterizationStateCreateInfo rastCreateInfo;
     rastCreateInfo.setRasterizerDiscardEnable(false)
                     .setCullMode(::vk::CullModeFlagBits::eBack)
-                    .setFrontFace(::vk::FrontFace::eCounterClockwise)
+                    .setFrontFace(::vk::FrontFace::eClockwise)
                     .setPolygonMode(::vk::PolygonMode::eFill)
                     .setLineWidth(1);
     createInfo.setPRasterizationState(&rastCreateInfo);
@@ -88,7 +99,7 @@ void RenderProcess::initRenderPass()
     ::vk::AttachmentDescription attachDesc;
     attachDesc.setFormat(Swapchain::getInstance().getSwapchainInfo().formatKHR.format)
                 .setFinalLayout(::vk::ImageLayout::eUndefined)
-                .setFinalLayout(::vk::ImageLayout::eColorAttachmentOptimal)
+                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
                 .setLoadOp(::vk::AttachmentLoadOp::eClear)
                 .setStoreOp(::vk::AttachmentStoreOp::eStore)
                 .setStencilLoadOp(::vk::AttachmentLoadOp::eClear)
@@ -113,6 +124,24 @@ void RenderProcess::initRenderPass()
     createInfo.setDependencies(subepassDependency)
                 .setSubpassCount(1);
     renderPass = Device::getInstance().getVKDevice().createRenderPass(createInfo);
+}
+
+void RenderProcess::render()
+{
+    auto& device = Device::getInstance().getVKDevice();
+    ::vk::Semaphore semphore;
+    ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
+    semphore = device.createSemaphore(semaphoreCreateInfo);
+    auto result = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), semphore);
+    if(result.result != ::vk::Result::eSuccess)
+    {
+        throw ::std::runtime_error("acquireNextImageKHR error");
+    }
+    
+    auto imageIndex = result.value;
+
+    Command::getInstance().runCmd(pipline, renderPass, imageIndex);
+    device.destroySemaphore(semphore);
 }
 
 }

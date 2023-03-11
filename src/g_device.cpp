@@ -98,6 +98,7 @@ void Device::queryQueueFamilyIndices()
 void Device::getQueues()
 {
     graphicsQueue = device.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
+    presentQueue = device.getQueue(queueFamilyIndices.presentQueue.value(), 0);
 }
 
 ::vk::Instance& Device::getVKInstance()
@@ -119,6 +120,12 @@ void Device::getQueues()
 {
     return graphicsQueue;
 }
+
+::vk::Queue& Device::getPresentQueue()
+{
+    return presentQueue;
+}
+
 
 ::vk::Device& Device::getVKDevice()
 {

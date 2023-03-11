@@ -13,7 +13,6 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
 {
     auto vkInstance = createInstance(instanceExtends);
     Device::init(vkInstance, createFunc(vkInstance));
-    Swapchain::init(width, height);
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
     ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
@@ -23,13 +22,20 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
     
     Shader::init(full_path + "simple_shader.vert.spv", 
             full_path + "simple_shader.frag.spv");
+    
+    Swapchain::init(width, height);
+    RenderProcess::init(width, height);
+    Swapchain::getInstance().createImageFrame();
+    Command::init();
 
-    renderProcess.reset(new RenderProcess(width, height));
+    
 }
 
 Context::~Context()
 {
-    renderProcess.reset();
+    Device::getInstance().getVKDevice().waitIdle();
+    Command::quit();
+    RenderProcess::quit();
     Swapchain::quit();
     Shader::quit();
     Device::quit();

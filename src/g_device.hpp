@@ -14,7 +14,7 @@ namespace g{
         ::vk::PhysicalDevice phyDevice;
         ::vk::Device device;
         ::vk::Queue graphicsQueue;
-
+        ::vk::Queue presentQueue;
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         void pickupPhyiscalDevice();
@@ -41,13 +41,14 @@ namespace g{
         ::vk::SurfaceKHR& getSurface();
         ::vk::PhysicalDevice& getPhysicalDevice();
         ::vk::Queue& getGraphicsQueue();
+        ::vk::Queue& getPresentQueue();
         ::vk::Device& getVKDevice();
         ~Device();
 
         
     };
-    
-
 }
+
+
 
 #endif

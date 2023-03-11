@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "memory": "cpp",
-        "optional": "cpp",
-        "xstring": "cpp",
-        "vector": "cpp"
-    },
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
-}

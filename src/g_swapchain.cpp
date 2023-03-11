@@ -1,10 +1,12 @@
 #include "g_swapchain.hpp"
 #include "g_device.hpp"
+#include "g_render.hpp"
+#include <iostream>
 namespace g
 {
 ::std::unique_ptr<Swapchain> Swapchain::instance = nullptr;
 
-Swapchain::Swapchain( int width, int height)
+Swapchain::Swapchain( int width, int height):width(width), height(height)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
@@ -30,8 +32,12 @@ Swapchain::Swapchain( int width, int height)
     }
 
     swapchain = Device::getInstance().getVKDevice().createSwapchainKHR(createInfo);
+}
 
+void Swapchain::createImageFrame()
+{
     createImageViews();
+    createFrameBuffers();
 }
 
 void Swapchain::init(int width, int height)
@@ -78,6 +84,10 @@ void Swapchain::querySwapchainInfo(int width, int height)
 
 Swapchain::~Swapchain()
 {
+    for(auto& frameBuffer : frameBuffers){
+        Device::getInstance().getVKDevice().destroyFramebuffer(frameBuffer);
+    }
+
     for(auto& view : imageViews){
         Device::getInstance().getVKDevice().destroyImageView(view);
     }
@@ -113,4 +123,19 @@ void Swapchain::createImageViews()
     }
 }
 
+void Swapchain::createFrameBuffers()
+{
+    frameBuffers.resize(images.size());
+
+    for(int i = 0; i < frameBuffers.size(); i++)
+    {
+        ::vk::FramebufferCreateInfo createInfo;
+        createInfo.setAttachments(imageViews[i])
+                .setWidth(width)
+                .setHeight(height)
+                .setRenderPass(RenderProcess::getInstance().getRenderPass())
+                .setLayers(1);
+        frameBuffers[i] = Device::getInstance().getVKDevice().createFramebuffer(createInfo);
+    }
+}
 }

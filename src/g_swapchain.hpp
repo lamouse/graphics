@@ -16,23 +16,28 @@ public:
         ::vk::SurfaceTransformFlagsKHR transForm;
         ::vk::PresentModeKHR present;
     };
+    ::vk::SwapchainKHR swapchain;
     ::vk::SwapchainKHR getSwapchain()const {return swapchain;}
     SwapchainInfo getSwapchainInfo()const {return swapchainInfo;}
+    void createImageFrame();
+    ::vk::Framebuffer getFrameBuffer(int index){return frameBuffers[index];}
     static void init(int width, int height);
     static void quit();
     static Swapchain& getInstance(){return *instance;}
-
     ~Swapchain();
 private:
     SwapchainInfo swapchainInfo;
-    ::vk::SwapchainKHR swapchain;
     ::std::vector<::vk::Image> images;
     ::std::vector<::vk::ImageView> imageViews;
+    ::std::vector<::vk::Framebuffer> frameBuffers;
     void getImages();
     void createImageViews();
     void querySwapchainInfo(int width, int height);
+    void createFrameBuffers();
     Swapchain(int width, int height);
     static ::std::unique_ptr<Swapchain> instance;
+    int width;
+    int height;
 };
 
 

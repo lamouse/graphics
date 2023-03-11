@@ -6,3 +6,6 @@ build/
 .DS_Store
 
 .cache/
+.vs/
+.vscode
+out/
