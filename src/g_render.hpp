@@ -13,6 +13,11 @@ namespace g
         void initPipeline(int width, int height);
         void initLayout();
         void initRenderPass();
+        ::std::vector<::vk::Fence> fences;
+        ::std::vector<::vk::Semaphore> semphores;
+        void createFances();
+        void createsemphores();
+        int currentFrame;
         RenderProcess(int width, int height);
         static ::std::unique_ptr<RenderProcess> instance;
     public:

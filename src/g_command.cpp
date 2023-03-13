@@ -18,14 +18,21 @@ void Command::quit()
     instance.reset();
 }
 
-void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index)
+void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore)
 {
+    if (imagesInFlight[index] != nullptr) {
+        auto result = Device::getInstance().getVKDevice().waitForFences(*imagesInFlight[index], true, ::std::numeric_limits<uint16_t>::max());
+        if(result != ::vk::Result::eSuccess)
+        {
+            throw ::std::runtime_error("RenderProcess::render waitForFences error");
+        }
+    }
+    imagesInFlight[index] = &fence;
     commandBuffers_[index].reset();
     ::vk::CommandBufferBeginInfo begin;
     ::vk::CommandBufferInheritanceInfo inherritanceInfo;
     begin.setFlags(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
         .setPInheritanceInfo(&inherritanceInfo);
-    Device::getInstance().getVKDevice().resetFences(fence);
 
     commandBuffers_[index].begin(begin);{
         commandBuffers_[index].bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
@@ -53,8 +60,9 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     }
     commandBuffers_[index].end();
     ::vk::SubmitInfo submitInfo;
-    submitInfo.setCommandBuffers(commandBuffers_[index]);
-
+    submitInfo.setCommandBuffers(commandBuffers_[index])
+                .setPWaitSemaphores(&semaphore);
+    Device::getInstance().getVKDevice().resetFences(fence);
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
 
 
@@ -68,19 +76,10 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     {
         throw ::std::runtime_error("presentKHR");
     }
-
-    result = Device::getInstance().getVKDevice().waitForFences(fence, true, ::std::numeric_limits<uint16_t>::max());
     if(result != ::vk::Result::eSuccess)
     {
         throw ::std::runtime_error("waitForFences");
     }
-}
-
-void Command::createFance()
-{
-    ::vk::FenceCreateInfo info;
-    //info.setFlags(::vk::FenceCreateFlagBits::eSignaled);
-    fence = Device::getInstance().getVKDevice().createFence(info);
 }
 
 void Command::initCmdPool()
@@ -106,7 +105,7 @@ Command::Command(int count)
 {
     initCmdPool();
     allcoCmdBuffer(count);
-    createFance();
+    imagesInFlight.resize(count, nullptr);
 }
 
 Command::~Command()
@@ -118,7 +117,6 @@ Command::~Command()
     }
     
     device.destroyCommandPool(cmdPool_);
-    device.destroyFence(fence);
 }
 
 

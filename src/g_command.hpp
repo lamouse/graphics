@@ -11,11 +11,10 @@ class Command final
 private:
     ::vk::CommandPool cmdPool_;
     ::std::vector<::vk::CommandBuffer> commandBuffers_;
-    ::vk::Fence fence;
     void initCmdPool();
     void allcoCmdBuffer(int count);
-    void createFance();
     static ::std::unique_ptr<Command> instance;
+    std::vector<::vk::Fence*> imagesInFlight;
     Command(int count);
 public:
     static void init(int count);
@@ -23,7 +22,7 @@ public:
     
     ~Command();
     static Command& getInstance(){return *instance;}
-    void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index);
+    void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore);
 };
 
 }

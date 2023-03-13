@@ -9,9 +9,12 @@ namespace g{
 ::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;
 RenderProcess::RenderProcess(int width, int height)
 {
+    currentFrame = 0;
     initRenderPass();
     initLayout();
     initPipeline(width, height);
+    createFances();
+    createsemphores();
 }
 
 void RenderProcess::init(int width, int height)
@@ -25,6 +28,14 @@ void RenderProcess::quit(){
 
 RenderProcess::~RenderProcess()
 {
+    for(auto & fence : fences){
+        Device::getInstance().getVKDevice().destroyFence(fence);
+    }
+
+    for(auto & semphore : semphores){
+        Device::getInstance().getVKDevice().destroySemaphore(semphore);
+    }
+
     Device::getInstance().getVKDevice().destroyRenderPass(renderPass);
     Device::getInstance().getVKDevice().destroyPipelineLayout(layout);
     Device::getInstance().getVKDevice().destroyPipeline(pipline);
@@ -135,20 +146,48 @@ void RenderProcess::initRenderPass()
 
 void RenderProcess::render()
 {
+
+    auto result = Device::getInstance().getVKDevice().waitForFences(fences[currentFrame], true, UINT64_MAX);
+    if(result != ::vk::Result::eSuccess)
+    {
+        throw ::std::runtime_error("RenderProcess::render waitForFences error");
+    }
+
+
     auto& device = Device::getInstance().getVKDevice();
-    ::vk::Semaphore semphore;
-    ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-    semphore = device.createSemaphore(semaphoreCreateInfo);
-    auto result = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), semphore);
-    if(result.result != ::vk::Result::eSuccess)
+    auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), semphores[currentFrame]);
+    if(acquireResult.result != ::vk::Result::eSuccess)
     {
         throw ::std::runtime_error("acquireNextImageKHR error");
     }
     
-    auto imageIndex = result.value;
+    auto imageIndex = acquireResult.value;
 
-    Command::getInstance().runCmd(pipline, renderPass, imageIndex);
-    device.destroySemaphore(semphore);
+    Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], semphores[currentFrame]);
+    currentFrame = (currentFrame + 1) % 2;
+}
+
+void RenderProcess::createFances()
+{
+    int count = 2;//Swapchain::getInstance().getImageCount();
+    fences.resize(count);
+    for(int i = 0; i < count; i++)
+    {
+        ::vk::FenceCreateInfo info;
+        info.setFlags(::vk::FenceCreateFlagBits::eSignaled);
+        fences[i] = Device::getInstance().getVKDevice().createFence(info);
+    }
+}
+void RenderProcess::createsemphores()
+{
+    int count = 2; //Swapchain::getInstance().getImageCount();
+    semphores.resize(count);
+    for(int i = 0; i < count; i++)
+    {
+        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
+        semphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
+
+    }
 }
 
 }
