@@ -14,15 +14,16 @@ namespace g{
     {
     private:
         Context(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
-
         static ::std::unique_ptr<Context> pInstance;
         ::vk::Instance createInstance(const std::vector<const char*>& instanceExtends);
+        ::vk::SwapchainKHR swapchain;
+        ::vk::Device device;
         static int width;
         static int height;
     public:
         static void init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, int width, int height);
         static void quit();
-        static Context& getInstance();
+        static Context& Instance();
         ~Context();
     };
     

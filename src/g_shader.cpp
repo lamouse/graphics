@@ -43,8 +43,6 @@ Shader::~Shader()
 void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath){
     auto vertCode = readFile(vertFilePath);
     auto fragCode = readFile(fragFilePath);
-    ::std::cout << "Vertex Size " << vertCode.size() << "\n";
-    ::std::cout << "Frag Size " << fragCode.size() << "\n";
     ::vk::ShaderModuleCreateInfo createInfo;
     createInfo.setCodeSize(vertCode.size());
     createInfo.setPCode((uint32_t*)vertCode.data());

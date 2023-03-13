@@ -36,6 +36,7 @@ namespace g{
         static Device& getInstance(){return *instance;}
         static void quit();
         QueueFamilyIndices queueFamilyIndices;
+        uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
         
         ::vk::Instance& getVKInstance();
         ::vk::SurfaceKHR& getSurface();

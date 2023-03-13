@@ -3,6 +3,7 @@
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
 #include "g_command.hpp"
+#include "g_model.hpp"
 
 namespace g{
 ::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;

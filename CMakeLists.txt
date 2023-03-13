@@ -9,15 +9,23 @@ set(CMAKE_CXX_STANDARD 23)
 aux_source_directory(./src SRC)
 add_executable(${EXECUTE_NAME} ${SRC})
 
+find_program(GLSLC_PROGRAM glslc REQUIRED)
+message(STATUS "run glslc to compile shaders ...")
+execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_shader.vert -o ${CMAKE_SOURCE_DIR}/src/shader/vert.spv)
+execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_shader.frag -o ${CMAKE_SOURCE_DIR}/src/shader/frag.spv)
+message(STATUS "compile shader OK")
+
 if(WIN32)
         include_directories("D:/Program/vulkanSDK/Include", "D:/Program/vcpkg/installed/x64-windows/include")
         find_package(glfw3 CONFIG REQUIRED)
         find_package(Vulkan REQUIRED)
+        find_package(glm REQUIRED)
         target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan)
 elseif(UNIX AND APPLE)
         set(librariesList
                 GLFW
                 vulkan
+                glm
         )
     
     add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")

@@ -14,7 +14,7 @@ public:
         uint32_t imageCount;
         ::vk::SurfaceFormatKHR formatKHR;
         ::vk::SurfaceTransformFlagsKHR transForm;
-        ::vk::PresentModeKHR present;
+        ::vk::PresentModeKHR presentMode;
     };
     ::vk::SwapchainKHR swapchain;
     ::vk::SwapchainKHR getSwapchain()const {return swapchain;}
@@ -23,6 +23,7 @@ public:
     ::vk::Framebuffer getFrameBuffer(int index){return frameBuffers[index];}
     static void init(int width, int height);
     static void quit();
+    int getImageCount(){return images.size();}
     static Swapchain& getInstance(){return *instance;}
     ~Swapchain();
 private:
@@ -30,6 +31,7 @@ private:
     ::std::vector<::vk::Image> images;
     ::std::vector<::vk::ImageView> imageViews;
     ::std::vector<::vk::Framebuffer> frameBuffers;
+    ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
     void getImages();
     void createImageViews();
     void querySwapchainInfo(int width, int height);

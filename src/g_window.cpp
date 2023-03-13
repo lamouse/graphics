@@ -31,7 +31,6 @@ void Window::initWindow()
         }
         return surface;
     }, width, height);
-    RenderProcess::getInstance().render();
 }
 
 Window::~Window()
@@ -39,6 +38,11 @@ Window::~Window()
     Context::quit();
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+void Window::draw(::std::string resourcePath)
+{
+
 }
 
 bool Window::shuldClose()

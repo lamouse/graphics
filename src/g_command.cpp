@@ -8,9 +8,9 @@ namespace g
 
 ::std::unique_ptr<Command> Command::instance = nullptr;
 
-void Command::init()
+void Command::init(int count)
 {
-    instance.reset(new Command());
+    instance.reset(new Command(count));
 }
 void Command::quit()
 {
@@ -19,34 +19,38 @@ void Command::quit()
 
 void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index)
 {
-    cmdBuffer_.reset();
+    commandBuffers_[index].reset();
     ::vk::CommandBufferBeginInfo begin;
     ::vk::CommandBufferInheritanceInfo inherritanceInfo;
     begin.setFlags(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
         .setPInheritanceInfo(&inherritanceInfo);
     Device::getInstance().getVKDevice().resetFences(fence);
 
-    cmdBuffer_.begin(begin);{
-        cmdBuffer_.bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
+    commandBuffers_[index].begin(begin);{
+        commandBuffers_[index].bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
         ::vk::RenderPassBeginInfo renderPassBeginInfo;
         ::vk::Rect2D area;
-        ::vk::ClearValue clearValue;
-        clearValue.color = ::vk::ClearColorValue(::std::array<float, 4>{0.1f, 0.1f, 0.1f, 0.1f});
         area.setOffset({0, 0})
             .setExtent(Swapchain::getInstance().getSwapchainInfo().extent2D);
+        
+        //下标0 颜色附件，下标1深度附件
+        ::std::array<::vk::ClearValue, 2> clearValues;
+        clearValues[0].setColor(::vk::ClearColorValue(::std::array<float, 4>{0.1f, 0.1f, 0.1f, 0.1f}));
+        clearValues[1].setDepthStencil({1.0f, 0});
+
         renderPassBeginInfo.setRenderPass(renderPass)
                             .setRenderArea(area)
                             .setFramebuffer(Swapchain::getInstance().getFrameBuffer(index))
-                            .setClearValues(clearValue);
-        cmdBuffer_.beginRenderPass(renderPassBeginInfo, {});{
-            cmdBuffer_.draw(3, 1, 0, 0);
+                            .setClearValues(clearValues);
+        commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});{
+            commandBuffers_[index].draw(3, 1, 0, 0);
         }
 
-        cmdBuffer_.endRenderPass();
+        commandBuffers_[index].endRenderPass();
     }
-    cmdBuffer_.end();
+    commandBuffers_[index].end();
     ::vk::SubmitInfo submitInfo;
-    submitInfo.setCommandBuffers(cmdBuffer_);
+    submitInfo.setCommandBuffers(commandBuffers_[index]);
 
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
 
@@ -79,30 +83,39 @@ void Command::createFance()
 void Command::initCmdPool()
 {
     ::vk::CommandPoolCreateInfo createInfo;
-    createInfo.setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+    uint32_t queueFamilyIndex = Device::getInstance().queueFamilyIndices.presentQueue.value();
+    createInfo.setQueueFamilyIndex(queueFamilyIndex)
+                .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
+                        ::vk::CommandPoolCreateFlagBits::eTransient);
     cmdPool_ =  Device::getInstance().getVKDevice().createCommandPool(createInfo);
 }
-void Command::allcoCmdBuffer()
+void Command::allcoCmdBuffer(int count)
 {
     ::vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.setCommandPool(cmdPool_)
-        .setCommandBufferCount(1)
+        .setCommandBufferCount(count)
         .setLevel(::vk::CommandBufferLevel::ePrimary);
-    cmdBuffer_ = Device::getInstance().getVKDevice().allocateCommandBuffers(allocInfo)[0];
+    
+    commandBuffers_ = Device::getInstance().getVKDevice().allocateCommandBuffers(allocInfo);
 }
 
-Command::Command()
+Command::Command(int count)
 {
     initCmdPool();
-    allcoCmdBuffer();
+    allcoCmdBuffer(count);
     createFance();
 }
+
 Command::~Command()
 {
-    auto device = Device::getInstance().getVKDevice();
-    device.freeCommandBuffers(cmdPool_, cmdBuffer_);
+    auto& device = Device::getInstance().getVKDevice();
+    
+    for(auto& commandBuffer : commandBuffers_){
+        device.freeCommandBuffers(cmdPool_, commandBuffer);
+    }
+    
     device.destroyCommandPool(cmdPool_);
-     Device::getInstance().getVKDevice().destroyFence(fence);
+    device.destroyFence(fence);
 }
 
 

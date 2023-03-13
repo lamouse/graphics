@@ -20,13 +20,13 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
     ::std::string full_path{"E:/project/cpp/graphics/src/shader/"};
 #endif
     
-    Shader::init(full_path + "simple_shader.vert.spv", 
-            full_path + "simple_shader.frag.spv");
+    Shader::init(full_path + "vert.spv", 
+            full_path + "frag.spv");
     
     Swapchain::init(width, height);
     RenderProcess::init(width, height);
     Swapchain::getInstance().createImageFrame();
-    Command::init();
+    Command::init(Swapchain::getInstance().getImageCount());
 
     
 }
@@ -52,13 +52,13 @@ void Context::quit()
     pInstance.reset();
 }
 
-Context& Context::getInstance()
+Context& Context::Instance()
 {   
     assert(pInstance);
     return *pInstance;
 }
 
-vk::Instance Context::createInstance(const std::vector<const char*>& instanceExtends)
+::vk::Instance Context::createInstance(const std::vector<const char*>& instanceExtends)
 {
     ::std::vector<const char*> layers{"VK_LAYER_KHRONOS_validation"};
     ::std::vector<const char*> externs = {instanceExtends.begin(), instanceExtends.end()};
@@ -76,7 +76,6 @@ vk::Instance Context::createInstance(const std::vector<const char*>& instanceExt
                 .setFlags(flags)
 #endif
                 .setPEnabledExtensionNames(externs);
-    
     return ::vk::createInstance(createInfo);
 }
 

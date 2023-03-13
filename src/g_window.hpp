@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include<GLFW/glfw3.h>
 #include <string>
+#include <vector>
 
 namespace g{
     class Window
@@ -17,6 +18,7 @@ namespace g{
             Window(int weidth, int height, ::std::string title);
             Window(const Window&) = delete;
             Window &operator=(const Window&) = delete;
+            void draw(::std::string resourcePath);
             ~Window();
             bool shuldClose();
     };

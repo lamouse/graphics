@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <memory>
+#include <vector>
 namespace g
 {
 
@@ -9,21 +10,20 @@ class Command final
 {
 private:
     ::vk::CommandPool cmdPool_;
-    ::vk::CommandBuffer cmdBuffer_;
+    ::std::vector<::vk::CommandBuffer> commandBuffers_;
     ::vk::Fence fence;
     void initCmdPool();
-    void allcoCmdBuffer();
+    void allcoCmdBuffer(int count);
     void createFance();
     static ::std::unique_ptr<Command> instance;
-    Command();
-
+    Command(int count);
 public:
-    static void init();
+    static void init(int count);
     static void quit();
+    
     ~Command();
     static Command& getInstance(){return *instance;}
     void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index);
-    ::vk::CommandBuffer getCmdBuffer(){return cmdBuffer_;}
 };
 
 }

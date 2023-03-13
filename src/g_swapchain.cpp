@@ -20,7 +20,7 @@ Swapchain::Swapchain( int width, int height):width(width), height(height)
             .setImageFormat(swapchainInfo.formatKHR.format)
             .setImageExtent(swapchainInfo.extent2D)
             .setMinImageCount(swapchainInfo.imageCount)
-            .setPresentMode(swapchainInfo.present);
+            .setPresentMode(swapchainInfo.presentMode);
     auto& queueIndices = Device::getInstance().queueFamilyIndices;
     if(queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()){
         createInfo.setQueueFamilyIndexCount(queueIndices.graphicsQueue.value())
@@ -74,14 +74,33 @@ void Swapchain::querySwapchainInfo(int width, int height)
 
     auto presents = phyDevice.getSurfacePresentModesKHR (surface);
 
-    auto present = ::std::find_if(presents.begin(), presents.end(), [](auto present){
-        return present == vk::PresentModeKHR::eMailbox;
-    });
-    if(present != presents.end()){
-        swapchainInfo.present = *present;
-    }
+    swapchainInfo.presentMode = chooseSwapPresentMode(presents);
 }
+::vk::PresentModeKHR Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
+{
 
+
+    //使用最新的图像，画面延迟更低，gpu不会闲置，功耗高
+    for(const auto& availablePresentMode : availablePresentModes)
+    {
+        if(availablePresentMode == ::vk::PresentModeKHR::eMailbox)
+        {
+            return availablePresentMode;
+        }
+    }
+
+    // 不进行垂直同步，使用最高的cpu个gpu性能，能达到最高的fps，但可能造成画面撕裂
+    // for(const auto& availablePresentMode : availablePresentModes)
+    // {
+    //     if(availablePresentMode == ::vk::PresentModeKHR::eImmediate)
+    //     {
+    //         return availablePresentMode;
+    //     }
+    // }
+
+    //先进先出，排队
+    return ::vk::PresentModeKHR::eFifo;
+}
 Swapchain::~Swapchain()
 {
     for(auto& frameBuffer : frameBuffers){
