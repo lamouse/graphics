@@ -25,7 +25,6 @@ elseif(UNIX AND APPLE)
         set(librariesList
                 GLFW
                 vulkan
-                glm
         )
     
     add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")

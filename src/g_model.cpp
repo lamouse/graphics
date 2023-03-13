@@ -4,16 +4,15 @@
 namespace g
 {
 
-void Model::bind(::vk::CommandBuffer commandBuffer)
-{
-    vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
-}
 void Model::draw(::vk::CommandBuffer commandBuffer)
+{
+    commandBuffer.draw(vertexCount, 1, 0, 0);
+}
+void Model::bind(::vk::CommandBuffer commandBuffer)
 {
     ::vk::Buffer buffers[] = {vertexBuffer};
     ::vk::DeviceSize offsets[] = {0};
-    
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, reinterpret_cast<VkBuffer*>(buffers), offsets);
+    commandBuffer.bindVertexBuffers(0, 1, buffers, offsets);
 }
 
 void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
@@ -32,8 +31,9 @@ void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
     ::vk::MemoryAllocateInfo allocateInfo;
     allocateInfo.setAllocationSize(memoryRequirements.size)
                 .setMemoryTypeIndex(device.findMemoryType(memoryRequirements.memoryTypeBits, ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent));
-
+    
     vertexBufferMemory = Device::getInstance().getVKDevice().allocateMemory(allocateInfo);
+    Device::getInstance().getVKDevice().bindBufferMemory(vertexBuffer, vertexBufferMemory, 0);
     void* data = Device::getInstance().getVKDevice().mapMemory(vertexBufferMemory, 0, bufferSize);
     ::memcpy(data, vertices.data(), bufferSize);
     Device::getInstance().getVKDevice().unmapMemory(vertexBufferMemory);

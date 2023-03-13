@@ -1,6 +1,7 @@
 #include "g_command.hpp"
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
+#include "g_shader.hpp"
 #include <exception>
 
 namespace g
@@ -43,7 +44,9 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
                             .setFramebuffer(Swapchain::getInstance().getFrameBuffer(index))
                             .setClearValues(clearValues);
         commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});{
-            commandBuffers_[index].draw(3, 1, 0, 0);
+            //commandBuffers_[index].draw(3, 1, 0, 0);
+            Shader::getInstance().getModel().bind(commandBuffers_[index]);
+            Shader::getInstance().getModel().draw(commandBuffers_[index]);
         }
 
         commandBuffers_[index].endRenderPass();

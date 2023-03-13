@@ -22,11 +22,11 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
     
     Shader::init(full_path + "vert.spv", 
             full_path + "frag.spv");
-    
     Swapchain::init(width, height);
     RenderProcess::init(width, height);
     Swapchain::getInstance().createImageFrame();
     Command::init(Swapchain::getInstance().getImageCount());
+    Shader::getInstance().loadModel();
 
     
 }

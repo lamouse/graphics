@@ -33,8 +33,7 @@ RenderProcess::~RenderProcess()
 void RenderProcess::initPipeline(int width, int height)
 {
     ::vk::GraphicsPipelineCreateInfo createInfo;
-    ::vk::PipelineVertexInputStateCreateInfo inputState;
-    createInfo.setPVertexInputState(&inputState);
+    
     ::vk::PipelineInputAssemblyStateCreateInfo inputAsm;
     inputAsm.setPrimitiveRestartEnable(false)
             .setTopology(::vk::PrimitiveTopology::eTriangleList);
@@ -42,6 +41,13 @@ void RenderProcess::initPipeline(int width, int height)
 
     auto shaderStage = Shader::getInstance().getShaderStage();
     createInfo.setStages(shaderStage);
+
+    auto bindingDescriptions = Model::Vertex::getBindingDescription();
+    auto attributeDescriptions = Model::Vertex::getAtrributeDescription();
+    ::vk::PipelineVertexInputStateCreateInfo inputState;
+    inputState.setVertexBindingDescriptions(bindingDescriptions);
+    inputState.setVertexAttributeDescriptions(attributeDescriptions);
+    createInfo.setPVertexInputState(&inputState);    
  
     ::vk::PipelineViewportStateCreateInfo pipelineViewportState;
     ::vk::Viewport viewport(0, 0, width, height, 0, 1);

@@ -67,5 +67,15 @@ void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std
     return shaderStages;
 }
 
+void Shader::loadModel()
+{
+    ::std::vector<Model::Vertex> vertices{
+        {{0.0, -0.5}},
+        {{0.5, 0.5}},
+        {{-0.5,0.5}},
+    };
+    model = ::std::make_unique<Model> (vertices);
+}
+
 
 }

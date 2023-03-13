@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>
+#include <memory>
+#include "g_model.hpp"
 
 namespace g{
     class Shader
@@ -15,6 +17,7 @@ namespace g{
         ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
         Shader(const ::std::string& vertFilePath, const ::std::string& fragFilePath);
         static ::std::unique_ptr<Shader> instance;
+        ::std::unique_ptr<Model> model;
     public:
         static void init(const ::std::string& vertFilePath, const ::std::string& fragFilePath);
         static Shader& getInstance(){return *instance;}
@@ -22,7 +25,8 @@ namespace g{
         ::vk::ShaderModule getVertex(){return vertexModule; }
         ::vk::ShaderModule getFragmentModule(){return fragmentModule; }
         ::std::vector<::vk::PipelineShaderStageCreateInfo> getShaderStage();
-
+        void loadModel();
+        Model& getModel(){return *model;}
         ~Shader();
     };
     

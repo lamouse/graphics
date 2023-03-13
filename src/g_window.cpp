@@ -31,6 +31,9 @@ void Window::initWindow()
         }
         return surface;
     }, width, height);
+    
+    RenderProcess::getInstance().render();
+
 }
 
 Window::~Window()
