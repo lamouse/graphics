@@ -203,7 +203,7 @@ void RenderProcess::createsemphores()
     for(int i = 0; i < count; i++)
     {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        renderFinshSemphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
+        renderFinshSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
 
     }
 }
