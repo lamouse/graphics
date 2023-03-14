@@ -32,7 +32,11 @@ RenderProcess::~RenderProcess()
         Device::getInstance().getVKDevice().destroyFence(fence);
     }
 
-    for(auto & semphore : semphores){
+    for(auto & semphore : imageAvailableSemphores){
+        Device::getInstance().getVKDevice().destroySemaphore(semphore);
+    }
+
+        for(auto & semphore : renderFinshSemphores){
         Device::getInstance().getVKDevice().destroySemaphore(semphore);
     }
 
@@ -155,7 +159,7 @@ void RenderProcess::render()
 
 
     auto& device = Device::getInstance().getVKDevice();
-    auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), semphores[currentFrame]);
+    auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), imageAvailableSemphores[currentFrame]);
     if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR || acquireResult.result != ::vk::Result::eSuccess || acquireResult.result != ::vk::Result::eSuboptimalKHR)
     {
         auto imageIndex = acquireResult.value;
@@ -163,7 +167,7 @@ void RenderProcess::render()
         auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
         auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
         auto swapchain = Swapchain::getInstance().getSwapchain();
-        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], semphores[currentFrame], frameBuffer, extent, swapchain);
+        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], renderFinshSemphores[currentFrame], frameBuffer, extent, swapchain);
         currentFrame = (currentFrame + 1) % 2;
     } else {
          throw ::std::runtime_error("Command::getInstance().runCmd error");
@@ -187,11 +191,19 @@ void RenderProcess::createFances()
 void RenderProcess::createsemphores()
 {
     int count = 2; 
-    semphores.resize(count);
+    imageAvailableSemphores.resize(count);
     for(int i = 0; i < count; i++)
     {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        semphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
+        imageAvailableSemphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
+
+    }
+
+    renderFinshSemphores.resize(count);
+    for(int i = 0; i < count; i++)
+    {
+        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
+        renderFinshSemphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
 
     }
 }

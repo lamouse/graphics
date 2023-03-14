@@ -14,7 +14,8 @@ namespace g
         void initLayout();
         void initRenderPass(::vk::Format format);
         ::std::vector<::vk::Fence> fences;
-        ::std::vector<::vk::Semaphore> semphores;
+        ::std::vector<::vk::Semaphore> imageAvailableSemphores;
+        ::std::vector<::vk::Semaphore> renderFinshSemphores;
         void createFances();
         void createsemphores();
         int currentFrame;
