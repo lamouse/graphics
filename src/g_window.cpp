@@ -14,9 +14,9 @@ void Window::initWindow()
 {
     ::glfwInit();
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    ::glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     window = ::glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-    
+
     uint32_t count;
     const char** glfwExtens = ::glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> extends(count);
@@ -31,9 +31,16 @@ void Window::initWindow()
         }
         return surface;
     }, width, height);
-    
-    RenderProcess::getInstance().render();
-
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height){
+        Command::quit();
+        Command::init(2);
+        Swapchain::quit();
+        Swapchain::init(width, height);
+        Swapchain::getInstance().createImageFrame();
+        RenderProcess::quit();
+        RenderProcess::init(width, height, Swapchain::getInstance().getSwapchainInfo().formatKHR.format);
+    });
 }
 
 Window::~Window()

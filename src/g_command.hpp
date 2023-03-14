@@ -15,6 +15,7 @@ private:
     void allcoCmdBuffer(int count);
     static ::std::unique_ptr<Command> instance;
     std::vector<::vk::Fence*> imagesInFlight;
+    void recordCommandBuffer(){};
     Command(int count);
 public:
     static void init(int count);
@@ -22,7 +23,8 @@ public:
     
     ~Command();
     static Command& getInstance(){return *instance;}
-    void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore);
+    void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore, vk::Framebuffer& frameBuffer,
+                    ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain);
 };
 
 }

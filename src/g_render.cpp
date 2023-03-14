@@ -7,19 +7,19 @@
 
 namespace g{
 ::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;
-RenderProcess::RenderProcess(int width, int height)
+RenderProcess::RenderProcess(int width, int height, ::vk::Format& format)
 {
     currentFrame = 0;
-    initRenderPass();
+    initRenderPass(format);
     initLayout();
     initPipeline(width, height);
     createFances();
     createsemphores();
 }
 
-void RenderProcess::init(int width, int height)
+void RenderProcess::init(int width, int height, ::vk::Format format)
 {
-    instance.reset(new RenderProcess(width, height));
+    instance.reset(new RenderProcess(width, height, format));
 }
 
 void RenderProcess::quit(){
@@ -111,11 +111,11 @@ void RenderProcess::initLayout()
     layout = Device::getInstance().getVKDevice().createPipelineLayout(layoutCrateInfo);
 }
 
-void RenderProcess::initRenderPass()
+void RenderProcess::initRenderPass(::vk::Format format)
 {
     ::vk::RenderPassCreateInfo createInfo;
     ::vk::AttachmentDescription attachDesc;
-    attachDesc.setFormat(Swapchain::getInstance().getSwapchainInfo().formatKHR.format)
+    attachDesc.setFormat(format)
                 .setFinalLayout(::vk::ImageLayout::eUndefined)
                 .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
                 .setLoadOp(::vk::AttachmentLoadOp::eClear)
@@ -156,20 +156,28 @@ void RenderProcess::render()
 
     auto& device = Device::getInstance().getVKDevice();
     auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), semphores[currentFrame]);
+    if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR)
+    {
+        throw ::std::runtime_error("acquireNextImageKHR error");
+    }
+
     if(acquireResult.result != ::vk::Result::eSuccess)
     {
         throw ::std::runtime_error("acquireNextImageKHR error");
     }
     
     auto imageIndex = acquireResult.value;
-
-    Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], semphores[currentFrame]);
+    auto& c =  Swapchain::getInstance();
+    auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
+    auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
+    auto swapchain = Swapchain::getInstance().getSwapchain();
+    Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], semphores[currentFrame], frameBuffer, extent, swapchain);
     currentFrame = (currentFrame + 1) % 2;
 }
 
 void RenderProcess::createFances()
 {
-    int count = 2;//Swapchain::getInstance().getImageCount();
+    int count = 2;
     fences.resize(count);
     for(int i = 0; i < count; i++)
     {
@@ -180,7 +188,7 @@ void RenderProcess::createFances()
 }
 void RenderProcess::createsemphores()
 {
-    int count = 2; //Swapchain::getInstance().getImageCount();
+    int count = 2; 
     semphores.resize(count);
     for(int i = 0; i < count; i++)
     {

@@ -70,9 +70,9 @@ void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std
 void Shader::loadModel()
 {
     ::std::vector<Model::Vertex> vertices{
-        {{0.0, -0.5}},
-        {{0.5, 0.5}},
-        {{-0.5,0.5}},
+        {{0.0, -0.5}, {1.0f, 0.0f, 0.0f}},
+        {{0.5, 0.5}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5,0.5}, {0.0f, 0.0f, 1.0f}},
     };
     model = ::std::make_unique<Model> (vertices);
 }

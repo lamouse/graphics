@@ -30,7 +30,6 @@ Swapchain::Swapchain( int width, int height):width(width), height(height)
         createInfo.setQueueFamilyIndices(indices)
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
-
     swapchain = Device::getInstance().getVKDevice().createSwapchainKHR(createInfo);
 }
 
@@ -38,6 +37,20 @@ void Swapchain::createImageFrame()
 {
     createImageViews();
     createFrameBuffers();
+}
+
+void Swapchain::frameBufferResize(int width, int height)
+{
+    this->width = width;
+    this->height = height;
+    void recordCommandBuffer();
+    recreateSwapchain();
+}
+
+void Swapchain::recreateSwapchain()
+{
+    Device::getInstance().getVKDevice().waitIdle();
+    instance = ::std::make_unique<Swapchain>(Swapchain(width, height));
 }
 
 void Swapchain::init(int width, int height)
@@ -61,7 +74,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
     if(format != formats.end()){
         swapchainInfo.formatKHR = *format;
     } else {
-        throw ::std::runtime_error("get image format error");
+         swapchainInfo.formatKHR = formats[0];
     }
 
     auto  cpabilities = phyDevice.getSurfaceCapabilitiesKHR(surface);

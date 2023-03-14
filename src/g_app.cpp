@@ -5,6 +5,7 @@ namespace g{
 void App::run(){
     while (!window.shuldClose()){
         glfwPollEvents();
+        RenderProcess::getInstance().render();
     }
     
 }

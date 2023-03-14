@@ -1,6 +1,5 @@
 #include "g_command.hpp"
 #include "g_device.hpp"
-#include "g_swapchain.hpp"
 #include "g_shader.hpp"
 #include <exception>
 
@@ -15,10 +14,12 @@ void Command::init(int count)
 }
 void Command::quit()
 {
+    Device::getInstance().getVKDevice().waitIdle();
     instance.reset();
 }
 
-void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore)
+void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore, vk::Framebuffer& frameBuffer,
+                    ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain)
 {
     if (imagesInFlight[index] != nullptr) {
         auto result = Device::getInstance().getVKDevice().waitForFences(*imagesInFlight[index], true, ::std::numeric_limits<uint16_t>::max());
@@ -39,7 +40,7 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
         ::vk::RenderPassBeginInfo renderPassBeginInfo;
         ::vk::Rect2D area;
         area.setOffset({0, 0})
-            .setExtent(Swapchain::getInstance().getSwapchainInfo().extent2D);
+            .setExtent(extent);
         
         //下标0 颜色附件，下标1深度附件
         ::std::array<::vk::ClearValue, 2> clearValues;
@@ -48,7 +49,7 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
 
         renderPassBeginInfo.setRenderPass(renderPass)
                             .setRenderArea(area)
-                            .setFramebuffer(Swapchain::getInstance().getFrameBuffer(index))
+                            .setFramebuffer(frameBuffer)
                             .setClearValues(clearValues);
         commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});{
             //commandBuffers_[index].draw(3, 1, 0, 0);
@@ -69,7 +70,7 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     ::vk::PresentInfoKHR presentInfo;
     uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)
-                .setPSwapchains(&Swapchain::getInstance().swapchain);
+                .setPSwapchains(&swapchain);
 
     auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
     if (result != ::vk::Result::eSuccess)

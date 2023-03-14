@@ -12,17 +12,17 @@ namespace g
         ::vk::RenderPass renderPass;
         void initPipeline(int width, int height);
         void initLayout();
-        void initRenderPass();
+        void initRenderPass(::vk::Format format);
         ::std::vector<::vk::Fence> fences;
         ::std::vector<::vk::Semaphore> semphores;
         void createFances();
         void createsemphores();
         int currentFrame;
-        RenderProcess(int width, int height);
+        RenderProcess(int width, int height, ::vk::Format& format);
         static ::std::unique_ptr<RenderProcess> instance;
     public:
         static RenderProcess& getInstance(){return *instance;}
-        static void init(int width, int height);
+        static void init(int width, int height, ::vk::Format format);
         static void quit();
         void render();
         ::vk::RenderPass getRenderPass(){return renderPass;};

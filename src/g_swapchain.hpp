@@ -24,6 +24,7 @@ public:
     static void init(int width, int height);
     static void quit();
     int getImageCount(){return images.size();}
+    void frameBufferResize(int width, int height);
     static Swapchain& getInstance(){return *instance;}
     ~Swapchain();
 private:
@@ -36,6 +37,7 @@ private:
     void createImageViews();
     void querySwapchainInfo(int width, int height);
     void createFrameBuffers();
+    void recreateSwapchain();
     Swapchain(int width, int height);
     static ::std::unique_ptr<Swapchain> instance;
     int width;
