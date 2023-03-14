@@ -73,13 +73,9 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
                 .setPSwapchains(&swapchain);
 
     auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
-    if (result != ::vk::Result::eSuccess)
+    if (result != ::vk::Result::eSuccess && result != ::vk::Result::eSuboptimalKHR)
     {
         throw ::std::runtime_error("presentKHR");
-    }
-    if(result != ::vk::Result::eSuccess)
-    {
-        throw ::std::runtime_error("waitForFences");
     }
 }
 

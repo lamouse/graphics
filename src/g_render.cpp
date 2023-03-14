@@ -156,23 +156,21 @@ void RenderProcess::render()
 
     auto& device = Device::getInstance().getVKDevice();
     auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), semphores[currentFrame]);
-    if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR)
+    if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR || acquireResult.result != ::vk::Result::eSuccess || acquireResult.result != ::vk::Result::eSuboptimalKHR)
     {
-        throw ::std::runtime_error("acquireNextImageKHR error");
+        auto imageIndex = acquireResult.value;
+        auto& c =  Swapchain::getInstance();
+        auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
+        auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
+        auto swapchain = Swapchain::getInstance().getSwapchain();
+        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], semphores[currentFrame], frameBuffer, extent, swapchain);
+        currentFrame = (currentFrame + 1) % 2;
+    } else {
+         throw ::std::runtime_error("Command::getInstance().runCmd error");
     }
 
-    if(acquireResult.result != ::vk::Result::eSuccess)
-    {
-        throw ::std::runtime_error("acquireNextImageKHR error");
-    }
     
-    auto imageIndex = acquireResult.value;
-    auto& c =  Swapchain::getInstance();
-    auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
-    auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
-    auto swapchain = Swapchain::getInstance().getSwapchain();
-    Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], semphores[currentFrame], frameBuffer, extent, swapchain);
-    currentFrame = (currentFrame + 1) % 2;
+
 }
 
 void RenderProcess::createFances()
