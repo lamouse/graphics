@@ -18,8 +18,8 @@ void Command::quit()
     instance.reset();
 }
 
-void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore, vk::Framebuffer& frameBuffer,
-                    ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain)
+void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore,
+                    vk::Framebuffer& frameBuffer, ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain)
 {
     if (imagesInFlight[index] != nullptr) {
         auto result = Device::getInstance().getVKDevice().waitForFences(*imagesInFlight[index], true, ::std::numeric_limits<uint16_t>::max());
@@ -62,7 +62,8 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     commandBuffers_[index].end();
     ::vk::SubmitInfo submitInfo;
     submitInfo.setCommandBuffers(commandBuffers_[index])
-                .setPWaitSemaphores(&semaphore);
+                .setPWaitSemaphores(&waitSemaphore)
+                .setPSignalSemaphores(&signalSemaphore);
     Device::getInstance().getVKDevice().resetFences(fence);
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
 
@@ -70,7 +71,8 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     ::vk::PresentInfoKHR presentInfo;
     uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)
-                .setPSwapchains(&swapchain);
+                .setPSwapchains(&swapchain)
+                .setPWaitSemaphores(&signalSemaphore);
 
     auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
     if (result != ::vk::Result::eSuccess && result != ::vk::Result::eSuboptimalKHR)

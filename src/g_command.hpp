@@ -23,8 +23,8 @@ public:
     
     ~Command();
     static Command& getInstance(){return *instance;}
-    void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& semaphore, vk::Framebuffer& frameBuffer,
-                    ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain);
+    void runCmd(::vk::Pipeline pipline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore,
+                vk::Framebuffer& frameBuffer, ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain);
 };
 
 }

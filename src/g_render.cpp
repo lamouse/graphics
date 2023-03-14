@@ -167,7 +167,7 @@ void RenderProcess::render()
         auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
         auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
         auto swapchain = Swapchain::getInstance().getSwapchain();
-        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], renderFinshSemaphores[currentFrame], frameBuffer, extent, swapchain);
+        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], imageAvailableSemaphores[currentFrame], renderFinshSemaphores[currentFrame], frameBuffer, extent, swapchain);
         currentFrame = (currentFrame + 1) % 2;
     } else {
          throw ::std::runtime_error("Command::getInstance().runCmd error");
