@@ -61,9 +61,13 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     }
     commandBuffers_[index].end();
     ::vk::SubmitInfo submitInfo;
+    ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
     submitInfo.setCommandBuffers(commandBuffers_[index])
                 .setPWaitSemaphores(&waitSemaphore)
-                .setPSignalSemaphores(&signalSemaphore);
+                .setPSignalSemaphores(&signalSemaphore)
+                .setPWaitDstStageMask(&stage)
+                .setWaitSemaphoreCount(1)
+                .setSignalSemaphoreCount(1);
     Device::getInstance().getVKDevice().resetFences(fence);
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
 
@@ -72,7 +76,8 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)
                 .setPSwapchains(&swapchain)
-                .setPWaitSemaphores(&signalSemaphore);
+                .setPWaitSemaphores(&signalSemaphore)
+                .setWaitSemaphoreCount(1);
 
     auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
     if (result != ::vk::Result::eSuccess && result != ::vk::Result::eSuboptimalKHR)
