@@ -73,7 +73,7 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     ::vk::PresentInfoKHR presentInfo;
     uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)
-                .setPSwapchains(&swapchain)
+                .setSwapchains(swapchain)
                 .setWaitSemaphores(signalSemaphore);;
 
     auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
