@@ -5,8 +5,10 @@
 #include "g_command.hpp"
 #include "g_model.hpp"
 
+
 namespace g{
 ::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;
+
 RenderProcess::RenderProcess(int width, int height, ::vk::Format& format)
 {
     currentFrame = 0;
@@ -112,6 +114,11 @@ void RenderProcess::initPipeline(int width, int height)
 void RenderProcess::initLayout()
 {
     ::vk::PipelineLayoutCreateInfo layoutCrateInfo;
+    ::vk::PushConstantRange pushConstantRange;
+    pushConstantRange.setStageFlags(::vk::ShaderStageFlagBits::eVertex | ::vk::ShaderStageFlagBits::eFragment)
+                    .setOffset(0)
+                    .setSize(sizeof(SimplePushConstantData));
+    layoutCrateInfo.setPushConstantRanges(pushConstantRange);
     layout = Device::getInstance().getVKDevice().createPipelineLayout(layoutCrateInfo);
 }
 
@@ -166,8 +173,11 @@ void RenderProcess::render()
         auto& c =  Swapchain::getInstance();
         auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
         auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
+
         auto swapchain = Swapchain::getInstance().getSwapchain();
-        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], imageAvailableSemaphores[currentFrame], renderFinshSemaphores[currentFrame], frameBuffer, extent, swapchain);
+        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], 
+                            imageAvailableSemaphores[currentFrame], renderFinshSemaphores[currentFrame], 
+                            frameBuffer, extent, swapchain, layout, Shader::getInstance().getGameObjects());
         currentFrame = (currentFrame + 1) % 2;
     } else {
          throw ::std::runtime_error("Command::getInstance().runCmd error");

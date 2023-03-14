@@ -5,7 +5,19 @@
 #include <cstdint>
 #include <optional>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include<glm/gtc/constants.hpp>
+
 namespace g{
+    struct SimplePushConstantData
+    {
+        ::glm::mat2 transform{1.f};
+        ::glm::vec2 offset;
+        alignas(16)::glm::vec3 color;
+    };
+
     using CreateSurfaceFunc = ::std::function<vk::SurfaceKHR(vk::Instance)>;
 
     class Device final

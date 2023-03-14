@@ -19,7 +19,7 @@ void Command::quit()
 }
 
 void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore,
-                    vk::Framebuffer& frameBuffer, ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain)
+                    vk::Framebuffer& frameBuffer, ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain, ::vk::PipelineLayout& layout, ::std::vector<GameObject>& gameObjects)
 {
     if (imagesInFlight[index] != nullptr) {
         auto result = Device::getInstance().getVKDevice().waitForFences(*imagesInFlight[index], true, ::std::numeric_limits<uint16_t>::max());
@@ -44,7 +44,7 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
         
         //下标0 颜色附件，下标1深度附件
         ::std::array<::vk::ClearValue, 2> clearValues;
-        clearValues[0].setColor(::vk::ClearColorValue(::std::array<float, 4>{0.1f, 0.1f, 0.1f, 0.1f}));
+        clearValues[0].setColor(::vk::ClearColorValue(::std::array<float, 4>{0.01f, 0.01f, 0.01f, 0.1f}));
         clearValues[1].setDepthStencil({1.0f, 0});
 
         renderPassBeginInfo.setRenderPass(renderPass)
@@ -52,9 +52,8 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
                             .setFramebuffer(frameBuffer)
                             .setClearValues(clearValues);
         commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});{
-            //commandBuffers_[index].draw(3, 1, 0, 0);
-            Shader::getInstance().getModel().bind(commandBuffers_[index]);
-            Shader::getInstance().getModel().draw(commandBuffers_[index]);
+            //Shader::getInstance().getModel().bind(commandBuffers_[index]);
+            renderGameObjects(gameObjects, commandBuffers_[index], layout);
         }
 
         commandBuffers_[index].endRenderPass();
@@ -80,6 +79,21 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
     if (result != ::vk::Result::eSuccess && result != ::vk::Result::eSuboptimalKHR)
     {
         throw ::std::runtime_error("presentKHR");
+    }
+}
+
+void Command::renderGameObjects(::std::vector<GameObject>& gameObjects, ::vk::CommandBuffer& commandBuffer, ::vk::PipelineLayout layout)
+{
+    for(auto& obj : gameObjects){
+        obj.transform2d.rotation = ::glm::mod(obj.transform2d.rotation + 0.01f, ::glm::two_pi<float>());
+        SimplePushConstantData push{};
+        push.offset = obj.transform2d.translation;
+        push.color = obj.color;
+        push.transform = obj.transform2d.mat2();
+        commandBuffer.pushConstants(layout, ::vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 
+        0, sizeof(SimplePushConstantData), &push);
+        obj.model->bind(commandBuffer);
+        obj.model->draw(commandBuffer);
     }
 }
 

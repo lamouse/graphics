@@ -26,7 +26,7 @@ Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceF
     RenderProcess::init(width, height, Swapchain::getInstance().getSwapchainInfo().formatKHR.format);
     Swapchain::getInstance().createImageFrame();
     Command::init(Swapchain::getInstance().getImageCount());
-    Shader::getInstance().loadModel();
+    Shader::getInstance().loadGameObjects();
 
     
 }
