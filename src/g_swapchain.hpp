@@ -33,14 +33,17 @@ public:
 private:
     static ::std::unique_ptr<Swapchain> instance;
 
+    void createDepthResources();
     SwapchainInfo swapchainInfo;
     ::std::vector<::vk::Image> images;
     ::std::vector<::vk::ImageView> imageViews;
     ::std::vector<::vk::Framebuffer> frameBuffers;
+    ::std::vector<VkImage> depthImages;
+    ::std::vector<VkDeviceMemory> depthImageMemorys;
+    ::std::vector<VkImageView> depthImageViews;
     ::vk::RenderPass renderPass;
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
-    int width;
-    int height;
+    ::vk::Format findDepthFormat();
     void getImages();
     void createImageViews();
     void createFrameBuffers();

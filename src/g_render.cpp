@@ -65,13 +65,11 @@ void RenderProcess::initPipeline(int width, int height)
     inputState.setVertexAttributeDescriptions(attributeDescriptions);
     createInfo.setPVertexInputState(&inputState);    
  
-    ::vk::PipelineViewportStateCreateInfo pipelineViewportState;
     ::vk::Viewport viewport(0, 0, width, height, 0, 1);
-    pipelineViewportState.setPViewports(&viewport);
     ::vk::Rect2D rect({0, 0}, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)});
-    pipelineViewportState.setScissors(rect)
-                        .setViewportCount(1)
-                        .setScissorCount(1);
+    ::vk::PipelineViewportStateCreateInfo pipelineViewportState;
+    pipelineViewportState.setViewports(viewport)
+                        .setScissors(rect);
     createInfo.setPViewportState(&pipelineViewportState);
 
 

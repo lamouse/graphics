@@ -6,7 +6,7 @@ namespace g
 {
 ::std::unique_ptr<Swapchain> Swapchain::instance = nullptr;
 
-Swapchain::Swapchain( int width, int height):width(width), height(height)
+Swapchain::Swapchain( int width, int height)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
@@ -39,21 +39,21 @@ Swapchain::Swapchain( int width, int height):width(width), height(height)
 void Swapchain::createImageFrame()
 {
     createImageViews();
+    createDepthResources();
     createFrameBuffers();
 }
 
 void Swapchain::frameBufferResize(int width, int height)
 {
-    this->width = width;
-    this->height = height;
-    void recordCommandBuffer();
+    swapchainInfo.extent2D.width = width;
+    swapchainInfo.extent2D.height = height;
     recreateSwapchain();
 }
 
 void Swapchain::recreateSwapchain()
 {
     Device::getInstance().getVKDevice().waitIdle();
-    instance = ::std::make_unique<Swapchain>(Swapchain(width, height));
+    instance = ::std::make_unique<Swapchain>(Swapchain(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height));
 }
 
 void Swapchain::init(int width, int height)
@@ -119,10 +119,20 @@ void Swapchain::querySwapchainInfo(int width, int height)
 }
 Swapchain::~Swapchain()
 {
+
     for(auto& frameBuffer : frameBuffers){
         Device::getInstance().getVKDevice().destroyFramebuffer(frameBuffer);
     }
 
+    for(auto& depthImageView : depthImageViews){
+        Device::getInstance().getVKDevice().destroyImageView(depthImageView);
+    }
+    for(auto& depthImageMemory : depthImageMemorys){
+        Device::getInstance().getVKDevice().freeMemory(depthImageMemory);
+    }
+    for(auto& depthImage : depthImages){
+        Device::getInstance().getVKDevice().destroyImage(depthImage);
+    }
     for(auto& view : imageViews){
         Device::getInstance().getVKDevice().destroyImageView(view);
     }
@@ -148,7 +158,7 @@ void Swapchain::createImageViews()
         ::vk::ImageSubresourceRange range;
         range.setBaseMipLevel(0)
             .setLevelCount(VK_REMAINING_MIP_LEVELS)
-            .setBaseArrayLayer(VK_IMAGE_VIEW_TYPE_1D)
+            .setBaseArrayLayer(0)
             .setLayerCount(1)
             .setAspectMask(vk::ImageAspectFlagBits::eColor);
         createImageViewInfo.setImage(images[i])
@@ -167,13 +177,64 @@ void Swapchain::createFrameBuffers()
     for(int i = 0; i < frameBuffers.size(); i++)
     {
         ::vk::FramebufferCreateInfo createInfo;
-        createInfo.setAttachments(imageViews[i])
-                .setWidth(width)
-                .setHeight(height)
+        std::array<vk::ImageView, 2> attachments = {imageViews[i], depthImageViews[i]};
+        createInfo.setAttachments(attachments)
+                .setWidth(swapchainInfo.extent2D.width)
+                .setHeight(swapchainInfo.extent2D.height)
                 .setRenderPass(renderPass)
                 .setLayers(1);
         frameBuffers[i] = Device::getInstance().getVKDevice().createFramebuffer(createInfo);
     }
+}
+
+
+void Swapchain::createDepthResources() {
+  vk::Format depthFormat = findDepthFormat();
+
+  depthImages.resize(images.size());
+  depthImageMemorys.resize(images.size());
+  depthImageViews.resize(images.size());
+
+  for (int i = 0; i < depthImages.size(); i++) {
+    ::vk::ImageCreateInfo imageInfo{};
+    imageInfo.setImageType(::vk::ImageType::e2D);
+    ::vk::Extent3D extent{swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, 1};
+    imageInfo.setExtent(extent)
+             .setMipLevels(1)
+             .setArrayLayers(1)
+             .setFormat(depthFormat)
+             .setTiling(::vk::ImageTiling::eOptimal)
+             .setInitialLayout(::vk::ImageLayout::eUndefined)
+             .setUsage(::vk::ImageUsageFlagBits::eDepthStencilAttachment)
+             .setSamples(::vk::SampleCountFlagBits::e1)
+             .setSharingMode(::vk::SharingMode::eExclusive);
+
+    
+    depthImages[i] =  Device::getInstance().getVKDevice().createImage(imageInfo);
+    ::vk::MemoryRequirements requirement = Device::getInstance().getVKDevice().getImageMemoryRequirements(depthImages[i]);
+    ::vk::MemoryAllocateInfo allocInfo;
+    allocInfo.setAllocationSize(requirement.size)
+            .setMemoryTypeIndex(Device::getInstance().findMemoryType(requirement.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal));
+
+    depthImageMemorys[i] = Device::getInstance().getVKDevice().allocateMemory(allocInfo);
+    Device::getInstance().getVKDevice().bindImageMemory(depthImages[i], depthImageMemorys[i], 0);
+    ::vk::ImageSubresourceRange imageSubresource;
+    imageSubresource.setAspectMask(::vk::ImageAspectFlagBits::eDepth)
+                    .setBaseMipLevel(0)
+                    .setLevelCount(1)
+                    .setLayerCount(1)
+                    .setBaseArrayLayer(0);
+
+    ::vk::ComponentMapping mapping;
+    ::vk::ImageViewCreateInfo viewInfo;
+    viewInfo.setImage(depthImages[i])
+            .setViewType(::vk::ImageViewType::e2D)
+            .setFormat(depthFormat)
+            .setSubresourceRange(imageSubresource)
+            .setComponents(mapping);
+
+    depthImageViews[i] =  Device::getInstance().getVKDevice().createImageView(viewInfo);
+  }
 }
 
 void Swapchain::initRenderPass()
@@ -189,8 +250,19 @@ void Swapchain::initRenderPass()
     colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
                         .setAttachment(0);
     
-
-    createInfo.setAttachments(colorDesc);
+    ::vk::AttachmentDescription depthAttachment;
+    depthAttachment.setFormat(findDepthFormat())
+                .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal)
+                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
+                .setLoadOp(::vk::AttachmentLoadOp::eClear)
+                .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
+                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare);
+    vk::AttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.setAttachment(1)
+                    .setLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
+    
+    ::std::array<::vk::AttachmentDescription, 2> attachments = {colorDesc, depthAttachment};
+    createInfo.setAttachments(attachments);
 
      ::vk::SubpassDescription subpass;
     subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
@@ -200,12 +272,19 @@ void Swapchain::initRenderPass()
     ::vk::SubpassDependency subepassDependency;
     subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
                         .setDstSubpass(0)
-                        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite)
-                        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput)
-                        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput);
+                        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite | ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+                        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
+                        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
     createInfo.setDependencies(subepassDependency)
                 .setSubpassCount(1);
     renderPass = Device::getInstance().getVKDevice().createRenderPass(createInfo);
 }
+
+ ::vk::Format Swapchain::findDepthFormat(){
+    return Device::getInstance().findSupportedFormat({::vk::Format::eD32Sfloat, ::vk::Format::eD32SfloatS8Uint, ::vk::Format::eD24UnormS8Uint},
+            ::vk::ImageTiling::eOptimal,
+            ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+
+ }
 
 }
