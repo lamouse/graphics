@@ -96,7 +96,7 @@ void Command::end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& wai
     auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
     if (result != ::vk::Result::eSuccess && result != ::vk::Result::eSuboptimalKHR)
     {
-        throw ::std::runtime_error("presentKHR");
+        throw ::std::runtime_error("presentKHR error");
     }
 }
 
