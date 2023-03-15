@@ -1,23 +1,27 @@
 #pragma once
 #include "g_model.hpp"
 #include<memory>
+
+#include<glm/gtc/matrix_transform.hpp>
+
 namespace g
 {
 
 using id_t = unsigned int;
 
-struct Transform2dCompoent
+struct TransformCompoent
 {
-    ::glm::vec2 translation{}; //position offset
-    ::glm::vec2 scale{1.f, 1.f};
-    float rotation;
+    ::glm::vec3 translation{}; //position offset
+    ::glm::vec3 scale{1.f, 1.f, 1.f};
+    ::glm::vec3 rotation{};
 
-    ::glm::mat2 mat2(){
-        const float s = ::glm::sin(rotation);
-        const float c = ::glm::cos(rotation);
-        ::glm:: mat2 rotMatrix{{c, s}, {-s, c}};
-        ::glm::mat2 scaleMat{{scale.x, 0.f}, {.0f, scale.y}};
-        return rotMatrix * ::glm::mat2{1.f};
+    ::glm::mat4 mat4(){
+        auto transform = ::glm::translate(::glm::mat4(1.f), translation);
+        transform = ::glm::rotate(transform, rotation.y, {0.f, 1.f, 0.f});
+        transform = ::glm::rotate(transform, rotation.x, {1.f, 0.f, 0.f});
+        transform = ::glm::rotate(transform, rotation.z, {0.f, 0.f, 1.f});
+        transform = ::glm::scale(transform, scale);
+        return transform;
     }
 };
 
@@ -42,7 +46,7 @@ public:
 
     ::std::shared_ptr<Model> model{};
     ::glm::vec3 color{};
-    Transform2dCompoent transform2d;
+    TransformCompoent transform;
     ~GameObject();
 };
 

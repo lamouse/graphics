@@ -103,11 +103,11 @@ void Command::end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& wai
 void Command::renderGameObjects(::std::vector<GameObject>& gameObjects, ::vk::CommandBuffer& commandBuffer, ::vk::PipelineLayout layout)
 {
     for(auto& obj : gameObjects){
-        obj.transform2d.rotation = ::glm::mod(obj.transform2d.rotation + 0.01f, ::glm::two_pi<float>());
+        obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.01f, ::glm::two_pi<float>());
+        obj.transform.rotation.x = ::glm::mod(obj.transform.rotation.x + 0.01f, ::glm::two_pi<float>());
         SimplePushConstantData push{};
-        push.offset = obj.transform2d.translation;
+        push.transform = obj.transform.mat4();
         push.color = obj.color;
-        push.transform = obj.transform2d.mat2();
         commandBuffer.pushConstants(layout, ::vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 
         0, sizeof(SimplePushConstantData), &push);
         obj.model->bind(commandBuffer);

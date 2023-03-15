@@ -15,7 +15,7 @@ void GravityPhysics::update(::std::vector<GameObject> & objs, float dt, unsigned
 
 ::glm::vec2 GravityPhysics::computeForce(GameObject& fromObj, GameObject& toObj)const
 {
-    auto offset = fromObj.transform2d.translation - toObj.transform2d.translation;
+    auto offset = fromObj.transform.translation - toObj.transform.translation;
     float distanceSquared = ::glm::dot(offset, offset);
     if(::glm::abs(distanceSquared) < 1e-10f)
     {
