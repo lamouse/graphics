@@ -35,9 +35,9 @@ private:
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
     void getImages();
     void createImageViews();
-    void querySwapchainInfo(int width, int height);
     void createFrameBuffers();
     void recreateSwapchain();
+    void querySwapchainInfo(int width, int height);
     Swapchain(int width, int height);
     static ::std::unique_ptr<Swapchain> instance;
     int width;

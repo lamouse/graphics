@@ -18,8 +18,7 @@ void Command::quit()
     instance.reset();
 }
 
-void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int index, ::vk::Fence& fence, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore,
-                    vk::Framebuffer& frameBuffer, ::vk::Extent2D& extent, ::vk::SwapchainKHR swapchain, ::vk::PipelineLayout& layout, ::std::vector<GameObject>& gameObjects)
+void Command::run(int index, ::vk::Fence& fence, ::vk::PipelineLayout& layout, ::std::vector<GameObject>& gameObjects)
 {
     if (imagesInFlight[index] != nullptr) {
         auto result = Device::getInstance().getVKDevice().waitForFences(*imagesInFlight[index], true, ::std::numeric_limits<uint16_t>::max());
@@ -29,35 +28,56 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
         }
     }
     imagesInFlight[index] = &fence;
+        //Shader::getInstance().getModel().bind(commandBuffers_[index]);
+     renderGameObjects(gameObjects, commandBuffers_[index], layout);
+}
+
+void Command::begin(int index)
+{
     commandBuffers_[index].reset();
     ::vk::CommandBufferBeginInfo begin;
     ::vk::CommandBufferInheritanceInfo inherritanceInfo;
     begin.setFlags(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
         .setPInheritanceInfo(&inherritanceInfo);
+    commandBuffers_[index].begin(begin);
+}
 
-    commandBuffers_[index].begin(begin);{
-        commandBuffers_[index].bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
-        ::vk::RenderPassBeginInfo renderPassBeginInfo;
-        ::vk::Rect2D area;
-        area.setOffset({0, 0})
-            .setExtent(extent);
+void Command::beginRenderPass(int index, ::vk::Pipeline& pipeline, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer)
+{
+    commandBuffers_[index].bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
+    ::vk::RenderPassBeginInfo renderPassBeginInfo;
+    ::vk::Rect2D area;
+    area.setOffset({0, 0})
+        .setExtent(extent);
+    
+    //下标0 颜色附件，下标1深度附件
+    ::std::array<::vk::ClearValue, 2> clearValues;
+    clearValues[0].setColor(::vk::ClearColorValue(::std::array<float, 4>{0.01f, 0.01f, 0.01f, 0.1f}));
+    clearValues[1].setDepthStencil({1.0f, 0});
+
+    renderPassBeginInfo.setRenderPass(renderPass)
+                        .setRenderArea(area)
+                        .setFramebuffer(frameBuffer)
+                        .setClearValues(clearValues);
+    commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});
+
+    ::vk::Viewport viewPort;
+    viewPort.setX(0.0f)
+            .setY(0.0f)
+            .setWidth(static_cast<float>(extent.width))
+            .setHeight(static_cast<float>(extent.height))
+            .setMinDepth(.0f)
+            .setMaxDepth(1.f);
         
-        //下标0 颜色附件，下标1深度附件
-        ::std::array<::vk::ClearValue, 2> clearValues;
-        clearValues[0].setColor(::vk::ClearColorValue(::std::array<float, 4>{0.01f, 0.01f, 0.01f, 0.1f}));
-        clearValues[1].setDepthStencil({1.0f, 0});
+        //commandBuffers_[index].setViewport(1, viewPort);
+}
 
-        renderPassBeginInfo.setRenderPass(renderPass)
-                            .setRenderArea(area)
-                            .setFramebuffer(frameBuffer)
-                            .setClearValues(clearValues);
-        commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});{
-            //Shader::getInstance().getModel().bind(commandBuffers_[index]);
-            renderGameObjects(gameObjects, commandBuffers_[index], layout);
-        }
+void Command::endRenderPass(int index)
+{
+    commandBuffers_[index].endRenderPass();
+}
 
-        commandBuffers_[index].endRenderPass();
-    }
+void Command::end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore, ::vk::Fence& fence){
     commandBuffers_[index].end();
     ::vk::SubmitInfo submitInfo;
     ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -67,8 +87,6 @@ void Command::runCmd(::vk::Pipeline pipeline, ::vk::RenderPass renderPass, int i
                 .setWaitDstStageMask(stage);
     Device::getInstance().getVKDevice().resetFences(fence);
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
-
-
     ::vk::PresentInfoKHR presentInfo;
     uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)

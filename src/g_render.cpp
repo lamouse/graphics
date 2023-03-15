@@ -125,23 +125,22 @@ void RenderProcess::initLayout()
 void RenderProcess::initRenderPass(::vk::Format format)
 {
     ::vk::RenderPassCreateInfo createInfo;
-    ::vk::AttachmentDescription attachDesc;
-    attachDesc.setFormat(format)
-                .setFinalLayout(::vk::ImageLayout::eUndefined)
+    ::vk::AttachmentDescription colorDesc;
+    colorDesc.setFormat(format)
                 .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
                 .setLoadOp(::vk::AttachmentLoadOp::eClear)
                 .setStoreOp(::vk::AttachmentStoreOp::eStore)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eClear)
-                .setSamples(::vk::SampleCountFlagBits::e1);
-    
-    createInfo.setAttachments(attachDesc);
-
-    ::vk::AttachmentReference attachmentReference;
-    attachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
+                .setStencilLoadOp(::vk::AttachmentLoadOp::eClear);
+    ::vk::AttachmentReference colorAttachmentReference;
+    colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
                         .setAttachment(0);
-    ::vk::SubpassDescription subpass;
+    
+
+    createInfo.setAttachments(colorDesc);
+
+     ::vk::SubpassDescription subpass;
     subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
-            .setColorAttachments(attachmentReference);
+            .setColorAttachments(colorAttachmentReference);
     createInfo.setSubpasses(subpass);
 
     ::vk::SubpassDependency subepassDependency;
@@ -175,9 +174,11 @@ void RenderProcess::render()
         auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
 
         auto swapchain = Swapchain::getInstance().getSwapchain();
-        Command::getInstance().runCmd(pipline, renderPass, imageIndex, fences[currentFrame], 
-                            imageAvailableSemaphores[currentFrame], renderFinshSemaphores[currentFrame], 
-                            frameBuffer, extent, swapchain, layout, Shader::getInstance().getGameObjects());
+        Command::getInstance().begin(imageIndex);
+        Command::getInstance().beginRenderPass(imageIndex, pipline, renderPass, extent, frameBuffer);
+        Command::getInstance().run(imageIndex, fences[currentFrame], layout, Shader::getInstance().getGameObjects());
+        Command::getInstance().endRenderPass(imageIndex);
+        Command::getInstance().end(imageIndex, swapchain, imageAvailableSemaphores[currentFrame], renderFinshSemaphores[currentFrame], fences[currentFrame]);
         currentFrame = (currentFrame + 1) % 2;
     } else {
          throw ::std::runtime_error("Command::getInstance().runCmd error");

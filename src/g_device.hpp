@@ -56,6 +56,7 @@ namespace g{
         ::vk::Queue& getGraphicsQueue();
         ::vk::Queue& getPresentQueue();
         ::vk::Device& getVKDevice();
+        ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
         ~Device();
 
         

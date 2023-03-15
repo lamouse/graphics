@@ -21,6 +21,12 @@ namespace g
         int currentFrame;
         RenderProcess(int width, int height, ::vk::Format& format);
         static ::std::unique_ptr<RenderProcess> instance;
+        ::std::vector<::vk::Image> images;
+        ::std::vector<::vk::ImageView> imageViews;
+        ::std::vector<::vk::Framebuffer> frameBuffers;
+        void getImages();
+        void createImageViews();
+        void createFrameBuffers();
     public:
         static RenderProcess& getInstance(){return *instance;}
         static void init(int width, int height, ::vk::Format format);

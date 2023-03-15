@@ -33,13 +33,13 @@ void Window::initWindow()
     }, width, height);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height){
-        Command::quit();
-        Command::init(2);
+        // Command::quit();
+        // Command::init(2);
         Swapchain::quit();
         Swapchain::init(width, height);
         Swapchain::getInstance().createImageFrame();
-        RenderProcess::quit();
-        RenderProcess::init(width, height, Swapchain::getInstance().getSwapchainInfo().formatKHR.format);
+        // RenderProcess::quit();
+        // RenderProcess::init(width, height, Swapchain::getInstance().getSwapchainInfo().formatKHR.format);
     });
 }
 

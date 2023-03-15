@@ -150,7 +150,7 @@ void Swapchain::createImageViews()
                             .setViewType(vk::ImageViewType::e2D)
                             .setComponents(mapping)
                             .setSubresourceRange(range)
-                            .setFormat(vk::Format::eB8G8R8A8Srgb);
+                            .setFormat(swapchainInfo.formatKHR.format);
         imageViews[i] = Device::getInstance().getVKDevice().createImageView(createImageViewInfo);
     }
 }
