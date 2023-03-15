@@ -10,6 +10,7 @@ std::unique_ptr<Shader> Shader::instance = nullptr;
 Shader::Shader(const ::std::string& vertFilePath, const ::std::string& fragFilePath)
 {
     createGraphicsShader(vertFilePath, fragFilePath);
+    loadGameObjects();
 }
 
 void Shader::init(const ::std::string& vertFilePath, const ::std::string& fragFilePath)

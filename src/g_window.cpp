@@ -33,13 +33,9 @@ void Window::initWindow()
     }, width, height);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height){
-        // Command::quit();
-        // Command::init(2);
-        Swapchain::quit();
-        Swapchain::init(width, height);
-        Swapchain::getInstance().createImageFrame();
-        // RenderProcess::quit();
-        // RenderProcess::init(width, height, Swapchain::getInstance().getSwapchainInfo().formatKHR.format);
+        Command::reset(2);
+        Swapchain::reset(width, height);
+        RenderProcess::reset(width, height);
     });
 }
 

@@ -20,17 +20,18 @@ private:
     Command(int count);
     void renderGameObjects(::std::vector<GameObject>& gameObjects, ::vk::CommandBuffer& commandBuffer, ::vk::PipelineLayout layout);
 public:
-    static void init(int count);
-    static void quit();
+
     
     ~Command();
-
     void begin(int index);
     void beginRenderPass(int index, ::vk::Pipeline& pipeline, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer);
     void run(int index, ::vk::Fence& fence, ::vk::PipelineLayout& layout, ::std::vector<GameObject>& gameObjects);
     void endRenderPass(int index);
     void end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore, ::vk::Fence& fence);
 
+    static void init(int count);
+    static void quit();
+    static void reset(int count){quit(); init(count);};
     static Command& getInstance(){return *instance;}
 };
 

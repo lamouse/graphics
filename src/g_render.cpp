@@ -4,24 +4,24 @@
 #include "g_swapchain.hpp"
 #include "g_command.hpp"
 #include "g_model.hpp"
+#include <iostream>
 
 
 namespace g{
 ::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;
 
-RenderProcess::RenderProcess(int width, int height, ::vk::Format& format)
+RenderProcess::RenderProcess(int width, int height)
 {
     currentFrame = 0;
-    initRenderPass(format);
     initLayout();
     initPipeline(width, height);
     createFances();
     createsemphores();
 }
 
-void RenderProcess::init(int width, int height, ::vk::Format format)
+void RenderProcess::init(int width, int height)
 {
-    instance.reset(new RenderProcess(width, height, format));
+    instance.reset(new RenderProcess(width, height));
 }
 
 void RenderProcess::quit(){
@@ -42,7 +42,6 @@ RenderProcess::~RenderProcess()
         Device::getInstance().getVKDevice().destroySemaphore(semaphore);
     }
 
-    Device::getInstance().getVKDevice().destroyRenderPass(renderPass);
     Device::getInstance().getVKDevice().destroyPipelineLayout(layout);
     Device::getInstance().getVKDevice().destroyPipeline(pipline);
 }
@@ -101,7 +100,7 @@ void RenderProcess::initPipeline(int width, int height)
     createInfo.setPColorBlendState(&blend);
 
     createInfo.setLayout(layout)
-            .setRenderPass(renderPass);
+            .setRenderPass(Swapchain::getInstance().getRenderPass());
     auto result = Device::getInstance().getVKDevice().createGraphicsPipeline(nullptr, createInfo);
     if(result.result != vk::Result::eSuccess)
     {
@@ -122,37 +121,7 @@ void RenderProcess::initLayout()
     layout = Device::getInstance().getVKDevice().createPipelineLayout(layoutCrateInfo);
 }
 
-void RenderProcess::initRenderPass(::vk::Format format)
-{
-    ::vk::RenderPassCreateInfo createInfo;
-    ::vk::AttachmentDescription colorDesc;
-    colorDesc.setFormat(format)
-                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
-                .setLoadOp(::vk::AttachmentLoadOp::eClear)
-                .setStoreOp(::vk::AttachmentStoreOp::eStore)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eClear);
-    ::vk::AttachmentReference colorAttachmentReference;
-    colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
-                        .setAttachment(0);
-    
 
-    createInfo.setAttachments(colorDesc);
-
-     ::vk::SubpassDescription subpass;
-    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
-            .setColorAttachments(colorAttachmentReference);
-    createInfo.setSubpasses(subpass);
-
-    ::vk::SubpassDependency subepassDependency;
-    subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-                        .setDstSubpass(0)
-                        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite)
-                        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput)
-                        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput);
-    createInfo.setDependencies(subepassDependency)
-                .setSubpassCount(1);
-    renderPass = Device::getInstance().getVKDevice().createRenderPass(createInfo);
-}
 
 void RenderProcess::render()
 {
@@ -166,6 +135,10 @@ void RenderProcess::render()
 
     auto& device = Device::getInstance().getVKDevice();
     auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), imageAvailableSemaphores[currentFrame]);
+    if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR)
+    {
+        ::std::cout << "window resize --- " << std::endl;
+    }
     if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR || acquireResult.result != ::vk::Result::eSuccess || acquireResult.result != ::vk::Result::eSuboptimalKHR)
     {
         auto imageIndex = acquireResult.value;
@@ -174,6 +147,7 @@ void RenderProcess::render()
         auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
 
         auto swapchain = Swapchain::getInstance().getSwapchain();
+        auto renderPass = Swapchain::getInstance().getRenderPass();
         Command::getInstance().begin(imageIndex);
         Command::getInstance().beginRenderPass(imageIndex, pipline, renderPass, extent, frameBuffer);
         Command::getInstance().run(imageIndex, fences[currentFrame], layout, Shader::getInstance().getGameObjects());

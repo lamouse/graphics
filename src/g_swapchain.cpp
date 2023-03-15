@@ -31,6 +31,9 @@ Swapchain::Swapchain( int width, int height):width(width), height(height)
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
     swapchain = Device::getInstance().getVKDevice().createSwapchainKHR(createInfo);
+
+    initRenderPass();
+    createImageFrame();
 }
 
 void Swapchain::createImageFrame()
@@ -125,6 +128,8 @@ Swapchain::~Swapchain()
     }
     
     Device::getInstance().getVKDevice().destroySwapchainKHR(swapchain);
+    Device::getInstance().getVKDevice().destroyRenderPass(renderPass);
+
 }
 
 void Swapchain::getImages()
@@ -165,9 +170,42 @@ void Swapchain::createFrameBuffers()
         createInfo.setAttachments(imageViews[i])
                 .setWidth(width)
                 .setHeight(height)
-                .setRenderPass(RenderProcess::getInstance().getRenderPass())
+                .setRenderPass(renderPass)
                 .setLayers(1);
         frameBuffers[i] = Device::getInstance().getVKDevice().createFramebuffer(createInfo);
     }
 }
+
+void Swapchain::initRenderPass()
+{
+    ::vk::RenderPassCreateInfo createInfo;
+    ::vk::AttachmentDescription colorDesc;
+    colorDesc.setFormat(swapchainInfo.formatKHR.format)
+                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
+                .setLoadOp(::vk::AttachmentLoadOp::eClear)
+                .setStoreOp(::vk::AttachmentStoreOp::eStore)
+                .setStencilLoadOp(::vk::AttachmentLoadOp::eClear);
+    ::vk::AttachmentReference colorAttachmentReference;
+    colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
+                        .setAttachment(0);
+    
+
+    createInfo.setAttachments(colorDesc);
+
+     ::vk::SubpassDescription subpass;
+    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
+            .setColorAttachments(colorAttachmentReference);
+    createInfo.setSubpasses(subpass);
+
+    ::vk::SubpassDependency subepassDependency;
+    subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+                        .setDstSubpass(0)
+                        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite)
+                        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput)
+                        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput);
+    createInfo.setDependencies(subepassDependency)
+                .setSubpassCount(1);
+    renderPass = Device::getInstance().getVKDevice().createRenderPass(createInfo);
+}
+
 }

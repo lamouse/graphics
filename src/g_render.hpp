@@ -9,30 +9,23 @@ namespace g
     private:
         ::vk::Pipeline pipline;
         ::vk::PipelineLayout layout;
-        ::vk::RenderPass renderPass;
         void initPipeline(int width, int height);
         void initLayout();
-        void initRenderPass(::vk::Format format);
         ::std::vector<::vk::Fence> fences;
         ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
         ::std::vector<::vk::Semaphore> renderFinshSemaphores;
         void createFances();
         void createsemphores();
         int currentFrame;
-        RenderProcess(int width, int height, ::vk::Format& format);
+        RenderProcess(int width, int height);
         static ::std::unique_ptr<RenderProcess> instance;
-        ::std::vector<::vk::Image> images;
-        ::std::vector<::vk::ImageView> imageViews;
-        ::std::vector<::vk::Framebuffer> frameBuffers;
-        void getImages();
-        void createImageViews();
-        void createFrameBuffers();
     public:
         static RenderProcess& getInstance(){return *instance;}
-        static void init(int width, int height, ::vk::Format format);
+        static void init(int width, int height);
         static void quit();
+        static void reset(int width, int height){quit(); init(width, height);};
+        
         void render();
-        ::vk::RenderPass getRenderPass(){return renderPass;};
         ~RenderProcess();
     };
 
