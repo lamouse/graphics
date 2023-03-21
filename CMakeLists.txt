@@ -16,7 +16,6 @@ execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_s
 message(STATUS "compile shader OK")
 
 if(WIN32)
-        include_directories("D:/Program/vulkanSDK/Include", "D:/Program/vcpkg/installed/x64-windows/include")
         find_package(glfw3 CONFIG REQUIRED)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
