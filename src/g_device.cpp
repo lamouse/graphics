@@ -4,18 +4,19 @@ namespace g{
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
 
-Device::Device(const ::vk::Instance& instance, ::vk::SurfaceKHR vkSurfaceKHR):
-                    vkInstance{instance}, vkSurfaceKHR{vkSurfaceKHR}
+Device::Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
 {   
+    createInstance(instanceExtends);
+    vkSurfaceKHR = createFunc(vkInstance);
     pickupPhyiscalDevice();
     queryQueueFamilyIndices();
     createDevice();
     getQueues();
 }
 
-void Device::init(const ::vk::Instance& vkInstance, ::vk::SurfaceKHR vkSurfaceKHR)
+void Device::init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
 {
-    instance.reset(new Device(vkInstance, vkSurfaceKHR));
+    instance.reset(new Device(instanceExtends, createFunc));
 }
 void Device::quit()
 {
@@ -48,19 +49,19 @@ void Device::createDevice()
     ::std::vector<const char*> extends{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 #endif
 
-    float priorities = 0.5;
     uint32_t queueCount = 1;
+    float priorities = 0.5;
     ::vk::DeviceQueueCreateInfo queueInfo;
-    queueInfo.setPQueuePriorities(&priorities)
-            .setQueueCount(1)
-            .setQueueFamilyIndex(queueFamilyIndices.graphicsQueue.value());
+    queueInfo.setQueueCount(1)
+            .setQueueFamilyIndex(queueFamilyIndices.graphicsQueue.value())
+            .setQueuePriorities(priorities);
     queueInfos.push_back(::std::move(queueInfo));
 
     if(queueFamilyIndices.graphicsQueue.value() != queueFamilyIndices.presentQueue.value()){
         ::vk::DeviceQueueCreateInfo queueInfo;
-        queueInfo.setPQueuePriorities(&priorities)
-                .setQueueCount(queueCount)
-                .setQueueFamilyIndex(queueFamilyIndices.presentQueue.value());
+        queueInfo.setQueueCount(queueCount)
+                .setQueueFamilyIndex(queueFamilyIndices.presentQueue.value())
+                .setQueuePriorities(priorities);
         queueInfos.push_back(::std::move(queueInfo));
     }
 
@@ -157,6 +158,30 @@ uint32_t Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags pro
     }
 
     throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void Device::createInstance(const std::vector<const char*>& instanceExtends)
+{
+    ::std::vector<const char*> layers{"VK_LAYER_KHRONOS_validation"};
+    ::std::vector<const char*> externs = {instanceExtends.begin(), instanceExtends.end()};
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    externs.push_back("VK_KHR_portability_enumeration");
+    ::vk::InstanceCreateFlags flags{VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR};
+#endif
+ 
+    ::vk::InstanceCreateInfo createInfo;
+    ::vk::ApplicationInfo appInfo;
+     appInfo.setApiVersion(VK_API_VERSION_1_3)
+            .setPApplicationName("graphics")
+            .setPEngineName("engin")
+            .setApplicationVersion(VK_MAKE_VERSION(0,0, 1));
+     createInfo.setPEnabledLayerNames(layers)
+                .setPApplicationInfo(&appInfo)
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+                .setFlags(flags)
+#endif
+                .setPEnabledExtensionNames(externs);
+    vkInstance = ::vk::createInstance(createInfo);
 }
 
 }

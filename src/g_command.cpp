@@ -103,8 +103,8 @@ void Command::end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& wai
 void Command::renderGameObjects(::std::vector<GameObject>& gameObjects, ::vk::CommandBuffer& commandBuffer, ::vk::PipelineLayout layout)
 {
     for(auto& obj : gameObjects){
-        obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.01f, ::glm::two_pi<float>());
-        obj.transform.rotation.x = ::glm::mod(obj.transform.rotation.x + 0.01f, ::glm::two_pi<float>());
+        obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.0001f, ::glm::two_pi<float>());
+        obj.transform.rotation.x = ::glm::mod(obj.transform.rotation.x + 0.0001f, ::glm::two_pi<float>());
         SimplePushConstantData push{};
         push.transform = obj.transform.mat4();
         push.color = obj.color;

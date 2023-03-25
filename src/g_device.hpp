@@ -33,7 +33,8 @@ namespace g{
         void createDevice();
         void queryQueueFamilyIndices();
         void getQueues();
-        Device(const ::vk::Instance& instance, ::vk::SurfaceKHR vkSurfaceKHR);
+        void createInstance(const std::vector<const char*>& instanceExtends);
+        Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static ::std::unique_ptr<Device> instance;
     public:
 
@@ -44,7 +45,7 @@ namespace g{
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
 
-        static void init(const ::vk::Instance& vkInstance, ::vk::SurfaceKHR vkSurfaceKHR);
+        static void init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static Device& getInstance(){return *instance;}
         static void quit();
         QueueFamilyIndices queueFamilyIndices;
