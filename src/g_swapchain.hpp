@@ -1,5 +1,8 @@
 #ifndef G_SWAPCHAIN_HPP
 #define G_SWAPCHAIN_HPP
+#include "g_command.hpp"
+#include "g_device.hpp"
+#include <stdint.h>
 #include<vulkan/vulkan.hpp>
 #include <memory>
 
@@ -22,19 +25,30 @@ public:
     ::vk::Framebuffer getFrameBuffer(int index){return frameBuffers[index];}
 
     int getImageCount(){return images.size();}
-    void frameBufferResize(int width, int height);
     ::vk::RenderPass getRenderPass(){return renderPass;};
+    ::vk::ResultValue<uint32_t> acquireNextImage();
+    ::vk::Result submitCommand(Command& command, uint32_t imageIndex);
+    void beginRenderPass(Command& command, uint32_t imageIndex);
+    float extentAspectRation()
+    {return static_cast<float>(swapchainInfo.extent2D.width)/ static_cast<float>(swapchainInfo.extent2D.width);}
+    bool compareFormats(const Swapchain& swapchain) const {
+        return depthFormat == swapchain.depthFormat &&
+        swapchainInfo.formatKHR.format == swapchain.swapchainInfo.formatKHR.format;
+    }
+    
     ~Swapchain();
+    Swapchain(int width, int height);
+    Swapchain(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain);
+    Swapchain(const Swapchain&) = delete;
+    Swapchain& operator=(const Swapchain&) = delete;
+    static constexpr int MAX_FRAME_IN_FLIGHT = 2;
 
-    static Swapchain& getInstance(){return *instance;}
-    static void init(int width, int height);
-    static void quit();
-    static void reset(int width, int height){quit(); init(width, height);};
 private:
-    static ::std::unique_ptr<Swapchain> instance;
-
+    uint32_t currentFrame = 0;
     void createDepthResources();
     SwapchainInfo swapchainInfo;
+    ::std::vector<::vk::Fence> inFlightFences;
+    ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
     ::std::vector<::vk::Image> images;
     ::std::vector<::vk::ImageView> imageViews;
     ::std::vector<::vk::Framebuffer> frameBuffers;
@@ -42,16 +56,19 @@ private:
     ::std::vector<VkDeviceMemory> depthImageMemorys;
     ::std::vector<VkImageView> depthImageViews;
     ::vk::RenderPass renderPass;
+    ::vk::Format depthFormat;
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
     ::vk::Format findDepthFormat();
+    ::std::shared_ptr<Swapchain> oldSwapchain;
+    void init(int width, int height);
     void getImages();
     void createImageViews();
     void createFrameBuffers();
     void createImageFrame();
     void initRenderPass();
-    void recreateSwapchain();
+    void createFances();
+    void createsemphores();
     void querySwapchainInfo(int width, int height);
-    Swapchain(int width, int height);
 };
 
 

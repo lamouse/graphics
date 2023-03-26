@@ -2,6 +2,8 @@
 #include "g_device.hpp"
 #include "g_context.hpp"
 #include "g_window.hpp"
+#include "g_command.hpp"
+#include "g_swapchain.hpp"
 #include <iostream>
 #include <vector>
 namespace g{
@@ -33,9 +35,8 @@ void Window::initWindow()
     }, width, height);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height){
-        Command::reset(2);
-        Swapchain::reset(width, height);
-        RenderProcess::reset(width, height);
+        Context::setExtent(width, height);
+        Context::setWindowRsize();
     });
 }
 

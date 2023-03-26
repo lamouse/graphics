@@ -1,12 +1,24 @@
 #include "g_swapchain.hpp"
 #include "g_device.hpp"
-#include "g_render.hpp"
+#include "g_pipeline.hpp"
 #include <iostream>
 namespace g
 {
-::std::unique_ptr<Swapchain> Swapchain::instance = nullptr;
 
 Swapchain::Swapchain( int width, int height)
+{
+    oldSwapchain = nullptr;
+    init(width, height);
+}
+
+Swapchain::Swapchain(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain)
+{
+    this->oldSwapchain = oldSwapchain;
+    init(width, height);
+    oldSwapchain = nullptr;
+}
+
+void Swapchain::init(int width, int height)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
@@ -30,10 +42,16 @@ Swapchain::Swapchain( int width, int height)
         createInfo.setQueueFamilyIndices(indices)
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
+    if(oldSwapchain != nullptr)
+    {
+        createInfo.setOldSwapchain(oldSwapchain->getSwapchain());
+    }
     swapchain = Device::getInstance().getVKDevice().createSwapchainKHR(createInfo);
 
     initRenderPass();
     createImageFrame();
+    createsemphores();
+    createFances();
 }
 
 void Swapchain::createImageFrame()
@@ -43,27 +61,6 @@ void Swapchain::createImageFrame()
     createFrameBuffers();
 }
 
-void Swapchain::frameBufferResize(int width, int height)
-{
-    swapchainInfo.extent2D.width = width;
-    swapchainInfo.extent2D.height = height;
-    recreateSwapchain();
-}
-
-void Swapchain::recreateSwapchain()
-{
-    Device::getInstance().getVKDevice().waitIdle();
-    instance = ::std::make_unique<Swapchain>(Swapchain(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height));
-}
-
-void Swapchain::init(int width, int height)
-{
-    instance.reset(new Swapchain(width, height));
-}
-void Swapchain::quit()
-{
-    instance.reset();
-}
 
 void Swapchain::querySwapchainInfo(int width, int height)
 {
@@ -92,6 +89,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
 
     swapchainInfo.presentMode = chooseSwapPresentMode(presents);
 }
+
 ::vk::PresentModeKHR Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
 {
 
@@ -119,6 +117,14 @@ void Swapchain::querySwapchainInfo(int width, int height)
 }
 Swapchain::~Swapchain()
 {
+
+    for(auto & fence : inFlightFences){
+        Device::getInstance().getVKDevice().destroyFence(fence);
+    }
+
+    for(auto & semaphore : imageAvailableSemaphores){
+        Device::getInstance().getVKDevice().destroySemaphore(semaphore);
+    }
 
     for(auto& frameBuffer : frameBuffers){
         Device::getInstance().getVKDevice().destroyFramebuffer(frameBuffer);
@@ -189,7 +195,7 @@ void Swapchain::createFrameBuffers()
 
 
 void Swapchain::createDepthResources() {
-  vk::Format depthFormat = findDepthFormat();
+  depthFormat = findDepthFormat();
 
   depthImages.resize(images.size());
   depthImageMemorys.resize(images.size());
@@ -209,7 +215,6 @@ void Swapchain::createDepthResources() {
              .setSamples(::vk::SampleCountFlagBits::e1)
              .setSharingMode(::vk::SharingMode::eExclusive);
 
-    
     depthImages[i] =  Device::getInstance().getVKDevice().createImage(imageInfo);
     ::vk::MemoryRequirements requirement = Device::getInstance().getVKDevice().getImageMemoryRequirements(depthImages[i]);
     ::vk::MemoryAllocateInfo allocInfo;
@@ -242,21 +247,27 @@ void Swapchain::initRenderPass()
     ::vk::RenderPassCreateInfo createInfo;
     ::vk::AttachmentDescription colorDesc;
     colorDesc.setFormat(swapchainInfo.formatKHR.format)
+                .setInitialLayout(::vk::ImageLayout::eUndefined)
                 .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
                 .setLoadOp(::vk::AttachmentLoadOp::eClear)
                 .setStoreOp(::vk::AttachmentStoreOp::eStore)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eClear);
+                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+                .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+                .setSamples(::vk::SampleCountFlagBits::e1);
     ::vk::AttachmentReference colorAttachmentReference;
     colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
                         .setAttachment(0);
     
     ::vk::AttachmentDescription depthAttachment;
     depthAttachment.setFormat(findDepthFormat())
+                .setInitialLayout(::vk::ImageLayout::eUndefined)
                 .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal)
                 .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
                 .setLoadOp(::vk::AttachmentLoadOp::eClear)
                 .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare);
+                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+                .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+                .setSamples(::vk::SampleCountFlagBits::e1);
     vk::AttachmentReference depthAttachmentRef{};
     depthAttachmentRef.setAttachment(1)
                     .setLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
@@ -266,17 +277,18 @@ void Swapchain::initRenderPass()
 
      ::vk::SubpassDescription subpass;
     subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
-            .setColorAttachments(colorAttachmentReference);
+            .setColorAttachments(colorAttachmentReference)
+            .setPDepthStencilAttachment(&depthAttachmentRef);
     createInfo.setSubpasses(subpass);
 
     ::vk::SubpassDependency subepassDependency;
     subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
                         .setDstSubpass(0)
                         .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite | ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+                        .setSrcAccessMask(::vk::AccessFlagBits::eNone)
                         .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
                         .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
-    createInfo.setDependencies(subepassDependency)
-                .setSubpassCount(1);
+    createInfo.setDependencies(subepassDependency);
     renderPass = Device::getInstance().getVKDevice().createRenderPass(createInfo);
 }
 
@@ -286,5 +298,55 @@ void Swapchain::initRenderPass()
             ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 
  }
+
+ void Swapchain::createFances()
+{
+    inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
+    for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
+    {
+        ::vk::FenceCreateInfo info;
+        info.setFlags(::vk::FenceCreateFlagBits::eSignaled);
+        inFlightFences[i] = Device::getInstance().getVKDevice().createFence(info);
+    }
+}
+
+void Swapchain::createsemphores()
+{
+    imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+    for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
+    {
+        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
+        imageAvailableSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
+
+    }
+
+}
+
+::vk::ResultValue<uint32_t> Swapchain::acquireNextImage()
+{
+    auto device = Device::getInstance().getVKDevice();
+
+    auto waitResult = device.waitForFences(inFlightFences[currentFrame], VK_TRUE, ::std::numeric_limits<uint64_t>::max());
+    if(waitResult != ::vk::Result::eSuccess)
+    {
+        throw ::std::runtime_error(" Swapchain::acquireNextImage wait fences");
+    }
+
+    auto result = device.acquireNextImageKHR(swapchain, ::std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame]);
+    
+    return result;
+}
+
+::vk::Result Swapchain::submitCommand(Command& command, uint32_t imageIndex)
+{
+   auto result =  command.end(imageIndex, swapchain, imageAvailableSemaphores[currentFrame], inFlightFences[currentFrame]);
+    currentFrame = (currentFrame + 1) % MAX_FRAME_IN_FLIGHT;
+    return result;
+}
+
+void Swapchain::beginRenderPass(Command& command, uint32_t imageIndex)
+{
+    command.beginRenderPass(imageIndex, renderPass, swapchainInfo.extent2D, frameBuffers[currentFrame]);
+}
 
 }

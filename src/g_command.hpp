@@ -12,27 +12,21 @@ class Command final
 private:
     ::vk::CommandPool cmdPool_;
     ::std::vector<::vk::CommandBuffer> commandBuffers_;
+    std::vector<::vk::Fence*> imagesInFlight;
+    ::std::vector<::vk::Semaphore> renderFinshSemaphores;
+
     void initCmdPool();
     void allcoCmdBuffer(int count);
-    static ::std::unique_ptr<Command> instance;
-    std::vector<::vk::Fence*> imagesInFlight;
     void recordCommandBuffer(){};
-    Command(int count);
-    void renderGameObjects(::std::vector<GameObject>& gameObjects, ::vk::CommandBuffer& commandBuffer, ::vk::PipelineLayout layout);
+    void createSemaphore(int count);
 public:
-
-    
+    Command(int count);
     ~Command();
     void begin(int index);
-    void beginRenderPass(int index, ::vk::Pipeline& pipeline, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer);
-    void run(int index, ::vk::Fence& fence, ::vk::PipelineLayout& layout, ::std::vector<GameObject>& gameObjects);
+    void beginRenderPass(int index, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer);
     void endRenderPass(int index);
-    void end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore, ::vk::Fence& fence);
-
-    static void init(int count);
-    static void quit();
-    static void reset(int count){quit(); init(count);};
-    static Command& getInstance(){return *instance;}
+    ::vk::Result end(uint32_t index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Fence& fence);
+    ::vk::CommandBuffer getCommandBuffer(int index){return commandBuffers_[index];}
 };
 
 }

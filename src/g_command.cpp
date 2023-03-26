@@ -6,32 +6,6 @@
 namespace g
 {
 
-::std::unique_ptr<Command> Command::instance = nullptr;
-
-void Command::init(int count)
-{
-    instance.reset(new Command(count));
-}
-void Command::quit()
-{
-    Device::getInstance().getVKDevice().waitIdle();
-    instance.reset();
-}
-
-void Command::run(int index, ::vk::Fence& fence, ::vk::PipelineLayout& layout, ::std::vector<GameObject>& gameObjects)
-{
-    if (imagesInFlight[index] != nullptr) {
-        auto result = Device::getInstance().getVKDevice().waitForFences(*imagesInFlight[index], true, ::std::numeric_limits<uint16_t>::max());
-        if(result != ::vk::Result::eSuccess)
-        {
-            throw ::std::runtime_error("RenderProcess::render waitForFences error");
-        }
-    }
-    imagesInFlight[index] = &fence;
-        //Shader::getInstance().getModel().bind(commandBuffers_[index]);
-     renderGameObjects(gameObjects, commandBuffers_[index], layout);
-}
-
 void Command::begin(int index)
 {
     commandBuffers_[index].reset();
@@ -42,24 +16,22 @@ void Command::begin(int index)
     commandBuffers_[index].begin(begin);
 }
 
-void Command::beginRenderPass(int index, ::vk::Pipeline& pipeline, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer)
-{
-    commandBuffers_[index].bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
-    ::vk::RenderPassBeginInfo renderPassBeginInfo;
+void Command::beginRenderPass(int index, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer)
+{    ::vk::RenderPassBeginInfo renderPassBeginInfo;
     ::vk::Rect2D area;
     area.setOffset({0, 0})
         .setExtent(extent);
     
     //下标0 颜色附件，下标1深度附件
     ::std::array<::vk::ClearValue, 2> clearValues;
-    clearValues[0].setColor(::vk::ClearColorValue(::std::array<float, 4>{0.01f, 0.01f, 0.01f, 0.1f}));
+    clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.01f, 0.01f, 0.01f, 1.0f})));
     clearValues[1].setDepthStencil({1.0f, 0});
 
     renderPassBeginInfo.setRenderPass(renderPass)
                         .setRenderArea(area)
                         .setFramebuffer(frameBuffer)
                         .setClearValues(clearValues);
-    commandBuffers_[index].beginRenderPass(renderPassBeginInfo, {});
+    commandBuffers_[index].beginRenderPass(renderPassBeginInfo, ::vk::SubpassContents::eInline);
 
     ::vk::Viewport viewPort;
     viewPort.setX(0.0f)
@@ -68,8 +40,9 @@ void Command::beginRenderPass(int index, ::vk::Pipeline& pipeline, ::vk::RenderP
             .setHeight(static_cast<float>(extent.height))
             .setMinDepth(.0f)
             .setMaxDepth(1.f);
-        
-        //commandBuffers_[index].setViewport(1, viewPort);
+    ::vk::Rect2D scissor{{0, 0}, extent};    
+    commandBuffers_[index].setViewport(0, viewPort);
+    commandBuffers_[index].setScissor(0, scissor);
 }
 
 void Command::endRenderPass(int index)
@@ -77,13 +50,13 @@ void Command::endRenderPass(int index)
     commandBuffers_[index].endRenderPass();
 }
 
-void Command::end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Semaphore& signalSemaphore, ::vk::Fence& fence){
+::vk::Result Command::end(uint32_t index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Fence& fence){
     commandBuffers_[index].end();
     ::vk::SubmitInfo submitInfo;
     ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
     submitInfo.setCommandBuffers(commandBuffers_[index])
                 .setWaitSemaphores(waitSemaphore)
-                .setSignalSemaphores(signalSemaphore)
+                .setSignalSemaphores(renderFinshSemaphores[index])
                 .setWaitDstStageMask(stage);
     Device::getInstance().getVKDevice().resetFences(fence);
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
@@ -91,28 +64,9 @@ void Command::end(int index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& wai
     uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)
                 .setSwapchains(swapchain)
-                .setWaitSemaphores(signalSemaphore);;
+                .setWaitSemaphores(renderFinshSemaphores[index]);
 
-    auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
-    if (result != ::vk::Result::eSuccess && result != ::vk::Result::eSuboptimalKHR)
-    {
-        throw ::std::runtime_error("presentKHR error");
-    }
-}
-
-void Command::renderGameObjects(::std::vector<GameObject>& gameObjects, ::vk::CommandBuffer& commandBuffer, ::vk::PipelineLayout layout)
-{
-    for(auto& obj : gameObjects){
-        obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.0001f, ::glm::two_pi<float>());
-        obj.transform.rotation.x = ::glm::mod(obj.transform.rotation.x + 0.0001f, ::glm::two_pi<float>());
-        SimplePushConstantData push{};
-        push.transform = obj.transform.mat4();
-        push.color = obj.color;
-        commandBuffer.pushConstants(layout, ::vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 
-        0, sizeof(SimplePushConstantData), &push);
-        obj.model->bind(commandBuffer);
-        obj.model->draw(commandBuffer);
-    }
+    return Device::getInstance().getPresentQueue().presentKHR(presentInfo);
 }
 
 void Command::initCmdPool()
@@ -139,12 +93,16 @@ Command::Command(int count)
     initCmdPool();
     allcoCmdBuffer(count);
     imagesInFlight.resize(count, nullptr);
+    createSemaphore(count);
 }
 
 Command::~Command()
 {
     auto& device = Device::getInstance().getVKDevice();
     
+    for(auto & semaphore : renderFinshSemaphores){
+        device.destroySemaphore(semaphore);
+    }
     for(auto& commandBuffer : commandBuffers_){
         device.freeCommandBuffers(cmdPool_, commandBuffer);
     }
@@ -152,5 +110,14 @@ Command::~Command()
     device.destroyCommandPool(cmdPool_);
 }
 
+void Command::createSemaphore(int count)
+{
+    renderFinshSemaphores.resize(count);
+    for(int i = 0; i < count; i++)
+    {
+        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
+        renderFinshSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
+    }
+}
 
 }
