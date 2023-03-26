@@ -50,7 +50,8 @@ namespace g{
         static void quit();
         QueueFamilyIndices queueFamilyIndices;
         uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
-        
+        void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
+            ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
         ::vk::Instance& getVKInstance();
         ::vk::SurfaceKHR& getSurface();
         ::vk::PhysicalDevice& getPhysicalDevice();

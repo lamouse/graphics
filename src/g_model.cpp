@@ -21,19 +21,8 @@ void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
     assert(vertexCount >= 3 && "Verex count must be at least 3");
     auto & device = Device::getInstance();
     ::vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
-
-    ::vk::BufferCreateInfo bufferCreateInfo;
-    bufferCreateInfo.setSize(bufferSize)
-                    .setUsage(::vk::BufferUsageFlagBits::eVertexBuffer);
-    vertexBuffer = device.getVKDevice().createBuffer(bufferCreateInfo);
-
-    ::vk::MemoryRequirements memoryRequirements = device.getVKDevice().getBufferMemoryRequirements(vertexBuffer);
-    ::vk::MemoryAllocateInfo allocateInfo;
-    allocateInfo.setAllocationSize(memoryRequirements.size)
-                .setMemoryTypeIndex(device.findMemoryType(memoryRequirements.memoryTypeBits, ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent));
-    
-    vertexBufferMemory = Device::getInstance().getVKDevice().allocateMemory(allocateInfo);
-    Device::getInstance().getVKDevice().bindBufferMemory(vertexBuffer, vertexBufferMemory, 0);
+    Device::getInstance().createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eVertexBuffer, 
+                ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer,vertexBufferMemory);
     void* data = Device::getInstance().getVKDevice().mapMemory(vertexBufferMemory, 0, bufferSize);
     ::memcpy(data, vertices.data(), bufferSize);
     Device::getInstance().getVKDevice().unmapMemory(vertexBufferMemory);

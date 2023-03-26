@@ -96,6 +96,24 @@ void Device::queryQueueFamilyIndices()
 
 }
 
+
+void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
+                                                    ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory)
+{
+    ::vk::BufferCreateInfo bufferInfo;
+    bufferInfo.setSize(size)
+            .setUsage(usgae)
+            .setSharingMode(::vk::SharingMode::eExclusive);
+    buffer = device.createBuffer(bufferInfo);
+    ::vk::MemoryRequirements memoryRequirements = device.getBufferMemoryRequirements(buffer);
+    ::vk::MemoryAllocateInfo allcoInfo;
+    allcoInfo.setAllocationSize(memoryRequirements.size)
+            .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
+    bufferMemory = device.allocateMemory(allcoInfo);
+    device.bindBufferMemory(buffer, bufferMemory, 0);
+}
+
+
 void Device::getQueues()
 {
     graphicsQueue = device.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
