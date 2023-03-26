@@ -3,6 +3,7 @@
 #include "g_shader.hpp"
 #include <exception>
 
+
 namespace g
 {
 
@@ -50,21 +51,20 @@ void Command::endRenderPass(int index)
     commandBuffers_[index].endRenderPass();
 }
 
-::vk::Result Command::end(uint32_t index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Fence& fence){
-    commandBuffers_[index].end();
+::vk::Result Command::end(int bufferIndex, uint32_t imageIndex, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Fence& fence){
+    commandBuffers_[bufferIndex].end();
     ::vk::SubmitInfo submitInfo;
     ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    submitInfo.setCommandBuffers(commandBuffers_[index])
+    submitInfo.setCommandBuffers(commandBuffers_[bufferIndex])
                 .setWaitSemaphores(waitSemaphore)
-                .setSignalSemaphores(renderFinshSemaphores[index])
+                .setSignalSemaphores(renderFinshSemaphores[bufferIndex])
                 .setWaitDstStageMask(stage);
     Device::getInstance().getVKDevice().resetFences(fence);
     Device::getInstance().getGraphicsQueue().submit(submitInfo, fence);
     ::vk::PresentInfoKHR presentInfo;
-    uint32_t imageIndex = (uint32_t)index;
     presentInfo.setImageIndices(imageIndex)
                 .setSwapchains(swapchain)
-                .setWaitSemaphores(renderFinshSemaphores[index]);
+                .setWaitSemaphores(renderFinshSemaphores[bufferIndex]);
 
     return Device::getInstance().getPresentQueue().presentKHR(presentInfo);
 }
@@ -102,11 +102,7 @@ Command::~Command()
     
     for(auto & semaphore : renderFinshSemaphores){
         device.destroySemaphore(semaphore);
-    }
-    for(auto& commandBuffer : commandBuffers_){
-        device.freeCommandBuffers(cmdPool_, commandBuffer);
-    }
-    
+    }    
     device.destroyCommandPool(cmdPool_);
 }
 

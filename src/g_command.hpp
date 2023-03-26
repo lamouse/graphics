@@ -25,7 +25,7 @@ public:
     void begin(int index);
     void beginRenderPass(int index, ::vk::RenderPass& renderPass, ::vk::Extent2D& extent, vk::Framebuffer& frameBuffer);
     void endRenderPass(int index);
-    ::vk::Result end(uint32_t index, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Fence& fence);
+    ::vk::Result end(int bufferIndex, uint32_t imageIndex, ::vk::SwapchainKHR& swapchain, ::vk::Semaphore& waitSemaphore, ::vk::Fence& fence);
     ::vk::CommandBuffer getCommandBuffer(int index){return commandBuffers_[index];}
 };
 

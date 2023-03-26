@@ -27,7 +27,7 @@ public:
     int getImageCount(){return images.size();}
     ::vk::RenderPass getRenderPass(){return renderPass;};
     ::vk::ResultValue<uint32_t> acquireNextImage();
-    ::vk::Result submitCommand(Command& command, uint32_t imageIndex);
+    ::vk::Result submitCommand(Command& command, uint32_t imageIndex, int bufferIndex);
     void beginRenderPass(Command& command, uint32_t imageIndex);
     float extentAspectRation()
     {return static_cast<float>(swapchainInfo.extent2D.width)/ static_cast<float>(swapchainInfo.extent2D.width);}

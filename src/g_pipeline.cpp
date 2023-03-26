@@ -46,7 +46,8 @@ void PipeLine::initPipeline(::vk::RenderPass& renderPass, ::vk::PipelineLayout l
                 .setLayout(layout)
                 .setBasePipelineHandle(VK_NULL_HANDLE)
                 .setBasePipelineIndex(-1)
-                .setRenderPass(renderPass);
+                .setRenderPass(renderPass)
+                .setSubpass(0);
     auto result = Device::getInstance().getVKDevice().createGraphicsPipeline(nullptr, createInfo);
     if(result.result != vk::Result::eSuccess)
     {
@@ -86,6 +87,7 @@ void PipeLine::setDepthStencilStateConfig()
 void PipeLine::setRasterizationStateInfo()
 {
     configInfo.rasterizationStateInfo.setRasterizerDiscardEnable(false)
+                                    .setDepthClampEnable(VK_FALSE)
                                     .setCullMode(::vk::CullModeFlagBits::eBack)
                                     .setFrontFace(::vk::FrontFace::eClockwise)
                                     .setPolygonMode(::vk::PolygonMode::eFill)

@@ -21,7 +21,6 @@ void RenderProcesser::createSwapchain()
         extent = Context::getExtent();  
         Context::waitWindowEvents();
     }
-    
     Device::getInstance().getVKDevice().waitIdle();
     if(swapchain == nullptr)
     {
@@ -64,7 +63,7 @@ void RenderProcesser::endFrame()
     assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
     try
     {
-        auto result = swapchain->submitCommand(*command, currentImageIndex);
+        auto result = swapchain->submitCommand(*command, currentImageIndex, currentFrameIndex);
 
         if(result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR || Context::isWindowRsize())
         {
@@ -80,9 +79,6 @@ void RenderProcesser::endFrame()
         createSwapchain();
         Context::rsetWindowRsize();
     }
-    
- 
-    
 
     isFrameStart = false;
     currentFrameIndex = (currentFrameIndex + 1) % swapchain->MAX_FRAME_IN_FLIGHT;

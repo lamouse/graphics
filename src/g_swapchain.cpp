@@ -337,9 +337,9 @@ void Swapchain::createsemphores()
     return result;
 }
 
-::vk::Result Swapchain::submitCommand(Command& command, uint32_t imageIndex)
+::vk::Result Swapchain::submitCommand(Command& command, uint32_t imageIndex, int bufferIndex)
 {
-   auto result =  command.end(imageIndex, swapchain, imageAvailableSemaphores[currentFrame], inFlightFences[currentFrame]);
+   auto result =  command.end(bufferIndex, imageIndex, swapchain, imageAvailableSemaphores[currentFrame], inFlightFences[currentFrame]);
     currentFrame = (currentFrame + 1) % MAX_FRAME_IN_FLIGHT;
     return result;
 }
