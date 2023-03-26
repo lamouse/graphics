@@ -17,7 +17,7 @@ namespace g{
         static int height;
         static bool windowIsRsize;
     public:
-        static void setExtent(int width, int height){width = width; height = height;}
+        static void setExtent(int w, int h){width = w; height = h;}
         static void setWindowRsize(){windowIsRsize = true;}
         static void rsetWindowRsize(){windowIsRsize = false;}
         static bool isWindowRsize(){ return windowIsRsize;}
