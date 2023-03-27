@@ -1,6 +1,5 @@
 #ifndef G_SWAPCHAIN_HPP
 #define G_SWAPCHAIN_HPP
-#include "g_command.hpp"
 #include "g_device.hpp"
 #include <stdint.h>
 #include<vulkan/vulkan.hpp>
@@ -27,8 +26,8 @@ public:
     int getImageCount(){return images.size();}
     ::vk::RenderPass getRenderPass(){return renderPass;};
     ::vk::ResultValue<uint32_t> acquireNextImage();
-    ::vk::Result submitCommand(Command& command, uint32_t imageIndex, int bufferIndex);
-    void beginRenderPass(Command& command, uint32_t imageIndex);
+    ::vk::Result submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
+    void beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
     float extentAspectRation()
     {return static_cast<float>(swapchainInfo.extent2D.width)/ static_cast<float>(swapchainInfo.extent2D.width);}
     bool compareFormats(const Swapchain& swapchain) const {
@@ -44,11 +43,12 @@ public:
     static constexpr int MAX_FRAME_IN_FLIGHT = 2;
 
 private:
+
     uint32_t currentFrame = 0;
-    void createDepthResources();
     SwapchainInfo swapchainInfo;
     ::std::vector<::vk::Fence> inFlightFences;
     ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
+    ::std::vector<::vk::Semaphore> renderFinshSemaphores;
     ::std::vector<::vk::Image> images;
     ::std::vector<::vk::ImageView> imageViews;
     ::std::vector<::vk::Framebuffer> frameBuffers;
@@ -68,6 +68,7 @@ private:
     void initRenderPass();
     void createFances();
     void createsemphores();
+    void createDepthResources();
     void querySwapchainInfo(int width, int height);
 };
 

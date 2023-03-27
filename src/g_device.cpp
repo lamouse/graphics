@@ -12,6 +12,7 @@ Device::Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFun
     queryQueueFamilyIndices();
     createDevice();
     getQueues();
+    initCmdPool();
 }
 
 void Device::init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
@@ -24,6 +25,7 @@ void Device::quit()
 }
 Device::~Device()
 {
+    device.destroyCommandPool(cmdPool_);
     device.destroy();
     ::vkDestroySurfaceKHR(vkInstance, vkSurfaceKHR, nullptr);
     vkInstance.destroy();
@@ -118,6 +120,16 @@ void Device::getQueues()
 {
     graphicsQueue = device.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
     presentQueue = device.getQueue(queueFamilyIndices.presentQueue.value(), 0);
+}
+
+void Device::initCmdPool()
+{
+    ::vk::CommandPoolCreateInfo createInfo;
+    uint32_t queueFamilyIndex = queueFamilyIndices.presentQueue.value();
+    createInfo.setQueueFamilyIndex(queueFamilyIndex)
+                .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
+                        ::vk::CommandPoolCreateFlagBits::eTransient);
+    cmdPool_ =  device.createCommandPool(createInfo);
 }
 
 ::vk::Instance& Device::getVKInstance()

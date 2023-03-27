@@ -29,10 +29,12 @@ namespace g{
         ::vk::Queue presentQueue;
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
+        ::vk::CommandPool cmdPool_;
         void pickupPhyiscalDevice();
         void createDevice();
         void queryQueueFamilyIndices();
         void getQueues();
+        void initCmdPool();
         void createInstance(const std::vector<const char*>& instanceExtends);
         Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static ::std::unique_ptr<Device> instance;
@@ -59,6 +61,7 @@ namespace g{
         ::vk::Queue& getPresentQueue();
         ::vk::Device& getVKDevice();
         ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
+        ::vk::CommandPool getCommandPool(){return cmdPool_;}
         ~Device();
 
         

@@ -2,7 +2,6 @@
 #include "g_shader.hpp"
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
-#include "g_command.hpp"
 #include "g_model.hpp"
 #include <iostream>
 

@@ -6,7 +6,7 @@ namespace g{
 RenderProcesser::RenderProcesser()
 {
     createSwapchain();
-    command = ::std::make_unique<Command>(2);
+    allcoCmdBuffer();
 }
 
 RenderProcesser::~RenderProcesser()
@@ -50,7 +50,12 @@ bool RenderProcesser::beginFrame()
 
     isFrameStart = true;
     currentImageIndex = result.value;
-    command->begin(currentFrameIndex);
+    getCurrentCommadBuffer().reset();
+    ::vk::CommandBufferBeginInfo begin;
+    ::vk::CommandBufferInheritanceInfo inherritanceInfo;
+    begin.setFlags(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+        .setPInheritanceInfo(&inherritanceInfo);
+    getCurrentCommadBuffer().begin(begin);
     return isFrameStart;
 }
 
@@ -63,7 +68,7 @@ void RenderProcesser::endFrame()
     assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
     try
     {
-        auto result = swapchain->submitCommand(*command, currentImageIndex, currentFrameIndex);
+        auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
 
         if(result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR || Context::isWindowRsize())
         {
@@ -87,11 +92,23 @@ void RenderProcesser::endFrame()
 void RenderProcesser::beginSwapchainRenderPass()
 {
     assert(isFrameStart && "cat't call beginSwapchainRenderPass  is frame not in progress");
-    swapchain->beginRenderPass(*command, currentFrameIndex);
+    swapchain->beginRenderPass(getCurrentCommadBuffer(), currentImageIndex);
 }
 
 void RenderProcesser::endSwapchainRenderPass()
 {
-    command->endRenderPass(currentFrameIndex);
+    getCurrentCommadBuffer().endRenderPass();
 }
+
+void RenderProcesser::allcoCmdBuffer()
+{
+    ::vk::CommandBufferAllocateInfo allocInfo;
+    allocInfo.setCommandPool(Device::getInstance().getCommandPool())
+        .setCommandBufferCount(swapchain->MAX_FRAME_IN_FLIGHT)
+        .setLevel(::vk::CommandBufferLevel::ePrimary);
+    
+    commandBuffers_ = Device::getInstance().getVKDevice().allocateCommandBuffers(allocInfo);
+}
+
+
 }

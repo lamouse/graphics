@@ -118,12 +118,12 @@ void Swapchain::querySwapchainInfo(int width, int height)
 Swapchain::~Swapchain()
 {
 
-    for(auto & fence : inFlightFences){
-        Device::getInstance().getVKDevice().destroyFence(fence);
-    }
+    auto& device = Device::getInstance().getVKDevice();
 
-    for(auto & semaphore : imageAvailableSemaphores){
-        Device::getInstance().getVKDevice().destroySemaphore(semaphore);
+    for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++){
+        device.destroyFence(inFlightFences[i]);
+        device.destroySemaphore(imageAvailableSemaphores[i]);
+        device.destroySemaphore(renderFinshSemaphores[i]);
     }
 
     for(auto& frameBuffer : frameBuffers){
@@ -313,11 +313,14 @@ void Swapchain::initRenderPass()
 void Swapchain::createsemphores()
 {
     imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+    renderFinshSemaphores.resize(MAX_FRAME_IN_FLIGHT);
     for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
     {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
         imageAvailableSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
 
+        ::vk::SemaphoreCreateInfo renderSemaphoreCreateInfo;
+        renderFinshSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(renderSemaphoreCreateInfo);
     }
 
 }
@@ -337,16 +340,57 @@ void Swapchain::createsemphores()
     return result;
 }
 
-::vk::Result Swapchain::submitCommand(Command& command, uint32_t imageIndex, int bufferIndex)
+::vk::Result Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 {
-   auto result =  command.end(bufferIndex, imageIndex, swapchain, imageAvailableSemaphores[currentFrame], inFlightFences[currentFrame]);
+    commandBuffer.end();
+    ::vk::SubmitInfo submitInfo;
+    ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    submitInfo.setCommandBuffers(commandBuffer)
+                .setWaitSemaphores(imageAvailableSemaphores[currentFrame])
+                .setSignalSemaphores(renderFinshSemaphores[currentFrame])
+                .setWaitDstStageMask(stage);
+    Device::getInstance().getVKDevice().resetFences(inFlightFences[currentFrame]);
+    Device::getInstance().getGraphicsQueue().submit(submitInfo, inFlightFences[currentFrame]);
+    ::vk::PresentInfoKHR presentInfo;
+    presentInfo.setImageIndices(imageIndex)
+                .setSwapchains(swapchain)
+                .setWaitSemaphores(renderFinshSemaphores[currentFrame]);
+
+    auto result = Device::getInstance().getPresentQueue().presentKHR(presentInfo);
+
     currentFrame = (currentFrame + 1) % MAX_FRAME_IN_FLIGHT;
     return result;
 }
 
-void Swapchain::beginRenderPass(Command& command, uint32_t imageIndex)
+void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 {
-    command.beginRenderPass(imageIndex, renderPass, swapchainInfo.extent2D, frameBuffers[currentFrame]);
+    auto extent = swapchainInfo.extent2D;
+    ::vk::RenderPassBeginInfo renderPassBeginInfo;
+    ::vk::Rect2D area;
+    area.setOffset({0, 0})
+        .setExtent(extent);
+    
+    //下标0 颜色附件，下标1深度附件
+    ::std::array<::vk::ClearValue, 2> clearValues;
+    clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.01f, 0.01f, 0.01f, 1.0f})));
+    clearValues[1].setDepthStencil({1.0f, 0});
+
+    renderPassBeginInfo.setRenderPass(renderPass)
+                        .setRenderArea(area)
+                        .setFramebuffer(frameBuffers[currentFrame])
+                        .setClearValues(clearValues);
+    commandBuffer.beginRenderPass(renderPassBeginInfo, ::vk::SubpassContents::eInline);
+
+    ::vk::Viewport viewPort;
+    viewPort.setX(0.0f)
+            .setY(0.0f)
+            .setWidth(static_cast<float>(extent.width))
+            .setHeight(static_cast<float>(extent.height))
+            .setMinDepth(.0f)
+            .setMaxDepth(1.f);
+    ::vk::Rect2D scissor{{0, 0}, extent};    
+    commandBuffer.setViewport(0, viewPort);
+    commandBuffer.setScissor(0, scissor);
 }
 
 }

@@ -1,7 +1,6 @@
 #ifndef G_RENDER_HPP
 #define G_RENDER_HPP
 
-#include "g_command.hpp"
 #include "g_shader.hpp"
 #include <vulkan/vulkan.hpp>
 #include <memory>
