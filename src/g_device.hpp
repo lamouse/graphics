@@ -38,15 +38,15 @@ namespace g{
         void createInstance(const std::vector<const char*>& instanceExtends);
         Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static ::std::unique_ptr<Device> instance;
+        
     public:
-
         struct QueueFamilyIndices final{
             ::std::optional<uint32_t> graphicsQueue;
             ::std::optional<uint32_t> queueCount;
             ::std::optional<uint32_t> presentQueue;
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
-
+        using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         static void init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static Device& getInstance(){return *instance;}
         static void quit();
@@ -62,6 +62,8 @@ namespace g{
         ::vk::Device& getVKDevice();
         ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
         ::vk::CommandPool getCommandPool(){return cmdPool_;}
+        void excuteCmd(RecordCmdFunc func);
+
         ~Device();
 
         

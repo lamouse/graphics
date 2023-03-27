@@ -132,6 +132,22 @@ void Device::initCmdPool()
     cmdPool_ =  device.createCommandPool(createInfo);
 }
 
+void Device::excuteCmd(RecordCmdFunc func)
+{
+    ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
+    auto commanBuffer = device.allocateCommandBuffers(allocInfo)[0];
+    ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    commanBuffer.begin(beginInfo);
+        if (func) func(commanBuffer);
+    commanBuffer.end();
+    vk::SubmitInfo submitInfo;
+    submitInfo.setCommandBuffers(commanBuffer);
+    graphicsQueue.submit(submitInfo);
+    graphicsQueue.waitIdle();
+    device.waitIdle();
+    device.freeCommandBuffers(cmdPool_, commanBuffer);
+}
+
 ::vk::Instance& Device::getVKInstance()
 {
     return vkInstance;

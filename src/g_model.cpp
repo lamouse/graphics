@@ -21,11 +21,21 @@ void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
     assert(vertexCount >= 3 && "Verex count must be at least 3");
     auto & device = Device::getInstance();
     ::vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
-    Device::getInstance().createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eVertexBuffer, 
-                ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer,vertexBufferMemory);
-    void* data = Device::getInstance().getVKDevice().mapMemory(vertexBufferMemory, 0, bufferSize);
+
+    ::vk::Buffer stagingBuffer;
+    ::vk::DeviceMemory stagingBufferMemory;
+    Device::getInstance().createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eTransferSrc, 
+                ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+    void* data = Device::getInstance().getVKDevice().mapMemory(stagingBufferMemory, 0, bufferSize);
     ::memcpy(data, vertices.data(), bufferSize);
-    Device::getInstance().getVKDevice().unmapMemory(vertexBufferMemory);
+    Device::getInstance().getVKDevice().unmapMemory(stagingBufferMemory);
+
+    Device::getInstance().createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eVertexBuffer | ::vk::BufferUsageFlagBits::eTransferDst, 
+                ::vk::MemoryPropertyFlagBits::eDeviceLocal|::vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer,vertexBufferMemory);
+    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+    Device::getInstance().getVKDevice().destroyBuffer(stagingBuffer);
+    Device::getInstance().getVKDevice().freeMemory(stagingBufferMemory);
 }
 
 Model::Model(const ::std::vector<Vertex> &vertices)
@@ -59,6 +69,17 @@ Model::~Model()
     attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
     attributeDescriptions[1].setOffset(offsetof(Vertex, color));
     return attributeDescriptions;
+}
+
+
+void Model::copyBuffer(::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size)
+{
+    Device::getInstance().excuteCmd([&](auto& cmdBuf){
+        ::vk::BufferCopy copyRegion{};
+        copyRegion.size = size;
+        cmdBuf.copyBuffer(srcBuffer, dstBuffer, copyRegion);
+    });
+
 }
 
 }

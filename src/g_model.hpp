@@ -30,6 +30,7 @@ private:
     ::vk::DeviceMemory vertexBufferMemory;
     uint32_t vertexCount;
     void createVertexBuffers(const ::std::vector<Vertex> &vertices);
+    void copyBuffer(::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size);
 };
     
 } 
