@@ -84,16 +84,22 @@ Model::~Model()
 }
 ::std::vector<::vk::VertexInputAttributeDescription> Model::Vertex::getAtrributeDescription()
 {
-    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(2);
+    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
     attributeDescriptions[0].setBinding(0);
     attributeDescriptions[0].setLocation(0);
-    attributeDescriptions[0].setFormat(::vk::Format::eR32G32Sfloat);
+    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
     attributeDescriptions[0].setOffset(offsetof(Vertex, position));
 
     attributeDescriptions[1].setBinding(0);
     attributeDescriptions[1].setLocation(1);
     attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
     attributeDescriptions[1].setOffset(offsetof(Vertex, color));
+
+    attributeDescriptions[2].setBinding(0);
+    attributeDescriptions[2].setLocation(2);
+    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
     return attributeDescriptions;
 }
 

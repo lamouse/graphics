@@ -54,6 +54,8 @@ namespace g{
         uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
             ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
+        void createImage(uint32_t width, uint32_t height, ::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
+                                    ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
         ::vk::Instance& getVKInstance();
         ::vk::SurfaceKHR& getSurface();
         ::vk::PhysicalDevice& getPhysicalDevice();
@@ -63,7 +65,8 @@ namespace g{
         ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
         ::vk::CommandPool getCommandPool(){return cmdPool_;}
         void excuteCmd(RecordCmdFunc func);
-
+        ::vk::ImageView createImageView(::vk::Image image, ::vk::Format format);
+        float getMaxAnisotropy();
         ~Device();
 
         

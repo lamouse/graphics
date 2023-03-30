@@ -67,9 +67,11 @@ void Device::createDevice()
         queueInfos.push_back(::std::move(queueInfo));
     }
 
-
+    ::vk::PhysicalDeviceFeatures deviceFeatures;
+    deviceFeatures.samplerAnisotropy = VK_TRUE;
     createInfo.setQueueCreateInfos(queueInfos)
-                .setPEnabledExtensionNames(extends);
+                .setPEnabledExtensionNames(extends)
+                .setPEnabledFeatures(&deviceFeatures);
 
     device = phyDevice.createDevice(createInfo);
 }
@@ -228,6 +230,53 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends)
 #endif
                 .setPEnabledExtensionNames(externs);
     vkInstance = ::vk::createInstance(createInfo);
+}
+
+void Device::createImage(uint32_t width, uint32_t height, ::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
+                                    ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory)
+{
+    ::vk::ImageCreateInfo imageInfo;
+    imageInfo.setImageType(::vk::ImageType::e2D)
+            .setExtent(::vk::Extent3D{{width, height}, 1})
+            .setMipLevels(1)
+            .setArrayLayers(1)
+            .setTiling(tiling)
+            .setFormat(format)
+            .setInitialLayout(::vk::ImageLayout::eUndefined)
+            .setUsage(usage)
+            .setSharingMode(::vk::SharingMode::eExclusive)
+            .setSamples(::vk::SampleCountFlagBits::e1);
+    
+   image = device.createImage(imageInfo);
+    ::vk::MemoryRequirements memRequirements = device.getImageMemoryRequirements(image);
+    ::vk::MemoryAllocateInfo allocInfo;
+    allocInfo.setAllocationSize(memRequirements.size)
+                .setMemoryTypeIndex(findMemoryType(memRequirements.memoryTypeBits, properties));
+    imageMemory = device.allocateMemory(allocInfo);
+    device.bindImageMemory(image, imageMemory, 0);
+}
+
+::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format)
+{
+    ::vk::ImageViewCreateInfo viewInfo{};
+    ::vk::ImageSubresourceRange imageSubresource;
+    imageSubresource.setAspectMask(::vk::ImageAspectFlagBits::eColor)
+                    .setBaseMipLevel(0)
+                    .setLevelCount(1)
+                    .setLayerCount(1)
+                    .setBaseArrayLayer(0);
+    viewInfo.setImage(image)
+            .setViewType(::vk::ImageViewType::e2D)
+            .setFormat(format)
+            .setSubresourceRange(imageSubresource);
+
+    return device.createImageView(viewInfo);
+}
+
+float Device::getMaxAnisotropy()
+{
+    ::vk::PhysicalDeviceProperties properties = phyDevice.getProperties();
+    return properties.limits.maxSamplerAnisotropy;
 }
 
 }

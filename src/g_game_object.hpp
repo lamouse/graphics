@@ -1,7 +1,6 @@
 #pragma once
 #include "g_model.hpp"
 #include<memory>
-
 #include<glm/gtc/matrix_transform.hpp>
 
 namespace g
@@ -31,19 +30,28 @@ class GameObject
 private:
     id_t id;
 
+    ::vk::Image textureImage;
+    ::vk::DeviceMemory textureImageMemory;
+
     GameObject(id_t id):id(id){}
+    void createTextureImageView();
 public:
     static GameObject createGameObject(){
         static id_t currentId = 0;
         return GameObject(currentId++);
     }
-    id_t getId(){return id;}
+    ::vk::Sampler textureSampler;
+    ::vk::ImageView textureImageView;
 
+    bool imageLoaded = false;
+    id_t getId(){return id;}
+    void transitionImageLayout(::vk::Image image, ::vk::Format format, ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout);
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&&) = default;
     GameObject operator=(const GameObject&) = delete;
     GameObject& operator=(GameObject&&) = default;
-
+    void loadImage();
+    void createTextureSampler();
     ::std::shared_ptr<Model> model{};
     ::glm::vec3 color{};
     TransformCompoent transform;

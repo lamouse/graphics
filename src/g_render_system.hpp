@@ -27,7 +27,7 @@ namespace g
         void createPipelineLayout();
         void createPipeline(::vk::RenderPass renderPass);
         void createDescriptorPool(uint32_t count);
-        void createDescriptorSets(uint32_t count);
+        void createDescriptorSets(uint32_t count, ::vk::ImageView imageView, ::vk::Sampler sampler);
     public:
         RenderSystem(::vk::RenderPass renderPass);
         void updateUniformBuffer(uint32_t currentImage, float extentAspectRation);

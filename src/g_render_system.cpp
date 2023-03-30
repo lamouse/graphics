@@ -1,5 +1,6 @@
 #include "g_render_system.hpp"
 #include "g_device.hpp"
+#include "g_defines.hpp"
 #include <memory>
 #include <chrono>
 namespace g
@@ -7,10 +8,21 @@ namespace g
 
 void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation)
 {
+    if(gameObjects.empty())
+    {
+        return;
+    }
+    static bool c = false;
+    if(!c){
+        gameObjects[0].loadImage();
+        createDescriptorSets(2, gameObjects[0].textureImageView, gameObjects[0].textureSampler);
+        c = true;
+    }
     pipeline->bind(commandBuffer);
     updateUniformBuffer(currentFrame, extentAspectRation);
     for(auto& obj : gameObjects)
     {
+        
         SimplePushConstantData push;
         push.color = obj.color;
         //obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.0003f, ::glm::two_pi<float>());
@@ -40,20 +52,23 @@ void RenderSystem::createUniformBuffers(uint32_t count)
     }
 
     createDescriptorPool(count);
-    createDescriptorSets(count);
 }
 
 void RenderSystem::createDescriptorPool(uint32_t count)
 {
-    ::vk::DescriptorPoolSize poolSize(::vk::DescriptorType::eUniformBuffer, count); 
+
+    std::array<::vk::DescriptorPoolSize, 2> poolSizes{};
+    poolSizes[0] = ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBuffer, count);
+    poolSizes[1] = ::vk::DescriptorPoolSize(::vk::DescriptorType::eCombinedImageSampler, count);
+
+    
     ::vk::DescriptorPoolCreateInfo createInfo;
-    createInfo.setPoolSizeCount(1)
-               .setPoolSizes(poolSize)
+    createInfo.setPoolSizes(poolSizes)
                .setMaxSets(count);
     descriptorPool = Device::getInstance().getVKDevice().createDescriptorPool(createInfo); 
 }
 
-void RenderSystem::createDescriptorSets(uint32_t count)
+void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageView, ::vk::Sampler sampler)
 {
     ::std::vector<::vk::DescriptorSetLayout> layouts(count, setLayout);
     ::vk::DescriptorSetAllocateInfo allocInfo{};
@@ -66,13 +81,29 @@ void RenderSystem::createDescriptorSets(uint32_t count)
         bufferInfo.buffer = uniformBuffers[i];
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
-        ::vk::WriteDescriptorSet descriptorWrite{};
-        descriptorWrite.setDstSet(descriptorSets[i])
+
+        ::vk::DescriptorImageInfo imageInfo{};
+        imageInfo.setImageLayout(::vk::ImageLayout::eShaderReadOnlyOptimal)
+                    .setImageView(imageView)
+                    .setSampler(sampler);
+        
+        ::vk::WriteDescriptorSet uniformDescriptorWrite{};
+        uniformDescriptorWrite.setDstSet(descriptorSets[i])
                         .setDstBinding(0)
                         .setDstArrayElement(0)
                         .setDescriptorType(::vk::DescriptorType::eUniformBuffer)
                         .setBufferInfo(bufferInfo);
-        Device::getInstance().getVKDevice().updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+        ::vk::WriteDescriptorSet imageDescriptorWrite{};
+        imageDescriptorWrite.setDstSet(descriptorSets[i])
+                        .setDstBinding(1)
+                        .setDstArrayElement(0)
+                        .setDescriptorType(::vk::DescriptorType::eCombinedImageSampler)
+                        .setImageInfo(imageInfo);
+
+        std::array<::vk::WriteDescriptorSet, 2> descriptorWrites{};
+        descriptorWrites[0] = uniformDescriptorWrite;
+        descriptorWrites[1] = imageDescriptorWrite;
+        Device::getInstance().getVKDevice().updateDescriptorSets(descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
     }
 }
 
@@ -122,9 +153,17 @@ void RenderSystem::createPipelineLayout()
                     .setDescriptorType(::vk::DescriptorType::eUniformBuffer)
                     .setDescriptorCount(1)
                     .setStageFlags(::vk::ShaderStageFlagBits::eVertex);
+    
+    ::vk::DescriptorSetLayoutBinding samplerLayoutBinding;
+    samplerLayoutBinding.setBinding(1)
+                        .setDescriptorCount(1)
+                        .setDescriptorType(::vk::DescriptorType::eCombinedImageSampler)
+                        .setStageFlags(::vk::ShaderStageFlagBits::eFragment);
+
+    std::array<::vk::DescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
 
     ::vk::DescriptorSetLayoutCreateInfo setLayoutCreateInfo;
-    setLayoutCreateInfo.setBindings(uboLayoutBinding);
+    setLayoutCreateInfo.setBindings(bindings);
     setLayout = device.createDescriptorSetLayout(setLayoutCreateInfo);
     layoutCreateInfo.setSetLayouts(setLayout);
 
@@ -134,12 +173,8 @@ void RenderSystem::createPipelineLayout()
 
 void RenderSystem::createPipeline(::vk::RenderPass renderPass)
 {
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-    ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
-#else
-    ::std::string full_path{"E:/project/cpp/graphics/src/shader/"};
-#endif
-    pipeline = ::std::make_unique<PipeLine>(full_path + "vert.spv", full_path + "frag.spv", renderPass, pipelineLayout);
+
+    pipeline = ::std::make_unique<PipeLine>(shader_path + "vert.spv", shader_path + "frag.spv", renderPass, pipelineLayout);
 }
 
 }

@@ -18,7 +18,7 @@ namespace g
             ~App();
         private:
             Window window{WIDTH, HEIGHT, "vulkan"};
-            ::std::vector<GameObject> gameObjects;
+            ::std::vector< GameObject> gameObjects;
             RenderProcesser render;
             void loadGameObjects();
     };

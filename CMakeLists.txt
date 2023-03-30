@@ -19,6 +19,7 @@ if(WIN32)
         find_package(glfw3 CONFIG REQUIRED)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
+        find_package(Stb REQUIRED)
         target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan)
 elseif(UNIX AND APPLE)
         set(librariesList
