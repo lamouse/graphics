@@ -6,13 +6,15 @@ namespace g
 
 void Model::draw(::vk::CommandBuffer commandBuffer)
 {
-    commandBuffer.draw(vertexCount, 1, 0, 0);
+    //commandBuffer.draw(vertexCount, 1, 0, 0);
+    commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0);
 }
 void Model::bind(::vk::CommandBuffer commandBuffer)
 {
     ::vk::Buffer buffers[] = {vertexBuffer};
     ::vk::DeviceSize offsets[] = {0};
     commandBuffer.bindVertexBuffers(0, 1, buffers, offsets);
+    commandBuffer.bindIndexBuffer(indexBuffer, 0, ::vk::IndexType::eUint16);
 }
 
 void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
@@ -38,12 +40,36 @@ void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
     Device::getInstance().getVKDevice().freeMemory(stagingBufferMemory);
 }
 
-Model::Model(const ::std::vector<Vertex> &vertices)
+void Model::createIndexBuffer(::std::vector<uint16_t>& indices) {
+    indicesSize = indices.size();
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    ::vk::Buffer stagingBuffer;
+    ::vk::DeviceMemory stagingBufferMemory;
+    Device::getInstance().createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eTransferSrc, 
+                                        ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
+
+    void* data = Device::getInstance().getVKDevice().mapMemory(stagingBufferMemory, 0, bufferSize);
+    memcpy(data, indices.data(), (size_t) bufferSize);
+    Device::getInstance().getVKDevice().unmapMemory(stagingBufferMemory);
+
+    Device::getInstance().createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eIndexBuffer | ::vk::BufferUsageFlagBits::eTransferDst, 
+                                        ::vk::MemoryPropertyFlagBits::eDeviceLocal|::vk::MemoryPropertyFlagBits::eHostCoherent, indexBuffer, indexBufferMemory);
+
+    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+    Device::getInstance().getVKDevice().destroyBuffer(stagingBuffer);
+    Device::getInstance().getVKDevice().freeMemory(stagingBufferMemory);
+}
+
+Model::Model(const ::std::vector<Vertex> &vertices, ::std::vector<uint16_t> indices)
 {
     createVertexBuffers(vertices);
+    createIndexBuffer(indices);
 }
 Model::~Model()
 {
+    Device::getInstance().getVKDevice().destroyBuffer(indexBuffer);
+    Device::getInstance().getVKDevice().freeMemory(indexBufferMemory);
     Device::getInstance().getVKDevice().destroyBuffer(vertexBuffer);
     Device::getInstance().getVKDevice().freeMemory(vertexBufferMemory);
 }
@@ -61,7 +87,7 @@ Model::~Model()
     ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(2);
     attributeDescriptions[0].setBinding(0);
     attributeDescriptions[0].setLocation(0);
-    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
+    attributeDescriptions[0].setFormat(::vk::Format::eR32G32Sfloat);
     attributeDescriptions[0].setOffset(offsetof(Vertex, position));
 
     attributeDescriptions[1].setBinding(0);

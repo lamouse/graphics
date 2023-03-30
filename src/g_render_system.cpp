@@ -13,11 +13,11 @@ void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, cons
     {
         SimplePushConstantData push;
         push.color = obj.color;
-        obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.0003f, ::glm::two_pi<float>());
+        //obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.0003f, ::glm::two_pi<float>());
         //obj.transform.rotation.x = ::glm::mod(obj.transform.rotation.x + 0.0001f, ::glm::two_pi<float>());
         push.transform = obj.transform.mat4();
-        commandBuffer.pushConstants(pipelineLayout, ::vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 
-                                0, sizeof(SimplePushConstantData), &push);
+        // commandBuffer.pushConstants(pipelineLayout, ::vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 
+        //                         0, sizeof(SimplePushConstantData), &push);
         obj.model->bind(commandBuffer);
         obj.model->draw(commandBuffer);
     }
@@ -42,7 +42,7 @@ void RenderSystem::createPipelineLayout()
                         .setOffset(0)
                         .setSize(sizeof(SimplePushConstantData));
     ::vk::PipelineLayoutCreateInfo layoutCreateInfo;
-    layoutCreateInfo.setPushConstantRanges(pushConstantRange);  
+    //layoutCreateInfo.setPushConstantRanges(pushConstantRange);  
     pipelineLayout = Device::getInstance().getVKDevice().createPipelineLayout(layoutCreateInfo); 
 }
 

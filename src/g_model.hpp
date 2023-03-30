@@ -11,7 +11,7 @@ class Model{
 public:
     struct Vertex
     {
-        ::glm::vec3 position;
+        ::glm::vec2 position;
         ::glm::vec3 color;
 
         static ::std::vector<::vk::VertexInputBindingDescription> getBindingDescription();
@@ -23,13 +23,17 @@ public:
     Model& operator=(const Model&) = delete;
     void bind(::vk::CommandBuffer commandBuffer);
     void draw(::vk::CommandBuffer commandBuffer);
-    Model(const ::std::vector<Vertex> &vertices);
+    Model(const ::std::vector<Vertex> &vertices, ::std::vector<uint16_t> indices);
     ~Model();
 private:
     ::vk::Buffer vertexBuffer;
     ::vk::DeviceMemory vertexBufferMemory;
+    ::vk::Buffer indexBuffer;
+    ::vk::DeviceMemory indexBufferMemory;
     uint32_t vertexCount;
+    uint32_t indicesSize;
     void createVertexBuffers(const ::std::vector<Vertex> &vertices);
+    void createIndexBuffer(::std::vector<uint16_t>& indices);
     void copyBuffer(::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size);
 };
     
