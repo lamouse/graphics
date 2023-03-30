@@ -28,7 +28,7 @@ void GameObject::loadImage()
         return;
     }
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load((image_path + "p1.jpg").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load((image_path + "viking_room.png").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     ::vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
@@ -46,11 +46,11 @@ void GameObject::loadImage()
     ::memcpy(data, pixels, imageSize);
     device.getVKDevice().unmapMemory(stagingBufferMemory);
     stbi_image_free(pixels);
-    device.createImage(texWidth, texHeight, ::vk::Format::eB8G8R8A8Srgb, ::vk::ImageTiling::eOptimal, 
+    device.createImage(texWidth, texHeight, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageTiling::eOptimal, 
                     ::vk::ImageUsageFlagBits::eTransferDst |::vk::ImageUsageFlagBits::eSampled, ::vk::MemoryPropertyFlagBits::eDeviceLocal,
                             textureImage, textureImageMemory);
 
-    transitionImageLayout(textureImage, ::vk::Format::eB8G8R8A8Srgb, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
+    transitionImageLayout(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
 
     device.excuteCmd([&](::vk::CommandBuffer cmdBuf){
         ::vk::BufferImageCopy region;
@@ -68,7 +68,7 @@ void GameObject::loadImage()
         cmdBuf.copyBufferToImage(stagingBuffer, textureImage, ::vk::ImageLayout::eTransferDstOptimal, region);
     });
 
-    transitionImageLayout(textureImage, ::vk::Format::eB8G8R8A8Srgb, ::vk::ImageLayout::eTransferDstOptimal, ::vk::ImageLayout::eShaderReadOnlyOptimal);
+    transitionImageLayout(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageLayout::eTransferDstOptimal, ::vk::ImageLayout::eShaderReadOnlyOptimal);
     device.getVKDevice().destroyBuffer(stagingBuffer);
     device.getVKDevice().freeMemory(stagingBufferMemory);
     createTextureImageView();
@@ -119,7 +119,7 @@ void GameObject::transitionImageLayout(::vk::Image image, ::vk::Format format, :
 
 void GameObject::createTextureImageView()
 {
-    textureImageView = Device::getInstance().createImageView(textureImage, ::vk::Format::eB8G8R8A8Srgb);
+    textureImageView = Device::getInstance().createImageView(textureImage, ::vk::Format::eR8G8B8A8Srgb);
 }
 
 void GameObject::createTextureSampler()

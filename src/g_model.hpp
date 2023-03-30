@@ -4,6 +4,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
 #include <vector>
 namespace g
 {
@@ -16,6 +17,9 @@ public:
         ::glm::vec2 texCoord;
         static ::std::vector<::vk::VertexInputBindingDescription> getBindingDescription();
         static ::std::vector<::vk::VertexInputAttributeDescription> getAtrributeDescription();
+        bool operator==(const Vertex& other) const {
+            return position == other.position && color == other.color && texCoord == other.texCoord;
+        }
     };
     
 
@@ -38,3 +42,11 @@ private:
 };
     
 } 
+
+namespace std {
+    template<> struct hash<g::Model::Vertex> {
+        size_t operator()(g::Model::Vertex const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}

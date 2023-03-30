@@ -20,6 +20,7 @@ if(WIN32)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
         find_package(Stb REQUIRED)
+        find_package(tinyobjloader CONFIG REQUIRED)
         target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan)
 elseif(UNIX AND APPLE)
         set(librariesList

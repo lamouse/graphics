@@ -8,5 +8,6 @@ namespace g
 #else
     #define shader_path ::std::string{"E:/project/cpp/graphics/src/shader/"}
     #define image_path  ::std::string{"E:/project/cpp/graphics/src/images/"}
+    #define DEFAULT_FORMAT vk::Format::eB8G8R8A8Srgb
 #endif
 }

@@ -68,7 +68,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
     auto& surface = Device::getInstance().getSurface();
     auto  formats = phyDevice.getSurfaceFormatsKHR(surface);
     auto format = ::std::find_if(formats.begin(), formats.end(), [](auto format){
-        return format.format == vk::Format::eB8G8R8A8Srgb && 
+        return format.format == vk::Format::eR8G8B8A8Srgb && 
                 format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
     });
     if(format != formats.end()){
