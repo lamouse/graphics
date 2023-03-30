@@ -6,7 +6,7 @@ namespace g{
 void App::run(){
 
     RenderSystem renderSystem(render.getRenderPass());
-
+    renderSystem.createUniformBuffers(2);
     Camera camera;
     //auto gameObj = GameObject::createGameObject();
 
@@ -15,7 +15,7 @@ void App::run(){
         if(render.beginFrame())
         {
             render.beginSwapchainRenderPass();
-            renderSystem.renderGameObject(gameObjects, camera, render.getCurrentCommadBuffer());
+            renderSystem.renderGameObject(gameObjects, render.getCurrentFrameIndex(), render.getCurrentCommadBuffer(), render.extentAspectRation());
             render.endSwapchainRenderPass();
             render.endFrame();
         }

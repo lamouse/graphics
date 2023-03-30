@@ -88,7 +88,7 @@ void PipeLine::setRasterizationStateInfo()
     configInfo.rasterizationStateInfo.setRasterizerDiscardEnable(false)
                                     .setDepthClampEnable(VK_FALSE)
                                     .setCullMode(::vk::CullModeFlagBits::eBack)
-                                    .setFrontFace(::vk::FrontFace::eClockwise)
+                                    .setFrontFace(::vk::FrontFace::eCounterClockwise)
                                     .setPolygonMode(::vk::PolygonMode::eFill)
                                     .setLineWidth(1);
 }
