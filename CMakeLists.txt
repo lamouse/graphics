@@ -14,13 +14,16 @@ message(STATUS "run glslc to compile shaders ...")
 execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_shader.vert -o ${CMAKE_SOURCE_DIR}/src/shader/vert.spv)
 execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_shader.frag -o ${CMAKE_SOURCE_DIR}/src/shader/frag.spv)
 message(STATUS "compile shader OK")
+#need vcpkg start
+find_package(Stb REQUIRED)
+find_package(tinyobjloader CONFIG REQUIRED)
+#need vcpkg end
 
 if(WIN32)
         find_package(glfw3 CONFIG REQUIRED)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
-        find_package(Stb REQUIRED)
-        find_package(tinyobjloader CONFIG REQUIRED)
+
         target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan)
 elseif(UNIX AND APPLE)
         set(librariesList
@@ -34,6 +37,7 @@ elseif(UNIX AND APPLE)
         target_link_directories(${EXECUTE_NAME} PRIVATE
                 /usr/local/lib
         )
+        target_include_directories(${EXECUTE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
         target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList})
 endif()
 
