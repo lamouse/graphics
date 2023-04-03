@@ -20,7 +20,6 @@ public:
     void beginSwapchainRenderPass();
     void endSwapchainRenderPass();
     void endFrame();
-    void render(::std::vector<GameObject> gameObjects);
     ::vk::RenderPass getRenderPass(){return swapchain->getRenderPass();}
     ::vk::CommandBuffer& getCurrentCommadBuffer(){return commandBuffers_[currentFrameIndex];};
     int getCurrentFrameIndex(){return currentFrameIndex;}

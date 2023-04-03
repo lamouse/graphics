@@ -59,10 +59,6 @@ bool RenderProcesser::beginFrame()
     return isFrameStart;
 }
 
-void RenderProcesser::render(::std::vector<GameObject> gameObjects)
-{
-}
-
 void RenderProcesser::endFrame()
 {
     assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
