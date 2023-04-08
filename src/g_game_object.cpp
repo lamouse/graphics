@@ -5,10 +5,6 @@
 #include <cmath>
 #include <stdexcept>
 #include <stdint.h>
-#include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
