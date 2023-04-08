@@ -1,5 +1,6 @@
 #include "g_device.hpp"
 #include <algorithm>
+#include <stdint.h>
 namespace g{
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
@@ -232,13 +233,13 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends)
     vkInstance = ::vk::createInstance(createInfo);
 }
 
-void Device::createImage(uint32_t width, uint32_t height, ::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
+void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
                                     ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory)
 {
     ::vk::ImageCreateInfo imageInfo;
     imageInfo.setImageType(::vk::ImageType::e2D)
             .setExtent(::vk::Extent3D{{width, height}, 1})
-            .setMipLevels(1)
+            .setMipLevels(mipLevels)
             .setArrayLayers(1)
             .setTiling(tiling)
             .setFormat(format)
@@ -256,13 +257,13 @@ void Device::createImage(uint32_t width, uint32_t height, ::vk::Format format, :
     device.bindImageMemory(image, imageMemory, 0);
 }
 
-::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format)
+::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format, uint32_t mipLevels)
 {
     ::vk::ImageViewCreateInfo viewInfo{};
     ::vk::ImageSubresourceRange imageSubresource;
     imageSubresource.setAspectMask(::vk::ImageAspectFlagBits::eColor)
                     .setBaseMipLevel(0)
-                    .setLevelCount(1)
+                    .setLevelCount(mipLevels)
                     .setLayerCount(1)
                     .setBaseArrayLayer(0);
     viewInfo.setImage(image)

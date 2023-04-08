@@ -1,5 +1,6 @@
 #ifndef G_DEVICE_HPP
 #define G_DEVICE_HPP
+#include <stdint.h>
 #include <vulkan/vulkan.hpp>
 #include <memory>
 #include <cstdint>
@@ -54,8 +55,9 @@ namespace g{
         uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
             ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
-        void createImage(uint32_t width, uint32_t height, ::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
+        void createImage(uint32_t width, uint32_t height, uint32_t mipLevels,::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
                                     ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
+        ::vk::ImageView createImageView(::vk::Image image, ::vk::Format format, uint32_t mipLevels);
         ::vk::Instance& getVKInstance();
         ::vk::SurfaceKHR& getSurface();
         ::vk::PhysicalDevice& getPhysicalDevice();
@@ -65,7 +67,6 @@ namespace g{
         ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
         ::vk::CommandPool getCommandPool(){return cmdPool_;}
         void excuteCmd(RecordCmdFunc func);
-        ::vk::ImageView createImageView(::vk::Image image, ::vk::Format format);
         float getMaxAnisotropy();
         ~Device();
 

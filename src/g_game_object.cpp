@@ -1,6 +1,14 @@
 #include "g_game_object.hpp"
 #include "g_defines.hpp"
 #include "g_device.hpp"
+#include <algorithm>
+#include <cmath>
+#include <stdexcept>
+#include <stdint.h>
+#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_handles.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -30,7 +38,7 @@ void GameObject::loadImage()
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load((image_path + "viking_room.png").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     ::vk::DeviceSize imageSize = texWidth * texHeight * 4;
-
+    imageMipLevels = static_cast<uint32_t>(::std::floor(::std::log2(::std::max(texWidth, texHeight)))) + 1;
     if (!pixels) {
         throw std::runtime_error("failed to load texture image!");
     }
@@ -46,9 +54,9 @@ void GameObject::loadImage()
     ::memcpy(data, pixels, imageSize);
     device.getVKDevice().unmapMemory(stagingBufferMemory);
     stbi_image_free(pixels);
-    device.createImage(texWidth, texHeight, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageTiling::eOptimal, 
-                    ::vk::ImageUsageFlagBits::eTransferDst |::vk::ImageUsageFlagBits::eSampled, ::vk::MemoryPropertyFlagBits::eDeviceLocal,
-                            textureImage, textureImageMemory);
+    device.createImage(texWidth, texHeight, imageMipLevels, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageTiling::eOptimal, 
+                    ::vk::ImageUsageFlagBits::eTransferSrc|::vk::ImageUsageFlagBits::eTransferDst |::vk::ImageUsageFlagBits::eSampled, 
+                    ::vk::MemoryPropertyFlagBits::eDeviceLocal, textureImage, textureImageMemory);
 
     transitionImageLayout(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
 
@@ -68,9 +76,10 @@ void GameObject::loadImage()
         cmdBuf.copyBufferToImage(stagingBuffer, textureImage, ::vk::ImageLayout::eTransferDstOptimal, region);
     });
 
-    transitionImageLayout(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageLayout::eTransferDstOptimal, ::vk::ImageLayout::eShaderReadOnlyOptimal);
+    transitionImageLayout(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
     device.getVKDevice().destroyBuffer(stagingBuffer);
     device.getVKDevice().freeMemory(stagingBufferMemory);
+    generateMipmaps(textureImage, texWidth, texHeight,  imageMipLevels);
     createTextureImageView();
     createTextureSampler();
     imageLoaded = true;
@@ -84,7 +93,7 @@ void GameObject::transitionImageLayout(::vk::Image image, ::vk::Format format, :
         ::vk::ImageSubresourceRange subsourceRange;
         subsourceRange.setAspectMask(::vk::ImageAspectFlagBits::eColor)
                         .setBaseMipLevel(0)
-                        .setLevelCount(1)
+                        .setLevelCount(imageMipLevels)
                         .setBaseArrayLayer(0)
                         .setLayerCount(1);
         barrier.setOldLayout(oldLayout)
@@ -119,7 +128,7 @@ void GameObject::transitionImageLayout(::vk::Image image, ::vk::Format format, :
 
 void GameObject::createTextureImageView()
 {
-    textureImageView = Device::getInstance().createImageView(textureImage, ::vk::Format::eR8G8B8A8Srgb);
+    textureImageView = Device::getInstance().createImageView(textureImage, ::vk::Format::eR8G8B8A8Srgb, imageMipLevels);
 }
 
 void GameObject::createTextureSampler()
@@ -139,8 +148,91 @@ void GameObject::createTextureSampler()
                 .setMipmapMode(::vk::SamplerMipmapMode::eLinear)
                 .setMipLodBias(0.0f)
                 .setMinLod(0.0f)
-                .setMaxLod(0.0f);
+                .setMaxLod(imageMipLevels);
     textureSampler = Device::getInstance().getVKDevice().createSampler(samplerInfo);
 }
+
+
+void GameObject::generateMipmaps(::vk::Image image, int texWidth, int texHeight, uint32_t mipLevels)
+{
+
+    auto& device = Device::getInstance();
+    ::vk::FormatProperties formatProperties = device.getPhysicalDevice().getFormatProperties(::vk::Format::eR8G8B8A8Srgb);
+    if(!(formatProperties.optimalTilingFeatures & ::vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
+    {
+        throw ::std::runtime_error("texture image format does not suport linear blitting");
+    }
+
+    Device::getInstance().excuteCmd([&](::vk::CommandBuffer &cmd){
+        ::vk::ImageMemoryBarrier barrier;
+        vk::ImageSubresourceRange subresourceRange;
+        barrier.setImage(image)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+        subresourceRange.setAspectMask(::vk::ImageAspectFlagBits::eColor)
+                        .setBaseArrayLayer(0)
+                        .setLayerCount(1)
+                        .setLevelCount(1);
+
+        int mipWidth = texWidth;
+        int mipHeight = texHeight;
+        for(int i = 1; i < mipLevels; i++)
+        {
+            subresourceRange.setBaseMipLevel(i - 1);
+            barrier.setOldLayout(::vk::ImageLayout::eTransferDstOptimal)
+                    .setNewLayout(::vk::ImageLayout::eTransferSrcOptimal)
+                    .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+                    .setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+            barrier.setSubresourceRange(subresourceRange);
+            cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer, ::vk::PipelineStageFlagBits::eTransfer, 
+                                ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr, barrier);
+            ::vk::ImageBlit blit;
+            std::array<::vk::Offset3D, 2> srcOffsets{::vk::Offset3D{0, 0, 0}, ::vk::Offset3D{mipWidth, mipHeight, 1}};
+            std::array<::vk::Offset3D, 2> dstOffsets{::vk::Offset3D{0, 0, 0}, ::vk::Offset3D{mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1? mipHeight / 2 :1, 1}};
+            vk::ImageSubresourceLayers srcSubresource;
+            srcSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor)
+                            .setMipLevel(i - 1)
+                            .setBaseArrayLayer(0)
+                            .setLayerCount(1);
+            vk::ImageSubresourceLayers dstSubresource;
+            dstSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor)
+                            .setMipLevel(i)
+                            .setBaseArrayLayer(0)
+                            .setLayerCount(1);
+            blit.setSrcOffsets(srcOffsets)
+                .setDstOffsets(dstOffsets)
+                .setSrcSubresource(srcSubresource)
+                .setDstSubresource(dstSubresource);
+            cmd.blitImage(image, ::vk::ImageLayout::eTransferSrcOptimal, image, ::vk::ImageLayout::eTransferDstOptimal, blit, ::vk::Filter::eLinear);
+            barrier.setOldLayout(vk::ImageLayout::eTransferSrcOptimal)
+                    .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+                    .setSrcAccessMask(vk::AccessFlagBits::eTransferRead)
+                    .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+            cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer, ::vk::PipelineStageFlagBits::eFragmentShader, 
+                                    ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr, barrier);
+            if(mipWidth > 1)
+            {
+                mipWidth /= 2;
+            }
+            if(mipHeight > 1)
+            {
+                mipHeight /= 2;
+            }
+            
+        }
+
+        subresourceRange.setBaseMipLevel(mipLevels - 1);
+        barrier.setOldLayout(vk::ImageLayout::eTransferDstOptimal)
+                .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+                .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+                .setSubresourceRange(subresourceRange)
+                .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+
+        cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer, ::vk::PipelineStageFlagBits::eFragmentShader, 
+                        ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr, barrier);
+    });
+
+}
+
 
 }

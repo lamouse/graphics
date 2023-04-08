@@ -2,6 +2,8 @@
 #include "g_model.hpp"
 #include<memory>
 #include<glm/gtc/matrix_transform.hpp>
+#include <stdint.h>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace g
 {
@@ -32,9 +34,10 @@ private:
 
     ::vk::Image textureImage;
     ::vk::DeviceMemory textureImageMemory;
-
+    uint32_t imageMipLevels;
     GameObject(id_t id):id(id){}
     void createTextureImageView();
+    void generateMipmaps(::vk::Image image, int texWidth, int texHeight, uint32_t mipLevels);
 public:
     static GameObject createGameObject(){
         static id_t currentId = 0;
