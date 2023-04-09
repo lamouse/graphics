@@ -16,10 +16,11 @@ GameObject::~GameObject()
 {
     if(imageLoaded)
     {
-        Device::getInstance().getVKDevice().destroySampler(textureSampler);
-        Device::getInstance().getVKDevice().destroyImageView(textureImageView);
-        Device::getInstance().getVKDevice().destroyImage(textureImage);
-        Device::getInstance().getVKDevice().freeMemory(textureImageMemory);
+        auto& device = Device::getInstance().getVKDevice();
+        device.destroySampler(textureSampler);
+        device.destroyImageView(textureImageView);
+        device.destroyImage(textureImage);
+        device.freeMemory(textureImageMemory);
     }
 
 }
@@ -50,7 +51,7 @@ void GameObject::loadImage()
     ::memcpy(data, pixels, imageSize);
     device.getVKDevice().unmapMemory(stagingBufferMemory);
     stbi_image_free(pixels);
-    device.createImage(texWidth, texHeight, imageMipLevels, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageTiling::eOptimal, 
+    device.createImage(texWidth, texHeight, imageMipLevels, ::vk::Format::eR8G8B8A8Srgb, ::vk::SampleCountFlagBits::e1, ::vk::ImageTiling::eOptimal, 
                     ::vk::ImageUsageFlagBits::eTransferSrc|::vk::ImageUsageFlagBits::eTransferDst |::vk::ImageUsageFlagBits::eSampled, 
                     ::vk::MemoryPropertyFlagBits::eDeviceLocal, textureImage, textureImageMemory);
 
@@ -124,7 +125,7 @@ void GameObject::transitionImageLayout(::vk::Image image, ::vk::Format format, :
 
 void GameObject::createTextureImageView()
 {
-    textureImageView = Device::getInstance().createImageView(textureImage, ::vk::Format::eR8G8B8A8Srgb, imageMipLevels);
+    textureImageView = Device::getInstance().createImageView(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageAspectFlagBits::eColor, imageMipLevels);
 }
 
 void GameObject::createTextureSampler()

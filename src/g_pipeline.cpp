@@ -108,7 +108,7 @@ void PipeLine::setColorBlendInfo()
 void PipeLine::setMultisampleInfo()
 {
     configInfo.multisampleInfo.setSampleShadingEnable(false)
-                              .setRasterizationSamples(::vk::SampleCountFlagBits::e1);
+                              .setRasterizationSamples(Device::getInstance().getMaxUsableSampleCount());
 }
 
 void PipeLine::setViewportStateInfo()

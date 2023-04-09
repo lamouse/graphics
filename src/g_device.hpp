@@ -47,7 +47,6 @@ namespace g{
         void createInstance(const std::vector<const char*>& instanceExtends);
         bool checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice);
         bool isDeviceSuitable(::vk::PhysicalDevice& checkDevice);
-        ::vk::SampleCountFlags getMaxUsableSampleCount();
         Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static ::std::unique_ptr<Device> instance;
         
@@ -63,7 +62,7 @@ namespace g{
             ::std::optional<uint32_t> presentQueue;
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
-
+        ::vk::SampleCountFlagBits getMaxUsableSampleCount();
         QueueFamilyIndices queryQueueFamilyIndices(::vk::PhysicalDevice device);
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         static void init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
@@ -73,9 +72,9 @@ namespace g{
         uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
             ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
-        void createImage(uint32_t width, uint32_t height, uint32_t mipLevels,::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
-                                    ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
-        ::vk::ImageView createImageView(::vk::Image image, ::vk::Format format, uint32_t mipLevels);
+        void createImage(uint32_t width, uint32_t height, uint32_t mipLevels,::vk::Format format, ::vk::SampleCountFlagBits numSamples ,::vk::ImageTiling tiling, 
+                    ::vk::ImageUsageFlags usage, ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
+        ::vk::ImageView createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels);
         ::vk::Instance& getVKInstance();
         ::vk::SurfaceKHR& getSurface();
         ::vk::PhysicalDevice& getPhysicalDevice();
@@ -88,7 +87,6 @@ namespace g{
         void excuteCmd(RecordCmdFunc func);
         float getMaxAnisotropy();
         ~Device();
-
         
     };
 }

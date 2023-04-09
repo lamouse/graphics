@@ -49,12 +49,20 @@ private:
     ::std::vector<::vk::Fence> inFlightFences;
     ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
     ::std::vector<::vk::Semaphore> renderFinshSemaphores;
+    // swapchain image view
     ::std::vector<::vk::Image> images;
     ::std::vector<::vk::ImageView> imageViews;
     ::std::vector<::vk::Framebuffer> frameBuffers;
-    ::std::vector<VkImage> depthImages;
-    ::std::vector<VkDeviceMemory> depthImageMemorys;
-    ::std::vector<VkImageView> depthImageViews;
+    // depth image view
+    ::std::vector<::vk::Image> depthImages;
+    ::std::vector<::vk::DeviceMemory> depthImageMemorys;
+    ::std::vector<::vk::ImageView> depthImageViews;
+
+    // color image view
+    ::std::vector<::vk::Image> colorImages;
+    ::std::vector<::vk::ImageView> colorImageViews;
+    ::std::vector<::vk::DeviceMemory> colorImageMemorys;
+
     ::vk::RenderPass renderPass;
     ::vk::Format depthFormat;
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
@@ -68,12 +76,10 @@ private:
     void initRenderPass();
     void createFances();
     void createsemphores();
+    void createColorResources();
     void createDepthResources();
     void querySwapchainInfo(int width, int height);
 };
-
-
-
 
 }
 

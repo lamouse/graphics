@@ -234,8 +234,8 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends)
     vkInstance = ::vk::createInstance(createInfo);
 }
 
-void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::vk::Format format, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage, 
-                                    ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory)
+void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::vk::Format format, ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling, 
+                        ::vk::ImageUsageFlags usage, ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory)
 {
     ::vk::ImageCreateInfo imageInfo;
     imageInfo.setImageType(::vk::ImageType::e2D)
@@ -247,7 +247,7 @@ void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::
             .setInitialLayout(::vk::ImageLayout::eUndefined)
             .setUsage(usage)
             .setSharingMode(::vk::SharingMode::eExclusive)
-            .setSamples(::vk::SampleCountFlagBits::e1);
+            .setSamples(numSamples);
     
    image = device_.createImage(imageInfo);
     ::vk::MemoryRequirements memRequirements = device_.getImageMemoryRequirements(image);
@@ -258,11 +258,11 @@ void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::
     device_.bindImageMemory(image, imageMemory, 0);
 }
 
-::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format, uint32_t mipLevels)
+::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
 {
     ::vk::ImageViewCreateInfo viewInfo{};
     ::vk::ImageSubresourceRange imageSubresource;
-    imageSubresource.setAspectMask(::vk::ImageAspectFlagBits::eColor)
+    imageSubresource.setAspectMask(aspectFlags)
                     .setBaseMipLevel(0)
                     .setLevelCount(mipLevels)
                     .setLayerCount(1)
@@ -281,7 +281,7 @@ float Device::getMaxAnisotropy()
     return properties.limits.maxSamplerAnisotropy;
 }
 
-::vk::SampleCountFlags Device::getMaxUsableSampleCount()
+::vk::SampleCountFlagBits Device::getMaxUsableSampleCount()
 {
     vk::PhysicalDeviceProperties physicalDevice = phyDevice.getProperties();
     ::vk::SampleCountFlags counts = physicalDevice.limits.framebufferColorSampleCounts & physicalDevice.limits.framebufferDepthSampleCounts;
