@@ -1,6 +1,7 @@
 #include "g_device.hpp"
 #include <algorithm>
 #include <stdint.h>
+#include <set>
 namespace g{
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
@@ -10,7 +11,6 @@ Device::Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFun
     createInstance(instanceExtends);
     vkSurfaceKHR = createFunc(vkInstance);
     pickupPhyiscalDevice();
-    queryQueueFamilyIndices();
     createDevice();
     getQueues();
     initCmdPool();
@@ -26,8 +26,8 @@ void Device::quit()
 }
 Device::~Device()
 {
-    device.destroyCommandPool(cmdPool_);
-    device.destroy();
+    device_.destroyCommandPool(cmdPool_);
+    device_.destroy();
     ::vkDestroySurfaceKHR(vkInstance, vkSurfaceKHR, nullptr);
     vkInstance.destroy();
 }
@@ -35,23 +35,28 @@ Device::~Device()
 void Device::pickupPhyiscalDevice()
 {
     auto phyDevices = vkInstance.enumeratePhysicalDevices();
-    phyDevice = phyDevices[0];
 
+
+    auto findPhyDevice = ::std::find_if(phyDevices.begin(), phyDevices.end(), [this](auto& device){
+            return isDeviceSuitable(device);
+    });
+
+    if(findPhyDevice != phyDevices.end())
+    {
+            phyDevice = *findPhyDevice;
+            msaaSamples = getMaxUsableSampleCount();
+            queueFamilyIndices = queryQueueFamilyIndices(phyDevice);
+    }else 
+    {
+        throw ::std::runtime_error("failed to find a suitable GPU!");
+    }
 }
 
 void Device::createDevice()
 {
-    queryQueueFamilyIndices();
     ::vk::DeviceCreateInfo createInfo;
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
-    // "VK_KHR_portability_subset" macos
     
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-   ::std::vector<const char*> extends{VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
-#else
-    ::std::vector<const char*> extends{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-#endif
-
     uint32_t queueCount = 1;
     float priorities = 0.5;
     ::vk::DeviceQueueCreateInfo queueInfo;
@@ -71,33 +76,29 @@ void Device::createDevice()
     ::vk::PhysicalDeviceFeatures deviceFeatures;
     deviceFeatures.samplerAnisotropy = VK_TRUE;
     createInfo.setQueueCreateInfos(queueInfos)
-                .setPEnabledExtensionNames(extends)
+                .setPEnabledExtensionNames(deviceExtensions)
                 .setPEnabledFeatures(&deviceFeatures);
 
-    device = phyDevice.createDevice(createInfo);
+    device_ = phyDevice.createDevice(createInfo);
 }
     
-void Device::queryQueueFamilyIndices()
+Device::QueueFamilyIndices Device::queryQueueFamilyIndices(::vk::PhysicalDevice device)
 {
-    auto properties = phyDevice.getQueueFamilyProperties();
+    auto properties = device.getQueueFamilyProperties();
 
     
     auto pos = ::std::find_if(properties.begin(), properties.end(), [](const auto & property){
         return property.queueFlags | vk::QueueFlagBits::eGraphics;
     });
 
-
+    QueueFamilyIndices indices;
     if(pos != properties.end()){
-        queueFamilyIndices.graphicsQueue = pos - properties.begin();
-        queueFamilyIndices.queueCount = pos->queueCount;
-        if(phyDevice.getSurfaceSupportKHR(queueFamilyIndices.graphicsQueue.value(), vkSurfaceKHR)){
-            queueFamilyIndices.presentQueue = queueFamilyIndices.graphicsQueue;
-        }
-
-        if(!queueFamilyIndices.isComplete()){
-            throw ::std::runtime_error("queue family complete fail");
+        indices.graphicsQueue = pos - properties.begin();
+        if(device.getSurfaceSupportKHR(indices.graphicsQueue.value(), vkSurfaceKHR)){
+            indices.presentQueue = indices.graphicsQueue;
         }
     }
+    return indices;
 
 }
 
@@ -109,20 +110,20 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, :
     bufferInfo.setSize(size)
             .setUsage(usgae)
             .setSharingMode(::vk::SharingMode::eExclusive);
-    buffer = device.createBuffer(bufferInfo);
-    ::vk::MemoryRequirements memoryRequirements = device.getBufferMemoryRequirements(buffer);
+    buffer = device_.createBuffer(bufferInfo);
+    ::vk::MemoryRequirements memoryRequirements = device_.getBufferMemoryRequirements(buffer);
     ::vk::MemoryAllocateInfo allcoInfo;
     allcoInfo.setAllocationSize(memoryRequirements.size)
             .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
-    bufferMemory = device.allocateMemory(allcoInfo);
-    device.bindBufferMemory(buffer, bufferMemory, 0);
+    bufferMemory = device_.allocateMemory(allcoInfo);
+    device_.bindBufferMemory(buffer, bufferMemory, 0);
 }
 
 
 void Device::getQueues()
 {
-    graphicsQueue = device.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
-    presentQueue = device.getQueue(queueFamilyIndices.presentQueue.value(), 0);
+    graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
+    presentQueue = device_.getQueue(queueFamilyIndices.presentQueue.value(), 0);
 }
 
 void Device::initCmdPool()
@@ -132,13 +133,13 @@ void Device::initCmdPool()
     createInfo.setQueueFamilyIndex(queueFamilyIndex)
                 .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
                         ::vk::CommandPoolCreateFlagBits::eTransient);
-    cmdPool_ =  device.createCommandPool(createInfo);
+    cmdPool_ =  device_.createCommandPool(createInfo);
 }
 
 void Device::excuteCmd(RecordCmdFunc func)
 {
     ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
-    auto commanBuffer = device.allocateCommandBuffers(allocInfo)[0];
+    auto commanBuffer = device_.allocateCommandBuffers(allocInfo)[0];
     ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     commanBuffer.begin(beginInfo);
         if (func) func(commanBuffer);
@@ -147,8 +148,8 @@ void Device::excuteCmd(RecordCmdFunc func)
     submitInfo.setCommandBuffers(commanBuffer);
     graphicsQueue.submit(submitInfo);
     graphicsQueue.waitIdle();
-    device.waitIdle();
-    device.freeCommandBuffers(cmdPool_, commanBuffer);
+    device_.waitIdle();
+    device_.freeCommandBuffers(cmdPool_, commanBuffer);
 }
 
 ::vk::Instance& Device::getVKInstance()
@@ -193,7 +194,7 @@ void Device::excuteCmd(RecordCmdFunc func)
 
 ::vk::Device& Device::getVKDevice()
 {
-    return device;
+    return device_;
 }
 
 uint32_t Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
@@ -248,13 +249,13 @@ void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::
             .setSharingMode(::vk::SharingMode::eExclusive)
             .setSamples(::vk::SampleCountFlagBits::e1);
     
-   image = device.createImage(imageInfo);
-    ::vk::MemoryRequirements memRequirements = device.getImageMemoryRequirements(image);
+   image = device_.createImage(imageInfo);
+    ::vk::MemoryRequirements memRequirements = device_.getImageMemoryRequirements(image);
     ::vk::MemoryAllocateInfo allocInfo;
     allocInfo.setAllocationSize(memRequirements.size)
                 .setMemoryTypeIndex(findMemoryType(memRequirements.memoryTypeBits, properties));
-    imageMemory = device.allocateMemory(allocInfo);
-    device.bindImageMemory(image, imageMemory, 0);
+    imageMemory = device_.allocateMemory(allocInfo);
+    device_.bindImageMemory(image, imageMemory, 0);
 }
 
 ::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format, uint32_t mipLevels)
@@ -271,13 +272,63 @@ void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::
             .setFormat(format)
             .setSubresourceRange(imageSubresource);
 
-    return device.createImageView(viewInfo);
+    return device_.createImageView(viewInfo);
 }
 
 float Device::getMaxAnisotropy()
 {
     ::vk::PhysicalDeviceProperties properties = phyDevice.getProperties();
     return properties.limits.maxSamplerAnisotropy;
+}
+
+::vk::SampleCountFlags Device::getMaxUsableSampleCount()
+{
+    vk::PhysicalDeviceProperties physicalDevice = phyDevice.getProperties();
+    ::vk::SampleCountFlags counts = physicalDevice.limits.framebufferColorSampleCounts & physicalDevice.limits.framebufferDepthSampleCounts;
+    if(counts & ::vk::SampleCountFlagBits::e64){return ::vk::SampleCountFlagBits::e64;}
+    if(counts & ::vk::SampleCountFlagBits::e32){return ::vk::SampleCountFlagBits::e32;}
+    if(counts & ::vk::SampleCountFlagBits::e16){return ::vk::SampleCountFlagBits::e16;}
+    if(counts & ::vk::SampleCountFlagBits::e8){return ::vk::SampleCountFlagBits::e8;}
+    if(counts & ::vk::SampleCountFlagBits::e4){return ::vk::SampleCountFlagBits::e4;}
+    if(counts & ::vk::SampleCountFlagBits::e2){return ::vk::SampleCountFlagBits::e2;}
+
+    return ::vk::SampleCountFlagBits::e1;
+}
+
+bool Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice)
+{
+    std::vector<vk::ExtensionProperties> availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
+    ::std::set<::std::string> requireExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+    for(const auto& extension : availableExtensions)
+    {
+        requireExtensions.erase(extension.extensionName);
+    }
+
+    return requireExtensions.empty();
+}
+
+bool Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice)
+{
+    bool extensionsSupported = checkDeviceExtensionSupport(checkDevice);
+    bool swapChainAdeqate = false;
+    if(extensionsSupported)
+    {
+        SwapchainSupportDetails swapchainSupport = querySwapchainSupport(checkDevice);
+        swapChainAdeqate = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
+    }
+    ::vk::PhysicalDeviceFeatures deviceFeatures = checkDevice.getFeatures();
+    auto indices = queryQueueFamilyIndices(checkDevice);
+    return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && indices.isComplete();
+}
+
+SwapchainSupportDetails Device::querySwapchainSupport(::vk::PhysicalDevice device)
+{
+    SwapchainSupportDetails details;
+    details.capabilities = device.getSurfaceCapabilitiesKHR(vkSurfaceKHR);
+    details.formats = device.getSurfaceFormatsKHR(vkSurfaceKHR);
+    details.presentModes = device.getSurfacePresentModesKHR(vkSurfaceKHR);
+    return details;
 }
 
 }
