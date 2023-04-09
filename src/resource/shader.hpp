@@ -4,10 +4,8 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "g_model.hpp"
-#include "g_game_object.hpp"
 
-namespace g{
+namespace resource::shader{
     class Shader
     {
     private:
@@ -16,13 +14,13 @@ namespace g{
         ::vk::ShaderModule vertexModule;
         ::vk::ShaderModule fragmentModule;
         ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
-        ::std::vector<GameObject> gameObjects;
+        ::vk::Device& device;
     public:
         ::vk::ShaderModule getVertex(){return vertexModule; }
         ::vk::ShaderModule getFragmentModule(){return fragmentModule; }
         ::std::vector<::vk::PipelineShaderStageCreateInfo> getShaderStage();
         ~Shader();
-        Shader(const ::std::string& vertFilePath, const ::std::string& fragFilePath);
+        Shader(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::Device& device);
     };
     
 }

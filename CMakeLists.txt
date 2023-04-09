@@ -6,13 +6,15 @@ set(EXECUTE_NAME graphics)
 
 set(CMAKE_CXX_STANDARD 23)
 
-aux_source_directory(./src SRC)
+aux_source_directory(./src MAIN_SRC)
+aux_source_directory(./src/resource RESOURCE_SRC)
+set(SRC ${MAIN_SRC} ${RESOURCE_SRC})
 add_executable(${EXECUTE_NAME} ${SRC})
 
 find_program(GLSLC_PROGRAM glslc REQUIRED)
 message(STATUS "run glslc to compile shaders ...")
-execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_shader.vert -o ${CMAKE_SOURCE_DIR}/src/shader/vert.spv)
-execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/src/shader/simple_shader.frag -o ${CMAKE_SOURCE_DIR}/src/shader/frag.spv)
+execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/simple_shader.vert -o ${CMAKE_SOURCE_DIR}/shader/vert.spv)
+execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/simple_shader.frag -o ${CMAKE_SOURCE_DIR}/shader/frag.spv)
 message(STATUS "compile shader OK")
 #need vcpkg start
 find_package(Stb REQUIRED)
@@ -40,9 +42,6 @@ elseif(UNIX AND APPLE)
         target_include_directories(${EXECUTE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
         target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList})
 endif()
-
-
-
 
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")

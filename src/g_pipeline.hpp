@@ -1,7 +1,6 @@
 #ifndef G_RENDER_HPP
 #define G_RENDER_HPP
 
-#include "g_shader.hpp"
 #include <vulkan/vulkan.hpp>
 #include <memory>
 namespace g
@@ -24,10 +23,9 @@ namespace g
     {
     private:
         ::vk::Pipeline pipeline;
-        void initPipeline(::vk::RenderPass& renderPass, ::vk::PipelineLayout layout);
+        void initPipeline(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout);
         PipelineConfigInfo configInfo;
         int currentFrame;
-        ::std::unique_ptr<Shader> shader;
 
         void defaultPiplineConfig();
         void setDepthStencilStateConfig();

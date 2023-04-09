@@ -1,7 +1,6 @@
 #include "g_context.hpp"
 #include "g_pipeline.hpp"
 #include "g_swapchain.hpp"
-#include "g_shader.hpp"
 #include <iostream>
 #include<vector>
 #include<cassert>

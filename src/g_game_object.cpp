@@ -5,9 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <stdint.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "resource/image.hpp"
 namespace g
 {
 
@@ -28,17 +26,18 @@ GameObject::~GameObject()
 
 void GameObject::loadImage()
 {
+
     if(imageLoaded)
     {
         return;
     }
-    int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load((image_path + "viking_room.png").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    ::vk::DeviceSize imageSize = texWidth * texHeight * 4;
-    imageMipLevels = static_cast<uint32_t>(::std::floor(::std::log2(::std::max(texWidth, texHeight)))) + 1;
-    if (!pixels) {
-        throw std::runtime_error("failed to load texture image!");
-    }
+
+    std::string s(image_path + "viking_room.png");
+    ::resource::image::Image img(s);
+    ::resource::image::ImageInfo imgInfo = img.getImageInfo();
+    ::vk::DeviceSize imageSize = imgInfo.width * imgInfo.height * 4;
+    imageMipLevels = img.getMipLevels();
+ 
 
     auto& device = Device::getInstance();
     ::vk::Buffer stagingBuffer;
@@ -48,10 +47,9 @@ void GameObject::loadImage()
                         ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent, stagingBuffer, stagingBufferMemory);
 
     void* data = device.getVKDevice().mapMemory(stagingBufferMemory, 0, imageSize);
-    ::memcpy(data, pixels, imageSize);
+    ::memcpy(data, img.getData(), imageSize);
     device.getVKDevice().unmapMemory(stagingBufferMemory);
-    stbi_image_free(pixels);
-    device.createImage(texWidth, texHeight, imageMipLevels, ::vk::Format::eR8G8B8A8Srgb, ::vk::SampleCountFlagBits::e1, ::vk::ImageTiling::eOptimal, 
+    device.createImage(imgInfo.width, imgInfo.height, imageMipLevels, ::vk::Format::eR8G8B8A8Srgb, ::vk::SampleCountFlagBits::e1, ::vk::ImageTiling::eOptimal, 
                     ::vk::ImageUsageFlagBits::eTransferSrc|::vk::ImageUsageFlagBits::eTransferDst |::vk::ImageUsageFlagBits::eSampled, 
                     ::vk::MemoryPropertyFlagBits::eDeviceLocal, textureImage, textureImageMemory);
 
@@ -69,14 +67,14 @@ void GameObject::loadImage()
                 .setBufferImageHeight(0)
                 .setImageSubresource(imageSubsourceLayers)
                 .setImageOffset({0, 0, 0})
-                .setImageExtent({static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1});
+                .setImageExtent({static_cast<uint32_t>(imgInfo.width), static_cast<uint32_t>(imgInfo.height), 1});
         cmdBuf.copyBufferToImage(stagingBuffer, textureImage, ::vk::ImageLayout::eTransferDstOptimal, region);
     });
 
     transitionImageLayout(textureImage, ::vk::Format::eR8G8B8A8Srgb, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
     device.getVKDevice().destroyBuffer(stagingBuffer);
     device.getVKDevice().freeMemory(stagingBufferMemory);
-    generateMipmaps(textureImage, texWidth, texHeight,  imageMipLevels);
+    generateMipmaps(textureImage, imgInfo.width, imgInfo.height,  imageMipLevels);
     createTextureImageView();
     createTextureSampler();
     imageLoaded = true;

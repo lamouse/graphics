@@ -1,6 +1,7 @@
 #pragma once
 #include "g_camera.hpp"
 #include "g_pipeline.hpp"
+#include "g_game_object.hpp"
 #include <memory>
 #include <vulkan/vulkan_handles.hpp>
 #define GLM_FORCE_RADIANS

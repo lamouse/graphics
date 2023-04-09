@@ -1,8 +1,8 @@
 #include "g_pipeline.hpp"
-#include "g_shader.hpp"
 #include "g_device.hpp"
 #include "g_swapchain.hpp"
 #include "g_model.hpp"
+#include "resource/shader.hpp"
 #include <iostream>
 
 
@@ -10,18 +10,16 @@ namespace g{
 PipeLine::PipeLine(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout)
 {
     currentFrame = 0;
-    shader = ::std::make_unique<Shader>(vertFilePath, fragFilePath);
-    initPipeline(renderPass, layout);
+    initPipeline(vertFilePath, fragFilePath, renderPass, layout);
 }
 
 PipeLine::~PipeLine()
 {
 
     Device::getInstance().getVKDevice().destroyPipeline(pipeline);
-    shader.reset();
 }
 
-void PipeLine::initPipeline(::vk::RenderPass& renderPass, ::vk::PipelineLayout layout)
+void PipeLine::initPipeline(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout)
 {
     defaultPiplineConfig();
     ::vk::GraphicsPipelineCreateInfo createInfo;
@@ -30,10 +28,10 @@ void PipeLine::initPipeline(::vk::RenderPass& renderPass, ::vk::PipelineLayout l
     inputState.setVertexBindingDescriptions(configInfo.bindingDescriptions);
     inputState.setVertexAttributeDescriptions(configInfo.attributeDescriptions);
     createInfo.setPVertexInputState(&inputState);  
-
-    auto shaderStage = shader->getShaderStage();
+    auto& device = Device::getInstance().getVKDevice();
+    ::resource::shader::Shader shader(vertFilePath, fragFilePath, device);
+    auto shaderStage = shader.getShaderStage();
     createInfo.setStages(shaderStage);
-  
  
     createInfo.setPViewportState(&configInfo.viewportStateInfo)
                 .setPDepthStencilState(&configInfo.depthStencilStateInfo)

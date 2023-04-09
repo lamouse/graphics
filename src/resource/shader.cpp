@@ -1,20 +1,19 @@
-#include "g_shader.hpp"
-#include "g_device.hpp"
+#include "shader.hpp"
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
-namespace g{
+namespace resource::shader{
 
 
-Shader::Shader(const ::std::string& vertFilePath, const ::std::string& fragFilePath)
+Shader::Shader(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::Device& device):device(device)
 {
     createGraphicsShader(vertFilePath, fragFilePath);
 }
 
 Shader::~Shader()
 {
-     Device::getInstance().getVKDevice().destroyShaderModule(vertexModule);
-     Device::getInstance().getVKDevice().destroyShaderModule(fragmentModule);
+    device.destroyShaderModule(vertexModule);
+    device.destroyShaderModule(fragmentModule);
 }
 
 ::std::vector<char> Shader::readFile(const std::string& filePath){
@@ -35,11 +34,11 @@ void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std
     ::vk::ShaderModuleCreateInfo createInfo;
     createInfo.setCodeSize(vertCode.size());
     createInfo.setPCode((uint32_t*)vertCode.data());
-    vertexModule = Device::getInstance().getVKDevice().createShaderModule(createInfo);
+    vertexModule = device.createShaderModule(createInfo);
 
     createInfo.setCodeSize(fragCode.size());
     createInfo.setPCode((uint32_t*)fragCode.data());
-    fragmentModule = Device::getInstance().getVKDevice().createShaderModule(createInfo);
+    fragmentModule = device.createShaderModule(createInfo);
 
 }
 
