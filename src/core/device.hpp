@@ -66,7 +66,7 @@ namespace core{
         ::vk::PhysicalDevice& getPhysicalDevice();
         ::vk::Queue& getGraphicsQueue();
         ::vk::Queue& getPresentQueue();
-        ::vk::Device& getVKDevice();
+        ::vk::Device& logicalDevice();
         ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
         ::vk::CommandPool getCommandPool(){return cmdPool_;}
         SwapchainSupportDetails querySwapchainSupport(::vk::PhysicalDevice device);

@@ -2,7 +2,7 @@
 #include "../core/staging_buffer.hpp"
 namespace resource::image {
 
-ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format format):format_(format),device_(device.getVKDevice())
+ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format format):format_(format),device_(device.logicalDevice())
 {
     imageMipLevels_ = image.getMipLevels();
     ImageInfo imgInfo = image.getImageInfo();
@@ -97,7 +97,7 @@ void ImageTexture::createTextureSampler(core::Device& device)
                 .setMipLodBias(0.0f)
                 .setMinLod(0.0f)
                 .setMaxLod(imageMipLevels_);
-    sampler_ = device.getVKDevice().createSampler(samplerInfo);
+    sampler_ = device.logicalDevice().createSampler(samplerInfo);
 }
 
 void ImageTexture::createTextureImageView(core::Device& device)

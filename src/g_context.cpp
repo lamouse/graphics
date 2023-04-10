@@ -20,7 +20,7 @@ Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSu
 
 Context::~Context()
 {
-    device_->getVKDevice().waitIdle();
+    device_->logicalDevice().waitIdle();
 }
 
 void Context::init(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height)

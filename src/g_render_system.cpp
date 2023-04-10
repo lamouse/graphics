@@ -1,4 +1,5 @@
 #include "g_render_system.hpp"
+#include "resource/shader.hpp"
 #include "g_context.hpp"
 #include "g_defines.hpp"
 #include <chrono>
@@ -12,12 +13,8 @@ void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, int 
     {
         return;
     }
-    static bool c = false;
-    if(!c){
-        createDescriptorSets(2, imageTexture.imageView(), imageTexture.sampler());
-        c = true;
-    }
-    pipeline->bind(commandBuffer);
+    updateDescriptorSet(currentFrame, imageTexture.imageView(), imageTexture.sampler());
+    pipeline.bind(commandBuffer);
     updateUniformBuffer(currentFrame, extentAspectRation);
     for(auto& obj : gameObjects)
     {
@@ -39,10 +36,11 @@ void RenderSystem::createUniformBuffers(uint32_t count)
         device.createBuffer(bufferSize, ::vk::BufferUsageFlagBits::eUniformBuffer, 
                     ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent, uniformBuffers[i], uniformBuffersMemory[i]);
 
-        uniformBuffersMapped[i] = device.getVKDevice().mapMemory(uniformBuffersMemory[i], 0, bufferSize);
+        uniformBuffersMapped[i] = device.logicalDevice().mapMemory(uniformBuffersMemory[i], 0, bufferSize);
     }
 
     createDescriptorPool(count);
+    createDescriptorSets(count);
 }
 
 void RenderSystem::createDescriptorPool(uint32_t count)
@@ -56,20 +54,26 @@ void RenderSystem::createDescriptorPool(uint32_t count)
     ::vk::DescriptorPoolCreateInfo createInfo;
     createInfo.setPoolSizes(poolSizes)
                .setMaxSets(count);
-    descriptorPool =  Context::Instance().device().getVKDevice().createDescriptorPool(createInfo); 
+    descriptorPool =  Context::Instance().device().logicalDevice().createDescriptorPool(createInfo); 
 }
 
-void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageView, ::vk::Sampler sampler)
+void RenderSystem::createDescriptorSets(uint32_t count)
 {
     ::std::vector<::vk::DescriptorSetLayout> layouts(count, setLayout);
     ::vk::DescriptorSetAllocateInfo allocInfo{};
     allocInfo.setDescriptorPool(descriptorPool)
             .setSetLayouts(layouts);
-    descriptorSets =  Context::Instance().device().getVKDevice().allocateDescriptorSets(allocInfo);
+    descriptorSets =  Context::Instance().device().logicalDevice().allocateDescriptorSets(allocInfo);
 
     for (size_t i = 0; i < count; i++) {
-        ::vk::DescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i];
+     
+    }
+}
+
+void RenderSystem::updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler)
+{
+       ::vk::DescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = uniformBuffers[currentImage];
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -79,13 +83,13 @@ void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageVie
                     .setSampler(sampler);
         
         ::vk::WriteDescriptorSet uniformDescriptorWrite{};
-        uniformDescriptorWrite.setDstSet(descriptorSets[i])
+        uniformDescriptorWrite.setDstSet(descriptorSets[currentImage])
                         .setDstBinding(0)
                         .setDstArrayElement(0)
                         .setDescriptorType(::vk::DescriptorType::eUniformBuffer)
                         .setBufferInfo(bufferInfo);
         ::vk::WriteDescriptorSet imageDescriptorWrite{};
-        imageDescriptorWrite.setDstSet(descriptorSets[i])
+        imageDescriptorWrite.setDstSet(descriptorSets[currentImage])
                         .setDstBinding(1)
                         .setDstArrayElement(0)
                         .setDescriptorType(::vk::DescriptorType::eCombinedImageSampler)
@@ -94,8 +98,7 @@ void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageVie
         std::array<::vk::WriteDescriptorSet, 2> descriptorWrites{};
         descriptorWrites[0] = uniformDescriptorWrite;
         descriptorWrites[1] = imageDescriptorWrite;
-         Context::Instance().device().getVKDevice().updateDescriptorSets(descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
-    }
+        Context::Instance().device().logicalDevice().updateDescriptorSets(descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 }
 
 void RenderSystem::updateUniformBuffer(uint32_t currentImage, float extentAspectRation)
@@ -119,11 +122,13 @@ RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 
 RenderSystem::~RenderSystem()
 {
-    auto & device = Context::Instance().device().getVKDevice();
-      for (size_t i = 0; i < uniformBuffers.size(); i++) {
+    auto & device = Context::Instance().device().logicalDevice();
+    for (size_t i = 0; i < uniformBuffers.size(); i++) {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
     }
+
+    device.destroyPipeline(pipeline());
     device.destroyDescriptorPool(descriptorPool);
     device.destroyDescriptorSetLayout(setLayout);
     device.destroyPipelineLayout(pipelineLayout);
@@ -131,7 +136,7 @@ RenderSystem::~RenderSystem()
 
 void RenderSystem::createPipelineLayout()
 {
-    auto& device =  Context::Instance().device().getVKDevice();
+    auto& device =  Context::Instance().device().logicalDevice();
     ::vk::PushConstantRange pushConstantRange;
     pushConstantRange.setStageFlags(::vk::ShaderStageFlagBits::eVertex | 
                                     ::vk::ShaderStageFlagBits::eFragment)
@@ -164,9 +169,17 @@ void RenderSystem::createPipelineLayout()
 
 void RenderSystem::createPipeline(::vk::RenderPass renderPass)
 {
-
-    pipeline = ::std::make_unique<PipeLine>(shader_path + "vert.spv", shader_path + "frag.spv", renderPass, pipelineLayout, Context::Instance().device().getVKDevice(), 
-    Context::Instance().device().getMaxUsableSampleCount());
+    ::std::string vertFilePath = shader_path + "vert.spv";
+    ::std::string fragFilePath = shader_path + "frag.spv";
+    ::resource::shader::Shader shader(vertFilePath, fragFilePath, Context::Instance().device().logicalDevice());
+    auto defaultConfig= PipeLine::getDefaultConfig();
+    defaultConfig.renderPass = renderPass;
+    defaultConfig.layout = pipelineLayout;
+    defaultConfig.shaderStages = shader.getShaderStages();
+    defaultConfig.attributeDescriptions = Model::Vertex::getAtrributeDescription();
+    defaultConfig.bindingDescriptions = Model::Vertex::getBindingDescription();
+    defaultConfig.multisampleInfo.setRasterizationSamples(Context::Instance().imageQualityConfig.msaaSamples);
+    pipeline.initPipeline(Context::Instance().device().logicalDevice(), defaultConfig);
 }
 
 }

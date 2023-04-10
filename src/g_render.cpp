@@ -21,7 +21,7 @@ void RenderProcesser::createSwapchain()
         extent = Context::getExtent();  
         Context::waitWindowEvents();
     }
-    device_.getVKDevice().waitIdle();
+    device_.logicalDevice().waitIdle();
     if(swapchain == nullptr)
     {
         swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height);
@@ -103,7 +103,7 @@ void RenderProcesser::allcoCmdBuffer()
         .setCommandBufferCount(swapchain->MAX_FRAME_IN_FLIGHT)
         .setLevel(::vk::CommandBufferLevel::ePrimary);
     
-    commandBuffers_ = device_.getVKDevice().allocateCommandBuffers(allocInfo);
+    commandBuffers_ = device_.logicalDevice().allocateCommandBuffers(allocInfo);
 }
 
 

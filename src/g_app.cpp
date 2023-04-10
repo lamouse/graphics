@@ -17,7 +17,7 @@ void App::run(){
     Camera camera;
     //auto gameObj = GameObject::createGameObject();
     std::string s(image_path + "viking_room.png");
-     resource::image::Image img(s);
+    resource::image::Image img(s);
     resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
 
     while (!window.shuldClose()){
@@ -30,7 +30,7 @@ void App::run(){
             render.endFrame();
         }
     }
-    Context::Instance().device().getVKDevice().waitIdle();
+    Context::Instance().device().logicalDevice().waitIdle();
 }
 
 std::unique_ptr<Model> createCubeModel(::glm::vec3 offset) {

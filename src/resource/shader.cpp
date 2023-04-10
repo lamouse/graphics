@@ -42,7 +42,7 @@ void Shader::createGraphicsShader(const ::std::string& vertFilePath, const ::std
 
 }
 
-::std::vector<::vk::PipelineShaderStageCreateInfo> Shader::getShaderStage()
+::std::vector<::vk::PipelineShaderStageCreateInfo> Shader::getShaderStages()
 {
     shaderStages.resize(2);
     shaderStages[0].setStage(::vk::ShaderStageFlagBits::eVertex)

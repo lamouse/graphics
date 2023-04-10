@@ -1,9 +1,9 @@
 #ifndef G_RENDER_HPP
 #define G_RENDER_HPP
 
+#include "resource/shader_stage.hpp"
 #include <vulkan/vulkan.hpp>
 #include <memory>
-#include <functional>
 namespace g
 {
 
@@ -19,33 +19,26 @@ namespace g
         ::std::vector<::vk::DynamicState> dynamicStateEnables;
         ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions{};
         ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions{};
+        ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
+        ::vk::RenderPass renderPass;
+        ::vk::PipelineLayout layout;
     };
     class PipeLine
     {
     private:
         ::vk::Pipeline pipeline;
-        ::vk::SampleCountFlagBits msaaSamples_;
-        void initPipeline(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout);
-        PipelineConfigInfo configInfo;
-        int currentFrame;
-        ::std::reference_wrapper<::vk::Device> device_;
-
-        void defaultPiplineConfig();
-        void setDepthStencilStateConfig();
-        void setRasterizationStateInfo();
-        void setColorBlendInfo();
-        void setMultisampleInfo();
-        void setViewportStateInfo();
-        void setInputAssemblyStateInfo();
-        void setDynamicStateEnables();
     public:
-        PipeLine(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout, ::vk::Device& device, 
-                    ::vk::SampleCountFlagBits msaaSamples);
+        PipeLine()=default;
+        void initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo);
         PipeLine(const PipeLine&) = delete;
         void bind(::vk::CommandBuffer& commandBuffer){commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics ,pipeline);};
         PipeLine operator=(const PipeLine&) = delete;
         PipeLine& operator=(PipeLine&&) = default;
-        void enableAlphaBlending(PipelineConfigInfo& configInfo);
+        ::vk::Pipeline& operator()(){return pipeline;}
+        void destroy(::vk::Device& device);
+        static void enableAlphaBlending(PipelineConfigInfo& configInfo);
+        static PipelineConfigInfo getDefaultConfig();
+
         ~PipeLine();
     };
 

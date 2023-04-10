@@ -19,7 +19,7 @@ DeviceBuffer::DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory, ::v
     device.createBuffer(size, usage | ::vk::BufferUsageFlagBits::eTransferDst, 
                 ::vk::MemoryPropertyFlagBits::eDeviceLocal|::vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer,vertexBufferMemory);
     copyBuffer(device, stagingBuffer.getBuffer(), vertexBuffer, size);
-    return DeviceBuffer(vertexBuffer, vertexBufferMemory, device.getVKDevice());
+    return DeviceBuffer(vertexBuffer, vertexBufferMemory, device.logicalDevice());
  }
 
 

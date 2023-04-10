@@ -2,7 +2,6 @@
 #include "g_camera.hpp"
 #include "g_pipeline.hpp"
 #include "g_game_object.hpp"
-#include <memory>
 #include "resource/image_texture.hpp"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -19,7 +18,7 @@ namespace g
     private:
         ::vk::PipelineLayout pipelineLayout;
         ::vk::DescriptorSetLayout setLayout;
-        ::std::unique_ptr<PipeLine> pipeline;
+        PipeLine pipeline;
         ::std::vector<::vk::Buffer> uniformBuffers;
         ::std::vector<::vk::DeviceMemory> uniformBuffersMemory;
         ::std::vector<void*> uniformBuffersMapped;
@@ -28,7 +27,8 @@ namespace g
         void createPipelineLayout();
         void createPipeline(::vk::RenderPass renderPass);
         void createDescriptorPool(uint32_t count);
-        void createDescriptorSets(uint32_t count, ::vk::ImageView imageView, ::vk::Sampler sampler);
+        void createDescriptorSets(uint32_t count);
+        void updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler);
     public:
         RenderSystem(::vk::RenderPass renderPass);
         void updateUniformBuffer(uint32_t currentImage, float extentAspectRation);

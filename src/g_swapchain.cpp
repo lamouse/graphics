@@ -45,7 +45,7 @@ void Swapchain::init(int width, int height)
     {
         createInfo.setOldSwapchain(oldSwapchain->getSwapchain());
     }
-    swapchain =device_.getVKDevice().createSwapchainKHR(createInfo);
+    swapchain =device_.logicalDevice().createSwapchainKHR(createInfo);
 
     initRenderPass();
     createImageFrame();
@@ -118,7 +118,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
 Swapchain::~Swapchain()
 {
 
-    auto& device = device_.getVKDevice();
+    auto& device = device_.logicalDevice();
 
     for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++){
         device.destroyFence(inFlightFences[i]);
@@ -156,7 +156,7 @@ Swapchain::~Swapchain()
 
 void Swapchain::getImages()
 {
-    images = device_.getVKDevice().getSwapchainImagesKHR(swapchain);
+    images = device_.logicalDevice().getSwapchainImagesKHR(swapchain);
 }
 
 void Swapchain::createImageViews()
@@ -184,7 +184,7 @@ void Swapchain::createFrameBuffers()
                 .setHeight(swapchainInfo.extent2D.height)
                 .setRenderPass(renderPass)
                 .setLayers(1);
-        frameBuffers[i] = device_.getVKDevice().createFramebuffer(createInfo);
+        frameBuffers[i] = device_.logicalDevice().createFramebuffer(createInfo);
     }
 }
 
@@ -282,7 +282,7 @@ void Swapchain::initRenderPass()
                         .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
                         .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
     createInfo.setDependencies(subepassDependency);
-    renderPass = device_.getVKDevice().createRenderPass(createInfo);
+    renderPass = device_.logicalDevice().createRenderPass(createInfo);
 }
 
  ::vk::Format Swapchain::findDepthFormat(){
@@ -299,7 +299,7 @@ void Swapchain::initRenderPass()
     {
         ::vk::FenceCreateInfo info;
         info.setFlags(::vk::FenceCreateFlagBits::eSignaled);
-        inFlightFences[i] = device_.getVKDevice().createFence(info);
+        inFlightFences[i] = device_.logicalDevice().createFence(info);
     }
 }
 
@@ -310,17 +310,17 @@ void Swapchain::createsemphores()
     for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
     {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        imageAvailableSemaphores[i] = device_.getVKDevice().createSemaphore(semaphoreCreateInfo);
+        imageAvailableSemaphores[i] = device_.logicalDevice().createSemaphore(semaphoreCreateInfo);
 
         ::vk::SemaphoreCreateInfo renderSemaphoreCreateInfo;
-        renderFinshSemaphores[i] = device_.getVKDevice().createSemaphore(renderSemaphoreCreateInfo);
+        renderFinshSemaphores[i] = device_.logicalDevice().createSemaphore(renderSemaphoreCreateInfo);
     }
 
 }
 
 ::vk::ResultValue<uint32_t> Swapchain::acquireNextImage()
 {
-    auto device = device_.getVKDevice();
+    auto device = device_.logicalDevice();
 
     auto waitResult = device.waitForFences(inFlightFences[currentFrame], VK_TRUE, ::std::numeric_limits<uint64_t>::max());
     if(waitResult != ::vk::Result::eSuccess)
@@ -342,7 +342,7 @@ void Swapchain::createsemphores()
                 .setWaitSemaphores(imageAvailableSemaphores[currentFrame])
                 .setSignalSemaphores(renderFinshSemaphores[currentFrame])
                 .setWaitDstStageMask(stage);
-    device_.getVKDevice().resetFences(inFlightFences[currentFrame]);
+    device_.logicalDevice().resetFences(inFlightFences[currentFrame]);
     device_.getGraphicsQueue().submit(submitInfo, inFlightFences[currentFrame]);
     ::vk::PresentInfoKHR presentInfo;
     presentInfo.setImageIndices(imageIndex)

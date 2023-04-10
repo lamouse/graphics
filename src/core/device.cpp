@@ -184,7 +184,7 @@ void Device::excuteCmd(RecordCmdFunc func)
     throw std::runtime_error("failed to find supported format!");
 }
 
-::vk::Device& Device::getVKDevice()
+::vk::Device& Device::logicalDevice()
 {
     return device_;
 }
