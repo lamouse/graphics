@@ -1,8 +1,6 @@
 
-#include "g_device.hpp"
 #include "g_context.hpp"
 #include "g_window.hpp"
-#include "g_swapchain.hpp"
 #include <iostream>
 #include <vector>
 namespace g{

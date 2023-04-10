@@ -7,24 +7,13 @@
 #include <optional>
 #include <functional>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-
-namespace g{
+namespace core{
 
     struct SwapchainSupportDetails
     {
         ::vk::SurfaceCapabilitiesKHR capabilities;
         ::std::vector<::vk::SurfaceFormatKHR> formats;
         ::std::vector<::vk::PresentModeKHR> presentModes;
-    };
-
-    struct SimplePushConstantData
-    {
-        ::glm::mat4 transform{1.f};
-        ::glm::vec3 color;
     };
 
     using CreateSurfaceFunc = ::std::function<vk::SurfaceKHR(vk::Instance)>;
@@ -47,7 +36,6 @@ namespace g{
         void createInstance(const std::vector<const char*>& instanceExtends);
         bool checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice);
         bool isDeviceSuitable(::vk::PhysicalDevice& checkDevice);
-        Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         static ::std::unique_ptr<Device> instance;
         
         const ::std::vector<const char*> deviceExtensions = {
@@ -62,12 +50,10 @@ namespace g{
             ::std::optional<uint32_t> presentQueue;
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
+        Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
         ::vk::SampleCountFlagBits getMaxUsableSampleCount();
         QueueFamilyIndices queryQueueFamilyIndices(::vk::PhysicalDevice device);
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
-        static void init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
-        static Device& getInstance(){return *instance;}
-        static void quit();
         QueueFamilyIndices queueFamilyIndices;
         uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 

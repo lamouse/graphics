@@ -2,6 +2,7 @@
 
 #include "g_pipeline.hpp"
 #include "g_swapchain.hpp"
+#include "core/device.hpp"
 #include <memory>
 namespace g{
 class RenderProcesser
@@ -11,6 +12,7 @@ private:
     bool isFrameStart{false};
     uint32_t currentImageIndex;
     int currentFrameIndex{0};
+    core::Device& device_;
     ::std::vector<::vk::CommandBuffer> commandBuffers_;
 
     void createSwapchain();
@@ -23,7 +25,7 @@ public:
     ::vk::RenderPass getRenderPass(){return swapchain->getRenderPass();}
     ::vk::CommandBuffer& getCurrentCommadBuffer(){return commandBuffers_[currentFrameIndex];};
     int getCurrentFrameIndex(){return currentFrameIndex;}
-    RenderProcesser();
+    RenderProcesser(core::Device& device);
     ~RenderProcesser();
     float extentAspectRation(){return swapchain->extentAspectRation();}
 };

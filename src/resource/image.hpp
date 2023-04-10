@@ -21,6 +21,7 @@ namespace resource::image {
         unsigned char* getData();
         ImageInfo getImageInfo();
         uint32_t getMipLevels();
+        unsigned long long size();
         ~Image();
     };
 

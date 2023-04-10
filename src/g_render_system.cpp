@@ -1,12 +1,12 @@
 #include "g_render_system.hpp"
-#include "g_device.hpp"
+#include "g_context.hpp"
 #include "g_defines.hpp"
-#include <memory>
 #include <chrono>
 namespace g
 {
 
-void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation)
+void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation,
+                                    resource::image::ImageTexture& imageTexture)
 {
     if(gameObjects.empty())
     {
@@ -14,22 +14,13 @@ void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, int 
     }
     static bool c = false;
     if(!c){
-        gameObjects[0].loadImage();
-        createDescriptorSets(2, gameObjects[0].textureImageView, gameObjects[0].textureSampler);
+        createDescriptorSets(2, imageTexture.imageView(), imageTexture.sampler());
         c = true;
     }
     pipeline->bind(commandBuffer);
     updateUniformBuffer(currentFrame, extentAspectRation);
     for(auto& obj : gameObjects)
     {
-        
-        SimplePushConstantData push;
-        push.color = obj.color;
-        //obj.transform.rotation.y = ::glm::mod(obj.transform.rotation.y + 0.0003f, ::glm::two_pi<float>());
-        //obj.transform.rotation.x = ::glm::mod(obj.transform.rotation.x + 0.0001f, ::glm::two_pi<float>());
-        push.transform = obj.transform.mat4();
-        // commandBuffer.pushConstants(pipelineLayout, ::vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 
-        //                         0, sizeof(SimplePushConstantData), &push);
         obj.model->bind(commandBuffer);
         commandBuffer.bindDescriptorSets(::vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, descriptorSets[currentFrame], nullptr);
         obj.model->draw(commandBuffer);
@@ -40,7 +31,7 @@ void RenderSystem::renderGameObject(::std::vector<GameObject>& gameObjects, int 
 void RenderSystem::createUniformBuffers(uint32_t count)
 {
     vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
-    auto& device = Device::getInstance();
+    auto& device = Context::Instance().device();
     uniformBuffers.resize(count);
     uniformBuffersMemory.resize(count);
     uniformBuffersMapped.resize(count);
@@ -65,7 +56,7 @@ void RenderSystem::createDescriptorPool(uint32_t count)
     ::vk::DescriptorPoolCreateInfo createInfo;
     createInfo.setPoolSizes(poolSizes)
                .setMaxSets(count);
-    descriptorPool = Device::getInstance().getVKDevice().createDescriptorPool(createInfo); 
+    descriptorPool =  Context::Instance().device().getVKDevice().createDescriptorPool(createInfo); 
 }
 
 void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageView, ::vk::Sampler sampler)
@@ -74,7 +65,7 @@ void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageVie
     ::vk::DescriptorSetAllocateInfo allocInfo{};
     allocInfo.setDescriptorPool(descriptorPool)
             .setSetLayouts(layouts);
-    descriptorSets = Device::getInstance().getVKDevice().allocateDescriptorSets(allocInfo);
+    descriptorSets =  Context::Instance().device().getVKDevice().allocateDescriptorSets(allocInfo);
 
     for (size_t i = 0; i < count; i++) {
         ::vk::DescriptorBufferInfo bufferInfo{};
@@ -103,7 +94,7 @@ void RenderSystem::createDescriptorSets(uint32_t count, ::vk::ImageView imageVie
         std::array<::vk::WriteDescriptorSet, 2> descriptorWrites{};
         descriptorWrites[0] = uniformDescriptorWrite;
         descriptorWrites[1] = imageDescriptorWrite;
-        Device::getInstance().getVKDevice().updateDescriptorSets(descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+         Context::Instance().device().getVKDevice().updateDescriptorSets(descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
     }
 }
 
@@ -128,7 +119,7 @@ RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 
 RenderSystem::~RenderSystem()
 {
-    auto & device = Device::getInstance().getVKDevice();
+    auto & device = Context::Instance().device().getVKDevice();
       for (size_t i = 0; i < uniformBuffers.size(); i++) {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
@@ -140,7 +131,7 @@ RenderSystem::~RenderSystem()
 
 void RenderSystem::createPipelineLayout()
 {
-    auto& device = Device::getInstance().getVKDevice();
+    auto& device =  Context::Instance().device().getVKDevice();
     ::vk::PushConstantRange pushConstantRange;
     pushConstantRange.setStageFlags(::vk::ShaderStageFlagBits::eVertex | 
                                     ::vk::ShaderStageFlagBits::eFragment)
@@ -174,7 +165,8 @@ void RenderSystem::createPipelineLayout()
 void RenderSystem::createPipeline(::vk::RenderPass renderPass)
 {
 
-    pipeline = ::std::make_unique<PipeLine>(shader_path + "vert.spv", shader_path + "frag.spv", renderPass, pipelineLayout);
+    pipeline = ::std::make_unique<PipeLine>(shader_path + "vert.spv", shader_path + "frag.spv", renderPass, pipelineLayout, Context::Instance().device().getVKDevice(), 
+    Context::Instance().device().getMaxUsableSampleCount());
 }
 
 }

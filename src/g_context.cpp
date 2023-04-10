@@ -2,28 +2,28 @@
 #include "g_pipeline.hpp"
 #include "g_swapchain.hpp"
 #include <iostream>
-#include<vector>
-#include<cassert>
+#include <vector>
+#include <cassert>
 namespace g{
-
+::std::unique_ptr<core::Device> device = nullptr;
 
 ::std::unique_ptr<Context> Context::pInstance = nullptr;
 int Context::width = 800;
 int Context::height = 600;
 bool Context::windowIsRsize = false;
 
-Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
+Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc)
 {
-    Device::init(instanceExtends, createFunc);
+   device_ = ::std::make_shared<core::Device>(instanceExtends, createFunc);
+   imageQualityConfig.msaaSamples = device_->getMaxUsableSampleCount();
 }
 
 Context::~Context()
 {
-    Device::getInstance().getVKDevice().waitIdle();
-    Device::quit();
+    device_->getVKDevice().waitIdle();
 }
 
-void Context::init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, int width, int height)
+void Context::init(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height)
 {
     width = width;
     height = height;

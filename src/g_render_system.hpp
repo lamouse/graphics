@@ -3,10 +3,10 @@
 #include "g_pipeline.hpp"
 #include "g_game_object.hpp"
 #include <memory>
-#include <vulkan/vulkan_handles.hpp>
+#include "resource/image_texture.hpp"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include<glm/glm.hpp>
+#include <glm/glm.hpp>
 namespace g
 {
     struct UniformBufferObject {
@@ -33,7 +33,8 @@ namespace g
         RenderSystem(::vk::RenderPass renderPass);
         void updateUniformBuffer(uint32_t currentImage, float extentAspectRation);
         void createUniformBuffers(uint32_t count);
-        void renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation);
+        void renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation, 
+                                resource::image::ImageTexture& imageTexture);
         ~RenderSystem();
 };
 

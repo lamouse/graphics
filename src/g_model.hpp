@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/device.hpp"
+#include "core/device_buffer.hpp"
 #include <vulkan/vulkan.hpp>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -27,18 +29,13 @@ public:
     Model& operator=(const Model&) = delete;
     void bind(::vk::CommandBuffer commandBuffer);
     void draw(::vk::CommandBuffer commandBuffer);
-    Model(const ::std::vector<Vertex> &vertices, ::std::vector<uint16_t> indices);
+    Model(const ::std::vector<Vertex> &vertices, ::std::vector<uint16_t> indices, core::Device& device);
     ~Model();
 private:
-    ::vk::Buffer vertexBuffer;
-    ::vk::DeviceMemory vertexBufferMemory;
-    ::vk::Buffer indexBuffer;
-    ::vk::DeviceMemory indexBufferMemory;
+    core::DeviceBuffer vertexBuffer_;
+    core::DeviceBuffer indexBuffer_;
     uint32_t vertexCount;
     uint32_t indicesSize;
-    void createVertexBuffers(const ::std::vector<Vertex> &vertices);
-    void createIndexBuffer(::std::vector<uint16_t>& indices);
-    void copyBuffer(::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size);
 };
     
 } 

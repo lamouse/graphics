@@ -36,4 +36,9 @@ uint32_t Image::getMipLevels()
     return static_cast<uint32_t>(::std::floor(::std::log2(::std::max(imageInfo.width, imageInfo.height)))) + 1;
 }
 
+unsigned long long Image::size()
+{
+    return imageInfo.width * imageInfo.height * 4;
+}
+
 }

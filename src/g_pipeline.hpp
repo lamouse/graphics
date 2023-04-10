@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <memory>
+#include <functional>
 namespace g
 {
 
@@ -23,9 +24,11 @@ namespace g
     {
     private:
         ::vk::Pipeline pipeline;
+        ::vk::SampleCountFlagBits msaaSamples_;
         void initPipeline(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout);
         PipelineConfigInfo configInfo;
         int currentFrame;
+        ::std::reference_wrapper<::vk::Device> device_;
 
         void defaultPiplineConfig();
         void setDepthStencilStateConfig();
@@ -36,10 +39,12 @@ namespace g
         void setInputAssemblyStateInfo();
         void setDynamicStateEnables();
     public:
-        PipeLine(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout);
+        PipeLine(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout, ::vk::Device& device, 
+                    ::vk::SampleCountFlagBits msaaSamples);
         PipeLine(const PipeLine&) = delete;
         void bind(::vk::CommandBuffer& commandBuffer){commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics ,pipeline);};
-        PipeLine& operator=(const PipeLine&) = delete;
+        PipeLine operator=(const PipeLine&) = delete;
+        PipeLine& operator=(PipeLine&&) = default;
         void enableAlphaBlending(PipelineConfigInfo& configInfo);
         ~PipeLine();
     };

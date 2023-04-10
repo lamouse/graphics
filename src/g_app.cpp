@@ -2,6 +2,7 @@
 #include "g_pipeline.hpp"
 #include "g_render_system.hpp"
 #include "g_defines.hpp"
+#include "g_context.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -10,22 +11,26 @@ namespace g{
 
 void App::run(){
 
+    RenderProcesser render(Context::Instance().device());
     RenderSystem renderSystem(render.getRenderPass());
     renderSystem.createUniformBuffers(2);
     Camera camera;
     //auto gameObj = GameObject::createGameObject();
+    std::string s(image_path + "viking_room.png");
+     resource::image::Image img(s);
+    resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
 
     while (!window.shuldClose()){
         glfwPollEvents();
         if(render.beginFrame())
         {
             render.beginSwapchainRenderPass();
-            renderSystem.renderGameObject(gameObjects, render.getCurrentFrameIndex(), render.getCurrentCommadBuffer(), render.extentAspectRation());
+            renderSystem.renderGameObject(gameObjects, render.getCurrentFrameIndex(), render.getCurrentCommadBuffer(), render.extentAspectRation(), imageTexture);
             render.endSwapchainRenderPass();
             render.endFrame();
         }
     }
-    Device::getInstance().getVKDevice().waitIdle();
+    Context::Instance().device().getVKDevice().waitIdle();
 }
 
 std::unique_ptr<Model> createCubeModel(::glm::vec3 offset) {
@@ -70,7 +75,7 @@ std::unique_ptr<Model> createCubeModel(::glm::vec3 offset) {
             }
         }
      
-  return std::make_unique<Model>(vertices, indices);
+  return std::make_unique<Model>(vertices, indices, Context::Instance().device());
 }
 
 void App::loadGameObjects()
@@ -78,9 +83,8 @@ void App::loadGameObjects()
     ::std::shared_ptr<Model> model = createCubeModel({.0f, .0f, .0f});
     auto cube = GameObject::createGameObject();
     cube.model = model;
-    // cube.transform.translation = {0.f,.0f, .5f};
-    // cube.transform.scale = {.5f, .5f, .5f};
     gameObjects.push_back(std::move(cube));
+
 }
 
 App::App()

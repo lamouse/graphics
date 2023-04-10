@@ -1,8 +1,8 @@
-#include "g_device.hpp"
+#include "device.hpp"
 #include <algorithm>
 #include <stdint.h>
 #include <set>
-namespace g{
+namespace core{
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
 
@@ -16,14 +16,6 @@ Device::Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFun
     initCmdPool();
 }
 
-void Device::init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
-{
-    instance.reset(new Device(instanceExtends, createFunc));
-}
-void Device::quit()
-{
-    instance.reset();
-}
 Device::~Device()
 {
     device_.destroyCommandPool(cmdPool_);

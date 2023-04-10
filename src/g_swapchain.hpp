@@ -1,8 +1,7 @@
 #ifndef G_SWAPCHAIN_HPP
 #define G_SWAPCHAIN_HPP
-#include "g_device.hpp"
-#include <stdint.h>
-#include<vulkan/vulkan.hpp>
+#include "core/device.hpp"
+#include <vulkan/vulkan.hpp>
 #include <memory>
 
 namespace g{
@@ -36,8 +35,8 @@ public:
     }
     
     ~Swapchain();
-    Swapchain(int width, int height);
-    Swapchain(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain);
+    Swapchain(core::Device& device_, int width, int height);
+    Swapchain(core::Device& device_, int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain);
     Swapchain(const Swapchain&) = delete;
     Swapchain& operator=(const Swapchain&) = delete;
     static constexpr int MAX_FRAME_IN_FLIGHT = 2;
@@ -68,6 +67,8 @@ private:
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
     ::vk::Format findDepthFormat();
     ::std::shared_ptr<Swapchain> oldSwapchain;
+
+    core::Device& device_;
     void init(int width, int height);
     void getImages();
     void createImageViews();

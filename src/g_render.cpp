@@ -3,7 +3,7 @@
 #include <cassert>
 #include <exception>
 namespace g{
-RenderProcesser::RenderProcesser()
+RenderProcesser::RenderProcesser(core::Device& device):device_(device)
 {
     createSwapchain();
     allcoCmdBuffer();
@@ -21,13 +21,13 @@ void RenderProcesser::createSwapchain()
         extent = Context::getExtent();  
         Context::waitWindowEvents();
     }
-    Device::getInstance().getVKDevice().waitIdle();
+    device_.getVKDevice().waitIdle();
     if(swapchain == nullptr)
     {
-        swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height);
+        swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height);
     }else{
         ::std::shared_ptr<Swapchain> old = ::std::move(swapchain);
-        swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height, old);
+        swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, old);
         if(!old->compareFormats(*swapchain)){
             throw ::std::runtime_error("swapchain image(or depth) format has changed!");
         }
@@ -99,11 +99,11 @@ void RenderProcesser::endSwapchainRenderPass()
 void RenderProcesser::allcoCmdBuffer()
 {
     ::vk::CommandBufferAllocateInfo allocInfo;
-    allocInfo.setCommandPool(Device::getInstance().getCommandPool())
+    allocInfo.setCommandPool(device_.getCommandPool())
         .setCommandBufferCount(swapchain->MAX_FRAME_IN_FLIGHT)
         .setLevel(::vk::CommandBufferLevel::ePrimary);
     
-    commandBuffers_ = Device::getInstance().getVKDevice().allocateCommandBuffers(allocInfo);
+    commandBuffers_ = device_.getVKDevice().allocateCommandBuffers(allocInfo);
 }
 
 

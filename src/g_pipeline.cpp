@@ -1,13 +1,12 @@
 #include "g_pipeline.hpp"
-#include "g_device.hpp"
-#include "g_swapchain.hpp"
 #include "g_model.hpp"
 #include "resource/shader.hpp"
 #include <iostream>
 
 
 namespace g{
-PipeLine::PipeLine(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout)
+PipeLine::PipeLine(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, 
+            ::vk::PipelineLayout layout, ::vk::Device& device, ::vk::SampleCountFlagBits msaaSamples):device_(device), msaaSamples_(msaaSamples)
 {
     currentFrame = 0;
     initPipeline(vertFilePath, fragFilePath, renderPass, layout);
@@ -16,7 +15,7 @@ PipeLine::PipeLine(const ::std::string& vertFilePath, const ::std::string& fragF
 PipeLine::~PipeLine()
 {
 
-    Device::getInstance().getVKDevice().destroyPipeline(pipeline);
+    device_.get().destroyPipeline(pipeline);
 }
 
 void PipeLine::initPipeline(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::RenderPass& renderPass, ::vk::PipelineLayout layout)
@@ -28,8 +27,7 @@ void PipeLine::initPipeline(const ::std::string& vertFilePath, const ::std::stri
     inputState.setVertexBindingDescriptions(configInfo.bindingDescriptions);
     inputState.setVertexAttributeDescriptions(configInfo.attributeDescriptions);
     createInfo.setPVertexInputState(&inputState);  
-    auto& device = Device::getInstance().getVKDevice();
-    ::resource::shader::Shader shader(vertFilePath, fragFilePath, device);
+    ::resource::shader::Shader shader(vertFilePath, fragFilePath, device_);
     auto shaderStage = shader.getShaderStage();
     createInfo.setStages(shaderStage);
  
@@ -45,7 +43,7 @@ void PipeLine::initPipeline(const ::std::string& vertFilePath, const ::std::stri
                 .setBasePipelineIndex(-1)
                 .setRenderPass(renderPass)
                 .setSubpass(0);
-    auto result = Device::getInstance().getVKDevice().createGraphicsPipeline(nullptr, createInfo);
+    auto result = device_.get().createGraphicsPipeline(nullptr, createInfo);
     if(result.result != vk::Result::eSuccess)
     {
         throw ::std::runtime_error("create graphics pipeline failed");
@@ -106,7 +104,7 @@ void PipeLine::setColorBlendInfo()
 void PipeLine::setMultisampleInfo()
 {
     configInfo.multisampleInfo.setSampleShadingEnable(false)
-                              .setRasterizationSamples(Device::getInstance().getMaxUsableSampleCount());
+                              .setRasterizationSamples(msaaSamples_);
 }
 
 void PipeLine::setViewportStateInfo()
