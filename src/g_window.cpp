@@ -44,11 +44,6 @@ Window::~Window()
     glfwTerminate();
 }
 
-void Window::draw(::std::string resourcePath)
-{
-
-}
-
 bool Window::shuldClose()
 {
     return glfwWindowShouldClose(window);

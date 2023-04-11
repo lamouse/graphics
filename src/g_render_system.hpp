@@ -33,6 +33,7 @@ namespace g
         RenderSystem(::vk::RenderPass renderPass);
         void updateUniformBuffer(uint32_t currentImage, float extentAspectRation);
         void createUniformBuffers(uint32_t count);
+        ::vk::DescriptorPool getDescriptorPool(){return descriptorPool; }
         void renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation, 
                                 resource::image::ImageTexture& imageTexture);
         ~RenderSystem();

@@ -10,7 +10,8 @@ aux_source_directory(./src MAIN_SRC)
 aux_source_directory(./src/resource RESOURCE_SRC)
 aux_source_directory(./src/core CORE_SRC)
 aux_source_directory(./src/system SYSTEM_SRC)
-set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC})
+aux_source_directory(./src/imgui IMGUI)
+set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC} ${IMGUI} )
 add_executable(${EXECUTE_NAME} ${SRC})
 
 find_program(GLSLC_PROGRAM glslc REQUIRED)
@@ -28,7 +29,7 @@ if(WIN32)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
 
-        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan)
+        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan )
 elseif(UNIX AND APPLE)
         set(librariesList
                 GLFW
@@ -52,6 +53,8 @@ file(GLOB SHADER_FILE
         "shader/*.spv"
         )
 file(COPY ${SHADER_FILE} DESTINATION shader)
+file(COPY images DESTINATION .)
+file(COPY models DESTINATION .)
 install(DIRECTORY "shader/"
         DESTINATION "shader"
         FILES_MATCHING PATTERN "*.spv" )

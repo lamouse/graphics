@@ -3,6 +3,7 @@
 #include "g_render_system.hpp"
 #include "g_defines.hpp"
 #include "g_context.hpp"
+#include "gui_util.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -14,9 +15,8 @@ void App::run(){
     RenderProcesser render(Context::Instance().device());
     RenderSystem renderSystem(render.getRenderPass());
     renderSystem.createUniformBuffers(2);
-    Camera camera;
     //auto gameObj = GameObject::createGameObject();
-    std::string s(image_path + "viking_room.png");
+    ::std::string s(image_path + "viking_room.png");
     resource::image::Image img(s);
     resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
 
@@ -30,6 +30,7 @@ void App::run(){
             render.endFrame();
         }
     }
+
     Context::Instance().device().logicalDevice().waitIdle();
 }
 
@@ -41,7 +42,7 @@ std::unique_ptr<Model> createCubeModel(::glm::vec3 offset) {
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, (shader_path + "viking_room.obj") .c_str())) {
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, (models_path + "viking_room.obj") .c_str())) {
         throw std::runtime_error(warn + err);
     }
     std::vector<Model::Vertex> vertices;
