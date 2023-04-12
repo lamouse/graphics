@@ -1,5 +1,5 @@
 #include "g_swapchain.hpp"
-#include "g_pipeline.hpp"
+#include "g_defines.hpp"
 #include <iostream>
 namespace g
 {
@@ -126,7 +126,7 @@ Swapchain::~Swapchain()
         device.destroySemaphore(renderFinshSemaphores[i]);
     }
 
-    for(auto& frameBuffer : frameBuffers){
+    for(auto& frameBuffer : swapchainFrameBuffers){
         device.destroyFramebuffer(frameBuffer);
     }
 
@@ -150,7 +150,7 @@ Swapchain::~Swapchain()
     }
 
     device.destroySwapchainKHR(swapchain);
-    device.destroyRenderPass(renderPass);
+    device.destroyRenderPass(renderPass_);
 
 }
 
@@ -173,12 +173,29 @@ void Swapchain::createImageViews()
 
 void Swapchain::createFrameBuffers()
 {
-    frameBuffers.resize(images.size());
+    swapchainFrameBuffers.resize(images.size());
+
+    for(int i = 0; i < swapchainFrameBuffers.size(); i++)
+    {
+        ::vk::FramebufferCreateInfo createInfo;
+        std::array<vk::ImageView, 3> attachments = {colorImageViews[i], depthImageViews[i], imageViews[i]};
+        createInfo.setAttachments(attachments)
+                .setWidth(swapchainInfo.extent2D.width)
+                .setHeight(swapchainInfo.extent2D.height)
+                .setRenderPass(renderPass_)
+                .setLayers(1);
+        swapchainFrameBuffers[i] = device_.logicalDevice().createFramebuffer(createInfo);
+    }
+}
+
+::std::vector<::vk::Framebuffer> Swapchain::createFrameBuffer(int count, ::vk::RenderPass& renderPass)
+{
+    ::std::vector<::vk::Framebuffer> frameBuffers(count);
 
     for(int i = 0; i < frameBuffers.size(); i++)
     {
         ::vk::FramebufferCreateInfo createInfo;
-        std::array<vk::ImageView, 3> attachments = {colorImageViews[i], depthImageViews[i], imageViews[i]};
+        std::array<vk::ImageView, 1> attachments = { imageViews[i]};
         createInfo.setAttachments(attachments)
                 .setWidth(swapchainInfo.extent2D.width)
                 .setHeight(swapchainInfo.extent2D.height)
@@ -186,6 +203,7 @@ void Swapchain::createFrameBuffers()
                 .setLayers(1);
         frameBuffers[i] = device_.logicalDevice().createFramebuffer(createInfo);
     }
+    return frameBuffers;
 }
 
 void Swapchain::createColorResources()
@@ -211,11 +229,11 @@ void Swapchain::createDepthResources() {
     depthImageViews.resize(images.size());
     uint32_t mipLevels = 1;
     for (int i = 0; i < depthImages.size(); i++) {
-            device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, depthFormat, 
-                            device_.getMaxUsableSampleCount(), ::vk::ImageTiling::eOptimal, 
-                            ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
-                            ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemorys[i]);
-            depthImageViews[i] = device_.createImageView(depthImages[i],  depthFormat, ::vk::ImageAspectFlagBits::eDepth, mipLevels);
+        device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, depthFormat, 
+                        device_.getMaxUsableSampleCount(), ::vk::ImageTiling::eOptimal, 
+                        ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                        ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemorys[i]);
+        depthImageViews[i] = device_.createImageView(depthImages[i],  depthFormat, ::vk::ImageAspectFlagBits::eDepth, mipLevels);
     }
 }
 
@@ -282,7 +300,7 @@ void Swapchain::initRenderPass()
                         .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
                         .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
     createInfo.setDependencies(subepassDependency);
-    renderPass = device_.logicalDevice().createRenderPass(createInfo);
+    renderPass_ = device_.logicalDevice().createRenderPass(createInfo);
 }
 
  ::vk::Format Swapchain::findDepthFormat(){
@@ -355,7 +373,7 @@ void Swapchain::createsemphores()
     return result;
 }
 
-void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::Framebuffer* buffer, ::vk::RenderPass* renderPass)
 {
     auto extent = swapchainInfo.extent2D;
     ::vk::RenderPassBeginInfo renderPassBeginInfo;
@@ -368,9 +386,11 @@ void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t ima
     clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.01f, 0.01f, 0.01f, 1.0f})));
     clearValues[1].setDepthStencil({1.0f, 0});
 
-    renderPassBeginInfo.setRenderPass(renderPass)
+    auto drawBuffer = buffer == nullptr ? swapchainFrameBuffers[currentFrame] : buffer[imageIndex];
+    auto drawRenderPass = renderPass == nullptr ? renderPass_ : *renderPass;
+    renderPassBeginInfo.setRenderPass(drawRenderPass)
                         .setRenderArea(area)
-                        .setFramebuffer(frameBuffers[currentFrame])
+                        .setFramebuffer(drawBuffer)
                         .setClearValues(clearValues);
     commandBuffer.beginRenderPass(renderPassBeginInfo, ::vk::SubpassContents::eInline);
 

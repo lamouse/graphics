@@ -85,10 +85,10 @@ void RenderProcesser::endFrame()
     currentFrameIndex = (currentFrameIndex + 1) % swapchain->MAX_FRAME_IN_FLIGHT;
 }
 
-void RenderProcesser::beginSwapchainRenderPass()
+void RenderProcesser::beginSwapchainRenderPass(::vk::Framebuffer* buffer, ::vk::RenderPass* renderPass)
 {
     assert(isFrameStart && "cat't call beginSwapchainRenderPass  is frame not in progress");
-    swapchain->beginRenderPass(getCurrentCommadBuffer(), currentImageIndex);
+    swapchain->beginRenderPass(getCurrentCommadBuffer(), currentImageIndex, buffer, renderPass);
 }
 
 void RenderProcesser::endSwapchainRenderPass()
