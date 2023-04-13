@@ -28,7 +28,7 @@ namespace core{
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
-        ::vk::SampleCountFlags msaaSamples;
+        ::vk::SampleCountFlagBits maxMsaaSamples_;
         void pickupPhyiscalDevice();
         void createDevice();
         void getQueues();
@@ -36,8 +36,8 @@ namespace core{
         void createInstance(const std::vector<const char*>& instanceExtends);
         bool checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice);
         bool isDeviceSuitable(::vk::PhysicalDevice& checkDevice);
+        ::vk::SampleCountFlagBits getMaxUsableSampleCount();
         static ::std::unique_ptr<Device> instance;
-        
         const ::std::vector<const char*> deviceExtensions = {
 #if defined(VK_USE_PLATFORM_MACOS_MVK)      
                 "VK_KHR_portability_subset",    // "VK_KHR_portability_subset" macos     
@@ -51,10 +51,10 @@ namespace core{
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
         Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
-        ::vk::SampleCountFlagBits getMaxUsableSampleCount();
         QueueFamilyIndices queryQueueFamilyIndices(::vk::PhysicalDevice device);
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;
+        ::vk::SampleCountFlagBits getMaxMsaaSamples(){return maxMsaaSamples_;};
         uint32_t findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties);
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
             ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);

@@ -4,15 +4,13 @@
 namespace g
 {
 
-Swapchain::Swapchain(core::Device& device_, int width, int height):device_(device_)
+Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount, ::std::shared_ptr<Swapchain> oldSwapchain):device_(device_)
 {
-    oldSwapchain = nullptr;
-    init(width, height);
-}
-
-Swapchain::Swapchain(core::Device& device_, int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain):device_(device_)
-{
-    this->oldSwapchain = oldSwapchain;
+    if(oldSwapchain != nullptr)
+    {
+        this->oldSwapchain = oldSwapchain;
+    }
+    sampleCount_ = sampleCount;
     init(width, height);
     oldSwapchain = nullptr;
 }
@@ -47,7 +45,6 @@ void Swapchain::init(int width, int height)
     }
     swapchain =device_.logicalDevice().createSwapchainKHR(createInfo);
 
-    initRenderPass();
     createImageFrame();
     createsemphores();
     createFances();
@@ -58,7 +55,6 @@ void Swapchain::createImageFrame()
     createImageViews();
     createColorResources();
     createDepthResources();
-    createFrameBuffers();
 }
 
 
@@ -150,7 +146,7 @@ Swapchain::~Swapchain()
     }
 
     device.destroySwapchainKHR(swapchain);
-    device.destroyRenderPass(renderPass_);
+
 
 }
 
@@ -165,13 +161,12 @@ void Swapchain::createImageViews()
     imageViews.resize(images.size());
     for(int i = 0; i < images.size(); i++)
     {
-        
         imageViews[i] =device_.createImageView(images[i], swapchainInfo.formatKHR.format, 
                 ::vk::ImageAspectFlagBits::eColor, 1);
     }
 }
 
-void Swapchain::createFrameBuffers()
+void Swapchain::createFrameBuffers(::vk::RenderPass& renderPass)
 {
     swapchainFrameBuffers.resize(images.size());
 
@@ -182,28 +177,10 @@ void Swapchain::createFrameBuffers()
         createInfo.setAttachments(attachments)
                 .setWidth(swapchainInfo.extent2D.width)
                 .setHeight(swapchainInfo.extent2D.height)
-                .setRenderPass(renderPass_)
+                .setRenderPass(renderPass)
                 .setLayers(1);
         swapchainFrameBuffers[i] = device_.logicalDevice().createFramebuffer(createInfo);
     }
-}
-
-::std::vector<::vk::Framebuffer> Swapchain::createFrameBuffer(int count, ::vk::RenderPass& renderPass)
-{
-    ::std::vector<::vk::Framebuffer> frameBuffers(count);
-
-    for(int i = 0; i < frameBuffers.size(); i++)
-    {
-        ::vk::FramebufferCreateInfo createInfo;
-        std::array<vk::ImageView, 1> attachments = { imageViews[i]};
-        createInfo.setAttachments(attachments)
-                .setWidth(swapchainInfo.extent2D.width)
-                .setHeight(swapchainInfo.extent2D.height)
-                .setRenderPass(renderPass)
-                .setLayers(1);
-        frameBuffers[i] = device_.logicalDevice().createFramebuffer(createInfo);
-    }
-    return frameBuffers;
 }
 
 void Swapchain::createColorResources()
@@ -215,7 +192,7 @@ void Swapchain::createColorResources()
     for(int i = 0; i < colorImages.size(); i++)
     {
         device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, swapchainInfo.formatKHR.format, 
-                        device_.getMaxUsableSampleCount(), ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment, 
+                        sampleCount_, ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment, 
                         ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemorys[i]);
         colorImageViews[i] = device_.createImageView(colorImages[i],  swapchainInfo.formatKHR.format, ::vk::ImageAspectFlagBits::eColor, mipLevels);
     }
@@ -230,80 +207,15 @@ void Swapchain::createDepthResources() {
     uint32_t mipLevels = 1;
     for (int i = 0; i < depthImages.size(); i++) {
         device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, depthFormat, 
-                        device_.getMaxUsableSampleCount(), ::vk::ImageTiling::eOptimal, 
+                        sampleCount_, ::vk::ImageTiling::eOptimal, 
                         ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
                         ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemorys[i]);
         depthImageViews[i] = device_.createImageView(depthImages[i],  depthFormat, ::vk::ImageAspectFlagBits::eDepth, mipLevels);
     }
 }
 
-void Swapchain::initRenderPass()
-{
-    ::vk::RenderPassCreateInfo createInfo;
 
-    ::vk::AttachmentDescription colorDesc;
-    colorDesc.setFormat(swapchainInfo.formatKHR.format)
-                .setInitialLayout(::vk::ImageLayout::eUndefined)
-                .setFinalLayout(::vk::ImageLayout::eColorAttachmentOptimal)
-                .setLoadOp(::vk::AttachmentLoadOp::eClear)
-                .setStoreOp(::vk::AttachmentStoreOp::eStore)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
-                .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
-                .setSamples(device_.getMaxUsableSampleCount());
-
-    ::vk::AttachmentDescription colorResolveDesc;
-    colorResolveDesc.setFormat(swapchainInfo.formatKHR.format)
-                .setInitialLayout(::vk::ImageLayout::eUndefined)
-                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
-                .setLoadOp(::vk::AttachmentLoadOp::eDontCare)
-                .setStoreOp(::vk::AttachmentStoreOp::eStore)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
-                .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
-                .setSamples(::vk::SampleCountFlagBits::e1);
-
-    
-    ::vk::AttachmentDescription depthAttachment;
-    depthAttachment.setFormat(findDepthFormat())
-                .setInitialLayout(::vk::ImageLayout::eUndefined)
-                .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal)
-                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
-                .setLoadOp(::vk::AttachmentLoadOp::eClear)
-                .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
-                .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
-                .setSamples(device_.getMaxUsableSampleCount());
-    ::vk::AttachmentReference colorAttachmentReference;
-    colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
-                        .setAttachment(0);
-    vk::AttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.setAttachment(1)
-                    .setLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
-    vk::AttachmentReference colorAttachmentResolveReference{};
-    colorAttachmentResolveReference.setAttachment(2)
-                    .setLayout(::vk::ImageLayout::eColorAttachmentOptimal);
-    
-    ::std::array<::vk::AttachmentDescription, 3> attachments = {colorDesc, depthAttachment, colorResolveDesc};
-    createInfo.setAttachments(attachments);
-
-     ::vk::SubpassDescription subpass;
-    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
-            .setColorAttachments(colorAttachmentReference)
-            .setPDepthStencilAttachment(&depthAttachmentRef)
-            .setResolveAttachments(colorAttachmentResolveReference);
-    createInfo.setSubpasses(subpass);
-
-    ::vk::SubpassDependency subepassDependency;
-    subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-                        .setDstSubpass(0)
-                        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite | ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
-                        .setSrcAccessMask(::vk::AccessFlagBits::eNone)
-                        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
-                        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
-    createInfo.setDependencies(subepassDependency);
-    renderPass_ = device_.logicalDevice().createRenderPass(createInfo);
-}
-
- ::vk::Format Swapchain::findDepthFormat(){
+::vk::Format Swapchain::findDepthFormat(){
     return device_.findSupportedFormat({::vk::Format::eD32Sfloat, ::vk::Format::eD32SfloatS8Uint, ::vk::Format::eD24UnormS8Uint},
             ::vk::ImageTiling::eOptimal,
             ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);
@@ -373,7 +285,7 @@ void Swapchain::createsemphores()
     return result;
 }
 
-void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::Framebuffer* buffer, ::vk::RenderPass* renderPass)
+void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::RenderPass& renderPass)
 {
     auto extent = swapchainInfo.extent2D;
     ::vk::RenderPassBeginInfo renderPassBeginInfo;
@@ -383,14 +295,12 @@ void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t ima
     
     //下标0 颜色附件，下标1深度附件
     ::std::array<::vk::ClearValue, 2> clearValues;
-    clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.01f, 0.01f, 0.01f, 1.0f})));
+    clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.f, 0.f, 0.f, 1.0f})));
     clearValues[1].setDepthStencil({1.0f, 0});
 
-    auto drawBuffer = buffer == nullptr ? swapchainFrameBuffers[currentFrame] : buffer[imageIndex];
-    auto drawRenderPass = renderPass == nullptr ? renderPass_ : *renderPass;
-    renderPassBeginInfo.setRenderPass(drawRenderPass)
+    renderPassBeginInfo.setRenderPass(renderPass)
                         .setRenderArea(area)
-                        .setFramebuffer(drawBuffer)
+                        .setFramebuffer(swapchainFrameBuffers[currentFrame])
                         .setClearValues(clearValues);
     commandBuffer.beginRenderPass(renderPassBeginInfo, ::vk::SubpassContents::eInline);
 

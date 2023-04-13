@@ -108,7 +108,7 @@ RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 RenderSystem::~RenderSystem()
 {
     auto & device = Context::Instance().device().logicalDevice();
-    PRINT_MSG(DETAIL_INFO("vkDestroyBuffer uniformBuffers"));
+    spdlog::debug(DETAIL_INFO("vkDestroyBuffer uniformBuffers"));
     for (size_t i = 0; i < uniformBuffers.size(); i++) {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);

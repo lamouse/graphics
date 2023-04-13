@@ -20,23 +20,23 @@ public:
     ::vk::SwapchainKHR swapchain;
     ::vk::SwapchainKHR getSwapchain()const {return swapchain;}
     SwapchainInfo getSwapchainInfo()const {return swapchainInfo;}
+    ::vk::Format getSwapchainColorFormat()const {return swapchainInfo.formatKHR.format;}
+    ::vk::Format getSwapchainDepthFormat()const {return depthFormat;}
     ::vk::Framebuffer getFrameBuffer(int index){return swapchainFrameBuffers[index];}
 
     int getImageCount(){return images.size();}
-    ::vk::RenderPass getRenderPass(){return renderPass_;};
     ::vk::ResultValue<uint32_t> acquireNextImage();
     ::vk::Result submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
-    void beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::Framebuffer* buffer, ::vk::RenderPass* renderPass);
+    void createFrameBuffers(::vk::RenderPass& renderPass);
+    void beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::RenderPass& renderPass);
     float extentAspectRation()
     {return static_cast<float>(swapchainInfo.extent2D.width)/ static_cast<float>(swapchainInfo.extent2D.width);}
     bool compareFormats(const Swapchain& swapchain) const {
         return depthFormat == swapchain.depthFormat &&
         swapchainInfo.formatKHR.format == swapchain.swapchainInfo.formatKHR.format;
     }
-    ::std::vector<::vk::Framebuffer> createFrameBuffer(int count, ::vk::RenderPass& renderPass);
     ~Swapchain();
-    Swapchain(core::Device& device_, int width, int height);
-    Swapchain(core::Device& device_, int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain);
+    Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount, ::std::shared_ptr<Swapchain> oldSwapchain = nullptr);
     Swapchain(const Swapchain&) = delete;
     Swapchain& operator=(const Swapchain&) = delete;
     static constexpr int MAX_FRAME_IN_FLIGHT = 2;
@@ -44,6 +44,7 @@ public:
 private:
 
     uint32_t currentFrame = 0;
+    ::vk::SampleCountFlagBits sampleCount_;
     SwapchainInfo swapchainInfo;
     ::std::vector<::vk::Fence> inFlightFences;
     ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
@@ -62,7 +63,6 @@ private:
     ::std::vector<::vk::ImageView> colorImageViews;
     ::std::vector<::vk::DeviceMemory> colorImageMemorys;
 
-    ::vk::RenderPass renderPass_;
     ::vk::Format depthFormat;
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
     ::vk::Format findDepthFormat();
@@ -72,9 +72,8 @@ private:
     void init(int width, int height);
     void getImages();
     void createImageViews();
-    void createFrameBuffers();
+
     void createImageFrame();
-    void initRenderPass();
     void createFances();
     void createsemphores();
     void createColorResources();

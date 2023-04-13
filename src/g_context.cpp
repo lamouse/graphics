@@ -15,7 +15,7 @@ bool Context::windowIsRsize = false;
 Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc)
 {
    device_ = ::std::make_shared<core::Device>(instanceExtends, createFunc);
-   imageQualityConfig.msaaSamples = device_->getMaxUsableSampleCount();
+   imageQualityConfig.msaaSamples = device_->getMaxMsaaSamples();
 }
 
 Context::~Context()

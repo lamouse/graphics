@@ -14,18 +14,19 @@ private:
     int currentFrameIndex{0};
     core::Device& device_;
     ::std::vector<::vk::CommandBuffer> commandBuffers_;
-
+    ::vk::RenderPass renderPass_;
+    ::vk::SampleCountFlagBits sampleCount_;
     void createSwapchain();
+    void createRenderPass();
     void allcoCmdBuffer();
 public:
     bool beginFrame();
     void beginSwapchainRenderPass(::vk::Framebuffer* buffer=nullptr, ::vk::RenderPass* renderPass = nullptr);
     void endSwapchainRenderPass();
     void endFrame();
-    ::vk::RenderPass getRenderPass(){return swapchain->getRenderPass();}
+    ::vk::RenderPass getRenderPass(){return renderPass_;}
     ::vk::CommandBuffer& getCurrentCommadBuffer(){return commandBuffers_[currentFrameIndex];};
     int getCurrentFrameIndex(){return currentFrameIndex;}
-    ::std::vector<::vk::Framebuffer> createFrameBuffer(int count, ::vk::RenderPass& renderPass){return swapchain->createFrameBuffer(count, renderPass);}
     RenderProcesser(core::Device& device);
     ~RenderProcesser();
     float extentAspectRation(){return swapchain->extentAspectRation();}

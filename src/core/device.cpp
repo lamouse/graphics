@@ -36,7 +36,7 @@ void Device::pickupPhyiscalDevice()
     if(findPhyDevice != phyDevices.end())
     {
             phyDevice = *findPhyDevice;
-            msaaSamples = getMaxUsableSampleCount();
+            maxMsaaSamples_ = getMaxUsableSampleCount();
             queueFamilyIndices = queryQueueFamilyIndices(phyDevice);
     }else 
     {
