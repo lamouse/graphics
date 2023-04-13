@@ -106,13 +106,20 @@ void App::loadGameObjects()
 
 }
 
+/**
+ * @brief 初始化主要是需要自己创建一个renderpass，传入一个descriptorPool
+ * 
+ * @param window 
+ * @param format 
+ * @param descriptorPool 
+ */
 void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descriptorPool)
 {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = format;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_NONE;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -148,6 +155,7 @@ void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descri
 
     vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &renderPass);
 
+    //这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();

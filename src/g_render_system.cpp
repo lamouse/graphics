@@ -39,44 +39,18 @@ void RenderSystem::createUniformBuffers(uint32_t count)
         uniformBuffersMapped[i] = device.logicalDevice().mapMemory(uniformBuffersMemory[i], 0, bufferSize);
     }
 
-    createDescriptorPool(count);
     createDescriptorSets(count);
 }
 
-void RenderSystem::createDescriptorPool(uint32_t count)
-{
-    count = 1000;
-    std::array<::vk::DescriptorPoolSize, 11> poolSizes{
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eCombinedImageSampler, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eSampler, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eSampledImage, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageImage, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBuffer, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageBuffer, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eInputAttachment, count)
-    };
-    
-    ::vk::DescriptorPoolCreateInfo createInfo;
-    createInfo.setPoolSizes(poolSizes)
-               .setMaxSets(count);
-    descriptorPool =  Context::Instance().device().logicalDevice().createDescriptorPool(createInfo); 
-}
 
 void RenderSystem::createDescriptorSets(uint32_t count)
 {
     ::std::vector<::vk::DescriptorSetLayout> layouts(count, setLayout);
     ::vk::DescriptorSetAllocateInfo allocInfo{};
-    allocInfo.setDescriptorPool(descriptorPool)
+    allocInfo.setDescriptorPool(descriptor_.getDescriptorPool())
             .setSetLayouts(layouts);
     descriptorSets =  Context::Instance().device().logicalDevice().allocateDescriptorSets(allocInfo);
 
-    for (size_t i = 0; i < count; i++) {
-     
-    }
 }
 
 void RenderSystem::updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler)
@@ -123,7 +97,7 @@ void RenderSystem::updateUniformBuffer(uint32_t currentImage, float extentAspect
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
     
-RenderSystem::RenderSystem(::vk::RenderPass renderPass)
+RenderSystem::RenderSystem(::vk::RenderPass renderPass):descriptor_({Context::Instance().device().logicalDevice()})
 {
     createPipelineLayout();
     createPipeline(renderPass);
@@ -138,7 +112,6 @@ RenderSystem::~RenderSystem()
     }
 
     device.destroyPipeline(pipeline());
-    device.destroyDescriptorPool(descriptorPool);
     device.destroyDescriptorSetLayout(setLayout);
     device.destroyPipelineLayout(pipelineLayout);
 }

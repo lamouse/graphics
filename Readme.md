@@ -11,3 +11,7 @@
 
     当窗口缩放的时候需要重新创建swapchain，framebuffer
     swapchain重新创建时需要传入旧的swachain
+
+## imgui
+
+    immgui相关代码主要在src/g_app.cpp下

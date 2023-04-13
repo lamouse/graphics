@@ -3,6 +3,7 @@
 #include "g_pipeline.hpp"
 #include "g_game_object.hpp"
 #include "resource/image_texture.hpp"
+#include "g_descriptor.hpp"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -23,7 +24,7 @@ namespace g
         ::std::vector<::vk::DeviceMemory> uniformBuffersMemory;
         ::std::vector<void*> uniformBuffersMapped;
         ::std::vector<::vk::DescriptorSet> descriptorSets;
-        ::vk::DescriptorPool descriptorPool;
+        Descriptor descriptor_;
         void createPipelineLayout();
         void createPipeline(::vk::RenderPass renderPass);
         void createDescriptorPool(uint32_t count);
@@ -33,7 +34,7 @@ namespace g
         RenderSystem(::vk::RenderPass renderPass);
         void updateUniformBuffer(uint32_t currentImage, float extentAspectRation);
         void createUniformBuffers(uint32_t count);
-        ::vk::DescriptorPool getDescriptorPool(){return descriptorPool; }
+        ::vk::DescriptorPool getDescriptorPool(){return descriptor_.getDescriptorPool(); }
         void renderGameObject(::std::vector<GameObject>& gameObjects, int currentFrame, ::vk::CommandBuffer commandBuffer, float extentAspectRation, 
                                 resource::image::ImageTexture& imageTexture);
         ~RenderSystem();
