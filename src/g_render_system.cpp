@@ -3,6 +3,7 @@
 #include "g_context.hpp"
 #include "g_defines.hpp"
 #include <chrono>
+#include <spdlog/spdlog.h>
 namespace g
 {
 
@@ -97,22 +98,28 @@ void RenderSystem::updateUniformBuffer(uint32_t currentImage, float extentAspect
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
     
-RenderSystem::RenderSystem(::vk::RenderPass renderPass):descriptor_({Context::Instance().device().logicalDevice()})
+RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 {
     createPipelineLayout();
     createPipeline(renderPass);
+    descriptor_.createDescriptorPool(Context::Instance().device().logicalDevice());
 }
 
 RenderSystem::~RenderSystem()
 {
     auto & device = Context::Instance().device().logicalDevice();
+    PRINT_MSG(DETAIL_INFO("vkDestroyBuffer uniformBuffers"));
     for (size_t i = 0; i < uniformBuffers.size(); i++) {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
     }
 
+    spdlog::debug(DETAIL_INFO("destroyPipeline"));
     device.destroyPipeline(pipeline());
+    spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
     device.destroyDescriptorSetLayout(setLayout);
+    descriptor_.destoryDescriptorPool(device);
+    spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
     device.destroyPipelineLayout(pipelineLayout);
 }
 

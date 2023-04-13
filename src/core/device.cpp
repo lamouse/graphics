@@ -20,7 +20,7 @@ Device::~Device()
 {
     device_.destroyCommandPool(cmdPool_);
     device_.destroy();
-    ::vkDestroySurfaceKHR(vkInstance, vkSurfaceKHR, nullptr);
+    vkInstance.destroySurfaceKHR(vkSurfaceKHR);
     vkInstance.destroy();
 }
 

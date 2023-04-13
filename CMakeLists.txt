@@ -22,6 +22,8 @@ message(STATUS "compile shader OK")
 #need vcpkg start
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 #need vcpkg end
 
 if(WIN32)
@@ -29,7 +31,7 @@ if(WIN32)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
 
-        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan )
+        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan PRIVATE fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
 elseif(UNIX AND APPLE)
         set(librariesList
                 GLFW
@@ -43,7 +45,7 @@ elseif(UNIX AND APPLE)
                 /usr/local/lib
         )
         target_include_directories(${EXECUTE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
-        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList})
+        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList} fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
 endif()
 
 

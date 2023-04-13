@@ -107,7 +107,6 @@ void ImageTexture::createTextureImageView(core::Device& device)
 
 void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int texWidth, int texHeight, uint32_t mipLevels)
 {
-
     ::vk::FormatProperties formatProperties = device.getPhysicalDevice().getFormatProperties(::vk::Format::eR8G8B8A8Srgb);
     if(!(formatProperties.optimalTilingFeatures & ::vk::FormatFeatureFlagBits::eSampledImageFilterLinear))
     {
