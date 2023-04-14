@@ -1,6 +1,7 @@
 #include "g_swapchain.hpp"
 #include "g_defines.hpp"
 #include <iostream>
+#include <spdlog/spdlog.h>
 namespace g
 {
 
@@ -8,11 +9,11 @@ Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleC
 {
     if(oldSwapchain != nullptr)
     {
-        this->oldSwapchain = oldSwapchain;
+        this->oldSwapchain_ = oldSwapchain;
     }
     sampleCount_ = sampleCount;
     init(width, height);
-    oldSwapchain = nullptr;
+    oldSwapchain_ = nullptr;
 }
 
 void Swapchain::init(int width, int height)
@@ -40,9 +41,9 @@ void Swapchain::init(int width, int height)
         createInfo.setQueueFamilyIndices(indices)
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
-    if(oldSwapchain != nullptr)
+    if(oldSwapchain_ != nullptr)
     {
-        createInfo.setOldSwapchain(oldSwapchain->getSwapchain());
+        createInfo.setOldSwapchain(oldSwapchain_->getSwapchain());
     }
     swapchain =device_.logicalDevice().createSwapchainKHR(createInfo);
 
@@ -105,9 +106,8 @@ void Swapchain::querySwapchainInfo(int width, int height)
 }
 Swapchain::~Swapchain()
 {
-
+    ::spdlog::debug(DETAIL_INFO("Swapchain"));
     auto& device = device_.logicalDevice();
-
     for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++){
         device.destroyFence(inFlightFences[i]);
         device.destroySemaphore(imageAvailableSemaphores[i]);
@@ -237,7 +237,6 @@ void Swapchain::createsemphores()
         ::vk::SemaphoreCreateInfo renderSemaphoreCreateInfo;
         renderFinshSemaphores[i] = device_.logicalDevice().createSemaphore(renderSemaphoreCreateInfo);
     }
-
 }
 
 ::vk::ResultValue<uint32_t> Swapchain::acquireNextImage()
