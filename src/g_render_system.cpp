@@ -107,18 +107,15 @@ RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 
 RenderSystem::~RenderSystem()
 {
+    spdlog::debug(DETAIL_INFO("RenderSystem"));
     auto & device = Context::Instance().device().logicalDevice();
-    spdlog::debug(DETAIL_INFO("vkDestroyBuffer uniformBuffers"));
     for (size_t i = 0; i < uniformBuffers.size(); i++) {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
     }
 
-    spdlog::debug(DETAIL_INFO("destroyPipeline"));
     device.destroyPipeline(pipeline());
-    spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
     descriptor_.destory(device);
-    spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
     device.destroyPipelineLayout(pipelineLayout);
 }
 
