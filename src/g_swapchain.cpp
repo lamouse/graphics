@@ -21,19 +21,20 @@ void Swapchain::init(int width, int height)
     vk::SwapchainCreateInfoKHR createInfo;
     //裁切
     createInfo.setClipped(true)
-            .setImageArrayLayers(1)
-            .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-            .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-            .setSurface(device_.getSurface())
-            .setImageColorSpace(swapchainInfo.formatKHR.colorSpace)
-            .setImageFormat(swapchainInfo.formatKHR.format)
-            .setImageExtent(swapchainInfo.extent2D)
-            .setMinImageCount(swapchainInfo.imageCount)
-            .setPresentMode(swapchainInfo.presentMode);
+        .setImageArrayLayers(1)
+        .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+        .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+        .setSurface(device_.getSurface())
+        .setImageColorSpace(swapchainInfo.formatKHR.colorSpace)
+        .setImageFormat(swapchainInfo.formatKHR.format)
+        .setImageExtent(swapchainInfo.extent2D)
+        .setMinImageCount(swapchainInfo.imageCount)
+        .setPresentMode(swapchainInfo.presentMode)
+        .setPreTransform(swapchainInfo.transForm)
+        .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
     auto& queueIndices = device_.queueFamilyIndices;
     if(queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()){
-        createInfo.setQueueFamilyIndexCount(queueIndices.graphicsQueue.value())
-                    .setImageSharingMode(::vk::SharingMode::eExclusive);
+        createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     }else{
         ::std::array indices = {queueIndices.graphicsQueue.value(), queueIndices.presentQueue.value()};
         createInfo.setQueueFamilyIndices(indices)
@@ -64,7 +65,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
     auto& surface = device_.getSurface();
     auto  formats = phyDevice.getSurfaceFormatsKHR(surface);
     auto format = ::std::find_if(formats.begin(), formats.end(), [](auto format){
-        return format.format == vk::Format::eR8G8B8A8Srgb && 
+        return format.format == DEFAULT_FORMAT && 
                 format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
     });
     if(format != formats.end()){
@@ -98,15 +99,6 @@ void Swapchain::querySwapchainInfo(int width, int height)
             return availablePresentMode;
         }
     }
-
-    // 不进行垂直同步，使用最高的cpu个gpu性能，能达到最高的fps，但可能造成画面撕裂
-    // for(const auto& availablePresentMode : availablePresentModes)
-    // {
-    //     if(availablePresentMode == ::vk::PresentModeKHR::eImmediate)
-    //     {
-    //         return availablePresentMode;
-    //     }
-    // }
 
     //先进先出，排队
     return ::vk::PresentModeKHR::eFifo;
@@ -161,7 +153,7 @@ void Swapchain::createImageViews()
     imageViews.resize(images.size());
     for(int i = 0; i < images.size(); i++)
     {
-        imageViews[i] =device_.createImageView(images[i], swapchainInfo.formatKHR.format, 
+        imageViews[i] =device_.createImageView(images[i], getSwapchainColorFormat(), 
                 ::vk::ImageAspectFlagBits::eColor, 1);
     }
 }
@@ -257,22 +249,19 @@ void Swapchain::createsemphores()
     {
         throw ::std::runtime_error(" Swapchain::acquireNextImage wait fences");
     }
+    device_.logicalDevice().resetFences(inFlightFences[currentFrame]);
+    return  device.acquireNextImageKHR(swapchain, ::std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame]);
 
-    auto result = device.acquireNextImageKHR(swapchain, ::std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame]);
-    
-    return result;
 }
 
 ::vk::Result Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 {
-    commandBuffer.end();
     ::vk::SubmitInfo submitInfo;
     ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
     submitInfo.setCommandBuffers(commandBuffer)
                 .setWaitSemaphores(imageAvailableSemaphores[currentFrame])
                 .setSignalSemaphores(renderFinshSemaphores[currentFrame])
                 .setWaitDstStageMask(stage);
-    device_.logicalDevice().resetFences(inFlightFences[currentFrame]);
     device_.getGraphicsQueue().submit(submitInfo, inFlightFences[currentFrame]);
     ::vk::PresentInfoKHR presentInfo;
     presentInfo.setImageIndices(imageIndex)

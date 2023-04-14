@@ -1,14 +1,34 @@
 #ifndef G_DEVICE_HPP
 #define G_DEVICE_HPP
-#include <stdint.h>
 #include <vulkan/vulkan.hpp>
-#include <memory>
 #include <cstdint>
 #include <optional>
 #include <functional>
 
 namespace core{
+    /**
+     * @brief Validation layers
+     * 
+     */
+    const ::std::vector<const char*> validationLayers = {
+        "VK_LAYER_KHRONOS_validation"
+    };
 
+    /**
+     * @brief Device extensions
+     * 
+     */
+    const ::std::vector<const char*> deviceExtensions = {
+#if defined(VK_USE_PLATFORM_MACOS_MVK)      
+                "VK_KHR_portability_subset",    // "VK_KHR_portability_subset" macos     
+#endif 
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+
+    /**
+     * @brief Swapchain support
+     * 
+     */
     struct SwapchainSupportDetails
     {
         ::vk::SurfaceCapabilitiesKHR capabilities;
@@ -16,8 +36,16 @@ namespace core{
         ::std::vector<::vk::PresentModeKHR> presentModes;
     };
 
+    /**
+     * @brief create device get surface
+     * 
+     */
     using CreateSurfaceFunc = ::std::function<vk::SurfaceKHR(vk::Instance)>;
 
+    /**
+     * @brief vulkan device info add util
+     * 
+     */
     class Device final
     {
     private:
@@ -29,8 +57,10 @@ namespace core{
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
         ::vk::SampleCountFlagBits maxMsaaSamples_;
+        ::vk::DebugUtilsMessengerEXT debugMessenger_;
+        bool enableValidationLayers_;
         void pickupPhyiscalDevice();
-        void createDevice();
+        void createLogicalDevice();
         void getQueues();
         void initCmdPool();
         void createInstance(const std::vector<const char*>& instanceExtends);
@@ -38,19 +68,14 @@ namespace core{
         bool isDeviceSuitable(::vk::PhysicalDevice& checkDevice);
         ::vk::SampleCountFlagBits getMaxUsableSampleCount();
         static ::std::unique_ptr<Device> instance;
-        const ::std::vector<const char*> deviceExtensions = {
-#if defined(VK_USE_PLATFORM_MACOS_MVK)      
-                "VK_KHR_portability_subset",    // "VK_KHR_portability_subset" macos     
-#endif 
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
-        };
+
     public:
         struct QueueFamilyIndices final{
             ::std::optional<uint32_t> graphicsQueue;
             ::std::optional<uint32_t> presentQueue;
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
-        Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
+        Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, bool enableValidationLayers = false);
         QueueFamilyIndices queryQueueFamilyIndices(::vk::PhysicalDevice device);
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;

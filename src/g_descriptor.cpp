@@ -5,6 +5,11 @@
 #include <iostream>
 namespace g {
 
+void Descriptor::init(::vk::Device &device, uint32_t poolSize)
+{
+    createDescriptorPool(device, poolSize);
+    createDescriptorSetLayout(device);
+}
 
 void Descriptor::createDescriptorPool(::vk::Device& device, uint32_t poolSize)
 {
@@ -30,13 +35,31 @@ void Descriptor::createDescriptorPool(::vk::Device& device, uint32_t poolSize)
     spdlog::debug(DETAIL_INFO("init createDescriptorPool"));
 }
 
-void Descriptor::destoryDescriptorPool(::vk::Device& device)
+void Descriptor::createDescriptorSetLayout(::vk::Device& device)
+{
+    ::vk::DescriptorSetLayoutBinding uboLayoutBinding(
+        0, ::vk::DescriptorType::eUniformBuffer, 1,
+        ::vk::ShaderStageFlagBits::eVertex);
+
+    ::vk::DescriptorSetLayoutBinding samplerLayoutBinding(
+        1, ::vk::DescriptorType::eCombinedImageSampler, 1,
+        ::vk::ShaderStageFlagBits::eFragment);
+
+    std::array<::vk::DescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
+
+    ::vk::DescriptorSetLayoutCreateInfo setLayoutCreateInfo;
+    setLayoutCreateInfo.setBindings(bindings);
+    descriptorSetLayout_ = device.createDescriptorSetLayout(setLayoutCreateInfo);
+}
+
+void Descriptor::destory(::vk::Device& device)
 {
     if(!is_init)
     {
 
     }else {
         device.destroyDescriptorPool(descriptorPool_);
+        device.destroyDescriptorSetLayout(descriptorSetLayout_);
         is_destroy = true;
     }
 

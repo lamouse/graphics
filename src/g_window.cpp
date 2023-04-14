@@ -22,6 +22,9 @@ void Window::initWindow()
     for(int i = 0; i < count; i++){
         extends[i] = glfwExtens[i];
     }
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    extends.push_back("VK_KHR_portability_enumeration");
+#endif
     Context::init(extends, [&](vk::Instance instance){
         VkSurfaceKHR surface;
         auto result = ::glfwCreateWindowSurface(instance, window, nullptr, &surface);

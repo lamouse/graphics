@@ -14,10 +14,9 @@ public:
         ::vk::Extent3D extent3D;
         uint32_t imageCount;
         ::vk::SurfaceFormatKHR formatKHR;
-        ::vk::SurfaceTransformFlagsKHR transForm;
+        ::vk::SurfaceTransformFlagBitsKHR transForm;
         ::vk::PresentModeKHR presentMode;
     };
-    ::vk::SwapchainKHR swapchain;
     ::vk::SwapchainKHR getSwapchain()const {return swapchain;}
     SwapchainInfo getSwapchainInfo()const {return swapchainInfo;}
     ::vk::Format getSwapchainColorFormat()const {return swapchainInfo.formatKHR.format;}
@@ -42,7 +41,7 @@ public:
     static constexpr int MAX_FRAME_IN_FLIGHT = 2;
 
 private:
-
+    ::vk::SwapchainKHR swapchain;
     uint32_t currentFrame = 0;
     ::vk::SampleCountFlagBits sampleCount_;
     SwapchainInfo swapchainInfo;
@@ -72,7 +71,6 @@ private:
     void init(int width, int height);
     void getImages();
     void createImageViews();
-
     void createImageFrame();
     void createFances();
     void createsemphores();

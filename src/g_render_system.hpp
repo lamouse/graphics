@@ -18,7 +18,7 @@ namespace g
     {
     private:
         ::vk::PipelineLayout pipelineLayout;
-        ::vk::DescriptorSetLayout descriptorSetLayout_;
+        
         PipeLine pipeline;
         Descriptor descriptor_;
         ::std::vector<::vk::Buffer> uniformBuffers;
@@ -27,7 +27,6 @@ namespace g
         ::std::vector<::vk::DescriptorSet> descriptorSets;
         void createPipelineLayout();
         void createPipeline(::vk::RenderPass renderPass);
-        void createDescriptorSetLayout();
         void createDescriptorSets(uint32_t count);
         void updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler);
     public:

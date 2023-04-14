@@ -46,7 +46,7 @@ void RenderSystem::createUniformBuffers(uint32_t count)
 
 void RenderSystem::createDescriptorSets(uint32_t count)
 {
-    ::std::vector<::vk::DescriptorSetLayout> layouts(count, descriptorSetLayout_);
+    ::std::vector<::vk::DescriptorSetLayout> layouts(count, descriptor_.getDescriptorSetLayout());
     ::vk::DescriptorSetAllocateInfo allocInfo{};
     allocInfo.setDescriptorPool(descriptor_.getDescriptorPool())
             .setSetLayouts(layouts);
@@ -100,10 +100,9 @@ void RenderSystem::updateUniformBuffer(uint32_t currentImage, float extentAspect
     
 RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 {
-    createDescriptorSetLayout();
+    descriptor_.init(Context::Instance().device().logicalDevice());
     createPipelineLayout();
     createPipeline(renderPass);
-    descriptor_.createDescriptorPool(Context::Instance().device().logicalDevice());
 }
 
 RenderSystem::~RenderSystem()
@@ -118,28 +117,12 @@ RenderSystem::~RenderSystem()
     spdlog::debug(DETAIL_INFO("destroyPipeline"));
     device.destroyPipeline(pipeline());
     spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
-    device.destroyDescriptorSetLayout(descriptorSetLayout_);
-    descriptor_.destoryDescriptorPool(device);
+    descriptor_.destory(device);
     spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
     device.destroyPipelineLayout(pipelineLayout);
 }
 
-void RenderSystem::createDescriptorSetLayout()
-{
-    ::vk::DescriptorSetLayoutBinding uboLayoutBinding(
-        0, ::vk::DescriptorType::eUniformBuffer, 1,
-        ::vk::ShaderStageFlagBits::eVertex);
 
-    ::vk::DescriptorSetLayoutBinding samplerLayoutBinding(
-        1, ::vk::DescriptorType::eCombinedImageSampler, 1,
-        ::vk::ShaderStageFlagBits::eFragment);
-
-    std::array<::vk::DescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-
-    ::vk::DescriptorSetLayoutCreateInfo setLayoutCreateInfo;
-    setLayoutCreateInfo.setBindings(bindings);
-    descriptorSetLayout_ = Context::Instance().device().logicalDevice().createDescriptorSetLayout(setLayoutCreateInfo);
-}
 
 void RenderSystem::createPipelineLayout()
 {
@@ -152,7 +135,7 @@ void RenderSystem::createPipelineLayout()
     ::vk::PipelineLayoutCreateInfo layoutCreateInfo;
     
 
-    layoutCreateInfo.setSetLayouts(descriptorSetLayout_);
+    layoutCreateInfo.setSetLayouts(descriptor_.getDescriptorSetLayout());
 
     //layoutCreateInfo.setPushConstantRanges(pushConstantRange);  
     pipelineLayout = device.createPipelineLayout(layoutCreateInfo); 

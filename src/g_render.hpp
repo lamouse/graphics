@@ -21,7 +21,7 @@ private:
     void allcoCmdBuffer();
 public:
     bool beginFrame();
-    void beginSwapchainRenderPass(::vk::Framebuffer* buffer=nullptr, ::vk::RenderPass* renderPass = nullptr);
+    void beginSwapchainRenderPass();
     void endSwapchainRenderPass();
     void endFrame();
     ::vk::RenderPass getRenderPass(){return renderPass_;}
