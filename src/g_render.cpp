@@ -33,6 +33,7 @@ void RenderProcesser::createSwapchain()
     }else{
         ::std::shared_ptr<Swapchain> old = ::std::move(swapchain);
         swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount, old);
+        swapchain->createFrameBuffers(renderPass_);
         if(!old->compareFormats(*swapchain)){
             throw ::std::runtime_error("swapchain image(or depth) format has changed!");
         }

@@ -46,7 +46,7 @@ void RenderSystem::createUniformBuffers(uint32_t count)
 
 void RenderSystem::createDescriptorSets(uint32_t count)
 {
-    ::std::vector<::vk::DescriptorSetLayout> layouts(count, setLayout);
+    ::std::vector<::vk::DescriptorSetLayout> layouts(count, descriptorSetLayout_);
     ::vk::DescriptorSetAllocateInfo allocInfo{};
     allocInfo.setDescriptorPool(descriptor_.getDescriptorPool())
             .setSetLayouts(layouts);
@@ -100,6 +100,7 @@ void RenderSystem::updateUniformBuffer(uint32_t currentImage, float extentAspect
     
 RenderSystem::RenderSystem(::vk::RenderPass renderPass)
 {
+    createDescriptorSetLayout();
     createPipelineLayout();
     createPipeline(renderPass);
     descriptor_.createDescriptorPool(Context::Instance().device().logicalDevice());
@@ -117,10 +118,27 @@ RenderSystem::~RenderSystem()
     spdlog::debug(DETAIL_INFO("destroyPipeline"));
     device.destroyPipeline(pipeline());
     spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
-    device.destroyDescriptorSetLayout(setLayout);
+    device.destroyDescriptorSetLayout(descriptorSetLayout_);
     descriptor_.destoryDescriptorPool(device);
     spdlog::debug(DETAIL_INFO("destroyDescriptorSetLayout"));
     device.destroyPipelineLayout(pipelineLayout);
+}
+
+void RenderSystem::createDescriptorSetLayout()
+{
+    ::vk::DescriptorSetLayoutBinding uboLayoutBinding(
+        0, ::vk::DescriptorType::eUniformBuffer, 1,
+        ::vk::ShaderStageFlagBits::eVertex);
+
+    ::vk::DescriptorSetLayoutBinding samplerLayoutBinding(
+        1, ::vk::DescriptorType::eCombinedImageSampler, 1,
+        ::vk::ShaderStageFlagBits::eFragment);
+
+    std::array<::vk::DescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
+
+    ::vk::DescriptorSetLayoutCreateInfo setLayoutCreateInfo;
+    setLayoutCreateInfo.setBindings(bindings);
+    descriptorSetLayout_ = Context::Instance().device().logicalDevice().createDescriptorSetLayout(setLayoutCreateInfo);
 }
 
 void RenderSystem::createPipelineLayout()
@@ -133,24 +151,8 @@ void RenderSystem::createPipelineLayout()
                         .setSize(sizeof(SimplePushConstantData));
     ::vk::PipelineLayoutCreateInfo layoutCreateInfo;
     
-    ::vk::DescriptorSetLayoutBinding uboLayoutBinding;
-    uboLayoutBinding.setBinding(0)
-                    .setDescriptorType(::vk::DescriptorType::eUniformBuffer)
-                    .setDescriptorCount(1)
-                    .setStageFlags(::vk::ShaderStageFlagBits::eVertex);
-    
-    ::vk::DescriptorSetLayoutBinding samplerLayoutBinding;
-    samplerLayoutBinding.setBinding(1)
-                        .setDescriptorCount(1)
-                        .setDescriptorType(::vk::DescriptorType::eCombinedImageSampler)
-                        .setStageFlags(::vk::ShaderStageFlagBits::eFragment);
 
-    std::array<::vk::DescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-
-    ::vk::DescriptorSetLayoutCreateInfo setLayoutCreateInfo;
-    setLayoutCreateInfo.setBindings(bindings);
-    setLayout = device.createDescriptorSetLayout(setLayoutCreateInfo);
-    layoutCreateInfo.setSetLayouts(setLayout);
+    layoutCreateInfo.setSetLayouts(descriptorSetLayout_);
 
     //layoutCreateInfo.setPushConstantRanges(pushConstantRange);  
     pipelineLayout = device.createPipelineLayout(layoutCreateInfo); 

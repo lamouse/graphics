@@ -18,16 +18,16 @@ namespace g
     {
     private:
         ::vk::PipelineLayout pipelineLayout;
-        ::vk::DescriptorSetLayout setLayout;
+        ::vk::DescriptorSetLayout descriptorSetLayout_;
         PipeLine pipeline;
+        Descriptor descriptor_;
         ::std::vector<::vk::Buffer> uniformBuffers;
         ::std::vector<::vk::DeviceMemory> uniformBuffersMemory;
         ::std::vector<void*> uniformBuffersMapped;
         ::std::vector<::vk::DescriptorSet> descriptorSets;
-        Descriptor descriptor_;
         void createPipelineLayout();
         void createPipeline(::vk::RenderPass renderPass);
-        void createDescriptorPool(uint32_t count);
+        void createDescriptorSetLayout();
         void createDescriptorSets(uint32_t count);
         void updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler);
     public:

@@ -32,7 +32,6 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
         cmdBuf.copyBufferToImage(stagingBuffer.getBuffer(), image_, ::vk::ImageLayout::eTransferDstOptimal, region);
     });
 
-    transitionImageLayout(device, image_, format_, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
     generateMipmaps(device ,image_, imgInfo.width, imgInfo.height,  imageMipLevels_);
     createTextureImageView(device);
     createTextureSampler(device);

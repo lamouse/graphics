@@ -79,21 +79,24 @@ PipelineConfigInfo PipeLine::getDefaultConfig()
                                                         ::vk::ColorComponentFlagBits::eB |
                                                         ::vk::ColorComponentFlagBits::eA );
     configInfo.colorBlendInfo.setLogicOpEnable(false)
-                            .setAttachments(configInfo.colorBlendAttachsInfo);
+                            .setLogicOp(vk::LogicOp::eCopy)
+                            .setAttachments(configInfo.colorBlendAttachsInfo)
+                            .setBlendConstants({.0f, .0f, 0.f, .0f});
 
 
-    configInfo.rasterizationStateInfo.setRasterizerDiscardEnable(false)
+    configInfo.rasterizationStateInfo.setRasterizerDiscardEnable(VK_FALSE)
+                                    .setDepthClampEnable(VK_FALSE)
                                     .setDepthClampEnable(VK_FALSE)
                                     .setCullMode(::vk::CullModeFlagBits::eBack)
                                     .setFrontFace(::vk::FrontFace::eCounterClockwise)
                                     .setPolygonMode(::vk::PolygonMode::eFill)
-                                    .setLineWidth(1);
+                                    .setLineWidth(1.0f);
 
     configInfo.depthStencilStateInfo.setDepthTestEnable(VK_TRUE)
                                 .setDepthWriteEnable(VK_TRUE)
                                 .setDepthCompareOp(::vk::CompareOp::eLess)
                                 .setDepthBoundsTestEnable(VK_FALSE)
-                                .setMinDepthBounds(0.1f)
+                                .setMinDepthBounds(0.0f)
                                 .setMaxDepthBounds(1.0f)
                                 .setStencilTestEnable(VK_FALSE)
                                 .setFront({})

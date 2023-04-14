@@ -191,10 +191,10 @@ void Swapchain::createColorResources()
     uint32_t mipLevels = 1;
     for(int i = 0; i < colorImages.size(); i++)
     {
-        device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, swapchainInfo.formatKHR.format, 
+        device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, getSwapchainColorFormat(), 
                         sampleCount_, ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment, 
                         ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemorys[i]);
-        colorImageViews[i] = device_.createImageView(colorImages[i],  swapchainInfo.formatKHR.format, ::vk::ImageAspectFlagBits::eColor, mipLevels);
+        colorImageViews[i] = device_.createImageView(colorImages[i],  getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, mipLevels);
     }
 }
 
