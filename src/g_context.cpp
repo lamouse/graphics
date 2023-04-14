@@ -12,9 +12,9 @@ int Context::width = 800;
 int Context::height = 600;
 bool Context::windowIsRsize = false;
 
-Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc)
+Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, bool enableValidationLayers)
 {
-   device_ = ::std::make_shared<core::Device>(instanceExtends, createFunc);
+   device_ = ::std::make_shared<core::Device>(instanceExtends, createFunc, enableValidationLayers);
    imageQualityConfig.msaaSamples = device_->getMaxMsaaSamples();
 }
 
@@ -23,11 +23,11 @@ Context::~Context()
     device_->logicalDevice().waitIdle();
 }
 
-void Context::init(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height)
+void Context::init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height, bool enableValidationLayers)
 {
     width = width;
     height = height;
-    pInstance.reset(new Context(instanceExtends, createFunc));
+    pInstance.reset(new Context(instanceExtends, createFunc, enableValidationLayers));
 }
 void Context::quit()
 {

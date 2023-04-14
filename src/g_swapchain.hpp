@@ -27,7 +27,7 @@ public:
     ::vk::ResultValue<uint32_t> acquireNextImage();
     ::vk::Result submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
     void createFrameBuffers(::vk::RenderPass& renderPass);
-    void beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::RenderPass& renderPass);
+    void beginRenderPass(::vk::CommandBuffer& commandBuffer, ::vk::RenderPass& renderPass, uint32_t imageIndex);
     float extentAspectRation()
     {return static_cast<float>(swapchainInfo.extent2D.width)/ static_cast<float>(swapchainInfo.extent2D.width);}
     bool compareFormats(const Swapchain& swapchain) const {

@@ -11,7 +11,7 @@ namespace g{
     class Context final
     {
     private:
-        Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc);
+        Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, bool enableValidationLayers);
         static ::std::unique_ptr<Context> pInstance;
         ::std::shared_ptr<core::Device> device_;
 
@@ -28,7 +28,7 @@ namespace g{
         static void rsetWindowRsize(){windowIsRsize = false;}
         static bool isWindowRsize(){ return windowIsRsize;}
         static ::vk::Extent2D getExtent(){return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};}
-        static void init(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height);
+        static void init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height, bool enableValidationLayers);
         static void quit();
         static void waitWindowEvents(){glfwWaitEvents();}
         static Context& Instance();

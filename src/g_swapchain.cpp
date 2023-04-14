@@ -71,7 +71,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
     }
 
     auto  cpabilities = phyDevice.getSurfaceCapabilitiesKHR(surface);
-    swapchainInfo.imageCount = ::std::clamp<uint32_t>(2, cpabilities.minImageCount, cpabilities.maxImageCount);
+    swapchainInfo.imageCount = ::std::clamp<uint32_t>(cpabilities.minImageCount + 1, cpabilities.minImageCount, cpabilities.maxImageCount);
 
     swapchainInfo.extent2D.width = ::std::clamp<uint32_t>(width, cpabilities.minImageExtent.width, cpabilities.maxImageExtent.width);
     swapchainInfo.extent2D.height = ::std::clamp<uint32_t>(height, cpabilities.minImageExtent.height, cpabilities.maxImageExtent.height);
@@ -133,8 +133,6 @@ Swapchain::~Swapchain()
     }
 
     device.destroySwapchainKHR(swapchain);
-
-
 }
 
 void Swapchain::getImages()
@@ -268,7 +266,7 @@ void Swapchain::createsemphores()
     return result;
 }
 
-void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex, ::vk::RenderPass& renderPass)
+void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, ::vk::RenderPass& renderPass, uint32_t imageIndex)
 {
     auto extent = swapchainInfo.extent2D;
     ::vk::RenderPassBeginInfo renderPassBeginInfo;
@@ -283,7 +281,7 @@ void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, uint32_t ima
 
     renderPassBeginInfo.setRenderPass(renderPass)
                         .setRenderArea(area)
-                        .setFramebuffer(swapchainFrameBuffers[currentFrame])
+                        .setFramebuffer(swapchainFrameBuffers[imageIndex])
                         .setClearValues(clearValues);
     commandBuffer.beginRenderPass(renderPassBeginInfo, ::vk::SubpassContents::eInline);
 

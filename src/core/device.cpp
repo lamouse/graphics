@@ -39,6 +39,13 @@ static void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
   }
 }
 
+static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        func(instance, debugMessenger, pAllocator);
+    }
+}
+
 void setupDebugMessenger(::vk::Instance& instance, ::vk::DebugUtilsMessengerEXT& debugMessenger) {
 
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
@@ -69,6 +76,9 @@ Device::~Device()
     device_.destroyCommandPool(cmdPool_);
     device_.destroy();
     vkInstance.destroySurfaceKHR(vkSurfaceKHR);
+    if (enableValidationLayers_) {
+        DestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger_, nullptr);
+    }
     vkInstance.destroy();
 }
 

@@ -94,7 +94,7 @@ void RenderProcesser::endFrame()
 void RenderProcesser::beginSwapchainRenderPass()
 {
     assert(isFrameStart && "cat't call beginSwapchainRenderPass  is frame not in progress");
-    swapchain->beginRenderPass(getCurrentCommadBuffer(), currentImageIndex, renderPass_);
+    swapchain->beginRenderPass(getCurrentCommadBuffer(), renderPass_, currentImageIndex);
 }
 
 void RenderProcesser::endSwapchainRenderPass()
