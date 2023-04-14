@@ -12,6 +12,8 @@ aux_source_directory(./src/core CORE_SRC)
 aux_source_directory(./src/system SYSTEM_SRC)
 aux_source_directory(./src/imgui IMGUI)
 set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC} ${IMGUI} )
+# aux_source_directory(./src/test TEST_SRC)
+# set(SRC ${TEST_SRC})
 add_executable(${EXECUTE_NAME} ${SRC})
 
 find_program(GLSLC_PROGRAM glslc REQUIRED)
@@ -23,13 +25,14 @@ message(STATUS "compile shader OK")
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
 #need vcpkg end
 
 if(WIN32)
         find_package(glfw3 CONFIG REQUIRED)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
+        find_package(spdlog CONFIG REQUIRED)
+
 
         target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan PRIVATE fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
 elseif(UNIX AND APPLE)
@@ -45,7 +48,7 @@ elseif(UNIX AND APPLE)
                 /usr/local/lib
         )
         target_include_directories(${EXECUTE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
-        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList} fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
+        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList} fmt::fmt-header-only)
 endif()
 
 

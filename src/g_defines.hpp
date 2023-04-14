@@ -4,7 +4,6 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-#include <fmt/core.h>
 #include <cstring>
 #define __FILENAME__ (::std::strrchr(__FILE__, '/') ? ::std::strrchr(__FILE__, '/') + 1 : __FILE__)
 #define PRINT_DEBUG_MSG
@@ -21,11 +20,6 @@
                             ::std::string(" Line: ") + ::std::to_string(__LINE__) +     \
                             ::std::string("\n\tMessage: ")    + msg
 
-#if defined (PRINT_DEBUG_MSG)
-    #define PRINT_MSG(msg) ::fmt::print("{}\n", msg)
-#else
-    #define PRINT_MSG(msg)
-#endif
 namespace g{
 struct SimplePushConstantData
 {

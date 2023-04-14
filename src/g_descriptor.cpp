@@ -1,7 +1,6 @@
 #include "g_descriptor.hpp"
 #include "g_defines.hpp"
 #include <spdlog/spdlog.h>
-#include <spdlog/spdlog.h>
 
 #include <iostream>
 namespace g {
