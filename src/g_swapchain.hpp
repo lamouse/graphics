@@ -65,10 +65,9 @@ private:
     ::vk::Format depthFormat;
     ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
     ::vk::Format findDepthFormat();
-    ::std::shared_ptr<Swapchain> oldSwapchain_;
 
     core::Device& device_;
-    void init(int width, int height);
+    void init(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain);
     void getImages();
     void createImageViews();
     void createImageFrame();

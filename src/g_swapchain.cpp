@@ -7,16 +7,11 @@ namespace g
 
 Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount, ::std::shared_ptr<Swapchain> oldSwapchain):device_(device_)
 {
-    if(oldSwapchain != nullptr)
-    {
-        this->oldSwapchain_ = oldSwapchain;
-    }
     sampleCount_ = sampleCount;
-    init(width, height);
-    oldSwapchain_ = nullptr;
+    init(width, height, oldSwapchain);
 }
 
-void Swapchain::init(int width, int height)
+void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
@@ -41,9 +36,9 @@ void Swapchain::init(int width, int height)
         createInfo.setQueueFamilyIndices(indices)
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
-    if(oldSwapchain_ != nullptr)
+    if(oldSwapchain != nullptr)
     {
-        createInfo.setOldSwapchain(oldSwapchain_->getSwapchain());
+        createInfo.setOldSwapchain(oldSwapchain->getSwapchain());
     }
     swapchain =device_.logicalDevice().createSwapchainKHR(createInfo);
 
