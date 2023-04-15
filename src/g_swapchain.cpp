@@ -73,8 +73,14 @@ void Swapchain::querySwapchainInfo(int width, int height)
     auto  cpabilities = phyDevice.getSurfaceCapabilitiesKHR(surface);
     swapchainInfo.imageCount = ::std::clamp<uint32_t>(cpabilities.minImageCount + 1, cpabilities.minImageCount, cpabilities.maxImageCount);
 
-    swapchainInfo.extent2D.width = ::std::clamp<uint32_t>(width, cpabilities.minImageExtent.width, cpabilities.maxImageExtent.width);
-    swapchainInfo.extent2D.height = ::std::clamp<uint32_t>(height, cpabilities.minImageExtent.height, cpabilities.maxImageExtent.height);
+    if(cpabilities.currentExtent.width !=::std::numeric_limits<uint32_t>::max())
+    {
+        swapchainInfo.extent2D = cpabilities.currentExtent;
+    }
+    else {
+        swapchainInfo.extent2D.width = ::std::clamp<uint32_t>(width, cpabilities.minImageExtent.width, cpabilities.maxImageExtent.width);
+        swapchainInfo.extent2D.height = ::std::clamp<uint32_t>(height, cpabilities.minImageExtent.height, cpabilities.maxImageExtent.height);
+    }
 
     swapchainInfo.transForm = cpabilities.currentTransform;
 

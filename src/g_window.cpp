@@ -31,6 +31,8 @@ void Window::initWindow()
     {
         extends.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
+    int w = 0, h = 0;
+    glfwGetFramebufferSize(window, &w, &h);
     Context::init(extends, [&](vk::Instance instance){
         VkSurfaceKHR surface;
         auto result = ::glfwCreateWindowSurface(instance, window, nullptr, &surface);
@@ -38,10 +40,12 @@ void Window::initWindow()
             throw ::std::runtime_error("createWindowSurface Fail ");
         }
         return surface;
-    }, width, height, enableValidationLayers);
+    }, w, h, enableValidationLayers);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height){
-        Context::setExtent(width, height);
+        int w = 0, h = 0;
+        glfwGetFramebufferSize(window, &w, &h);
+        Context::setExtent(w, h);
         Context::setWindowRsize();
     });
 }

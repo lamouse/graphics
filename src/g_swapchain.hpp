@@ -11,7 +11,6 @@ class Swapchain
 public:
     struct SwapchainInfo{
         ::vk::Extent2D extent2D;
-        ::vk::Extent3D extent3D;
         uint32_t imageCount;
         ::vk::SurfaceFormatKHR formatKHR;
         ::vk::SurfaceTransformFlagBitsKHR transForm;
