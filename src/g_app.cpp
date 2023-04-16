@@ -4,10 +4,13 @@
 #include "g_defines.hpp"
 #include "g_context.hpp"
 #include "imgui/gui.hpp"
+#include "core/buffer.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 #include <unordered_map>
+#include <chrono>
+
 namespace g{
 
 void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descriptorPool);
@@ -27,20 +30,65 @@ static void check_vk_result(VkResult err)
 
 void App::run(){
 
+    auto setLayout = DescriptorSetLayout::Builder(Context::Instance().device())
+                                                .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
+                                                .build();
+
+    ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
+    for(int i = 0; i < uboBuffers.size(); i++)
+    {
+        uboBuffers[i] = ::std::make_unique<core::Buffer>(Context::Instance().device(), 
+                                    sizeof(UniformBufferObject),
+                                    1, ::vk::BufferUsageFlagBits::eUniformBuffer,
+                                    ::vk::MemoryPropertyFlagBits::eHostVisible);
+        uboBuffers[i]->map();
+    }
+
+    ::std::vector<::vk::DescriptorSet> descriptorSets(2);
+    for(int i = 0; i < descriptorSets.size(); i++)
+    {
+        auto bufferInfo = uboBuffers[i]->descriptorInfo();
+        DescriptorWriter(*setLayout, *descriptorPool_)
+                .writeBuffer(0, bufferInfo)
+                .build(descriptorSets[i]);
+    }
+
     RenderProcesser render(Context::Instance().device());
-    RenderSystem renderSystem(render.getRenderPass());
-    renderSystem.createUniformBuffers(2);
+    RenderSystem renderSystem(render.getRenderPass(), setLayout->getDescriptorSetLayout());
     ::std::string s(image_path + "viking_room.png");
     resource::image::Image img(s);
     resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
     init_imgui(window(), VK_FORMAT_B8G8R8A8_UNORM, renderSystem.getDescriptorPool());
-
+    static auto startTime = ::std::chrono::high_resolution_clock::now();
+    Camera camera{};
     while (!window.shuldClose()){
+        auto currentTime = ::std::chrono::high_resolution_clock::now();
+        float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+        UniformBufferObject ubo{};
+        ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = ::glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = ::glm::perspective(glm::radians(45.0f), render.extentAspectRation(), 0.1f, 10.0f);
+        ubo.proj[1][1] *= -1;
+        
         glfwPollEvents();
         if(render.beginFrame())
         {
+            uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
+            uboBuffers[render.getCurrentFrameIndex()]->flush();
+
+            FrameInfo frameInfo
+            {
+                render.getCurrentFrameIndex(),
+                time,
+                render.getCurrentCommadBuffer(),
+                camera,
+                descriptorSets[render.getCurrentFrameIndex()],
+                gameObjects
+
+            };
+
             render.beginSwapchainRenderPass();
-            renderSystem.renderGameObject(gameObjects, render.getCurrentFrameIndex(), render.getCurrentCommadBuffer(), render.extentAspectRation(), imageTexture);
+            renderSystem.render(frameInfo);
             render.endSwapchainRenderPass();
             render.endFrame();
         }
@@ -102,8 +150,7 @@ void App::loadGameObjects()
     ::std::shared_ptr<Model> model = createCubeModel({.0f, .0f, .0f});
     auto cube = GameObject::createGameObject();
     cube.model = model;
-    gameObjects.push_back(std::move(cube));
-
+    gameObjects.emplace(cube.getId(), ::std::move(cube));
 }
 
 /**
@@ -263,6 +310,10 @@ void draw_imgui()
 
 App::App()
 {
+    descriptorPool_ = DescriptorPool::Builder(Context::Instance().device())
+                                    .setMaxSets(2)
+                                    .addPoolSize(::vk::DescriptorType::eUniformBuffer, 2)
+                                    .build();
     loadGameObjects();
 }
 

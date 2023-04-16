@@ -4,6 +4,7 @@
 #include "g_game_object.hpp"
 #include "g_render.hpp"
 #include "resource/image_texture.hpp"
+#include "g_descriptor.hpp"
 #include <iostream>
 #include <vector>
 
@@ -19,8 +20,9 @@ namespace g
             ~App();
         private:
             Window window{WIDTH, HEIGHT, "vulkan"};
-            ::std::vector< GameObject> gameObjects;
+            GameObject::Map gameObjects;
             void loadGameObjects();
+            ::std::unique_ptr<DescriptorPool> descriptorPool_;
     };
 }
 

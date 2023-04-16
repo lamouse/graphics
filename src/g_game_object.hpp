@@ -7,7 +7,7 @@
 namespace g
 {
 
-using id_t = unsigned int;
+
 
 struct TransformCompoent
 {
@@ -28,11 +28,10 @@ struct TransformCompoent
 
 class GameObject
 {
-private:
-    id_t id;
-    GameObject(id_t id):id(id){}
 
 public:
+    using id_t = unsigned int;
+    using Map = ::std::unordered_map<id_t, GameObject>;
     static GameObject createGameObject(){
         static id_t currentId = 0;
         return GameObject(currentId++);
@@ -41,12 +40,16 @@ public:
     id_t getId(){return id;}
     GameObject(const GameObject&) = delete;
     GameObject(GameObject&&) = default;
-    GameObject operator=(const GameObject&) = delete;
+    GameObject& operator=(const GameObject&) = delete;
     GameObject& operator=(GameObject&&) = default;
     ::std::shared_ptr<Model> model{};
     ::glm::vec3 color{};
     TransformCompoent transform;
     ~GameObject();
+
+    private:
+        id_t id;
+        GameObject(id_t id):id(id){}
 };
 
     
