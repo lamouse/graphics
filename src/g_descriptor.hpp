@@ -2,6 +2,7 @@
 #include "core/device.hpp"
 #include <vulkan/vulkan.hpp>
 #include <memory>
+#include <unordered_map>
 
 
 namespace g {
@@ -58,6 +59,7 @@ namespace g {
             void allocateDescriptor(const ::vk::DescriptorSetLayout& descriptorSetlayout, ::vk::DescriptorSet& descriptorSet) const;
             void freeDescriptor(::std::vector<::vk::DescriptorSet>& descriptorSets)const;
             void resetPool();
+            ::vk::DescriptorPool& getDescriptorPool(){return descriptorPool_;}
             friend class DescriptorWriter;
         private:
             core::Device& device_;

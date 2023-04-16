@@ -59,7 +59,7 @@ namespace core {
 
             ::vk::DeviceSize bufferSize_;
             uint32_t instanceCount_;
-            ::VkDeviceSize instanceSize_;
+            ::vk::DeviceSize instanceSize_;
             ::vk::DeviceSize alignmentSize_;
             ::vk::BufferUsageFlags bufferUsage_;
             ::vk::MemoryPropertyFlags memoryPropertyFlags_;

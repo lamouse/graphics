@@ -36,8 +36,7 @@ struct ImguiDebugInfo{
 };
 
 static ::VkRenderPass imguiRenderPass;
-static ::vk::DescriptorPool imguiDescriptorPool_;
-void init_imgui(GLFWwindow* window);
+void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool);
 void draw_imgui(ImguiDebugInfo& debugInfo);
 
 
@@ -83,7 +82,7 @@ void App::run(){
     RenderProcesser render(Context::Instance().device());
     RenderSystem renderSystem(render.getRenderPass(), setLayout->getDescriptorSetLayout());
 
-    init_imgui(window());
+    init_imgui(window(), descriptorPool_->getDescriptorPool());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
     ImguiDebugInfo debugInfo{};
@@ -154,27 +153,8 @@ void App::loadGameObjects()
  * @param format 
  * @param descriptorPool 
  */
-void init_imgui(GLFWwindow* window)
+void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool)
 {
-    
-    uint32_t poolSize = 100;
-    std::array<::vk::DescriptorPoolSize, 11> poolSizes{
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eCombinedImageSampler, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eSampler, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eSampledImage, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageImage, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformTexelBuffer, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageTexelBuffer, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBuffer, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageBuffer, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBufferDynamic, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageBufferDynamic, poolSize),
-        ::vk::DescriptorPoolSize(::vk::DescriptorType::eInputAttachment, poolSize)
-    };
-    
-    ::vk::DescriptorPoolCreateInfo createInfo;
-    createInfo.setPoolSizes(poolSizes)
-               .setMaxSets(poolSize);
 
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -213,8 +193,6 @@ void init_imgui(GLFWwindow* window)
     renderPassCreateInfo.pDependencies = &supassDependency;
 
     auto& device = Context::Instance().device();
-
-    imguiDescriptorPool_ =  device.logicalDevice().createDescriptorPool(createInfo); 
     vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &imguiRenderPass);
 
     //这里使用了imgui的一个分支docking
@@ -248,7 +226,7 @@ void init_imgui(GLFWwindow* window)
     init_info.QueueFamily = device.queueFamilyIndices.graphicsQueue.value();
     init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = imguiDescriptorPool_;
+    init_info.DescriptorPool = descriptorPool;
     init_info.Subpass = 0;
     init_info.MinImageCount = 2;
     init_info.ImageCount = 2;
@@ -345,11 +323,22 @@ void draw_imgui(ImguiDebugInfo& debugInfo)
 
 App::App()
 {
-    descriptorPool_ = DescriptorPool::Builder(Context::Instance().device())
-                                    .setMaxSets(2)
-                                    .addPoolSize(::vk::DescriptorType::eUniformBuffer, 2)
-                                    .addPoolSize(::vk::DescriptorType::eSampler, 2)
-                                    .build();
+    int count = 1000;
+    descriptorPool_ =
+        DescriptorPool::Builder(Context::Instance().device())
+            .setMaxSets(count)
+            .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eSampler, count)
+            .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
+            .addPoolSize(::vk::DescriptorType::eStorageImage, count)
+            .addPoolSize(::vk::DescriptorType::eSampledImage, count)
+            .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
+            .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
+            .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
+            .build();
     loadGameObjects();
 }
 
@@ -359,6 +348,5 @@ App::~App()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     Context::Instance().device().logicalDevice().destroyRenderPass(imguiRenderPass);
-    Context::Instance().device().logicalDevice().destroyDescriptorPool(imguiDescriptorPool_);
 }
 }

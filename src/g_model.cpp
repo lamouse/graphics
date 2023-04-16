@@ -1,6 +1,7 @@
 #include "g_model.hpp"
 #include "core/staging_buffer.hpp"
 #include <cassert>
+#include <unordered_map>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
