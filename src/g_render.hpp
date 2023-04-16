@@ -1,34 +1,35 @@
-#ifndef G_RENDER_HPP
-#define G_RENDER_HPP
-#include <vulkan/vulkan.hpp>
+#pragma once
 
-namespace g
+#include "g_pipeline.hpp"
+#include "g_swapchain.hpp"
+#include "core/device.hpp"
+#include <memory>
+namespace g{
+class RenderProcesser
 {
-    class RenderProcess
-    {
-    private:
-        ::vk::Pipeline pipline;
-        ::vk::PipelineLayout layout;
-        void initPipeline(int width, int height);
-        void initLayout();
-        ::std::vector<::vk::Fence> fences;
-        ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
-        ::std::vector<::vk::Semaphore> renderFinshSemaphores;
-        void createFances();
-        void createsemphores();
-        int currentFrame;
-        RenderProcess(int width, int height);
-        static ::std::unique_ptr<RenderProcess> instance;
-    public:
-        static RenderProcess& getInstance(){return *instance;}
-        static void init(int width, int height);
-        static void quit();
-        static void reset(int width, int height){quit(); init(width, height);};
-        
-        void render();
-        ~RenderProcess();
-    };
+private:
+    ::std::unique_ptr<Swapchain> swapchain;
+    bool isFrameStart{false};
+    uint32_t currentImageIndex;
+    int currentFrameIndex{0};
+    core::Device& device_;
+    ::std::vector<::vk::CommandBuffer> commandBuffers_;
+    ::vk::RenderPass renderPass_;
+    ::vk::SampleCountFlagBits sampleCount_;
+    void createSwapchain();
+    void createRenderPass();
+    void allcoCmdBuffer();
+public:
+    bool beginFrame();
+    void beginSwapchainRenderPass();
+    void endSwapchainRenderPass();
+    void endFrame();
+    ::vk::RenderPass getRenderPass(){return renderPass_;}
+    ::vk::CommandBuffer& getCurrentCommadBuffer(){return commandBuffers_[currentFrameIndex];};
+    int getCurrentFrameIndex(){return currentFrameIndex;}
+    RenderProcesser(core::Device& device);
+    ~RenderProcesser();
+    float extentAspectRation(){return swapchain->extentAspectRation();}
+};
 
 }
-
-#endif

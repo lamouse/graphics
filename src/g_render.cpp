@@ -1,194 +1,177 @@
 #include "g_render.hpp"
-#include "g_shader.hpp"
-#include "g_device.hpp"
-#include "g_swapchain.hpp"
-#include "g_command.hpp"
-#include "g_model.hpp"
-#include <iostream>
-
-
+#include "g_context.hpp"
+#include <cassert>
+#include <exception>
 namespace g{
-::std::unique_ptr<RenderProcess> RenderProcess::instance = nullptr;
-
-RenderProcess::RenderProcess(int width, int height)
+RenderProcesser::RenderProcesser(core::Device& device):device_(device)
 {
-    currentFrame = 0;
-    initLayout();
-    initPipeline(width, height);
-    createFances();
-    createsemphores();
+    sampleCount_ = Context::Instance().imageQualityConfig.msaaSamples;
+    createSwapchain();
+    createRenderPass();
+    swapchain->createFrameBuffers(renderPass_);
+    allcoCmdBuffer();
 }
 
-void RenderProcess::init(int width, int height)
+RenderProcesser::~RenderProcesser()
 {
-    instance.reset(new RenderProcess(width, height));
+    device_.logicalDevice().destroyRenderPass(renderPass_);
 }
 
-void RenderProcess::quit(){
-    instance.reset();
+void RenderProcesser::createSwapchain()
+{
+    auto extent = Context::getExtent();
+    while (extent.width == 0 || extent.height == 0)
+    {
+        extent = Context::getExtent();  
+        Context::waitWindowEvents();
+    }
+    device_.logicalDevice().waitIdle();
+    ::vk::SampleCountFlagBits sampleCount = Context::Instance().imageQualityConfig.msaaSamples;
+    if(swapchain == nullptr)
+    {
+        swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount);
+    }else{
+        ::std::shared_ptr<Swapchain> old = ::std::move(swapchain);
+        swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount, old);
+        swapchain->createFrameBuffers(renderPass_);
+        if(!old->compareFormats(*swapchain)){
+            throw ::std::runtime_error("swapchain image(or depth) format has changed!");
+        }
+    }
 }
 
-RenderProcess::~RenderProcess()
+bool RenderProcesser::beginFrame()
 {
-    for(auto & fence : fences){
-        Device::getInstance().getVKDevice().destroyFence(fence);
+    auto result  = swapchain->acquireNextImage();
+
+    if(result.result == ::vk::Result::eErrorOutOfDateKHR)
+    {
+        createSwapchain();
+        return isFrameStart;
+    }
+    if(result.result != ::vk::Result::eSuccess && result.result != ::vk::Result::eSuboptimalKHR)
+    {
+        throw ::std::runtime_error("faile acquire swapchain image");
     }
 
-    for(auto & semaphore : imageAvailableSemaphores){
-        Device::getInstance().getVKDevice().destroySemaphore(semaphore);
-    }
-
-        for(auto & semaphore : renderFinshSemaphores){
-        Device::getInstance().getVKDevice().destroySemaphore(semaphore);
-    }
-
-    Device::getInstance().getVKDevice().destroyPipelineLayout(layout);
-    Device::getInstance().getVKDevice().destroyPipeline(pipline);
+    isFrameStart = true;
+    currentImageIndex = result.value;
+    getCurrentCommadBuffer().reset();
+    ::vk::CommandBufferBeginInfo begin;
+    // ::vk::CommandBufferInheritanceInfo inherritanceInfo;
+    // begin.setFlags(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+    //     .setPInheritanceInfo(&inherritanceInfo);
+    getCurrentCommadBuffer().begin(begin);
+    return isFrameStart;
 }
 
-void RenderProcess::initPipeline(int width, int height)
+void RenderProcesser::endFrame()
 {
-    ::vk::GraphicsPipelineCreateInfo createInfo;
+    assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
+    try
+    {
+        auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
+
+        if(result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR || Context::isWindowRsize())
+        {
+            createSwapchain();
+            Context::rsetWindowRsize();
+        }else if (result != ::vk::Result::eSuccess)
+        {
+            throw new ::std::runtime_error("faild to present swap chain image");
+        }
+    }
+    catch(const ::vk::OutOfDateKHRError& e)
+    {
+        createSwapchain();
+        Context::rsetWindowRsize();
+    }
+
+    isFrameStart = false;
+    currentFrameIndex = (currentFrameIndex + 1) % swapchain->MAX_FRAME_IN_FLIGHT;
+}
+
+void RenderProcesser::beginSwapchainRenderPass()
+{
+    assert(isFrameStart && "cat't call beginSwapchainRenderPass  is frame not in progress");
+    swapchain->beginRenderPass(getCurrentCommadBuffer(), renderPass_, currentImageIndex);
+}
+
+void RenderProcesser::endSwapchainRenderPass()
+{
+    getCurrentCommadBuffer().endRenderPass();
+    getCurrentCommadBuffer().end();
+}
+
+void RenderProcesser::allcoCmdBuffer()
+{
+    ::vk::CommandBufferAllocateInfo allocInfo;
+    allocInfo.setCommandPool(device_.getCommandPool())
+        .setCommandBufferCount(swapchain->MAX_FRAME_IN_FLIGHT)
+        .setLevel(::vk::CommandBufferLevel::ePrimary);
     
-    ::vk::PipelineInputAssemblyStateCreateInfo inputAsm;
-    inputAsm.setPrimitiveRestartEnable(false)
-            .setTopology(::vk::PrimitiveTopology::eTriangleList);
-    createInfo.setPInputAssemblyState(&inputAsm);
-
-    auto shaderStage = Shader::getInstance().getShaderStage();
-    createInfo.setStages(shaderStage);
-
-    auto bindingDescriptions = Model::Vertex::getBindingDescription();
-    auto attributeDescriptions = Model::Vertex::getAtrributeDescription();
-    ::vk::PipelineVertexInputStateCreateInfo inputState;
-    inputState.setVertexBindingDescriptions(bindingDescriptions);
-    inputState.setVertexAttributeDescriptions(attributeDescriptions);
-    createInfo.setPVertexInputState(&inputState);    
- 
-    ::vk::Viewport viewport(0, 0, width, height, 0, 1);
-    ::vk::Rect2D rect({0, 0}, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)});
-    ::vk::PipelineViewportStateCreateInfo pipelineViewportState;
-    pipelineViewportState.setViewports(viewport)
-                        .setScissors(rect);
-    createInfo.setPViewportState(&pipelineViewportState);
-
-
-    ::vk::PipelineRasterizationStateCreateInfo rastCreateInfo;
-    rastCreateInfo.setRasterizerDiscardEnable(false)
-                    .setCullMode(::vk::CullModeFlagBits::eBack)
-                    .setFrontFace(::vk::FrontFace::eClockwise)
-                    .setPolygonMode(::vk::PolygonMode::eFill)
-                    .setLineWidth(1);
-    createInfo.setPRasterizationState(&rastCreateInfo);
-
-    ::vk::PipelineMultisampleStateCreateInfo multisample;
-    multisample.setSampleShadingEnable(false)
-                .setRasterizationSamples(::vk::SampleCountFlagBits::e1);
-    createInfo.setPMultisampleState(&multisample);
-
-    ::vk::PipelineColorBlendStateCreateInfo blend;
-    ::vk::PipelineColorBlendAttachmentState attachs;
-    attachs.setBlendEnable(false)
-            .setColorWriteMask(::vk::ColorComponentFlagBits::eA | 
-                                            ::vk::ColorComponentFlagBits::eB |
-                                            ::vk::ColorComponentFlagBits::eG |
-                                            ::vk::ColorComponentFlagBits::eR );
-    blend.setLogicOpEnable(false)
-            .setAttachments(attachs);
-    createInfo.setPColorBlendState(&blend);
-
-    createInfo.setLayout(layout)
-            .setRenderPass(Swapchain::getInstance().getRenderPass());
-    auto result = Device::getInstance().getVKDevice().createGraphicsPipeline(nullptr, createInfo);
-    if(result.result != vk::Result::eSuccess)
-    {
-        throw ::std::runtime_error("create graphics pipeline failed");
-    }
-
-    pipline = result.value;
+    commandBuffers_ = device_.logicalDevice().allocateCommandBuffers(allocInfo);
 }
 
-void RenderProcess::initLayout()
+void RenderProcesser::createRenderPass()
 {
-    ::vk::PipelineLayoutCreateInfo layoutCrateInfo;
-    ::vk::PushConstantRange pushConstantRange;
-    pushConstantRange.setStageFlags(::vk::ShaderStageFlagBits::eVertex | ::vk::ShaderStageFlagBits::eFragment)
-                    .setOffset(0)
-                    .setSize(sizeof(SimplePushConstantData));
-    layoutCrateInfo.setPushConstantRanges(pushConstantRange);
-    layout = Device::getInstance().getVKDevice().createPipelineLayout(layoutCrateInfo);
-}
+    ::vk::AttachmentDescription colorAttachment;
+    colorAttachment.setFormat(swapchain->getSwapchainColorFormat())
+        .setSamples(sampleCount_)
+        .setLoadOp(::vk::AttachmentLoadOp::eClear)
+        .setStoreOp(::vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setFinalLayout(::vk::ImageLayout::eColorAttachmentOptimal);
 
+    ::vk::AttachmentDescription depthAttachment;
+    depthAttachment.setFormat(swapchain->getSwapchainDepthFormat())
+        .setSamples(sampleCount_)
+        .setLoadOp(::vk::AttachmentLoadOp::eClear)
+        .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
+    ::vk::AttachmentDescription colorAttachmentResolve;
+    colorAttachmentResolve.setFormat(swapchain->getSwapchainColorFormat())
+        .setSamples(::vk::SampleCountFlagBits::e1)
+        .setLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStoreOp(::vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR);
+    ::std::array<::vk::AttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
 
-void RenderProcess::render()
-{
+    ::vk::AttachmentReference colorAttachmentRef(0, ::vk::ImageLayout::eColorAttachmentOptimal);
+    ::vk::AttachmentReference depthAttachmentRef(1, ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
+    ::vk::AttachmentReference colorAttachmentResolveRef(2, ::vk::ImageLayout::eColorAttachmentOptimal);
 
-    auto result = Device::getInstance().getVKDevice().waitForFences(fences[currentFrame], true, UINT64_MAX);
-    if(result != ::vk::Result::eSuccess)
-    {
-        throw ::std::runtime_error("RenderProcess::render waitForFences error");
-    }
+    ::vk::SubpassDescription subpass;
+    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
+        .setColorAttachments(colorAttachmentRef)
+        .setPDepthStencilAttachment(&depthAttachmentRef)
+        .setResolveAttachments(colorAttachmentResolveRef);
 
+    ::vk::SubpassDependency subepassDependency;
+    subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+        .setDstSubpass(0)
+        .setSrcAccessMask(::vk::AccessFlagBits::eNone)
+        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
+        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite |
+                          ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
 
-    auto& device = Device::getInstance().getVKDevice();
-    auto acquireResult = device.acquireNextImageKHR(Swapchain::getInstance().getSwapchain(), ::std::numeric_limits<uint16_t>::max(), imageAvailableSemaphores[currentFrame]);
-    if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR)
-    {
-        ::std::cout << "window resize --- " << std::endl;
-    }
-    if(acquireResult.result == ::vk::Result::eErrorOutOfDateKHR || acquireResult.result != ::vk::Result::eSuccess || acquireResult.result != ::vk::Result::eSuboptimalKHR)
-    {
-        auto imageIndex = acquireResult.value;
-        auto& c =  Swapchain::getInstance();
-        auto frameBuffer = Swapchain::getInstance().getFrameBuffer(imageIndex);
-        auto extent = Swapchain::getInstance().getSwapchainInfo().extent2D;
-
-        auto swapchain = Swapchain::getInstance().getSwapchain();
-        auto renderPass = Swapchain::getInstance().getRenderPass();
-        Command::getInstance().begin(imageIndex);
-        Command::getInstance().beginRenderPass(imageIndex, pipline, renderPass, extent, frameBuffer);
-        Command::getInstance().run(imageIndex, fences[currentFrame], layout, Shader::getInstance().getGameObjects());
-        Command::getInstance().endRenderPass(imageIndex);
-        Command::getInstance().end(imageIndex, swapchain, imageAvailableSemaphores[currentFrame], renderFinshSemaphores[currentFrame], fences[currentFrame]);
-        currentFrame = (currentFrame + 1) % 2;
-    } else {
-         throw ::std::runtime_error("Command::getInstance().runCmd error");
-    }
-
-    
-
-}
-
-void RenderProcess::createFances()
-{
-    int count = 2;
-    fences.resize(count);
-    for(int i = 0; i < count; i++)
-    {
-        ::vk::FenceCreateInfo info;
-        info.setFlags(::vk::FenceCreateFlagBits::eSignaled);
-        fences[i] = Device::getInstance().getVKDevice().createFence(info);
-    }
-}
-void RenderProcess::createsemphores()
-{
-    int count = 2; 
-    imageAvailableSemaphores.resize(count);
-    for(int i = 0; i < count; i++)
-    {
-        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        imageAvailableSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
-
-    }
-
-    renderFinshSemaphores.resize(count);
-    for(int i = 0; i < count; i++)
-    {
-        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        renderFinshSemaphores[i] = Device::getInstance().getVKDevice().createSemaphore(semaphoreCreateInfo);
-
-    }
+    ::vk::RenderPassCreateInfo createInfo;
+    createInfo.setAttachments(attachments)
+        .setSubpasses(subpass)
+        .setDependencies(subepassDependency);
+    renderPass_ = device_.logicalDevice().createRenderPass(createInfo);
 }
 
 }

@@ -1,52 +1,33 @@
 #include "g_model.hpp"
-#include "g_device.hpp"
+#include "core/staging_buffer.hpp"
 #include <cassert>
 namespace g
 {
 
 void Model::draw(::vk::CommandBuffer commandBuffer)
 {
-    commandBuffer.draw(vertexCount, 1, 0, 0);
+    //commandBuffer.draw(vertexCount, 1, 0, 0);
+    commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0);
 }
 void Model::bind(::vk::CommandBuffer commandBuffer)
 {
-    ::vk::Buffer buffers[] = {vertexBuffer};
+    ::vk::Buffer buffers[] = {vertexBuffer_()};
     ::vk::DeviceSize offsets[] = {0};
     commandBuffer.bindVertexBuffers(0, 1, buffers, offsets);
+    commandBuffer.bindIndexBuffer(indexBuffer_(), 0, ::vk::IndexType::eUint16);
 }
 
-void Model::createVertexBuffers(const ::std::vector<Vertex> &vertices)
+Model::Model(const ::std::vector<Vertex> &vertices, ::std::vector<uint16_t> indices, core::Device& device):
+indexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eIndexBuffer, indices.data(), sizeof(indices[0]) * indices.size())),
+vertexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(), sizeof(vertices[0]) * vertices.size()))
 {
     vertexCount = static_cast<uint32_t>(vertices.size());
+    indicesSize =  indices.size();
     assert(vertexCount >= 3 && "Verex count must be at least 3");
-    auto & device = Device::getInstance();
-    ::vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
-
-    ::vk::BufferCreateInfo bufferCreateInfo;
-    bufferCreateInfo.setSize(bufferSize)
-                    .setUsage(::vk::BufferUsageFlagBits::eVertexBuffer);
-    vertexBuffer = device.getVKDevice().createBuffer(bufferCreateInfo);
-
-    ::vk::MemoryRequirements memoryRequirements = device.getVKDevice().getBufferMemoryRequirements(vertexBuffer);
-    ::vk::MemoryAllocateInfo allocateInfo;
-    allocateInfo.setAllocationSize(memoryRequirements.size)
-                .setMemoryTypeIndex(device.findMemoryType(memoryRequirements.memoryTypeBits, ::vk::MemoryPropertyFlagBits::eHostVisible|::vk::MemoryPropertyFlagBits::eHostCoherent));
-    
-    vertexBufferMemory = Device::getInstance().getVKDevice().allocateMemory(allocateInfo);
-    Device::getInstance().getVKDevice().bindBufferMemory(vertexBuffer, vertexBufferMemory, 0);
-    void* data = Device::getInstance().getVKDevice().mapMemory(vertexBufferMemory, 0, bufferSize);
-    ::memcpy(data, vertices.data(), bufferSize);
-    Device::getInstance().getVKDevice().unmapMemory(vertexBufferMemory);
-}
-
-Model::Model(const ::std::vector<Vertex> &vertices)
-{
-    createVertexBuffers(vertices);
 }
 Model::~Model()
 {
-    Device::getInstance().getVKDevice().destroyBuffer(vertexBuffer);
-    Device::getInstance().getVKDevice().freeMemory(vertexBufferMemory);
+
 }
 
 ::std::vector<::vk::VertexInputBindingDescription> Model::Vertex::getBindingDescription()
@@ -59,16 +40,22 @@ Model::~Model()
 }
 ::std::vector<::vk::VertexInputAttributeDescription> Model::Vertex::getAtrributeDescription()
 {
-    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(2);
+    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
     attributeDescriptions[0].setBinding(0);
     attributeDescriptions[0].setLocation(0);
-    attributeDescriptions[0].setFormat(::vk::Format::eR32G32Sfloat);
+    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
     attributeDescriptions[0].setOffset(offsetof(Vertex, position));
 
     attributeDescriptions[1].setBinding(0);
     attributeDescriptions[1].setLocation(1);
     attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
     attributeDescriptions[1].setOffset(offsetof(Vertex, color));
+
+    attributeDescriptions[2].setBinding(0);
+    attributeDescriptions[2].setLocation(2);
+    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
     return attributeDescriptions;
 }
 

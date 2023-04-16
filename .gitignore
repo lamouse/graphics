@@ -1,6 +1,7 @@
 # Xmake cache
 .xmake/
 build/
+cmake-build/
 
 # MacOS Cache
 .DS_Store
@@ -9,4 +10,5 @@ build/
 .vs/
 .vscode
 out/
-src/shader/*.spv
+*.spv
+shader/*.spv

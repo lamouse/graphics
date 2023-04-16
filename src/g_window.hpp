@@ -18,7 +18,7 @@ namespace g{
             Window(int weidth, int height, ::std::string title);
             Window(const Window&) = delete;
             Window &operator=(const Window&) = delete;
-            void draw(::std::string resourcePath);
+            GLFWwindow *operator()(){return window;}
             ~Window();
             bool shuldClose();
     };

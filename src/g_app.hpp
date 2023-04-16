@@ -1,7 +1,11 @@
 #ifndef G_APP_HPP
 #define G_APP_HPP
 #include "g_window.hpp"
-#include<iostream>
+#include "g_game_object.hpp"
+#include "g_render.hpp"
+#include "resource/image_texture.hpp"
+#include <iostream>
+#include <vector>
 
 namespace g
 {
@@ -15,6 +19,8 @@ namespace g
             ~App();
         private:
             Window window{WIDTH, HEIGHT, "vulkan"};
+            ::std::vector< GameObject> gameObjects;
+            void loadGameObjects();
     };
 }
 

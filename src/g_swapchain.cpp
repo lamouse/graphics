@@ -1,77 +1,67 @@
 #include "g_swapchain.hpp"
-#include "g_device.hpp"
-#include "g_render.hpp"
+#include "g_defines.hpp"
 #include <iostream>
+#include <spdlog/spdlog.h>
 namespace g
 {
-::std::unique_ptr<Swapchain> Swapchain::instance = nullptr;
 
-Swapchain::Swapchain( int width, int height)
+Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount, ::std::shared_ptr<Swapchain> oldSwapchain):device_(device_)
+{
+    sampleCount_ = sampleCount;
+    init(width, height, oldSwapchain);
+}
+
+void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
     //裁切
     createInfo.setClipped(true)
-            .setImageArrayLayers(1)
-            .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-            .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-            .setSurface(Device::getInstance().getSurface())
-            .setImageColorSpace(swapchainInfo.formatKHR.colorSpace)
-            .setImageFormat(swapchainInfo.formatKHR.format)
-            .setImageExtent(swapchainInfo.extent2D)
-            .setMinImageCount(swapchainInfo.imageCount)
-            .setPresentMode(swapchainInfo.presentMode);
-    auto& queueIndices = Device::getInstance().queueFamilyIndices;
+        .setImageArrayLayers(1)
+        .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+        .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+        .setSurface(device_.getSurface())
+        .setImageColorSpace(swapchainInfo.formatKHR.colorSpace)
+        .setImageFormat(swapchainInfo.formatKHR.format)
+        .setImageExtent(swapchainInfo.extent2D)
+        .setMinImageCount(swapchainInfo.imageCount)
+        .setPresentMode(swapchainInfo.presentMode)
+        .setPreTransform(swapchainInfo.transForm)
+        .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
+    auto& queueIndices = device_.queueFamilyIndices;
     if(queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()){
-        createInfo.setQueueFamilyIndexCount(queueIndices.graphicsQueue.value())
-                    .setImageSharingMode(::vk::SharingMode::eExclusive);
+        createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     }else{
         ::std::array indices = {queueIndices.graphicsQueue.value(), queueIndices.presentQueue.value()};
         createInfo.setQueueFamilyIndices(indices)
                 .setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
-    swapchain = Device::getInstance().getVKDevice().createSwapchainKHR(createInfo);
+    if(oldSwapchain != nullptr)
+    {
+        createInfo.setOldSwapchain(oldSwapchain->getSwapchain());
+    }
+    swapchain =device_.logicalDevice().createSwapchainKHR(createInfo);
 
-    initRenderPass();
     createImageFrame();
+    createsemphores();
+    createFances();
 }
 
 void Swapchain::createImageFrame()
 {
     createImageViews();
+    createColorResources();
     createDepthResources();
-    createFrameBuffers();
 }
 
-void Swapchain::frameBufferResize(int width, int height)
-{
-    swapchainInfo.extent2D.width = width;
-    swapchainInfo.extent2D.height = height;
-    recreateSwapchain();
-}
-
-void Swapchain::recreateSwapchain()
-{
-    Device::getInstance().getVKDevice().waitIdle();
-    instance = ::std::make_unique<Swapchain>(Swapchain(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height));
-}
-
-void Swapchain::init(int width, int height)
-{
-    instance.reset(new Swapchain(width, height));
-}
-void Swapchain::quit()
-{
-    instance.reset();
-}
 
 void Swapchain::querySwapchainInfo(int width, int height)
 {
-    auto& phyDevice = Device::getInstance().getPhysicalDevice();
-    auto& surface = Device::getInstance().getSurface();
+    auto& phyDevice = device_.getPhysicalDevice();
+    auto& surface = device_.getSurface();
     auto  formats = phyDevice.getSurfaceFormatsKHR(surface);
     auto format = ::std::find_if(formats.begin(), formats.end(), [](auto format){
-        return format.format == vk::Format::eB8G8R8A8Srgb && 
+        return format.format == ::vk::Format::eB8G8R8A8Srgb && 
                 format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear;
     });
     if(format != formats.end()){
@@ -81,17 +71,22 @@ void Swapchain::querySwapchainInfo(int width, int height)
     }
 
     auto  cpabilities = phyDevice.getSurfaceCapabilitiesKHR(surface);
-    swapchainInfo.imageCount = ::std::clamp<uint32_t>(2, cpabilities.minImageCount, cpabilities.maxImageCount);
+    swapchainInfo.imageCount = ::std::clamp<uint32_t>(cpabilities.minImageCount + 1, cpabilities.minImageCount, cpabilities.maxImageCount);
 
-    swapchainInfo.extent2D.width = ::std::clamp<uint32_t>(width, cpabilities.minImageExtent.width, cpabilities.maxImageExtent.width);
-    swapchainInfo.extent2D.height = ::std::clamp<uint32_t>(height, cpabilities.minImageExtent.height, cpabilities.maxImageExtent.height);
+    if(cpabilities.currentExtent.width !=::std::numeric_limits<uint32_t>::max())
+    {
+        swapchainInfo.extent2D = cpabilities.currentExtent;
+    }
+    else {
+        swapchainInfo.extent2D.width = ::std::clamp<uint32_t>(width, cpabilities.minImageExtent.width, cpabilities.maxImageExtent.width);
+        swapchainInfo.extent2D.height = ::std::clamp<uint32_t>(height, cpabilities.minImageExtent.height, cpabilities.maxImageExtent.height);
+    }
 
     swapchainInfo.transForm = cpabilities.currentTransform;
-
     auto presents = phyDevice.getSurfacePresentModesKHR (surface);
-
     swapchainInfo.presentMode = chooseSwapPresentMode(presents);
 }
+
 ::vk::PresentModeKHR Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
 {
 
@@ -105,46 +100,48 @@ void Swapchain::querySwapchainInfo(int width, int height)
         }
     }
 
-    // 不进行垂直同步，使用最高的cpu个gpu性能，能达到最高的fps，但可能造成画面撕裂
-    // for(const auto& availablePresentMode : availablePresentModes)
-    // {
-    //     if(availablePresentMode == ::vk::PresentModeKHR::eImmediate)
-    //     {
-    //         return availablePresentMode;
-    //     }
-    // }
-
     //先进先出，排队
     return ::vk::PresentModeKHR::eFifo;
 }
 Swapchain::~Swapchain()
 {
-
-    for(auto& frameBuffer : frameBuffers){
-        Device::getInstance().getVKDevice().destroyFramebuffer(frameBuffer);
+    ::spdlog::debug(DETAIL_INFO("Swapchain"));
+    auto& device = device_.logicalDevice();
+    for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++){
+        device.destroyFence(inFlightFences[i]);
+        device.destroySemaphore(imageAvailableSemaphores[i]);
+        device.destroySemaphore(renderFinshSemaphores[i]);
     }
 
-    for(auto& depthImageView : depthImageViews){
-        Device::getInstance().getVKDevice().destroyImageView(depthImageView);
+    for(auto& frameBuffer : swapchainFrameBuffers){
+        device.destroyFramebuffer(frameBuffer);
     }
-    for(auto& depthImageMemory : depthImageMemorys){
-        Device::getInstance().getVKDevice().freeMemory(depthImageMemory);
+
+    for(int i = 0; i < depthImages.size(); i++)
+    {
+        device.destroyImageView(depthImageViews[i]);
+        device.freeMemory(depthImageMemorys[i]);
+        device.destroyImage(depthImages[i]);
     }
-    for(auto& depthImage : depthImages){
-        Device::getInstance().getVKDevice().destroyImage(depthImage);
+
+    for(int i = 0; i < colorImages.size(); i++)
+    {
+        device.destroyImageView(colorImageViews[i]);
+        device.freeMemory(colorImageMemorys[i]);
+        device.destroyImage(colorImages[i]);
     }
+
+
     for(auto& view : imageViews){
-        Device::getInstance().getVKDevice().destroyImageView(view);
+        device.destroyImageView(view);
     }
-    
-    Device::getInstance().getVKDevice().destroySwapchainKHR(swapchain);
-    Device::getInstance().getVKDevice().destroyRenderPass(renderPass);
 
+    device.destroySwapchainKHR(swapchain);
 }
 
 void Swapchain::getImages()
 {
-    images = Device::getInstance().getVKDevice().getSwapchainImagesKHR(swapchain);
+    images = device_.logicalDevice().getSwapchainImagesKHR(swapchain);
 }
 
 void Swapchain::createImageViews()
@@ -153,138 +150,155 @@ void Swapchain::createImageViews()
     imageViews.resize(images.size());
     for(int i = 0; i < images.size(); i++)
     {
-        ::vk::ComponentMapping mapping;
-        ::vk::ImageViewCreateInfo createImageViewInfo;
-        ::vk::ImageSubresourceRange range;
-        range.setBaseMipLevel(0)
-            .setLevelCount(VK_REMAINING_MIP_LEVELS)
-            .setBaseArrayLayer(0)
-            .setLayerCount(1)
-            .setAspectMask(vk::ImageAspectFlagBits::eColor);
-        createImageViewInfo.setImage(images[i])
-                            .setViewType(vk::ImageViewType::e2D)
-                            .setComponents(mapping)
-                            .setSubresourceRange(range)
-                            .setFormat(swapchainInfo.formatKHR.format);
-        imageViews[i] = Device::getInstance().getVKDevice().createImageView(createImageViewInfo);
+        imageViews[i] =device_.createImageView(images[i], getSwapchainColorFormat(), 
+                ::vk::ImageAspectFlagBits::eColor, 1);
     }
 }
 
-void Swapchain::createFrameBuffers()
+void Swapchain::createFrameBuffers(::vk::RenderPass& renderPass)
 {
-    frameBuffers.resize(images.size());
+    swapchainFrameBuffers.resize(images.size());
 
-    for(int i = 0; i < frameBuffers.size(); i++)
+    for(int i = 0; i < swapchainFrameBuffers.size(); i++)
     {
         ::vk::FramebufferCreateInfo createInfo;
-        std::array<vk::ImageView, 2> attachments = {imageViews[i], depthImageViews[i]};
+        std::array<vk::ImageView, 3> attachments = {colorImageViews[i], depthImageViews[i], imageViews[i]};
         createInfo.setAttachments(attachments)
                 .setWidth(swapchainInfo.extent2D.width)
                 .setHeight(swapchainInfo.extent2D.height)
                 .setRenderPass(renderPass)
                 .setLayers(1);
-        frameBuffers[i] = Device::getInstance().getVKDevice().createFramebuffer(createInfo);
+        swapchainFrameBuffers[i] = device_.logicalDevice().createFramebuffer(createInfo);
+    }
+}
+
+void Swapchain::createColorResources()
+{
+    colorImages.resize(images.size());
+    colorImageMemorys.resize(images.size());
+    colorImageViews.resize(images.size());
+    uint32_t mipLevels = 1;
+    for(int i = 0; i < colorImages.size(); i++)
+    {
+        device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, getSwapchainColorFormat(), 
+                        sampleCount_, ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment, 
+                        ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemorys[i]);
+        colorImageViews[i] = device_.createImageView(colorImages[i],  getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, mipLevels);
+    }
+}
+
+void Swapchain::createDepthResources() {
+    depthFormat = findDepthFormat();
+
+    depthImages.resize(images.size());
+    depthImageMemorys.resize(images.size());
+    depthImageViews.resize(images.size());
+    uint32_t mipLevels = 1;
+    for (int i = 0; i < depthImages.size(); i++) {
+        device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, depthFormat, 
+                        sampleCount_, ::vk::ImageTiling::eOptimal, 
+                        ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                        ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemorys[i]);
+        depthImageViews[i] = device_.createImageView(depthImages[i],  depthFormat, ::vk::ImageAspectFlagBits::eDepth, mipLevels);
     }
 }
 
 
-void Swapchain::createDepthResources() {
-  vk::Format depthFormat = findDepthFormat();
-
-  depthImages.resize(images.size());
-  depthImageMemorys.resize(images.size());
-  depthImageViews.resize(images.size());
-
-  for (int i = 0; i < depthImages.size(); i++) {
-    ::vk::ImageCreateInfo imageInfo{};
-    imageInfo.setImageType(::vk::ImageType::e2D);
-    ::vk::Extent3D extent{swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, 1};
-    imageInfo.setExtent(extent)
-             .setMipLevels(1)
-             .setArrayLayers(1)
-             .setFormat(depthFormat)
-             .setTiling(::vk::ImageTiling::eOptimal)
-             .setInitialLayout(::vk::ImageLayout::eUndefined)
-             .setUsage(::vk::ImageUsageFlagBits::eDepthStencilAttachment)
-             .setSamples(::vk::SampleCountFlagBits::e1)
-             .setSharingMode(::vk::SharingMode::eExclusive);
-
-    
-    depthImages[i] =  Device::getInstance().getVKDevice().createImage(imageInfo);
-    ::vk::MemoryRequirements requirement = Device::getInstance().getVKDevice().getImageMemoryRequirements(depthImages[i]);
-    ::vk::MemoryAllocateInfo allocInfo;
-    allocInfo.setAllocationSize(requirement.size)
-            .setMemoryTypeIndex(Device::getInstance().findMemoryType(requirement.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal));
-
-    depthImageMemorys[i] = Device::getInstance().getVKDevice().allocateMemory(allocInfo);
-    Device::getInstance().getVKDevice().bindImageMemory(depthImages[i], depthImageMemorys[i], 0);
-    ::vk::ImageSubresourceRange imageSubresource;
-    imageSubresource.setAspectMask(::vk::ImageAspectFlagBits::eDepth)
-                    .setBaseMipLevel(0)
-                    .setLevelCount(1)
-                    .setLayerCount(1)
-                    .setBaseArrayLayer(0);
-
-    ::vk::ComponentMapping mapping;
-    ::vk::ImageViewCreateInfo viewInfo;
-    viewInfo.setImage(depthImages[i])
-            .setViewType(::vk::ImageViewType::e2D)
-            .setFormat(depthFormat)
-            .setSubresourceRange(imageSubresource)
-            .setComponents(mapping);
-
-    depthImageViews[i] =  Device::getInstance().getVKDevice().createImageView(viewInfo);
-  }
-}
-
-void Swapchain::initRenderPass()
-{
-    ::vk::RenderPassCreateInfo createInfo;
-    ::vk::AttachmentDescription colorDesc;
-    colorDesc.setFormat(swapchainInfo.formatKHR.format)
-                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
-                .setLoadOp(::vk::AttachmentLoadOp::eClear)
-                .setStoreOp(::vk::AttachmentStoreOp::eStore)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eClear);
-    ::vk::AttachmentReference colorAttachmentReference;
-    colorAttachmentReference.setLayout(::vk::ImageLayout::eColorAttachmentOptimal)
-                        .setAttachment(0);
-    
-    ::vk::AttachmentDescription depthAttachment;
-    depthAttachment.setFormat(findDepthFormat())
-                .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal)
-                .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
-                .setLoadOp(::vk::AttachmentLoadOp::eClear)
-                .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
-                .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare);
-    vk::AttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.setAttachment(1)
-                    .setLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
-    
-    ::std::array<::vk::AttachmentDescription, 2> attachments = {colorDesc, depthAttachment};
-    createInfo.setAttachments(attachments);
-
-     ::vk::SubpassDescription subpass;
-    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
-            .setColorAttachments(colorAttachmentReference);
-    createInfo.setSubpasses(subpass);
-
-    ::vk::SubpassDependency subepassDependency;
-    subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-                        .setDstSubpass(0)
-                        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite | ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
-                        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
-                        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput | ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
-    createInfo.setDependencies(subepassDependency)
-                .setSubpassCount(1);
-    renderPass = Device::getInstance().getVKDevice().createRenderPass(createInfo);
-}
-
- ::vk::Format Swapchain::findDepthFormat(){
-    return Device::getInstance().findSupportedFormat({::vk::Format::eD32Sfloat, ::vk::Format::eD32SfloatS8Uint, ::vk::Format::eD24UnormS8Uint},
+::vk::Format Swapchain::findDepthFormat(){
+    return device_.findSupportedFormat({::vk::Format::eD32Sfloat, ::vk::Format::eD32SfloatS8Uint, ::vk::Format::eD24UnormS8Uint},
             ::vk::ImageTiling::eOptimal,
             ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 
  }
+
+ void Swapchain::createFances()
+{
+    inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
+    for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
+    {
+        ::vk::FenceCreateInfo info;
+        info.setFlags(::vk::FenceCreateFlagBits::eSignaled);
+        inFlightFences[i] = device_.logicalDevice().createFence(info);
+    }
+}
+
+void Swapchain::createsemphores()
+{
+    imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+    renderFinshSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+    for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
+    {
+        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
+        imageAvailableSemaphores[i] = device_.logicalDevice().createSemaphore(semaphoreCreateInfo);
+
+        ::vk::SemaphoreCreateInfo renderSemaphoreCreateInfo;
+        renderFinshSemaphores[i] = device_.logicalDevice().createSemaphore(renderSemaphoreCreateInfo);
+    }
+}
+
+::vk::ResultValue<uint32_t> Swapchain::acquireNextImage()
+{
+    auto device = device_.logicalDevice();
+
+    auto waitResult = device.waitForFences(inFlightFences[currentFrame], VK_TRUE, ::std::numeric_limits<uint64_t>::max());
+    if(waitResult != ::vk::Result::eSuccess)
+    {
+        throw ::std::runtime_error(" Swapchain::acquireNextImage wait fences");
+    }
+    device_.logicalDevice().resetFences(inFlightFences[currentFrame]);
+    return  device.acquireNextImageKHR(swapchain, ::std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame]);
+
+}
+
+::vk::Result Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+{
+    ::vk::SubmitInfo submitInfo;
+    ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
+    submitInfo.setCommandBuffers(commandBuffer)
+                .setWaitSemaphores(imageAvailableSemaphores[currentFrame])
+                .setSignalSemaphores(renderFinshSemaphores[currentFrame])
+                .setWaitDstStageMask(stage);
+    device_.getGraphicsQueue().submit(submitInfo, inFlightFences[currentFrame]);
+    ::vk::PresentInfoKHR presentInfo;
+    presentInfo.setImageIndices(imageIndex)
+                .setSwapchains(swapchain)
+                .setWaitSemaphores(renderFinshSemaphores[currentFrame]);
+
+    auto result =device_.getPresentQueue().presentKHR(presentInfo);
+
+    currentFrame = (currentFrame + 1) % MAX_FRAME_IN_FLIGHT;
+    return result;
+}
+
+void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, ::vk::RenderPass& renderPass, uint32_t imageIndex)
+{
+    auto extent = swapchainInfo.extent2D;
+    ::vk::RenderPassBeginInfo renderPassBeginInfo;
+    ::vk::Rect2D area;
+    area.setOffset({0, 0})
+        .setExtent(extent);
+    
+    //下标0 颜色附件，下标1深度附件
+    ::std::array<::vk::ClearValue, 2> clearValues;
+    clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.f, 0.f, 0.f, 1.0f})));
+    clearValues[1].setDepthStencil({1.0f, 0});
+
+    renderPassBeginInfo.setRenderPass(renderPass)
+                        .setRenderArea(area)
+                        .setFramebuffer(swapchainFrameBuffers[imageIndex])
+                        .setClearValues(clearValues);
+    commandBuffer.beginRenderPass(renderPassBeginInfo, ::vk::SubpassContents::eInline);
+
+    ::vk::Viewport viewPort;
+    viewPort.setX(0.0f)
+            .setY(0.0f)
+            .setWidth(static_cast<float>(extent.width))
+            .setHeight(static_cast<float>(extent.height))
+            .setMinDepth(.0f)
+            .setMaxDepth(1.f);
+    ::vk::Rect2D scissor{{0, 0}, extent};    
+    commandBuffer.setViewport(0, viewPort);
+    commandBuffer.setScissor(0, scissor);
+}
 
 }

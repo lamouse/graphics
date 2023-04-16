@@ -1,48 +1,33 @@
 #include "g_context.hpp"
+#include "g_pipeline.hpp"
+#include "g_swapchain.hpp"
 #include <iostream>
-#include<vector>
-#include<cassert>
+#include <vector>
+#include <cassert>
 namespace g{
-
+::std::unique_ptr<core::Device> device = nullptr;
 
 ::std::unique_ptr<Context> Context::pInstance = nullptr;
 int Context::width = 800;
 int Context::height = 600;
+bool Context::windowIsRsize = false;
 
-Context::Context(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc)
+Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, bool enableValidationLayers)
 {
-    auto vkInstance = createInstance(instanceExtends);
-    Device::init(vkInstance, createFunc(vkInstance));
-
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-    ::std::string full_path{"/Users/sora/project/cpp/test/xmake/graphics/src/shader/"};
-#else
-    ::std::string full_path{"E:/project/cpp/graphics/src/shader/"};
-#endif
-    
-    Shader::init(full_path + "vert.spv", 
-            full_path + "frag.spv");
-    Swapchain::init(width, height);
-    RenderProcess::init(width, height);
-    Command::init(Swapchain::getInstance().getImageCount());
-    
+   device_ = ::std::make_shared<core::Device>(instanceExtends, createFunc, enableValidationLayers);
+   imageQualityConfig.msaaSamples = device_->getMaxMsaaSamples();
 }
 
 Context::~Context()
 {
-    Device::getInstance().getVKDevice().waitIdle();
-    Command::quit();
-    RenderProcess::quit();
-    Swapchain::quit();
-    Shader::quit();
-    Device::quit();
+    device_->logicalDevice().waitIdle();
 }
 
-void Context::init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, int width, int height)
+void Context::init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height, bool enableValidationLayers)
 {
     width = width;
     height = height;
-    pInstance.reset(new Context(instanceExtends, createFunc));
+    pInstance.reset(new Context(instanceExtends, createFunc, enableValidationLayers));
 }
 void Context::quit()
 {
@@ -53,27 +38,6 @@ Context& Context::Instance()
 {   
     assert(pInstance);
     return *pInstance;
-}
-
-::vk::Instance Context::createInstance(const std::vector<const char*>& instanceExtends)
-{
-    ::std::vector<const char*> layers{"VK_LAYER_KHRONOS_validation"};
-    ::std::vector<const char*> externs = {instanceExtends.begin(), instanceExtends.end()};
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-    externs.push_back("VK_KHR_portability_enumeration");
-    ::vk::InstanceCreateFlags flags{VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR};
-#endif
- 
-    ::vk::InstanceCreateInfo createInfo;
-    ::vk::ApplicationInfo appInfo;
-     appInfo.setApiVersion(VK_API_VERSION_1_3);
-     createInfo.setPEnabledLayerNames(layers)
-                .setPApplicationInfo(&appInfo)
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-                .setFlags(flags)
-#endif
-                .setPEnabledExtensionNames(externs);
-    return ::vk::createInstance(createInfo);
 }
 
 }

@@ -1,28 +1,36 @@
 #ifndef G_CONTEXT_HPP
 #define G_CONTEXT_HPP
-#include "g_device.hpp"
-#include "g_swapchain.hpp"
-#include "g_shader.hpp"
-#include "g_render.hpp"
-#include "g_command.hpp"
-#include<memory>
+#include "core/device.hpp"
+#include "system/system_config.hpp"
+#include <memory>
 #include <functional>
+#include <GLFW/glfw3.h>
 
 namespace g{
     
     class Context final
     {
     private:
-        Context(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc);
+        Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, bool enableValidationLayers);
         static ::std::unique_ptr<Context> pInstance;
-        ::vk::Instance createInstance(const std::vector<const char*>& instanceExtends);
-        ::vk::SwapchainKHR swapchain;
-        ::vk::Device device;
+        ::std::shared_ptr<core::Device> device_;
+
         static int width;
         static int height;
+        static bool windowIsRsize;
     public:
-        static void init(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, int width, int height);
+        config::ImageQuality imageQualityConfig;
+
+
+        core::Device& device(){return  *device_;}
+        static void setExtent(int w, int h){width = w; height = h;}
+        static void setWindowRsize(){windowIsRsize = true;}
+        static void rsetWindowRsize(){windowIsRsize = false;}
+        static bool isWindowRsize(){ return windowIsRsize;}
+        static ::vk::Extent2D getExtent(){return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};}
+        static void init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height, bool enableValidationLayers);
         static void quit();
+        static void waitWindowEvents(){glfwWaitEvents();}
         static Context& Instance();
         ~Context();
     };
