@@ -24,6 +24,7 @@ class ImageTexture{
         ::vk::ImageView imageView(){return imageView_;}
         uint32_t mipLevels(){return imageMipLevels_;}
         ImageTexture(core::Device& device, Image& image, ::vk::Format format);
+        ::vk::DescriptorImageInfo descriptorImageInfo();
 
         ImageTexture(const ImageTexture&) = delete;
         ImageTexture(ImageTexture&&) = default;

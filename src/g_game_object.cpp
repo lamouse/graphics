@@ -10,10 +10,6 @@ namespace g
 {
 
 
-GameObject::~GameObject()
-{
 
-
-}
 
 }

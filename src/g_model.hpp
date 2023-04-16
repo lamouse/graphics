@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 #include <vector>
+#include <memory>
 namespace g
 {
 class Model{
@@ -24,7 +25,7 @@ public:
         }
     };
     
-
+    static ::std::unique_ptr<Model> createFromFile(const ::std::string& path, core::Device& device);
     Model(const Model&) = delete;
     Model& operator=(const Model&) = delete;
     void bind(::vk::CommandBuffer commandBuffer);

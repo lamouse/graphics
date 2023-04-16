@@ -1,12 +1,8 @@
 #ifndef G_APP_HPP
 #define G_APP_HPP
-#include "g_window.hpp"
 #include "g_game_object.hpp"
-#include "g_render.hpp"
-#include "resource/image_texture.hpp"
+#include "g_window.hpp"
 #include "g_descriptor.hpp"
-#include <iostream>
-#include <vector>
 
 namespace g
 {

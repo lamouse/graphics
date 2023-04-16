@@ -183,6 +183,11 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
 
 }
 
+::vk::DescriptorImageInfo ImageTexture::descriptorImageInfo()
+{
+    return {sampler_, imageView_, ::vk::ImageLayout::eShaderReadOnlyOptimal};
+}
+
 ImageTexture::~ImageTexture()
 {
     device_.get().destroySampler(sampler_);

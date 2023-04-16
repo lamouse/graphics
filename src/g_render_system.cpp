@@ -1,5 +1,6 @@
 #include "g_render_system.hpp"
 #include "resource/shader.hpp"
+#include "g_model.hpp"
 #include "g_context.hpp"
 #include "g_defines.hpp"
 #include <spdlog/spdlog.h>
@@ -21,7 +22,6 @@ void RenderSystem::render(FrameInfo& frameInfo)
     
 RenderSystem::RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayout descriptorSetLayout)
 {
-    descriptor_.init(Context::Instance().device().logicalDevice());
     createPipelineLayout(descriptorSetLayout);
     createPipeline(renderPass);
 }
@@ -31,7 +31,6 @@ RenderSystem::~RenderSystem()
     spdlog::debug(DETAIL_INFO("RenderSystem"));
     auto & device = Context::Instance().device().logicalDevice();
     device.destroyPipeline(pipeline());
-    descriptor_.destory(device);
     device.destroyPipelineLayout(pipelineLayout);
 }
 

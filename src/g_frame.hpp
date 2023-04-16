@@ -18,6 +18,6 @@ namespace g {
         ::vk::CommandBuffer commandBuffer;
         Camera& camera;
         ::vk::DescriptorSet descriptorSet;
-        GameObject::Map gameObjects;
+        GameObject::Map& gameObjects;
     };
 }

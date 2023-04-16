@@ -1,22 +1,44 @@
 #include "g_app.hpp"
 #include "g_pipeline.hpp"
 #include "g_render_system.hpp"
+#include "g_render.hpp"
 #include "g_defines.hpp"
 #include "g_context.hpp"
 #include "imgui/gui.hpp"
 #include "core/buffer.hpp"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-#include <unordered_map>
 #include <chrono>
-
+#include <cmath>
 namespace g{
 
-void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descriptorPool);
-void draw_imgui();
 
-static ::VkRenderPass renderPass;
+struct ImguiDebugInfo{
+    float speed;
+    float look_x;
+    float look_y;
+    float look_z;
+
+    float center_x;
+    float center_y;
+    float center_z;
+
+    float up_x;
+    float up_y;
+    float up_z;
+
+    float rotate_x;
+    float rotate_y;
+    float rotate_z;
+    float radians;
+
+    float z_far;
+    float z_near;
+};
+
+static ::VkRenderPass imguiRenderPass;
+static ::vk::DescriptorPool imguiDescriptorPool_;
+void init_imgui(GLFWwindow* window);
+void draw_imgui(ImguiDebugInfo& debugInfo);
 
 
 static void check_vk_result(VkResult err)
@@ -32,6 +54,7 @@ void App::run(){
 
     auto setLayout = DescriptorSetLayout::Builder(Context::Instance().device())
                                                 .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
+                                                .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler, ::vk::ShaderStageFlagBits::eAllGraphics)
                                                 .build();
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
@@ -43,6 +66,9 @@ void App::run(){
                                     ::vk::MemoryPropertyFlagBits::eHostVisible);
         uboBuffers[i]->map();
     }
+    ::std::string s(image_path + "viking_room.png");
+    resource::image::Image img(s);
+    resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
 
     ::std::vector<::vk::DescriptorSet> descriptorSets(2);
     for(int i = 0; i < descriptorSets.size(); i++)
@@ -50,24 +76,39 @@ void App::run(){
         auto bufferInfo = uboBuffers[i]->descriptorInfo();
         DescriptorWriter(*setLayout, *descriptorPool_)
                 .writeBuffer(0, bufferInfo)
+                .writeImage(1, imageTexture.descriptorImageInfo())
                 .build(descriptorSets[i]);
     }
 
     RenderProcesser render(Context::Instance().device());
     RenderSystem renderSystem(render.getRenderPass(), setLayout->getDescriptorSetLayout());
-    ::std::string s(image_path + "viking_room.png");
-    resource::image::Image img(s);
-    resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
-    init_imgui(window(), VK_FORMAT_B8G8R8A8_UNORM, renderSystem.getDescriptorPool());
+
+    init_imgui(window());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
+    ImguiDebugInfo debugInfo{};
+    debugInfo.speed = 90.0f;
+    debugInfo.look_x = 2.0f;
+    debugInfo.look_y = 2.0f;
+    debugInfo.look_z = 2.0f;
+    debugInfo.up_z = 1.f;
+    debugInfo.rotate_z = 2.0;
+    debugInfo.radians = 45.f;
+    debugInfo.z_far = .1f;
+    debugInfo.z_near = 10.f;
     while (!window.shuldClose()){
+
+        draw_imgui(debugInfo);
+
         auto currentTime = ::std::chrono::high_resolution_clock::now();
         float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
         UniformBufferObject ubo{};
-        ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = ::glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = ::glm::perspective(glm::radians(45.0f), render.extentAspectRation(), 0.1f, 10.0f);
+        ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed), 
+                        glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
+        ubo.view = ::glm::lookAt(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z), 
+                            glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z), 
+                            glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
+        ubo.proj = ::glm::perspective(glm::radians(debugInfo.radians), render.extentAspectRation(), debugInfo.z_far, debugInfo.z_near);
         ubo.proj[1][1] *= -1;
         
         glfwPollEvents();
@@ -83,8 +124,7 @@ void App::run(){
                 render.getCurrentCommadBuffer(),
                 camera,
                 descriptorSets[render.getCurrentFrameIndex()],
-                gameObjects
-
+                gameObjects                
             };
 
             render.beginSwapchainRenderPass();
@@ -93,63 +133,17 @@ void App::run(){
             render.endFrame();
         }
 
-        draw_imgui();
 
     }
 
     Context::Instance().device().logicalDevice().waitIdle();
 }
 
-std::unique_ptr<Model> createCubeModel(::glm::vec3 offset) {
-
-
-    ::tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, (models_path + "viking_room.obj") .c_str())) {
-        throw std::runtime_error(warn + err);
-    }
-    std::vector<Model::Vertex> vertices;
-    std::vector<uint16_t> indices;
-   
-   ::std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
-
-        for (const auto& shape : shapes) {
-            for (const auto& index : shape.mesh.indices) {
-                Model::Vertex vertex{};
-
-                vertex.position = {
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2]
-                };
-
-                vertex.texCoord = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-                };
-
-                vertex.color = {1.0f, 1.0f, 1.0f};
-
-                if (uniqueVertices.count(vertex) == 0) {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-                    vertices.push_back(vertex);
-                }
-
-                indices.push_back(uniqueVertices[vertex]);
-            }
-        }
-     
-  return std::make_unique<Model>(vertices, indices, Context::Instance().device());
-}
 
 void App::loadGameObjects()
 {
-    ::std::shared_ptr<Model> model = createCubeModel({.0f, .0f, .0f});
     auto cube = GameObject::createGameObject();
-    cube.model = model;
+    cube.model = Model::createFromFile("models/viking_room.obj", Context::Instance().device());
     gameObjects.emplace(cube.getId(), ::std::move(cube));
 }
 
@@ -160,10 +154,30 @@ void App::loadGameObjects()
  * @param format 
  * @param descriptorPool 
  */
-void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descriptorPool)
+void init_imgui(GLFWwindow* window)
 {
+    
+    uint32_t poolSize = 100;
+    std::array<::vk::DescriptorPoolSize, 11> poolSizes{
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eCombinedImageSampler, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eSampler, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eSampledImage, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageImage, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformTexelBuffer, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageTexelBuffer, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBuffer, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageBuffer, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eUniformBufferDynamic, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eStorageBufferDynamic, poolSize),
+        ::vk::DescriptorPoolSize(::vk::DescriptorType::eInputAttachment, poolSize)
+    };
+    
+    ::vk::DescriptorPoolCreateInfo createInfo;
+    createInfo.setPoolSizes(poolSizes)
+               .setMaxSets(poolSize);
+
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = format;
+    colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -200,7 +214,8 @@ void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descri
 
     auto& device = Context::Instance().device();
 
-    vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &renderPass);
+    imguiDescriptorPool_ =  device.logicalDevice().createDescriptorPool(createInfo); 
+    vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &imguiRenderPass);
 
     //这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
@@ -233,14 +248,14 @@ void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descri
     init_info.QueueFamily = device.queueFamilyIndices.graphicsQueue.value();
     init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = descriptorPool;
+    init_info.DescriptorPool = imguiDescriptorPool_;
     init_info.Subpass = 0;
     init_info.MinImageCount = 2;
     init_info.ImageCount = 2;
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
-    ImGui_ImplVulkan_Init(&init_info, renderPass);
+    ImGui_ImplVulkan_Init(&init_info, imguiRenderPass);
     // Upload Fonts
     {
         // Use any command queue
@@ -250,7 +265,7 @@ void init_imgui(GLFWwindow* window, VkFormat format, ::vk::DescriptorPool descri
 
 }
 
-void draw_imgui()
+void draw_imgui(ImguiDebugInfo& debugInfo)
 {
     ImGuiIO& io = ImGui::GetIO();   
     (void)io;
@@ -269,16 +284,36 @@ void draw_imgui()
         }
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
         {
-            static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("debug window");                          // Create a window called "Hello, world!" and append into it.
         
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
+            float cenetr_x = debugInfo.look_x + 0.3,  cenetr_y = debugInfo.look_y + 0.3,  cenetr_z = debugInfo.look_z + 0.3;
+            ImGui::SliderFloat("speed", &debugInfo.speed, .0f, 180.0f);            
+            ImGui::SliderFloat("look at x", &debugInfo.look_x, .0f, 8.f);
+            ImGui::SliderFloat("look at y", &debugInfo.look_y, .0f, 8.f);     
+            ImGui::SliderFloat("look at z", &debugInfo.look_z, .0f, 8.f);       
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::SliderFloat("center x", &debugInfo.center_x, .0f, cenetr_x);
+            ImGui::SliderFloat("center y", &debugInfo.center_y, .0f, cenetr_y);     
+            ImGui::SliderFloat("center z", &debugInfo.center_z, .0f, cenetr_z);    
+
+            ImGui::SliderFloat("up x", &debugInfo.up_x, .0f, 2.f);
+            ImGui::SliderFloat("up y", &debugInfo.up_y, .0f, 2.f);     
+            ImGui::SliderFloat("up z", &debugInfo.up_z, .0f, 2.f);
+
+            ImGui::SliderFloat("rotate x", &debugInfo.rotate_x, .0f, 10.f);
+            ImGui::SliderFloat("rotate y", &debugInfo.rotate_y, .0f, 10.f);     
+            ImGui::SliderFloat("rotate z", &debugInfo.rotate_z, .1f, 10.f);
+
+            ImGui::SliderFloat("radians z", &debugInfo.radians, 10.f, 180.f);  
+
+            ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
+            ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f); 
+
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
             if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -313,6 +348,7 @@ App::App()
     descriptorPool_ = DescriptorPool::Builder(Context::Instance().device())
                                     .setMaxSets(2)
                                     .addPoolSize(::vk::DescriptorType::eUniformBuffer, 2)
+                                    .addPoolSize(::vk::DescriptorType::eSampler, 2)
                                     .build();
     loadGameObjects();
 }
@@ -322,6 +358,7 @@ App::~App()
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    Context::Instance().device().logicalDevice().destroyRenderPass(renderPass);
+    Context::Instance().device().logicalDevice().destroyRenderPass(imguiRenderPass);
+    Context::Instance().device().logicalDevice().destroyDescriptorPool(imguiDescriptorPool_);
 }
 }

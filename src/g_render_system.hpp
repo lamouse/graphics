@@ -14,14 +14,12 @@ namespace g
         ::vk::PipelineLayout pipelineLayout;
         
         PipeLine pipeline;
-        Descriptor descriptor_;
         void createPipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout);
         void createPipeline(::vk::RenderPass renderPass);
         void createDescriptorSets(uint32_t count);
         void updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler);
     public:
         RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayout descriptorSetLayout);
-        ::vk::DescriptorPool getDescriptorPool(){return descriptor_.getDescriptorPool(); }
         void render(FrameInfo& frameInfo);
         ~RenderSystem();
 };

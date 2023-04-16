@@ -1,9 +1,8 @@
 #pragma once
 #include "g_model.hpp"
-#include <memory>
 #include <glm/gtc/matrix_transform.hpp>
-#include <stdint.h>
-#include "resource/image.hpp"
+#include <unordered_map>
+#include <memory>
 namespace g
 {
 
@@ -31,7 +30,7 @@ class GameObject
 
 public:
     using id_t = unsigned int;
-    using Map = ::std::unordered_map<id_t, GameObject>;
+    using Map = std::unordered_map<id_t, GameObject>;
     static GameObject createGameObject(){
         static id_t currentId = 0;
         return GameObject(currentId++);
@@ -45,7 +44,6 @@ public:
     ::std::shared_ptr<Model> model{};
     ::glm::vec3 color{};
     TransformCompoent transform;
-    ~GameObject();
 
     private:
         id_t id;
