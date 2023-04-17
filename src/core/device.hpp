@@ -53,6 +53,7 @@ namespace core{
         ::vk::Device device_;
         ::vk::Queue graphicsQueue;
         ::vk::Queue presentQueue;
+        ::vk::Queue computeQueue;
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
@@ -72,6 +73,7 @@ namespace core{
     public:
         struct QueueFamilyIndices final{
             ::std::optional<uint32_t> graphicsQueue;
+            ::std::optional<uint32_t> computeQueue;
             ::std::optional<uint32_t> presentQueue;
             bool isComplete(){return graphicsQueue.has_value() && presentQueue.has_value();}
         };
@@ -91,6 +93,7 @@ namespace core{
         ::vk::PhysicalDevice& getPhysicalDevice();
         ::vk::Queue& getGraphicsQueue();
         ::vk::Queue& getPresentQueue();
+        ::vk::Queue& getComputeQueue(){return computeQueue;};
         ::vk::Device& logicalDevice();
         ::vk::Format findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features);
         ::vk::CommandPool getCommandPool(){return cmdPool_;}

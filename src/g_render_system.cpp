@@ -57,7 +57,7 @@ void RenderSystem::createPipeline(::vk::RenderPass renderPass)
 {
     ::std::string vertFilePath = shader_path + "vert.spv";
     ::std::string fragFilePath = shader_path + "frag.spv";
-    ::resource::shader::Shader shader(vertFilePath, fragFilePath, Context::Instance().device().logicalDevice());
+    ::resource::shader::GraphicsShader shader(vertFilePath, fragFilePath, Context::Instance().device().logicalDevice());
     auto defaultConfig= PipeLine::getDefaultConfig();
     defaultConfig.renderPass = renderPass;
     defaultConfig.layout = pipelineLayout;

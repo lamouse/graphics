@@ -162,7 +162,7 @@ Device::QueueFamilyIndices Device::queryQueueFamilyIndices(::vk::PhysicalDevice 
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
     auto pos = ::std::find_if(properties.begin(), properties.end(), [&](const auto & property){
-        if(property.queueFlags | ::vk::QueueFlagBits::eGraphics)
+        if((property.queueFlags | ::vk::QueueFlagBits::eGraphics) && (property.queueFlags | ::vk::QueueFlagBits::eCompute))
         {
             if(device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
                 return true;
@@ -176,6 +176,7 @@ Device::QueueFamilyIndices Device::queryQueueFamilyIndices(::vk::PhysicalDevice 
     if(pos != properties.end()){
         indices.graphicsQueue = pos - properties.begin();
         indices.presentQueue = indices.graphicsQueue;
+        indices.computeQueue = indices.graphicsQueue;
     }
     return indices;
 
@@ -203,6 +204,7 @@ void Device::getQueues()
 {
     graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
     presentQueue = device_.getQueue(queueFamilyIndices.presentQueue.value(), 0);
+    computeQueue = device_.getQueue(queueFamilyIndices.computeQueue.value(), 0);
 }
 
 void Device::initCmdPool()
