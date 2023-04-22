@@ -25,9 +25,8 @@ void Window::initWindow()
     }
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
     extends.push_back("VK_KHR_portability_enumeration");
-#endif
-    extends.push_back("VK_KHR_portability_enumeration");
     extends.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+#endif
     if(enableValidationLayers)
     {
         extends.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
