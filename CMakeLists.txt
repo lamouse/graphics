@@ -3,9 +3,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
 
 set(EXECUTE_NAME graphics)
-
 set(CMAKE_CXX_STANDARD 23)
-
+set(BUILD_TESTING ON)
 aux_source_directory(./src MAIN_SRC)
 aux_source_directory(./src/resource RESOURCE_SRC)
 aux_source_directory(./src/core CORE_SRC)
@@ -65,3 +64,6 @@ install(DIRECTORY "shader/"
         FILES_MATCHING PATTERN "*.spv" )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
+
+enable_testing()
+add_subdirectory(src/test)
