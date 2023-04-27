@@ -9,7 +9,7 @@ namespace g {
 auto DescriptorSetLayout::Builder::addBinding(
     uint32_t binding, ::vk::DescriptorType type,
     ::vk::ShaderStageFlags stageFlags, uint32_t count) -> DescriptorSetLayout::Builder& {
-    assert(descriptorSetLayoutBindings_.count(binding) == 0 && "binding already exists");
+    assert(not descriptorSetLayoutBindings_.contains(binding) && "binding already exists");
 
     ::vk::DescriptorSetLayoutBinding layoutBinding;
     layoutBinding.binding = binding;
