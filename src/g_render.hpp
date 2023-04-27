@@ -25,7 +25,7 @@ public:
     void endFrame();
     auto getRenderPass(){return renderPass_;}
     auto getCurrentCommadBuffer() -> ::vk::CommandBuffer&{return commandBuffers_[currentFrameIndex];};
-    auto getCurrentFrameIndex() ->int{return currentFrameIndex;}
+    [[nodiscard]] auto getCurrentFrameIndex() const ->int{return currentFrameIndex;}
     RenderProcesser(core::Device& device);
     ~RenderProcesser();
     auto extentAspectRation()->auto{return swapchain->extentAspectRation();}
