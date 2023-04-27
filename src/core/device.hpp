@@ -1,5 +1,4 @@
-#ifndef G_DEVICE_HPP
-#define G_DEVICE_HPP
+#pragma once
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 #include <optional>
@@ -104,7 +103,3 @@ namespace core{
         
     };
 }
-
-
-
-#endif

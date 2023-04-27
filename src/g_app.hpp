@@ -1,5 +1,4 @@
-#ifndef G_APP_HPP
-#define G_APP_HPP
+#pragma once
 #include "g_game_object.hpp"
 #include "g_window.hpp"
 #include "g_descriptor.hpp"
@@ -21,5 +20,3 @@ namespace g
             ::std::unique_ptr<DescriptorPool> descriptorPool_;
     };
 }
-
-#endif

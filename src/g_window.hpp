@@ -1,5 +1,4 @@
-#ifndef G_WINDOW_HPP
-#define G_WINDOW_HPP
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include<GLFW/glfw3.h>
 #include <string>
@@ -23,5 +22,3 @@ namespace g{
             auto shuldClose() -> bool;
     };
 }
-
-#endif

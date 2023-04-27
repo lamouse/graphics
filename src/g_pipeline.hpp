@@ -1,5 +1,4 @@
-#ifndef G_RENDER_HPP
-#define G_RENDER_HPP
+#pragma once
 
 #include <vulkan/vulkan.hpp>
 #include <memory>
@@ -42,5 +41,3 @@ namespace g
     };
 
 }
-
-#endif

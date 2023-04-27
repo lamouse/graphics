@@ -1,5 +1,4 @@
-#ifndef G_PIPLINE_HPP
-#define G_PIPLINE_HPP
+#pragma once
 #include "shader_stage.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
@@ -38,5 +37,3 @@ namespace resource::shader{
     };
 
 }
-
-#endif
