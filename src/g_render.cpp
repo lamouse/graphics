@@ -40,7 +40,7 @@ void RenderProcesser::createSwapchain()
     }
 }
 
-bool RenderProcesser::beginFrame()
+auto RenderProcesser::beginFrame() -> bool
 {
     auto result  = swapchain->acquireNextImage();
 
@@ -78,7 +78,7 @@ void RenderProcesser::endFrame()
             Context::rsetWindowRsize();
         }else if (result != ::vk::Result::eSuccess)
         {
-            throw new ::std::runtime_error("faild to present swap chain image");
+            throw ::std::runtime_error("faild to present swap chain image");
         }
     }
     catch(const ::vk::OutOfDateKHRError& e)

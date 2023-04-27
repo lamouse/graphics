@@ -19,7 +19,7 @@ namespace core {
              * @param size 
              * @param offset 
              */
-            ::vk::Result flush(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
+            auto flush(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::Result;
             /**
              * @brief Invalidates a memory range of the buffer it visible to the host
              * @note Only requires for non-coherent memory
@@ -27,22 +27,22 @@ namespace core {
              * @param offset 
              * @return ::vk::Result 
              */
-            ::vk::Result invalidate(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
-            ::vk::DescriptorBufferInfo descriptorInfo(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
+            auto invalidate(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::Result;
+            auto descriptorInfo(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::DescriptorBufferInfo;
 
             void writeToIndex(void* data, int index);
-            ::vk::Result flushIndex(int index);
-            ::vk::DescriptorBufferInfo descriptorInfoForIndex(int index);
-            ::vk::Result invalidateIndex(int index);
+            auto flushIndex(int index) -> ::vk::Result;
+            auto descriptorInfoForIndex(int index) -> ::vk::DescriptorBufferInfo;
+            auto invalidateIndex(int index) -> ::vk::Result;
 
-            ::vk::Buffer getBuffer()const {return buffer_;}
-            void* getMappedMemory()const {return data_;}
-            uint32_t getInstanceCount()const {return instanceCount_;}
-            ::vk::DeviceSize getInstanceSize()const {return instanceSize_;}
-            ::vk::DeviceSize getAlignmentSize()const {return instanceSize_;}
-            ::vk::BufferUsageFlags getBufferUsage()const {return bufferUsage_;}
-            ::vk::MemoryPropertyFlags getMemoryPropertyFlags()const {return memoryPropertyFlags_;}
-            ::vk::DeviceSize getBufferSize()const {return bufferSize_;}
+            [[nodiscard]] auto getBuffer()const -> ::vk::Buffer {return buffer_;}
+            [[nodiscard]] auto getMappedMemory()const -> void* {return data_;}
+            [[nodiscard]] auto getInstanceCount()const -> uint32_t {return instanceCount_;}
+            [[nodiscard]] auto getInstanceSize()const -> ::vk::DeviceSize {return instanceSize_;}
+            [[nodiscard]] auto getAlignmentSize()const -> ::vk::DeviceSize {return instanceSize_;}
+            [[nodiscard]] auto getBufferUsage()const -> ::vk::BufferUsageFlags {return bufferUsage_;}
+            [[nodiscard]] auto getMemoryPropertyFlags()const -> ::vk::MemoryPropertyFlags {return memoryPropertyFlags_;}
+            [[nodiscard]] auto getBufferSize()const -> ::vk::DeviceSize {return bufferSize_;}
         private:
             /**
             * @brief returns the minimum instance required to compatible with devices minOffsetAlignment
@@ -51,7 +51,7 @@ namespace core {
             * @param minOffsetAlignment The minimum required alignment, in bytes, for the offset member
             * @return ::vk::DeviceSize 
             */
-            static ::vk::DeviceSize getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment);
+            static auto getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment) -> ::vk::DeviceSize;
             core::Device& device_;
             void* data_ = nullptr;
             ::vk::Buffer buffer_ = VK_NULL_HANDLE;

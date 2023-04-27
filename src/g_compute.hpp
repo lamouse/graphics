@@ -18,7 +18,7 @@ namespace g{
         public:
             Compute(::core::Device& device, ::std::string& path, ::vk::DescriptorSetLayout descriptorSetLayout);
             void beginCompute(int currentFrameIndex);
-            ::vk::CommandBuffer& compute(int currentFrameIndex, ::vk::DescriptorSet descriptorSet);
+            auto compute(int currentFrameIndex, ::vk::DescriptorSet descriptorSet) -> ::vk::CommandBuffer&;
             void endCompute(int currentFrameIndex);
             void init(int inFlightCount);
             ~Compute();

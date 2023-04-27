@@ -10,7 +10,7 @@ DeviceBuffer::DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory, ::v
 
 }
 
- DeviceBuffer DeviceBuffer::create(Device& device, ::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size)
+ auto DeviceBuffer::create(Device& device, ::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size) -> DeviceBuffer
  {
     core::StagingBuffer stagingBuffer(device, size, data);
     ::vk::Buffer vertexBuffer;
@@ -19,7 +19,7 @@ DeviceBuffer::DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory, ::v
     device.createBuffer(size, usage | ::vk::BufferUsageFlagBits::eTransferDst, 
                 ::vk::MemoryPropertyFlagBits::eDeviceLocal|::vk::MemoryPropertyFlagBits::eHostCoherent, vertexBuffer,vertexBufferMemory);
     copyBuffer(device, stagingBuffer.getBuffer(), vertexBuffer, size);
-    return DeviceBuffer(vertexBuffer, vertexBufferMemory, device.logicalDevice());
+    return {vertexBuffer, vertexBufferMemory, device.logicalDevice()};
  }
 
 

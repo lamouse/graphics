@@ -1,7 +1,6 @@
 #ifndef G_RENDER_HPP
 #define G_RENDER_HPP
 
-#include "resource/shader_stage.hpp"
 #include <vulkan/vulkan.hpp>
 #include <memory>
 namespace g
@@ -32,14 +31,14 @@ namespace g
         void initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo);
         PipeLine(const PipeLine&) = delete;
         void bind(::vk::CommandBuffer& commandBuffer){commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics ,pipeline);};
-        PipeLine operator=(const PipeLine&) = delete;
-        PipeLine& operator=(PipeLine&&) = default;
-        ::vk::Pipeline& operator()(){return pipeline;}
+        auto operator=(const PipeLine&) -> PipeLine = delete;
+        auto operator=(PipeLine&&) -> PipeLine& = default;
+        auto operator()() -> ::vk::Pipeline&{return pipeline;}
         void destroy(::vk::Device& device);
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
-        static PipelineConfigInfo getDefaultConfig();
+        static auto getDefaultConfig() -> PipelineConfigInfo;
 
-        ~PipeLine();
+        ~PipeLine() = default;
     };
 
 }

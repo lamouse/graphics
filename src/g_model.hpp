@@ -18,20 +18,20 @@ public:
         ::glm::vec3 position;
         ::glm::vec3 color;
         ::glm::vec2 texCoord;
-        static ::std::vector<::vk::VertexInputBindingDescription> getBindingDescription();
-        static ::std::vector<::vk::VertexInputAttributeDescription> getAtrributeDescription();
-        bool operator==(const Vertex& other) const {
+        static auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription>;
+        static auto getAtrributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription>;
+        auto operator==(const Vertex& other) const -> bool {
             return position == other.position && color == other.color && texCoord == other.texCoord;
         }
     };
     
-    static ::std::unique_ptr<Model> createFromFile(const ::std::string& path, core::Device& device);
+    static auto createFromFile(const ::std::string& path, core::Device& device) -> ::std::unique_ptr<Model>;
     Model(const Model&) = delete;
-    Model& operator=(const Model&) = delete;
-    void bind(::vk::CommandBuffer commandBuffer);
-    void draw(::vk::CommandBuffer commandBuffer);
+    auto operator=(const Model&) -> Model& = delete;
+    void bind(const ::vk::CommandBuffer& commandBuffer);
+    void draw(const ::vk::CommandBuffer& commandBuffer)const;
     Model(const ::std::vector<Vertex> &vertices, ::std::vector<uint16_t> indices, core::Device& device);
-    ~Model();
+    ~Model() = default;
 private:
     core::DeviceBuffer vertexBuffer_;
     core::DeviceBuffer indexBuffer_;
@@ -43,7 +43,7 @@ private:
 
 namespace std {
     template<> struct hash<g::Model::Vertex> {
-        size_t operator()(g::Model::Vertex const& vertex) const {
+        auto operator()(g::Model::Vertex const& vertex) const -> size_t {
             return ((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
         }
     };

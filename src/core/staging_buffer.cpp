@@ -3,7 +3,7 @@
 
 namespace core {
 
-StagingBuffer::StagingBuffer(Device& device, ::vk::DeviceSize size, const void* bufferData):device_(device.logicalDevice()),buff_size(size)
+StagingBuffer::StagingBuffer(Device& device, ::vk::DeviceSize size, const void* bufferData):buff_size(size),device_(device.logicalDevice())
 {
     device.createBuffer(size, ::vk::BufferUsageFlagBits::eTransferSrc, 
                 ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent, buffer, bufferMemory);

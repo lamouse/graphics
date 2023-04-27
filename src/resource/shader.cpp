@@ -5,7 +5,7 @@
 namespace resource::shader{
 
 
-::std::vector<char> readShaderFile(const std::string& filePath){
+auto readShaderFile(const std::string& filePath) -> ::std::vector<char>{
     ::std::ifstream file{filePath, ::std::ios::ate | ::std::ios::binary};
     if(!file.is_open()){
         throw ::std::runtime_error("faild to open file: " + filePath);
@@ -45,7 +45,7 @@ void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath, con
 
 }
 
-::std::vector<::vk::PipelineShaderStageCreateInfo> GraphicsShader::getShaderStages()
+auto GraphicsShader::getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo>
 {
     ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
     shaderStages.resize(2);
@@ -77,7 +77,7 @@ ComputeShader::~ComputeShader()
 {
     device_.destroyShaderModule(computeModule);
 }
-::vk::PipelineShaderStageCreateInfo ComputeShader::getShaderStages()
+auto ComputeShader::getShaderStages() -> ::vk::PipelineShaderStageCreateInfo
 {
     return {{}, ::vk::ShaderStageFlagBits::eCompute, computeModule, "main",};
 }

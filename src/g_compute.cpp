@@ -79,7 +79,7 @@ void Compute::beginCompute(int currentFrameIndex)
     device_.logicalDevice().resetFences(inFlightFences_[currentFrameIndex]);
     commandBuffers_[currentFrameIndex].reset();
 }
-::vk::CommandBuffer& Compute::compute(int currentFrameIndex, ::vk::DescriptorSet descriptorSet)
+auto Compute::compute(int currentFrameIndex, ::vk::DescriptorSet descriptorSet) -> ::vk::CommandBuffer&
 {
     ::vk::CommandBufferBeginInfo beginInfo{};
     commandBuffers_[currentFrameIndex].begin(beginInfo);

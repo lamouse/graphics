@@ -14,7 +14,7 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
                     ::vk::ImageUsageFlagBits::eTransferSrc|::vk::ImageUsageFlagBits::eTransferDst |::vk::ImageUsageFlagBits::eSampled, 
                     ::vk::MemoryPropertyFlagBits::eDeviceLocal, image_, imageMemory_);
 
-    transitionImageLayout(device, image_, format_, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
+    transitionImageLayout(device, image_, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
 
     device.excuteCmd([&](::vk::CommandBuffer cmdBuf){
         ::vk::BufferImageCopy region;
@@ -37,9 +37,8 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
     createTextureSampler(device);
 }
 
-void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::Format format, ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout)
+void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout)const
 {
-
     device.excuteCmd([&](::vk::CommandBuffer& cmd){
         ::vk::ImageMemoryBarrier barrier;
         ::vk::ImageSubresourceRange subsourceRange;
@@ -183,7 +182,7 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
 
 }
 
-::vk::DescriptorImageInfo ImageTexture::descriptorImageInfo()
+auto ImageTexture::descriptorImageInfo() -> ::vk::DescriptorImageInfo
 {
     return {sampler_, imageView_, ::vk::ImageLayout::eShaderReadOnlyOptimal};
 }

@@ -18,10 +18,10 @@ namespace resource::image {
     public:
         void readImage(::std::string& path);
         Image(::std::string& path);
-        unsigned char* getData();
-        ImageInfo getImageInfo();
-        uint32_t getMipLevels();
-        unsigned long long size();
+        auto getData() -> unsigned char*;
+        auto getImageInfo() -> ImageInfo;
+        [[nodiscard]] auto getMipLevels()const -> uint32_t;
+        [[nodiscard]] auto size()const -> unsigned long long;
         ~Image();
     };
 

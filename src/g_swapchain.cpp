@@ -1,6 +1,7 @@
 #include "g_swapchain.hpp"
 #include "g_defines.hpp"
 #include <iostream>
+#include <utility>
 #include <spdlog/spdlog.h>
 namespace g
 {
@@ -11,7 +12,7 @@ Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleC
     init(width, height, oldSwapchain);
 }
 
-void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain)
+void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain)
 {
     querySwapchainInfo(width, height);
     vk::SwapchainCreateInfoKHR createInfo;
@@ -87,7 +88,7 @@ void Swapchain::querySwapchainInfo(int width, int height)
     swapchainInfo.presentMode = chooseSwapPresentMode(presents);
 }
 
-::vk::PresentModeKHR Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
+auto Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes) -> ::vk::PresentModeKHR
 {
 
 
@@ -204,11 +205,10 @@ void Swapchain::createDepthResources() {
 }
 
 
-::vk::Format Swapchain::findDepthFormat(){
+auto Swapchain::findDepthFormat() -> ::vk::Format{
     return device_.findSupportedFormat({::vk::Format::eD32Sfloat, ::vk::Format::eD32SfloatS8Uint, ::vk::Format::eD24UnormS8Uint},
             ::vk::ImageTiling::eOptimal,
             ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);
-
  }
 
  void Swapchain::createFances()
@@ -236,7 +236,7 @@ void Swapchain::createsemphores()
     }
 }
 
-::vk::ResultValue<uint32_t> Swapchain::acquireNextImage()
+auto Swapchain::acquireNextImage() -> ::vk::ResultValue<uint32_t>
 {
     auto device = device_.logicalDevice();
 
@@ -250,7 +250,7 @@ void Swapchain::createsemphores()
 
 }
 
-::vk::Result Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+auto Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result
 {
     ::vk::SubmitInfo submitInfo;
     ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -301,4 +301,7 @@ void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, ::vk::Render
     commandBuffer.setScissor(0, scissor);
 }
 
+auto Swapchain::getSwapchainColorFormat() const -> ::vk::Format {
+    return swapchainInfo.formatKHR.format;
 }
+} // namespace g

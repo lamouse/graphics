@@ -3,7 +3,7 @@
 namespace core {
 
 
-::vk::DeviceSize Buffer::getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment)
+auto Buffer::getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment) -> ::vk::DeviceSize
 {
     if(minOffsetAlignment > 0)
     {
@@ -14,8 +14,8 @@ namespace core {
 
 Buffer::Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t instanceCount, 
                 ::vk::BufferUsageFlags bufferUsage, ::vk::MemoryPropertyFlags memoryPropertyFlags,
-                ::vk::DeviceSize minOffsetAlignment):device_(device), instanceSize_(instanceSize),
-                instanceCount_(instanceCount), bufferUsage_(bufferUsage), memoryPropertyFlags_(memoryPropertyFlags)
+                ::vk::DeviceSize minOffsetAlignment):device_(device), instanceCount_(instanceCount),
+                instanceSize_(instanceSize), bufferUsage_(bufferUsage), memoryPropertyFlags_(memoryPropertyFlags)
 {
     alignmentSize_ = getAlignmentSize(instanceSize_, minOffsetAlignment);
     bufferSize_ = instanceCount_ * instanceSize_;
@@ -56,19 +56,19 @@ void Buffer::writeToBuffer(void *data, ::vk::DeviceSize size, ::vk::DeviceSize o
     }
 }
 
-::vk::Result Buffer::flush(::vk::DeviceSize size, ::vk::DeviceSize offset)
+auto Buffer::flush(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::Result
 {
     ::vk::MappedMemoryRange flushRange{bufferMemory_, offset, size};
     return device_.logicalDevice().flushMappedMemoryRanges(1, &flushRange);
 }
 
-::vk::Result Buffer::invalidate(::vk::DeviceSize size, ::vk::DeviceSize offset)
+auto Buffer::invalidate(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::Result
 {
     ::vk::MappedMemoryRange invalidateRange{bufferMemory_, offset, size};
     return device_.logicalDevice().invalidateMappedMemoryRanges(1, &invalidateRange);
 }
 
-::vk::DescriptorBufferInfo Buffer::descriptorInfo(::vk::DeviceSize size, ::vk::DeviceSize offset)
+auto Buffer::descriptorInfo(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::DescriptorBufferInfo
 {
     return {buffer_, offset, size};
 }
@@ -78,17 +78,17 @@ void Buffer::writeToIndex(void* data, int index)
     writeToBuffer(data, instanceSize_, index * alignmentSize_);
 }
 
-::vk::Result Buffer::flushIndex(int index)
+auto Buffer::flushIndex(int index) -> ::vk::Result
 {
     return flush(alignmentSize_, index * alignmentSize_);
 }
 
-::vk::DescriptorBufferInfo Buffer::descriptorInfoForIndex(int index)
+auto Buffer::descriptorInfoForIndex(int index) -> ::vk::DescriptorBufferInfo
 {
     return descriptorInfo(alignmentSize_, index * alignmentSize_);
 }
 
-::vk::Result Buffer::invalidateIndex(int index)
+auto Buffer::invalidateIndex(int index) -> ::vk::Result
 {
     return invalidate(alignmentSize_, index * alignmentSize_);
 }

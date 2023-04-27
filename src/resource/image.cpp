@@ -1,6 +1,7 @@
 #include "image.hpp"
 
 #include <cmath>
+#include <cstddef>
 #include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -17,11 +18,11 @@ Image::Image(::std::string& path)
 {
     readImage(path);
 }
-unsigned char* Image::getData()
+auto Image::getData() -> unsigned char*
 {
     return data;
 }
-ImageInfo Image::getImageInfo()
+auto Image::getImageInfo() -> ImageInfo
 {
     return imageInfo;
 }
@@ -31,14 +32,14 @@ Image::~Image()
     stbi_image_free(data);
 }
 
-uint32_t Image::getMipLevels()
+auto Image::getMipLevels()const -> uint32_t
 {
     return static_cast<uint32_t>(::std::floor(::std::log2(::std::max(imageInfo.width, imageInfo.height)))) + 1;
 }
 
-unsigned long long Image::size()
+auto Image::size()const -> unsigned long long
 {
-    return imageInfo.width * imageInfo.height * 4;
+    return static_cast<unsigned long long>(imageInfo.width * imageInfo.height) * 4;
 }
 
 }

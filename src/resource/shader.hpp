@@ -15,9 +15,9 @@ namespace resource::shader{
         ::vk::ShaderModule fragmentModule;
         ::vk::Device& device_;
     public:
-        ::vk::ShaderModule getVertex(){return vertexModule; }
-        ::vk::ShaderModule getFragmentModule(){return fragmentModule; }
-        ::std::vector<::vk::PipelineShaderStageCreateInfo> getShaderStages() override;
+        auto getVertex() -> ::vk::ShaderModule{return vertexModule; }
+        auto getFragmentModule() -> ::vk::ShaderModule{return fragmentModule; }
+        auto getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo> override;
         ~GraphicsShader();
         GraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::Device& device);
     };
@@ -31,8 +31,8 @@ namespace resource::shader{
         ::vk::ShaderModule computeModule;
         ::vk::Device& device_;
     public:
-        ::vk::ShaderModule getShaderModule(){return computeModule; }
-        ::vk::PipelineShaderStageCreateInfo getShaderStages() override;
+        auto getShaderModule() -> ::vk::ShaderModule{return computeModule; }
+        auto getShaderStages() -> ::vk::PipelineShaderStageCreateInfo override;
         ~ComputeShader();
         ComputeShader(::vk::Device& device, const ::std::string& filePath);
     };

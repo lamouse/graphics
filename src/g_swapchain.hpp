@@ -16,27 +16,27 @@ public:
         ::vk::SurfaceTransformFlagBitsKHR transForm;
         ::vk::PresentModeKHR presentMode;
     };
-    ::vk::SwapchainKHR getSwapchain()const {return swapchain;}
-    SwapchainInfo getSwapchainInfo()const {return swapchainInfo;}
-    ::vk::Format getSwapchainColorFormat()const {return swapchainInfo.formatKHR.format;}
-    ::vk::Format getSwapchainDepthFormat()const {return depthFormat;}
-    ::vk::Framebuffer getFrameBuffer(int index){return swapchainFrameBuffers[index];}
+    [[nodiscard]] auto getSwapchain()const -> ::vk::SwapchainKHR {return swapchain;}
+    [[nodiscard]] auto getSwapchainInfo()const -> SwapchainInfo {return swapchainInfo;}
+    [[nodiscard]] auto getSwapchainColorFormat() const -> ::vk::Format;
+    [[nodiscard]] auto getSwapchainDepthFormat()const -> ::vk::Format {return depthFormat;}
+    auto getFrameBuffer(int index) -> ::vk::Framebuffer{return swapchainFrameBuffers[index];}
 
-    int getImageCount(){return images.size();}
-    ::vk::ResultValue<uint32_t> acquireNextImage();
-    ::vk::Result submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
+    auto getImageCount() -> int{return images.size();}
+    auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
+    auto submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result;
     void createFrameBuffers(::vk::RenderPass& renderPass);
     void beginRenderPass(::vk::CommandBuffer& commandBuffer, ::vk::RenderPass& renderPass, uint32_t imageIndex);
-    float extentAspectRation()
+    [[nodiscard]] auto extentAspectRation() const -> float
     {return static_cast<float>(swapchainInfo.extent2D.width)/ static_cast<float>(swapchainInfo.extent2D.width);}
-    bool compareFormats(const Swapchain& swapchain) const {
+    [[nodiscard]] auto compareFormats(const Swapchain& swapchain) const -> bool {
         return depthFormat == swapchain.depthFormat &&
         swapchainInfo.formatKHR.format == swapchain.swapchainInfo.formatKHR.format;
     }
     ~Swapchain();
     Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount, ::std::shared_ptr<Swapchain> oldSwapchain = nullptr);
     Swapchain(const Swapchain&) = delete;
-    Swapchain& operator=(const Swapchain&) = delete;
+    auto operator=(const Swapchain&) -> Swapchain& = delete;
     static constexpr int MAX_FRAME_IN_FLIGHT = 2;
 
 private:
@@ -62,11 +62,11 @@ private:
     ::std::vector<::vk::DeviceMemory> colorImageMemorys;
 
     ::vk::Format depthFormat;
-    ::vk::PresentModeKHR chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes);
-    ::vk::Format findDepthFormat();
+    static auto chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes) -> ::vk::PresentModeKHR;
+    auto findDepthFormat() -> ::vk::Format;
 
     core::Device& device_;
-    void init(int width, int height, ::std::shared_ptr<Swapchain> oldSwapchain);
+    void init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain);
     void getImages();
     void createImageViews();
     void createImageFrame();
@@ -78,6 +78,5 @@ private:
 };
 
 }
-
 
 #endif

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "g_pipeline.hpp"
 #include "g_swapchain.hpp"
 #include "core/device.hpp"
 #include <memory>
@@ -20,16 +19,16 @@ private:
     void createRenderPass();
     void allcoCmdBuffer();
 public:
-    bool beginFrame();
+    auto beginFrame() -> bool;
     void beginSwapchainRenderPass();
     void endSwapchainRenderPass();
     void endFrame();
-    ::vk::RenderPass getRenderPass(){return renderPass_;}
-    ::vk::CommandBuffer& getCurrentCommadBuffer(){return commandBuffers_[currentFrameIndex];};
-    int getCurrentFrameIndex(){return currentFrameIndex;}
+    auto getRenderPass(){return renderPass_;}
+    auto getCurrentCommadBuffer() -> ::vk::CommandBuffer&{return commandBuffers_[currentFrameIndex];};
+    auto getCurrentFrameIndex() ->int{return currentFrameIndex;}
     RenderProcesser(core::Device& device);
     ~RenderProcesser();
-    float extentAspectRation(){return swapchain->extentAspectRation();}
+    auto extentAspectRation()->auto{return swapchain->extentAspectRation();}
 };
 
 }

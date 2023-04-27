@@ -6,7 +6,7 @@ namespace resource::shader {
 template<typename T> class ShaderStage
 {
     public:
-        virtual T getShaderStages() = 0;
+        virtual auto getShaderStages() -> T = 0;
 };
 
 }

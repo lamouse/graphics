@@ -15,9 +15,9 @@ namespace core {
             StagingBuffer(Device& device, ::vk::DeviceSize size, const void* bufferData);
             StagingBuffer(const StagingBuffer&) = delete;
             StagingBuffer(StagingBuffer&&) = default;
-            StagingBuffer operator=(const StagingBuffer&) = delete;
-            StagingBuffer& operator=(StagingBuffer&&) = default;
-            ::vk::Buffer getBuffer(){return buffer;}
+            auto operator=(const StagingBuffer&) -> StagingBuffer = delete;
+            auto operator=(StagingBuffer&&) -> StagingBuffer& = default;
+            auto getBuffer() -> ::vk::Buffer{return buffer;}
             ~StagingBuffer();
 
     };

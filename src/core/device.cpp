@@ -1,15 +1,14 @@
 #include "device.hpp"
 #include <algorithm>
-#include <stdint.h>
 #include <set>
 #include <spdlog/spdlog.h>
-namespace core{
+namespace core {
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL
-debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-              VkDebugUtilsMessageTypeFlagsEXT messageType,
+static VKAPI_ATTR auto VKAPI_CALL
+debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT  /*messageSeverity*/,
+              VkDebugUtilsMessageTypeFlagsEXT  /*messageType*/,
               const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-              void *pUserData) {
+              void * /*pUserData*/) -> VkBool32 {
     spdlog::debug("validation layer: {}", pCallbackData->pMessage);
     return VK_FALSE;
 }
@@ -26,17 +25,17 @@ static void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
   createInfo.pfnUserCallback = debugCallback;
 }
 
-::vk::Result CreateDebugUtilsMessengerEXT(
+static auto CreateDebugUtilsMessengerEXT(
     ::vk::Instance instance,
     const ::vk::DebugUtilsMessengerCreateInfoEXT *pCreateInfo,
     const ::vk::AllocationCallbacks *pAllocator,
-    ::vk::DebugUtilsMessengerEXT *pDebugMessenger) {
+    ::vk::DebugUtilsMessengerEXT *pDebugMessenger) -> ::vk::Result {
   auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
   if (func != nullptr) {
     return (::vk::Result)func(instance, (VkDebugUtilsMessengerCreateInfoEXT*)pCreateInfo, (const VkAllocationCallbacks*)pAllocator, (VkDebugUtilsMessengerEXT*)pDebugMessenger);
-  } else {
+  }  
     return ::vk::Result::eErrorExtensionNotPresent;
-  }
+ 
 }
 
 static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
@@ -56,11 +55,11 @@ void setupDebugMessenger(::vk::Instance& instance, ::vk::DebugUtilsMessengerEXT&
     }
 }
 
-static bool checkValidationLayerSupport();
+static auto checkValidationLayerSupport() -> bool;
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
 
-Device::Device(const std::vector<const char*>& instanceExtends, CreateSurfaceFunc createFunc, bool enableValidationLayers)
+Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc, bool enableValidationLayers)
 {   
     enableValidationLayers_ = enableValidationLayers;
     createInstance(instanceExtends);
@@ -140,7 +139,7 @@ void Device::createLogicalDevice()
     for(uint32_t queueFamily : uniqueQueueFamilies)
     {
         ::vk::DeviceQueueCreateInfo queueInfo({}, queueFamily, 1, &priorities);
-        queueInfos.push_back(::std::move(queueInfo));
+        queueInfos.push_back(queueInfo);
     }
 
     ::vk::PhysicalDeviceFeatures deviceFeatures;
@@ -157,7 +156,7 @@ void Device::createLogicalDevice()
     device_ = phyDevice.createDevice(createInfo);
 }
     
-Device::QueueFamilyIndices Device::queryQueueFamilyIndices(::vk::PhysicalDevice device)
+auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::QueueFamilyIndices
 {
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
@@ -217,13 +216,14 @@ void Device::initCmdPool()
     cmdPool_ =  device_.createCommandPool(createInfo);
 }
 
-void Device::excuteCmd(RecordCmdFunc func)
+void Device::excuteCmd(const RecordCmdFunc& func)
 {
     ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
     auto commanBuffer = device_.allocateCommandBuffers(allocInfo)[0];
     ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     commanBuffer.begin(beginInfo);
-        if (func) func(commanBuffer);
+    if (func) { func(commanBuffer);
+    }
     commanBuffer.end();
     vk::SubmitInfo submitInfo;
     submitInfo.setCommandBuffers(commanBuffer);
@@ -233,39 +233,40 @@ void Device::excuteCmd(RecordCmdFunc func)
     device_.freeCommandBuffers(cmdPool_, commanBuffer);
 }
 
-::vk::Instance& Device::getVKInstance()
+auto Device::getVKInstance() -> ::vk::Instance&
 {
     return vkInstance;
 }
 
-::vk::SurfaceKHR& Device::getSurface()
+auto Device::getSurface() -> ::vk::SurfaceKHR&
 {
     return vkSurfaceKHR;
 }
 
-::vk::PhysicalDevice& Device::getPhysicalDevice()
+auto Device::getPhysicalDevice() -> ::vk::PhysicalDevice&
 {
     return phyDevice;
 }
 
-::vk::Queue& Device::getGraphicsQueue()
+auto Device::getGraphicsQueue() -> ::vk::Queue&
 {
     return graphicsQueue;
 }
 
-::vk::Queue& Device::getPresentQueue()
+auto Device::getPresentQueue() -> ::vk::Queue&
 {
     return presentQueue;
 }
 
-::vk::Format Device::findSupportedFormat(
-    const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features) {
+auto Device::findSupportedFormat(
+    const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features) -> ::vk::Format {
     for (::vk::Format format : candidates) {
         ::vk::FormatProperties props = phyDevice.getFormatProperties(format);
         
         if (tiling == ::vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
             return format;
-        } else if (
+        } 
+        if (
             tiling == ::vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
@@ -273,12 +274,12 @@ void Device::excuteCmd(RecordCmdFunc func)
     throw std::runtime_error("failed to find supported format!");
 }
 
-::vk::Device& Device::logicalDevice()
+auto Device::logicalDevice() -> ::vk::Device&
 {
     return device_;
 }
 
-uint32_t Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
+auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) -> uint32_t {
     ::vk::PhysicalDeviceMemoryProperties memProperties = phyDevice.getMemoryProperties();;
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -317,7 +318,7 @@ void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::
     device_.bindImageMemory(image, imageMemory, 0);
 }
 
-::vk::ImageView Device::createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
+auto Device::createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels) -> ::vk::ImageView
 {
     ::vk::ImageViewCreateInfo viewInfo{};
     ::vk::ImageSubresourceRange imageSubresource;
@@ -334,13 +335,13 @@ void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::
     return device_.createImageView(viewInfo);
 }
 
-float Device::getMaxAnisotropy()
+auto Device::getMaxAnisotropy() -> float
 {
     ::vk::PhysicalDeviceProperties properties = phyDevice.getProperties();
     return properties.limits.maxSamplerAnisotropy;
 }
 
-::vk::SampleCountFlagBits Device::getMaxUsableSampleCount()
+auto Device::getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits
 {
     vk::PhysicalDeviceProperties physicalDevice = phyDevice.getProperties();
     ::vk::SampleCountFlags counts = physicalDevice.limits.framebufferColorSampleCounts & physicalDevice.limits.framebufferDepthSampleCounts;
@@ -354,7 +355,7 @@ float Device::getMaxAnisotropy()
     return ::vk::SampleCountFlagBits::e1;
 }
 
-bool Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice)
+auto Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice) -> bool
 {
     std::vector<vk::ExtensionProperties> availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
     ::std::set<::std::string> requireExtensions(deviceExtensions.begin(), deviceExtensions.end());
@@ -367,7 +368,7 @@ bool Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice)
     return requireExtensions.empty();
 }
 
-bool Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice)
+auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool
 {
     bool extensionsSupported = checkDeviceExtensionSupport(checkDevice);
     bool swapChainAdeqate = false;
@@ -381,7 +382,7 @@ bool Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice)
     return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && indices.isComplete();
 }
 
-SwapchainSupportDetails Device::querySwapchainSupport(::vk::PhysicalDevice device)
+auto Device::querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails
 {
     SwapchainSupportDetails details;
     details.capabilities = device.getSurfaceCapabilitiesKHR(vkSurfaceKHR);
@@ -390,7 +391,7 @@ SwapchainSupportDetails Device::querySwapchainSupport(::vk::PhysicalDevice devic
     return details;
 }
 
-bool checkValidationLayerSupport() {
+auto checkValidationLayerSupport() -> bool {
     std::vector<::vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
     for (const char* layerName : validationLayers) {
@@ -411,4 +412,4 @@ bool checkValidationLayerSupport() {
     return true;
 }
 
-}
+} // namespace core

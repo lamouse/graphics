@@ -15,23 +15,22 @@ namespace g{
         static ::std::unique_ptr<Context> pInstance;
         ::std::shared_ptr<core::Device> device_;
 
-        static int width;
-        static int height;
+        static int width_;
+        static int height_;
         static bool windowIsRsize;
     public:
         config::ImageQuality imageQualityConfig;
 
-
-        core::Device& device(){return  *device_;}
-        static void setExtent(int w, int h){width = w; height = h;}
+        auto device()->core::Device&{return  *device_;}
+        static void setExtent(int w, int h){width_ = w; height_ = h;}
         static void setWindowRsize(){windowIsRsize = true;}
         static void rsetWindowRsize(){windowIsRsize = false;}
-        static bool isWindowRsize(){ return windowIsRsize;}
-        static ::vk::Extent2D getExtent(){return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};}
+        static auto isWindowRsize() -> bool{ return windowIsRsize;}
+        static auto getExtent() -> ::vk::Extent2D{return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)};}
         static void init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height, bool enableValidationLayers);
         static void quit();
         static void waitWindowEvents(){glfwWaitEvents();}
-        static Context& Instance();
+        static auto Instance() -> Context&;
         ~Context();
     };
     

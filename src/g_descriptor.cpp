@@ -1,14 +1,14 @@
 #include "g_descriptor.hpp"
-#include "g_defines.hpp"
 
 #include <iostream>
 #include <cassert>
+#include <utility>
 namespace g {
 
 
-DescriptorSetLayout::Builder& DescriptorSetLayout::Builder::addBinding(
+auto DescriptorSetLayout::Builder::addBinding(
     uint32_t binding, ::vk::DescriptorType type,
-    ::vk::ShaderStageFlags stageFlags, uint32_t count) {
+    ::vk::ShaderStageFlags stageFlags, uint32_t count) -> DescriptorSetLayout::Builder& {
     assert(descriptorSetLayoutBindings_.count(binding) == 0 && "binding already exists");
 
     ::vk::DescriptorSetLayoutBinding layoutBinding;
@@ -20,7 +20,7 @@ DescriptorSetLayout::Builder& DescriptorSetLayout::Builder::addBinding(
     return *this;
 }
 
-::std::unique_ptr<DescriptorSetLayout> DescriptorSetLayout::Builder::build()
+auto DescriptorSetLayout::Builder::build() -> ::std::unique_ptr<DescriptorSetLayout>
 {
     return ::std::make_unique<DescriptorSetLayout>(device_, descriptorSetLayoutBindings_);
 }
@@ -28,9 +28,10 @@ DescriptorSetLayout::Builder& DescriptorSetLayout::Builder::addBinding(
 DescriptorSetLayout::DescriptorSetLayout(
     ::core::Device &device,
     ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> bindings)
-    : device_(device), descriptorSetLayoutBindings_(bindings) {
+    : device_(device), descriptorSetLayoutBindings_(std::move(bindings)) {
 
     ::std::vector<::vk::DescriptorSetLayoutBinding> setLayoutBindings;
+    setLayoutBindings.reserve(descriptorSetLayoutBindings_.size());
     for(auto& binding : descriptorSetLayoutBindings_)
     {
         setLayoutBindings.push_back(binding.second);
@@ -47,25 +48,25 @@ DescriptorSetLayout::~DescriptorSetLayout()
     device_.logicalDevice().destroyDescriptorSetLayout(descriptorSetLayout_);
 }
 
-DescriptorPool::Builder& DescriptorPool::Builder::addPoolSize(::vk::DescriptorType type, uint32_t count)
+auto DescriptorPool::Builder::addPoolSize(::vk::DescriptorType type, uint32_t count) -> DescriptorPool::Builder&
 {
-    poolSizes_.push_back({type, count});
+    poolSizes_.emplace_back(type, count);
     return *this;
 }
 
-DescriptorPool::Builder& DescriptorPool::Builder::setPoolFlags(::vk::DescriptorPoolCreateFlags flags)
+auto DescriptorPool::Builder::setPoolFlags(::vk::DescriptorPoolCreateFlags flags) -> DescriptorPool::Builder&
 {
     flags_ = flags;
     return *this;
 }
 
-DescriptorPool::Builder& DescriptorPool::Builder::setMaxSets(uint32_t count)
+auto DescriptorPool::Builder::setMaxSets(uint32_t maxSets) -> DescriptorPool::Builder&
 {
-    maxSets_ = count;
+    maxSets_ = maxSets;
     return *this;
 }
 
-::std::unique_ptr<DescriptorPool> DescriptorPool::Builder::build()
+auto DescriptorPool::Builder::build() -> ::std::unique_ptr<DescriptorPool>
 {
     return ::std::make_unique<DescriptorPool>(device_, maxSets_, flags_, poolSizes_);
 }
@@ -106,7 +107,7 @@ void DescriptorPool::resetPool()
 DescriptorWriter::DescriptorWriter(DescriptorSetLayout& descriptorSetLayout, DescriptorPool& pool):
                                         descriptorSetLayout_(descriptorSetLayout),pool_(pool){}
 
-DescriptorWriter& DescriptorWriter::writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo &bufferInfo)
+auto DescriptorWriter::writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo &bufferInfo) -> DescriptorWriter&
 {
     auto &bindingDescrptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
     assert(bindingDescrptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
@@ -118,7 +119,7 @@ DescriptorWriter& DescriptorWriter::writeBuffer(uint32_t binding, ::vk::Descript
     return *this;
 }
 
-DescriptorWriter& DescriptorWriter::writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo)
+auto DescriptorWriter::writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter&
 {
     auto &bindingDescrptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
     assert(bindingDescrptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");

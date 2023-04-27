@@ -1,16 +1,20 @@
 #include "g_app.hpp"
-#include "g_pipeline.hpp"
 #include "g_render_system.hpp"
 #include "g_render.hpp"
 #include "g_defines.hpp"
 #include "g_context.hpp"
-#include "imgui/gui.hpp"
 #include "core/buffer.hpp"
-
+//imgui begin
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_vulkan.h"
+#include "resource/image_texture.hpp"
+//imgui end
 #include <chrono>
 #include <cmath>
-namespace g{
 
+
+namespace g{
 
 struct ImguiDebugInfo{
     float speed;
@@ -42,11 +46,13 @@ void draw_imgui(ImguiDebugInfo& debugInfo);
 
 static void check_vk_result(VkResult err)
 {
-    if (err == 0)
+    if (err == 0) {
         return;
+    }
     fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-    if (err < 0)
+    if (err < 0) {
         abort();
+    }
 }
 
 void App::run(){
@@ -57,13 +63,13 @@ void App::run(){
                                                 .build();
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
-    for(int i = 0; i < uboBuffers.size(); i++)
+    for(auto & uboBuffer : uboBuffers)
     {
-        uboBuffers[i] = ::std::make_unique<core::Buffer>(Context::Instance().device(), 
+        uboBuffer = ::std::make_unique<core::Buffer>(Context::Instance().device(), 
                                     sizeof(UniformBufferObject),
                                     1, ::vk::BufferUsageFlagBits::eUniformBuffer,
                                     ::vk::MemoryPropertyFlagBits::eHostVisible);
-        uboBuffers[i]->map();
+        uboBuffer->map();
     }
     ::std::string s(image_path + "viking_room.png");
     resource::image::Image img(s);
@@ -86,10 +92,10 @@ void App::run(){
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
     ImguiDebugInfo debugInfo{};
-    debugInfo.speed = 90.0f;
+    debugInfo.speed = 90.0F;
     debugInfo.look_x = 2.0f;
     debugInfo.look_y = 2.0f;
-    debugInfo.look_z = 2.0f;
+    debugInfo.look_z = 2.0F;
     debugInfo.up_z = 1.f;
     debugInfo.rotate_z = 2.0;
     debugInfo.radians = 45.f;
@@ -269,7 +275,9 @@ void draw_imgui(ImguiDebugInfo& debugInfo)
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
-            float cenetr_x = debugInfo.look_x + 0.3,  cenetr_y = debugInfo.look_y + 0.3,  cenetr_z = debugInfo.look_z + 0.3;
+            float cenetr_x = debugInfo.look_x + 0.3f;
+            float cenetr_y = debugInfo.look_y + 0.3f;
+            float cenetr_z = debugInfo.look_z + 0.3f;
             ImGui::SliderFloat("speed", &debugInfo.speed, .0f, 180.0f);            
             ImGui::SliderFloat("look at x", &debugInfo.look_x, .0f, 8.f);
             ImGui::SliderFloat("look at y", &debugInfo.look_y, .0f, 8.f);     
@@ -294,8 +302,9 @@ void draw_imgui(ImguiDebugInfo& debugInfo)
 
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            if (ImGui::Button("Button")) {                            // Buttons return true when clicked (most widgets return true when edited/activated)
                 counter++;
+            }
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
 
@@ -307,8 +316,9 @@ void draw_imgui(ImguiDebugInfo& debugInfo)
         {
             ImGui::Begin("Another Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
+            if (ImGui::Button("Close Me")) {
                 show_another_window = false;
+            }
             ImGui::End();
         }
     }

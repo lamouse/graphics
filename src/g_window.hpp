@@ -15,12 +15,12 @@ namespace g{
             void initWindow();
             ::std::string title;
         public:
-            Window(int weidth, int height, ::std::string title);
+            Window(int width, int height, ::std::string title);
             Window(const Window&) = delete;
-            Window &operator=(const Window&) = delete;
-            GLFWwindow *operator()(){return window;}
+            auto operator=(const Window&) -> Window & = delete;
+            auto operator()() -> GLFWwindow *{return window;}
             ~Window();
-            bool shuldClose();
+            auto shuldClose() -> bool;
     };
 }
 

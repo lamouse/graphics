@@ -1,12 +1,6 @@
 #include "g_pipeline.hpp"
-#include "g_model.hpp"
 
 namespace g{
-
-PipeLine::~PipeLine()
-{
-
-}
 
 void PipeLine::initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo)
 {
@@ -54,7 +48,7 @@ void PipeLine::enableAlphaBlending(PipelineConfigInfo& configInfo) {
                                     .setAlphaBlendOp(::vk::BlendOp::eAdd);
 }
 
-PipelineConfigInfo PipeLine::getDefaultConfig()
+auto PipeLine::getDefaultConfig() -> PipelineConfigInfo
 {
     PipelineConfigInfo configInfo;
     // dynamicState

@@ -1,11 +1,6 @@
 #pragma once
 #include "g_pipeline.hpp"
-#include "resource/image_texture.hpp"
-#include "g_descriptor.hpp"
 #include "g_frame.hpp"
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
 namespace g
 {
     class RenderSystem
@@ -19,10 +14,15 @@ namespace g
         void createDescriptorSets(uint32_t count);
         void updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler);
     public:
-        RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayout descriptorSetLayout);
-        void render(FrameInfo& frameInfo);
-        ~RenderSystem();
+      RenderSystem(const RenderSystem &) = delete;
+      RenderSystem(RenderSystem &&) = delete;
+      auto operator=(const RenderSystem &) -> RenderSystem & = delete;
+      auto operator=(RenderSystem &&) -> RenderSystem & = delete;
+      RenderSystem(::vk::RenderPass renderPass,
+                   ::vk::DescriptorSetLayout descriptorSetLayout);
+      void render(FrameInfo &frameInfo);
+      ~RenderSystem();
 };
 
 
-}
+} // namespace g 

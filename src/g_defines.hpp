@@ -23,7 +23,7 @@
 namespace g{
 struct SimplePushConstantData
 {
-    ::glm::mat4 transform{1.f};
+    ::glm::mat4 transform{1.F};
     ::glm::vec3 color;
 };
 

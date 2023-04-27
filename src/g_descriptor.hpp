@@ -16,15 +16,15 @@ namespace g {
 
                 public:
                     Builder(core::Device& device):device_(device){};
-                    Builder& addBinding(uint32_t binding, ::vk::DescriptorType type, ::vk::ShaderStageFlags stageFlags, uint32_t count = 1);
-                    ::std::unique_ptr<DescriptorSetLayout> build();
+                    auto addBinding(uint32_t binding, ::vk::DescriptorType type, ::vk::ShaderStageFlags stageFlags, uint32_t count = 1) -> Builder&;
+                    auto build() -> ::std::unique_ptr<DescriptorSetLayout>;
             };
 
             DescriptorSetLayout(core::Device& device, ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> bindings);
             ~DescriptorSetLayout();
             DescriptorSetLayout(const DescriptorSetLayout&) = delete;
-            DescriptorSetLayout& operator=(const DescriptorSetLayout&) = delete;
-            ::vk::DescriptorSetLayout getDescriptorSetLayout(){return descriptorSetLayout_;}
+            auto operator=(const DescriptorSetLayout&) -> DescriptorSetLayout& = delete;
+            auto getDescriptorSetLayout() -> ::vk::DescriptorSetLayout{return descriptorSetLayout_;}
             friend class DescriptorWriter;
         private:
             core::Device& device_;
@@ -44,10 +44,10 @@ namespace g {
                     ::std::vector<::vk::DescriptorPoolSize> poolSizes_;
                 public:
                     Builder(core::Device& device):device_(device){};
-                    Builder& addPoolSize(::vk::DescriptorType type, uint32_t count);
-                    Builder& setPoolFlags(::vk::DescriptorPoolCreateFlags flags);
-                    Builder& setMaxSets(uint32_t maxSets);
-                    ::std:: unique_ptr<DescriptorPool> build();
+                    auto addPoolSize(::vk::DescriptorType type, uint32_t count) -> Builder&;
+                    auto setPoolFlags(::vk::DescriptorPoolCreateFlags flags) -> Builder&;
+                    auto setMaxSets(uint32_t maxSets) -> Builder&;
+                    auto build() -> ::std::unique_ptr<DescriptorPool>;
             };
             DescriptorPool(core::Device& device, 
                             uint32_t maxSets, 
@@ -55,11 +55,11 @@ namespace g {
                             ::std::vector<::vk::DescriptorPoolSize> poolSizes);
             ~DescriptorPool();
             DescriptorPool(const DescriptorPool&) = delete;
-            DescriptorPool& operator=(const DescriptorPool&) = delete;
+            auto operator=(const DescriptorPool&) -> DescriptorPool& = delete;
             void allocateDescriptor(const ::vk::DescriptorSetLayout& descriptorSetlayout, ::vk::DescriptorSet& descriptorSet) const;
             void freeDescriptor(::std::vector<::vk::DescriptorSet>& descriptorSets)const;
             void resetPool();
-            ::vk::DescriptorPool& getDescriptorPool(){return descriptorPool_;}
+            auto getDescriptorPool() -> ::vk::DescriptorPool&{return descriptorPool_;}
             friend class DescriptorWriter;
         private:
             core::Device& device_;
@@ -69,8 +69,8 @@ namespace g {
     class DescriptorWriter{
         public:
             DescriptorWriter(DescriptorSetLayout& descriptorSetLayout, DescriptorPool& pool);
-            DescriptorWriter& writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo& bufferInfo);
-            DescriptorWriter& writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo);
+            auto writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo& bufferInfo) -> DescriptorWriter&;
+            auto writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter&;
             void build(::vk::DescriptorSet& descriptorSet);
             void overwrite(::vk::DescriptorSet& descriptorSet);
         private:

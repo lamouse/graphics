@@ -2,10 +2,11 @@
 #include "g_context.hpp"
 #include "g_window.hpp"
 #include <iostream>
+#include <utility>
 #include <vector>
 namespace g{
 
-Window::Window(int width, int height, ::std::string title): width{width}, height{height},title{title}
+Window::Window(int width, int height, ::std::string title): width{width}, height{height},title{std::move(title)}
 {
     initWindow();
 }
@@ -40,7 +41,7 @@ void Window::initWindow()
         return surface;
     }, width, height, enableValidationLayers);
     glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int width, int height){
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow * /*window*/, int width, int height){
         Context::setExtent(width, height);
         Context::setWindowRsize();
     });
@@ -53,7 +54,7 @@ Window::~Window()
     glfwTerminate();
 }
 
-bool Window::shuldClose()
+auto Window::shuldClose() -> bool
 {
     return glfwWindowShouldClose(window);
 }

@@ -11,13 +11,13 @@ namespace core {
         ::std::reference_wrapper<::vk::Device> device_;
         DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory, ::vk::Device& device);
     public:
-        static DeviceBuffer create(Device& device, ::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size);
-        ::vk::Buffer operator()(){return buffer_;}
+        static auto create(Device& device, ::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size) -> DeviceBuffer;
+        auto operator()() -> ::vk::Buffer{return buffer_;}
         ~DeviceBuffer();
 
         DeviceBuffer(const DeviceBuffer&) = delete;
         DeviceBuffer(DeviceBuffer&&) = default;
-        DeviceBuffer operator=(const DeviceBuffer&) = delete;
-        DeviceBuffer& operator=(DeviceBuffer&&) = default;
+        auto operator=(const DeviceBuffer&) -> DeviceBuffer = delete;
+        auto operator=(DeviceBuffer&&) -> DeviceBuffer& = default;
     };
 }
