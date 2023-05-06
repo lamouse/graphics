@@ -11,8 +11,6 @@ aux_source_directory(./src/core CORE_SRC)
 aux_source_directory(./src/system SYSTEM_SRC)
 aux_source_directory(./src/imgui IMGUI)
 set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC} ${IMGUI} )
-# aux_source_directory(./src/test TEST_SRC)
-# set(SRC ${TEST_SRC})
 add_executable(${EXECUTE_NAME} ${SRC})
 
 find_program(GLSLC_PROGRAM glslc REQUIRED)
@@ -23,7 +21,6 @@ message(STATUS "compile shader OK")
 #need vcpkg start
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm REQUIRED)
@@ -39,7 +36,7 @@ elseif(UNIX AND APPLE)
 endif()
 
 # fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw fmt::fmt spdlog::spdlog)
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog)
 
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
