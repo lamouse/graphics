@@ -31,9 +31,8 @@ if(WIN32)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
         find_package(spdlog CONFIG REQUIRED)
-
-
-        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan PRIVATE fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
+        # spdlog::spdlog
+        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan PRIVATE fmt::fmt-header-only spdlog::spdlog_header_only)
 elseif(UNIX AND APPLE)
         set(librariesList
                 GLFW
