@@ -9,7 +9,7 @@ namespace g{
 ::std::unique_ptr<Context> Context::pInstance = nullptr;
 int Context::width_ = 0;
 int Context::height_ = 0;
-bool Context::windowIsRsize = false;
+bool Context::windowIsResize = false;
 
 Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, bool enableValidationLayers)
 {

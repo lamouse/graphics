@@ -17,15 +17,15 @@ namespace g{
 
         static int width_;
         static int height_;
-        static bool windowIsRsize;
+        static bool windowIsResize;
     public:
         config::ImageQuality imageQualityConfig;
 
         auto device()->core::Device&{return  *device_;}
         static void setExtent(int w, int h){width_ = w; height_ = h;}
-        static void setWindowRsize(){windowIsRsize = true;}
-        static void rsetWindowRsize(){windowIsRsize = false;}
-        static auto isWindowRsize() -> bool{ return windowIsRsize;}
+        static void setWindowResize(){windowIsResize = true;}
+        static void resetWindowResize(){windowIsResize = false;}
+        static auto isWindowResize() -> bool{ return windowIsResize;}
         static auto getExtent() -> ::vk::Extent2D{return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)};}
         static void init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height, bool enableValidationLayers);
         static void quit();

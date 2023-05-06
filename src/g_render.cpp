@@ -72,19 +72,19 @@ void RenderProcesser::endFrame()
     {
         auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
 
-        if(result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR || Context::isWindowRsize())
+        if(result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR || Context::isWindowResize())
         {
             createSwapchain();
-            Context::rsetWindowRsize();
+            Context::resetWindowResize();
         }else if (result != ::vk::Result::eSuccess)
         {
-            throw ::std::runtime_error("faild to present swap chain image");
+            throw ::std::runtime_error("filed to present swap chain image");
         }
     }
     catch(const ::vk::OutOfDateKHRError& e)
     {
         createSwapchain();
-        Context::rsetWindowRsize();
+        Context::resetWindowResize();
     }
 
     isFrameStart = false;
