@@ -25,29 +25,21 @@ find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glm REQUIRED)
 #need vcpkg end
 
+find_package(Vulkan REQUIRED)
+
+
 if(WIN32)
-        find_package(glfw3 CONFIG REQUIRED)
-        find_package(Vulkan REQUIRED)
-        find_package(glm REQUIRED)
-        # fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
-        target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan PRIVATE fmt::fmt spdlog::spdlog)
-elseif(UNIX AND APPLE)
-        set(librariesList
-                GLFW
-                vulkan
-        )
-    
+
+elseif(UNIX AND APPLE)   
     add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
-        find_library(${librariesList})
-        include_directories("/usr/local/include")
-        target_link_directories(${EXECUTE_NAME} PRIVATE
-                /usr/local/lib
-        )
-        target_include_directories(${EXECUTE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
-        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList} fmt::fmt)
 endif()
+
+# fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw fmt::fmt spdlog::spdlog)
 
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
