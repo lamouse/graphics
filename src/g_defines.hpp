@@ -6,9 +6,10 @@
 #include <glm/gtc/constants.hpp>
 #include <cstring>
 #define __FILENAME__ (::std::strrchr(__FILE__, '/') ? ::std::strrchr(__FILE__, '/') + 1 : __FILE__)
-#define PRINT_DEBUG_MSG
 
-
+#if !defined(__PRETTY_FUNCTION__) && !defined(__GNUC__)
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
 
 #define DEFAULT_FORMAT vk::Format::eR8G8B8A8Srgb
 #define image_path  ::std::string{"./images/"}
