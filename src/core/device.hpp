@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <functional>
+#include <memory>
 
 namespace core{
     /**

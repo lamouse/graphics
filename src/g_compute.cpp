@@ -1,5 +1,6 @@
 #include "g_compute.hpp"
 #include "resource/shader.hpp"
+#include <limits>
 namespace g {
 
 Compute::Compute(::core::Device& device, ::std::string& path, ::vk::DescriptorSetLayout descriptorSetLayout):device_(device)
@@ -71,7 +72,7 @@ Compute::~Compute()
 
 void Compute::beginCompute(int currentFrameIndex)
 {
-    auto waitResult = device_.logicalDevice().waitForFences(inFlightFences_[currentFrameIndex], true, std::numeric_limits<uint64_t>::max());
+    auto waitResult = device_.logicalDevice().waitForFences(inFlightFences_[currentFrameIndex], true, ::std::numeric_limits<uint64_t>::max());
     if(waitResult != ::vk::Result::eSuccess)
     {
         throw ::std::runtime_error(" Swapchain::acquireNextImage wait fences");
