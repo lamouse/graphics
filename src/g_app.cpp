@@ -243,7 +243,7 @@ void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool)
     // Upload Fonts
     {
         // Use any command queue
-        device.excuteCmd(ImGui_ImplVulkan_CreateFontsTexture);
+        device.executeCmd(ImGui_ImplVulkan_CreateFontsTexture);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
 

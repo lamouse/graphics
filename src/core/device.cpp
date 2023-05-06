@@ -64,7 +64,7 @@ Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurf
     enableValidationLayers_ = enableValidationLayers;
     createInstance(instanceExtends);
     vkSurfaceKHR = createFunc(vkInstance);
-    pickupPhyiscalDevice();
+    pickupPhysicalDevice();
     createLogicalDevice();
     getQueues();
     initCmdPool();
@@ -112,7 +112,7 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends)
     }
 }
 
-void Device::pickupPhyiscalDevice()
+void Device::pickupPhysicalDevice()
 {
     auto phyDevices = vkInstance.enumeratePhysicalDevices();
     auto findPhyDevice = ::std::find_if(phyDevices.begin(), phyDevices.end(), [this](auto& device){
@@ -173,7 +173,7 @@ auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::Que
 
     QueueFamilyIndices indices;
     if(pos != properties.end()){
-        indices.graphicsQueue = pos - properties.begin();
+        indices.graphicsQueue = static_cast<uint32_t>(pos - properties.begin());
         indices.presentQueue = indices.graphicsQueue;
         indices.computeQueue = indices.graphicsQueue;
     }
@@ -182,19 +182,19 @@ auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::Que
 }
 
 
-void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
+void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
                                                     ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory)
 {
     ::vk::BufferCreateInfo bufferInfo;
     bufferInfo.setSize(size)
-            .setUsage(usgae)
+            .setUsage(usage)
             .setSharingMode(::vk::SharingMode::eExclusive);
     buffer = device_.createBuffer(bufferInfo);
     ::vk::MemoryRequirements memoryRequirements = device_.getBufferMemoryRequirements(buffer);
-    ::vk::MemoryAllocateInfo allcoInfo;
-    allcoInfo.setAllocationSize(memoryRequirements.size)
+    ::vk::MemoryAllocateInfo allocateInfo;
+    allocateInfo.setAllocationSize(memoryRequirements.size)
             .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
-    bufferMemory = device_.allocateMemory(allcoInfo);
+    bufferMemory = device_.allocateMemory(allocateInfo);
     device_.bindBufferMemory(buffer, bufferMemory, 0);
 }
 
@@ -216,21 +216,21 @@ void Device::initCmdPool()
     cmdPool_ =  device_.createCommandPool(createInfo);
 }
 
-void Device::excuteCmd(const RecordCmdFunc& func)
+void Device::executeCmd(const RecordCmdFunc& func)
 {
     ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
-    auto commanBuffer = device_.allocateCommandBuffers(allocInfo)[0];
+    auto commandBuffer = device_.allocateCommandBuffers(allocInfo)[0];
     ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    commanBuffer.begin(beginInfo);
-    if (func) { func(commanBuffer);
+    commandBuffer.begin(beginInfo);
+    if (func) { func(commandBuffer);
     }
-    commanBuffer.end();
+    commandBuffer.end();
     vk::SubmitInfo submitInfo;
-    submitInfo.setCommandBuffers(commanBuffer);
+    submitInfo.setCommandBuffers(commandBuffer);
     graphicsQueue.submit(submitInfo);
     graphicsQueue.waitIdle();
     device_.waitIdle();
-    device_.freeCommandBuffers(cmdPool_, commanBuffer);
+    device_.freeCommandBuffers(cmdPool_, commandBuffer);
 }
 
 auto Device::getVKInstance() -> ::vk::Instance&

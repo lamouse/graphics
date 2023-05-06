@@ -16,17 +16,17 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
 
     transitionImageLayout(device, image_, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
 
-    device.excuteCmd([&](::vk::CommandBuffer cmdBuf){
+    device.executeCmd([&](::vk::CommandBuffer cmdBuf){
         ::vk::BufferImageCopy region;
-                ::vk::ImageSubresourceLayers imageSubsourceLayers;
-        imageSubsourceLayers.setAspectMask(::vk::ImageAspectFlagBits::eColor)
+                ::vk::ImageSubresourceLayers imageSubresourceLayers;
+        imageSubresourceLayers.setAspectMask(::vk::ImageAspectFlagBits::eColor)
                             .setMipLevel(0)
                             .setBaseArrayLayer(0)
                             .setLayerCount(1);
         region.setBufferOffset(0)
                 .setBufferRowLength(0)
                 .setBufferImageHeight(0)
-                .setImageSubresource(imageSubsourceLayers)
+                .setImageSubresource(imageSubresourceLayers)
                 .setImageOffset({0, 0, 0})
                 .setImageExtent({static_cast<uint32_t>(imgInfo.width), static_cast<uint32_t>(imgInfo.height), 1});
         cmdBuf.copyBufferToImage(stagingBuffer.getBuffer(), image_, ::vk::ImageLayout::eTransferDstOptimal, region);
@@ -39,10 +39,10 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
 
 void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout)const
 {
-    device.excuteCmd([&](::vk::CommandBuffer& cmd){
+    device.executeCmd([&](::vk::CommandBuffer& cmd){
         ::vk::ImageMemoryBarrier barrier;
-        ::vk::ImageSubresourceRange subsourceRange;
-        subsourceRange.setAspectMask(::vk::ImageAspectFlagBits::eColor)
+        ::vk::ImageSubresourceRange subresourceRange;
+        subresourceRange.setAspectMask(::vk::ImageAspectFlagBits::eColor)
                         .setBaseMipLevel(0)
                         .setLevelCount(imageMipLevels_)
                         .setBaseArrayLayer(0)
@@ -52,7 +52,7 @@ void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image
                 .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                 .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                 .setImage(image)
-                .setSubresourceRange(subsourceRange);
+                .setSubresourceRange(subresourceRange);
 
         ::vk::PipelineStageFlags sourceStage;
         ::vk::PipelineStageFlags destinationStage;
@@ -111,7 +111,7 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
         throw ::std::runtime_error("texture image format does not suport linear blitting");
     }
 
-    device.excuteCmd([&](::vk::CommandBuffer &cmd){
+    device.executeCmd([&](::vk::CommandBuffer &cmd){
         ::vk::ImageMemoryBarrier barrier;
         vk::ImageSubresourceRange subresourceRange;
         barrier.setImage(image)

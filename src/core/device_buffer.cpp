@@ -32,7 +32,7 @@ DeviceBuffer::~DeviceBuffer()
 
 void copyBuffer(Device& device, ::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size)
 {
-    device.excuteCmd([&](auto& cmdBuf){
+    device.executeCmd([&](auto& cmdBuf){
         ::vk::BufferCopy copyRegion{};
         copyRegion.size = size;
         cmdBuf.copyBuffer(srcBuffer, dstBuffer, copyRegion);

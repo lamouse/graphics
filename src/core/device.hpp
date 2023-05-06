@@ -60,7 +60,7 @@ namespace core{
         ::vk::SampleCountFlagBits maxMsaaSamples_;
         ::vk::DebugUtilsMessengerEXT debugMessenger_;
         bool enableValidationLayers_;
-        void pickupPhyiscalDevice();
+        void pickupPhysicalDevice();
         void createLogicalDevice();
         void getQueues();
         void initCmdPool();
@@ -83,7 +83,7 @@ namespace core{
         QueueFamilyIndices queueFamilyIndices;
         auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits{return maxMsaaSamples_;};
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
-        void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usgae, ::vk::MemoryPropertyFlags properties, 
+        void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
             ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
         void createImage(uint32_t width, uint32_t height, uint32_t mipLevels,::vk::Format format, ::vk::SampleCountFlagBits numSamples ,::vk::ImageTiling tiling, 
                     ::vk::ImageUsageFlags usage, ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
@@ -98,7 +98,7 @@ namespace core{
         auto findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features) -> ::vk::Format;
         auto getCommandPool() -> ::vk::CommandPool{return cmdPool_;}
         auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails;
-        void excuteCmd(const RecordCmdFunc& func);
+        void executeCmd(const RecordCmdFunc& func);
         auto getMaxAnisotropy() -> float;
         ~Device();
         
