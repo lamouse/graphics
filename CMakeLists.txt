@@ -36,7 +36,7 @@ elseif(UNIX AND APPLE)
 endif()
 
 # fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog)
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog_header_only)
 
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
