@@ -24,6 +24,7 @@ message(STATUS "compile shader OK")
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 #need vcpkg end
 
 if(WIN32)
@@ -46,7 +47,7 @@ elseif(UNIX AND APPLE)
                 /usr/local/lib
         )
         target_include_directories(${EXECUTE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
-        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList} fmt::fmt-header-only)
+        target_link_libraries(${EXECUTE_NAME} PRIVATE ${librariesList} fmt::fmt)
 endif()
 
 
