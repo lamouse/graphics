@@ -31,7 +31,6 @@ if(WIN32)
         find_package(glfw3 CONFIG REQUIRED)
         find_package(Vulkan REQUIRED)
         find_package(glm REQUIRED)
-        find_package(spdlog CONFIG REQUIRED)
         # fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
         target_link_libraries(${EXECUTE_NAME} PUBLIC glfw Vulkan::Vulkan PRIVATE fmt::fmt spdlog::spdlog)
 elseif(UNIX AND APPLE)
