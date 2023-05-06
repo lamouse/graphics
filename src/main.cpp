@@ -11,7 +11,7 @@
 using namespace std;
 using namespace g;
 
-int main(int argc, char** argv)
+auto main(int  /*argc*/, char**  /*argv*/)->int
 {
 
     ::spdlog::set_level(::spdlog::level::debug);
