@@ -44,8 +44,8 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
     swapchain =device_.logicalDevice().createSwapchainKHR(createInfo);
 
     createImageFrame();
-    createsemphores();
-    createFances();
+    createSemaphores();
+    createFences();
 }
 
 void Swapchain::createImageFrame()
@@ -211,7 +211,7 @@ auto Swapchain::findDepthFormat() -> ::vk::Format{
                                        ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);
 }
 
-void Swapchain::createFances()
+void Swapchain::createFences()
 {
     inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
     for(int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
@@ -222,7 +222,7 @@ void Swapchain::createFances()
     }
 }
 
-void Swapchain::createsemphores()
+void Swapchain::createSemaphores()
 {
     imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
     renderFinshSemaphores.resize(MAX_FRAME_IN_FLIGHT);

@@ -70,8 +70,8 @@ private:
     void getImages();
     void createImageViews();
     void createImageFrame();
-    void createFances();
-    void createsemphores();
+    void createFences();
+    void createSemaphores();
     void createColorResources();
     void createDepthResources();
     void querySwapchainInfo(int width, int height);
