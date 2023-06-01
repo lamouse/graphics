@@ -16,7 +16,17 @@ void Window::initWindow()
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     //::glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER,GLFW_TRUE);
-    window = ::glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    ::GLFWmonitor* monitor = ::glfwGetPrimaryMonitor();
+    float xscale, yscale;
+    ::glfwGetMonitorContentScale(monitor, &xscale, &yscale);
+    int w = width * xscale;
+    int h = height * yscale;
+    scale = xscale;
+    window = ::glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr);
+    if(!window)
+    {
+        ::glfwTerminate();
+    }
     bool enableValidationLayers = true;
     uint32_t count;
     const char** glfwExtens = ::glfwGetRequiredInstanceExtensions(&count);

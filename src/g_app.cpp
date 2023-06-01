@@ -39,12 +39,13 @@ struct ImguiDebugInfo{
     float z_near;
 };
 
-static ::VkRenderPass imguiRenderPass;
-void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool);
+void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale = 1.0f);
 void draw_imgui(ImguiDebugInfo& debugInfo);
 
+namespace{
 
-static void check_vk_result(VkResult err)
+::VkRenderPass imguiRenderPass;
+void check_vk_result(VkResult err)
 {
     if (err == 0) {
         return;
@@ -54,6 +55,8 @@ static void check_vk_result(VkResult err)
         abort();
     }
 }
+}
+
 
 void App::run(){
 
@@ -88,7 +91,7 @@ void App::run(){
     RenderProcesser render(Context::Instance().device());
     RenderSystem renderSystem(render.getRenderPass(), setLayout->getDescriptorSetLayout());
 
-    init_imgui(window(), descriptorPool_->getDescriptorPool());
+    init_imgui(window(), descriptorPool_->getDescriptorPool(), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
     ImguiDebugInfo debugInfo{};
@@ -159,7 +162,7 @@ void App::loadGameObjects()
  * @param format 
  * @param descriptorPool 
  */
-void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool)
+void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale)
 {
 
     VkAttachmentDescription colorAttachment{};
@@ -210,7 +213,8 @@ void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool)
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;        // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platfor
-
+    io.DisplayFramebufferScale = ImVec2(scale, scale);
+    io.FontGlobalScale = scale;
     // Setup Dear ImGui style
     //ImGui::StyleColorsDark();
     ImGui::StyleColorsLight();
@@ -260,7 +264,6 @@ void draw_imgui(ImguiDebugInfo& debugInfo)
     static bool show_another_window = false;
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiCond_FirstUseEver);
     {
         if(show_demo_window)
         {

@@ -11,6 +11,7 @@ namespace g{
             GLFWwindow *window;
             int width;
             int height;
+            float scale;
             void initWindow();
             ::std::string title;
         public:
@@ -20,5 +21,6 @@ namespace g{
             auto operator()() -> GLFWwindow *{return window;}
             ~Window();
             auto shuldClose() -> bool;
+            [[nodiscard]] auto getScale() const -> float{return scale;};
     };
 }
