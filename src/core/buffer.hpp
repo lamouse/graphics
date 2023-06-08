@@ -30,10 +30,10 @@ namespace core {
             auto invalidate(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::Result;
             auto descriptorInfo(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::DescriptorBufferInfo;
 
-            void writeToIndex(void* data, int index);
-            auto flushIndex(int index) -> ::vk::Result;
-            auto descriptorInfoForIndex(int index) -> ::vk::DescriptorBufferInfo;
-            auto invalidateIndex(int index) -> ::vk::Result;
+            void writeToIndex(void* data, ::vk::DeviceSize index);
+            auto flushIndex(::vk::DeviceSize index) -> ::vk::Result;
+            auto descriptorInfoForIndex(::vk::DeviceSize index) -> ::vk::DescriptorBufferInfo;
+            auto invalidateIndex(::vk::DeviceSize index) -> ::vk::Result;
 
             [[nodiscard]] auto getBuffer()const -> ::vk::Buffer {return buffer_;}
             [[nodiscard]] auto getMappedMemory()const -> void* {return data_;}

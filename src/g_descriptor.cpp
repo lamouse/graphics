@@ -143,7 +143,7 @@ void DescriptorWriter::overwrite(::vk::DescriptorSet &descriptorSet)
     {
         writeDescriptorSet.setDstSet(descriptorSet);
     }
-    pool_.device_.logicalDevice().updateDescriptorSets(writeDescriptorSets_.size(), writeDescriptorSets_.data(), 0, nullptr);
+    pool_.device_.logicalDevice().updateDescriptorSets(static_cast<uint32_t>(writeDescriptorSets_.size()) , writeDescriptorSets_.data(), 0, nullptr);
 }
 
 }

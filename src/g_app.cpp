@@ -79,7 +79,7 @@ void App::run(){
     resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
 
     ::std::vector<::vk::DescriptorSet> descriptorSets(2);
-    for(int i = 0; i < descriptorSets.size(); i++)
+    for(::std::vector<::vk::DescriptorSet>::size_type i = 0; i < descriptorSets.size(); i++)
     {
         auto bufferInfo = uboBuffers[i]->descriptorInfo();
         DescriptorWriter(*setLayout, *descriptorPool_)
@@ -336,7 +336,7 @@ void draw_imgui(ImguiDebugInfo& debugInfo)
 
 App::App()
 {
-    int count = 1000;
+    unsigned  count = 1000;
     descriptorPool_ =
         DescriptorPool::Builder(Context::Instance().device())
             .setMaxSets(count)

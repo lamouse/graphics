@@ -10,7 +10,7 @@ private:
     ::std::unique_ptr<Swapchain> swapchain;
     bool isFrameStart{false};
     uint32_t currentImageIndex;
-    int currentFrameIndex{0};
+    uint32_t currentFrameIndex{0};
     core::Device& device_;
     ::std::vector<::vk::CommandBuffer> commandBuffers_;
     ::vk::RenderPass renderPass_;
@@ -25,7 +25,7 @@ public:
     void endFrame();
     auto getRenderPass(){return renderPass_;}
     auto getCurrentCommadBuffer() -> ::vk::CommandBuffer&{return commandBuffers_[currentFrameIndex];};
-    [[nodiscard]] auto getCurrentFrameIndex() const ->int{return currentFrameIndex;}
+    [[nodiscard]] auto getCurrentFrameIndex() const ->uint32_t{return currentFrameIndex;}
     RenderProcesser(core::Device& device);
     ~RenderProcesser();
     auto extentAspectRation()->auto{return swapchain->extentAspectRation();}

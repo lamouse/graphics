@@ -30,13 +30,13 @@ void Compute::createComputePipelineLayout(::vk::DescriptorSetLayout descriptorSe
     computePipelineLayout_ = device_.logicalDevice().createPipelineLayout(pipelineLayoutInfo, nullptr);
 }
 
-void Compute::init(int inFlightCount)
+void Compute::init(uint32_t inFlightCount)
 {
     createCommandBuffers(inFlightCount);
     createSyncs(inFlightCount);
 }
 
-void Compute::createCommandBuffers(int inFlightCount)
+void Compute::createCommandBuffers(uint32_t inFlightCount)
 {
     ::vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.setCommandPool(device_.getCommandPool())
@@ -46,11 +46,11 @@ void Compute::createCommandBuffers(int inFlightCount)
     commandBuffers_ = device_.logicalDevice().allocateCommandBuffers(allocInfo);
 }
 
-void Compute::createSyncs(int inFlightCount)
+void Compute::createSyncs(uint32_t inFlightCount)
 {
     finishedSemaphores_.resize(inFlightCount);
     inFlightFences_.resize(inFlightCount);
-    for(int i = 0; i < inFlightCount; ++i)
+    for(uint32_t i = 0; i < inFlightCount; ++i)
     {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
         ::vk::FenceCreateInfo fenceCreateInfo(::vk::FenceCreateFlagBits::eSignaled);
@@ -61,7 +61,7 @@ void Compute::createSyncs(int inFlightCount)
 
 Compute::~Compute()
 {
-    for(int i = 0; i < finishedSemaphores_.size(); ++i)
+    for(::std::vector<::vk::Semaphore>::size_type i = 0; i < finishedSemaphores_.size(); ++i)
     {
         device_.logicalDevice().destroyFence(inFlightFences_[i]);
         device_.logicalDevice().destroySemaphore(finishedSemaphores_[i]);
@@ -70,7 +70,7 @@ Compute::~Compute()
     device_.logicalDevice().destroyPipelineLayout(computePipelineLayout_);
 }
 
-void Compute::beginCompute(int currentFrameIndex)
+void Compute::beginCompute(uint32_t currentFrameIndex)
 {
     auto waitResult = device_.logicalDevice().waitForFences(inFlightFences_[currentFrameIndex], true, ::std::numeric_limits<uint64_t>::max());
     if(waitResult != ::vk::Result::eSuccess)
@@ -80,7 +80,7 @@ void Compute::beginCompute(int currentFrameIndex)
     device_.logicalDevice().resetFences(inFlightFences_[currentFrameIndex]);
     commandBuffers_[currentFrameIndex].reset();
 }
-auto Compute::compute(int currentFrameIndex, ::vk::DescriptorSet descriptorSet) -> ::vk::CommandBuffer&
+auto Compute::compute(uint32_t currentFrameIndex, ::vk::DescriptorSet descriptorSet) -> ::vk::CommandBuffer&
 {
     ::vk::CommandBufferBeginInfo beginInfo{};
     commandBuffers_[currentFrameIndex].begin(beginInfo);
@@ -90,7 +90,7 @@ auto Compute::compute(int currentFrameIndex, ::vk::DescriptorSet descriptorSet) 
     return commandBuffers_[currentFrameIndex];
 }
 
-void Compute::endCompute(int currentFrameIndex)
+void Compute::endCompute(uint32_t currentFrameIndex)
 {
     commandBuffers_[currentFrameIndex].end();
     ::vk::SubmitInfo submitInfo;

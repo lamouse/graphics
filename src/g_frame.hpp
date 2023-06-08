@@ -13,7 +13,7 @@ namespace g {
     };
 
     struct FrameInfo{
-        int frameIndex;
+        uint32_t frameIndex;
         float frameTime;
         ::vk::CommandBuffer commandBuffer;
         Camera& camera;

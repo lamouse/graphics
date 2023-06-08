@@ -73,22 +73,22 @@ auto Buffer::descriptorInfo(::vk::DeviceSize size, ::vk::DeviceSize offset) -> :
     return {buffer_, offset, size};
 }
 
-void Buffer::writeToIndex(void* data, int index)
+void Buffer::writeToIndex(void* data, ::vk::DeviceSize index)
 {
     writeToBuffer(data, instanceSize_, index * alignmentSize_);
 }
 
-auto Buffer::flushIndex(int index) -> ::vk::Result
+auto Buffer::flushIndex(::vk::DeviceSize index) -> ::vk::Result
 {
     return flush(alignmentSize_, index * alignmentSize_);
 }
 
-auto Buffer::descriptorInfoForIndex(int index) -> ::vk::DescriptorBufferInfo
+auto Buffer::descriptorInfoForIndex(::vk::DeviceSize index) -> ::vk::DescriptorBufferInfo
 {
     return descriptorInfo(alignmentSize_, index * alignmentSize_);
 }
 
-auto Buffer::invalidateIndex(int index) -> ::vk::Result
+auto Buffer::invalidateIndex(::vk::DeviceSize index) -> ::vk::Result
 {
     return invalidate(alignmentSize_, index * alignmentSize_);
 }

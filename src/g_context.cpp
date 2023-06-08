@@ -33,7 +33,7 @@ void Context::quit()
     pInstance.reset();
 }
 
-Context& Context::Instance()
+auto Context::Instance()->Context&
 {   
     assert(pInstance);
     return *pInstance;

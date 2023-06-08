@@ -10,8 +10,8 @@ auto readShaderFile(const std::string& filePath) -> ::std::vector<char>{
     if(!file.is_open()){
         throw ::std::runtime_error("faild to open file: " + filePath);
     }
-    size_t fileSize = static_cast<size_t>(file.tellg());
-    ::std::vector<char> buffer(fileSize);
+    auto fileSize = file.tellg();
+    ::std::vector<char> buffer(static_cast<size_t>(fileSize));
     file.seekg(0);
     file.read(buffer.data(), fileSize);
     return buffer;

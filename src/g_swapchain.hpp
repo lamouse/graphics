@@ -22,7 +22,7 @@ public:
     [[nodiscard]] auto getSwapchainDepthFormat()const -> ::vk::Format {return depthFormat;}
     auto getFrameBuffer(int index) -> ::vk::Framebuffer{return swapchainFrameBuffers[index];}
 
-    auto getImageCount() -> int{return images.size();}
+    auto getImageCount() {return images.size();}
     auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
     auto submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result;
     void createFrameBuffers(::vk::RenderPass& renderPass);
