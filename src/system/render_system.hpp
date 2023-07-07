@@ -1,12 +1,10 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
-
 namespace engine::system {
 
+template<typename F>
 class RenderSystem {
-    
     public:
-        virtual void render() = 0;
+      virtual void render(F&) = 0;
 };
 
 }

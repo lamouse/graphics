@@ -4,7 +4,7 @@ project(graphics)
 
 set(EXECUTE_NAME graphics)
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmodules -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type")
 set(BUILD_TESTING ON)
 aux_source_directory(./src MAIN_SRC)
 aux_source_directory(./src/resource RESOURCE_SRC)
@@ -26,6 +26,7 @@ find_package(tinyobjloader CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm REQUIRED)
+find_package(GSL REQUIRED)
 #need vcpkg end
 
 find_package(Vulkan REQUIRED)
@@ -38,7 +39,7 @@ elseif(UNIX AND APPLE)
 endif()
 
 # fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog_header_only)
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog_header_only GSL::gsl GSL::gslcblas)
 
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
@@ -56,4 +57,6 @@ install(DIRECTORY "shader/"
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 add_subdirectory(src/test)
+add_subdirectory(doc)

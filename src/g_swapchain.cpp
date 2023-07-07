@@ -16,7 +16,6 @@ namespace g
     {
         querySwapchainInfo(width, height);
         vk::SwapchainCreateInfoKHR createInfo;
-        //����
         createInfo.setClipped(true)
             .setImageArrayLayers(1)
             .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
@@ -94,7 +93,6 @@ namespace g
     {
 
 
-        //ʹ�����µ�ͼ�񣬻����ӳٸ��ͣ�gpu�������ã����ĸ�
         for (const auto& availablePresentMode : availablePresentModes)
         {
             if (availablePresentMode == ::vk::PresentModeKHR::eMailbox)

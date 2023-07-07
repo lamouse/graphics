@@ -215,6 +215,7 @@ void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float 
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platfor
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
+    io.ConfigViewportsNoAutoMerge = true;
     // Setup Dear ImGui style
     //ImGui::StyleColorsDark();
     ImGui::StyleColorsLight();
@@ -255,11 +256,14 @@ void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float 
 
 void draw_imgui(ImguiDebugInfo& debugInfo)
 {
+    auto *mainviewport = ImGui::GetMainViewport();
+    mainviewport->Flags |= ImGuiViewportFlags_NoRendererClear;
     ImGuiIO& io = ImGui::GetIO();   
     (void)io;
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
     static bool show_demo_window = false;
     static bool show_another_window = false;
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();

@@ -67,7 +67,7 @@ auto PipeLine::getDefaultConfig() -> PipelineConfigInfo
                               .setRasterizationSamples(::vk::SampleCountFlagBits::e1);
 
 
-    configInfo.colorBlendAttachsInfo.setBlendEnable(false)
+    configInfo.colorBlendAttachsInfo.setBlendEnable(VK_FALSE)
                                     .setColorWriteMask( ::vk::ColorComponentFlagBits::eR | 
                                                         ::vk::ColorComponentFlagBits::eG |
                                                         ::vk::ColorComponentFlagBits::eB |
