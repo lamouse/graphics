@@ -1,4 +1,3 @@
-set(DOXYGEN_EXECUTABLE "D:\\Program\\doxygen\\doxygen")
 find_package(Doxygen)
 
 if(NOT DOXYGEN_FOUND)
@@ -13,12 +12,12 @@ set(DOXYGEN_GENERATE_XML YES)
 set(DOXYGEN_EXCLUDE_PATTERNS "*/detail/*")
 
 # print paths relative to include directory
-set(DOXYGEN_STRIP_FROM_PATH ${PROJECT_SOURCE_DIR}/src)
+set(DOXYGEN_STRIP_FROM_PATH ${PROJECT_SOURCE_DIR}/src/core)
 
 # Note: use doxygen_add_docs(doxygen-doc ALL ...) if you want your documentation
 # to be created by default each time you build. Without the keyword you need to
 # explicitly invoke building of the 'doc' target.
-doxygen_add_docs(doxygen-doc ${PROJECT_SOURCE_DIR}/src COMMENT
+doxygen_add_docs(doxygen-doc ${PROJECT_SOURCE_DIR}/src/core COMMENT
                  "Generating API documentation with Doxygen")
 find_package(Sphinx REQUIRED)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in
