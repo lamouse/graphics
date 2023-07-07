@@ -57,6 +57,6 @@ install(DIRECTORY "shader/"
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/build-tools")
 add_subdirectory(src/test)
 add_subdirectory(doc)
