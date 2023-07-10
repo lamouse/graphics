@@ -94,6 +94,11 @@ namespace core{
         auto getGraphicsQueue() -> ::vk::Queue&;
         auto getPresentQueue() -> ::vk::Queue&;
         auto getComputeQueue() -> ::vk::Queue&{return computeQueue;};
+        /**
+         * @brief vk logical device
+         * 
+         * @return ::vk::Device& 
+         */
         auto logicalDevice() -> ::vk::Device&;
         auto findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features) -> ::vk::Format;
         auto getCommandPool() -> ::vk::CommandPool{return cmdPool_;}
