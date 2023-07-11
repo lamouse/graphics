@@ -36,7 +36,7 @@ auto Model::Vertex::getBindingDescription() -> ::std::vector<::vk::VertexInputBi
    
    return bindingDescriptions;
 }
-auto Model::Vertex::getAtrributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription>
+auto Model::Vertex::getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription>
 {
     ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
     attributeDescriptions[0].setBinding(0);

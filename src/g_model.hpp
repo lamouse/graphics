@@ -19,7 +19,7 @@ public:
         ::glm::vec3 color;
         ::glm::vec2 texCoord;
         static auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription>;
-        static auto getAtrributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription>;
+        static auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription>;
         auto operator==(const Vertex& other) const -> bool {
             return position == other.position && color == other.color && texCoord == other.texCoord;
         }
