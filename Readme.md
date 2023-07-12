@@ -15,3 +15,7 @@
 ## imgui
 
     immgui相关代码主要在src/g_app.cpp下
+
+## format
+
+    clang-format version 16.0.5
