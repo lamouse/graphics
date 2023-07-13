@@ -5,7 +5,6 @@
 #include <optional>
 #include <vulkan/vulkan.hpp>
 
-
 namespace core {
 /**
  * @brief Validation layers
@@ -64,7 +63,6 @@ class Device final {
         static auto checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice) -> bool;
         auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool;
         auto getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits;
-        static ::std::unique_ptr<Device> instance;
 
     public:
         struct QueueFamilyIndices final {

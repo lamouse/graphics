@@ -76,8 +76,6 @@ auto checkValidationLayerSupport() -> bool {
 
 }  // namespace
 
-::std::unique_ptr<Device> Device::instance = nullptr;
-
 Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
                bool enableValidationLayers) {
     enableValidationLayers_ = enableValidationLayers;
