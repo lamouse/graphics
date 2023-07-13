@@ -127,7 +127,7 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
 
         int mipWidth = texWidth;
         int mipHeight = texHeight;
-        for (int i = 1; i < mipLevels; i++) {
+        for (uint32_t i = 1; i < mipLevels; i++) {
             subresourceRange.setBaseMipLevel(i - 1);
             barrier.setOldLayout(::vk::ImageLayout::eTransferDstOptimal)
                 .setNewLayout(::vk::ImageLayout::eTransferSrcOptimal)

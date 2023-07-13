@@ -41,11 +41,11 @@ class Swapchain {
             return static_cast<float>(swapchainInfo.extent2D.width) /
                    static_cast<float>(swapchainInfo.extent2D.width);
         }
-        [[nodiscard]] auto compareFormats(const Swapchain& swapchain) const
+        [[nodiscard]] auto compareFormats(const Swapchain& compareSwapchain) const
             -> bool {
-            return depthFormat == swapchain.depthFormat &&
+            return depthFormat == compareSwapchain.depthFormat &&
                    swapchainInfo.formatKHR.format ==
-                       swapchain.swapchainInfo.formatKHR.format;
+                       compareSwapchain.swapchainInfo.formatKHR.format;
         }
         ~Swapchain();
         Swapchain(core::Device& device_, int width, int height,

@@ -3,6 +3,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <cstring>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -29,5 +30,9 @@ struct SimplePushConstantData {
         ::glm::mat4 transform{1.F};
         ::glm::vec3 color;
 };
+
+
+using size_type = ::std::vector<int>::size_type;
+
 
 }  // namespace g

@@ -31,7 +31,7 @@ void Window::initWindow() {
     uint32_t count;
     const char** glfwExtens = ::glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> extends(count);
-    for (int i = 0; i < count; i++) {
+    for (uint32_t i = 0; i < count; i++) {
         extends[i] = glfwExtens[i];
     }
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
@@ -53,8 +53,8 @@ void Window::initWindow() {
         },
         width, height, enableValidationLayers);
     glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* /*window*/, int width, int height) {
-        Context::setExtent(width, height);
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* /*window*/, int w, int h) {
+        Context::setExtent(w, h);
         Context::setWindowResize();
     });
 }

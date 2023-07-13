@@ -6,16 +6,16 @@
 #include <set>
 
 namespace core {
-
-static VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
-                                                VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
-                                                const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                void* /*pUserData*/) -> VkBool32 {
+namespace {
+VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
+                                         VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
+                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* /*pUserData*/)
+    -> VkBool32 {
     spdlog::debug("validation layer: {}", pCallbackData->pMessage);
     return VK_FALSE;
 }
 
-static void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
+void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
                                   vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
                                   vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
@@ -25,10 +25,9 @@ static void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
     createInfo.pfnUserCallback = debugCallback;
 }
 
-static auto CreateDebugUtilsMessengerEXT(::vk::Instance instance,
-                                         const ::vk::DebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                         const ::vk::AllocationCallbacks* pAllocator,
-                                         ::vk::DebugUtilsMessengerEXT* pDebugMessenger) -> ::vk::Result {
+auto CreateDebugUtilsMessengerEXT(::vk::Instance instance, const ::vk::DebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                  const ::vk::AllocationCallbacks* pAllocator,
+                                  ::vk::DebugUtilsMessengerEXT* pDebugMessenger) -> ::vk::Result {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return (::vk::Result)func(instance, (VkDebugUtilsMessengerCreateInfoEXT*)pCreateInfo,
@@ -37,8 +36,8 @@ static auto CreateDebugUtilsMessengerEXT(::vk::Instance instance,
     return ::vk::Result::eErrorExtensionNotPresent;
 }
 
-static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                          const VkAllocationCallbacks* pAllocator) {
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                   const VkAllocationCallbacks* pAllocator) {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -54,7 +53,28 @@ void setupDebugMessenger(::vk::Instance& instance, ::vk::DebugUtilsMessengerEXT&
     }
 }
 
-static auto checkValidationLayerSupport() -> bool;
+auto checkValidationLayerSupport() -> bool {
+    std::vector<::vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
+
+    for (const char* layerName : validationLayers) {
+        bool layerFound = false;
+
+        for (const auto& layerProperties : availableLayers) {
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
+        }
+
+        if (!layerFound) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+}  // namespace
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
 
@@ -356,27 +376,6 @@ auto Device::querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupp
     details.formats = device.getSurfaceFormatsKHR(vkSurfaceKHR);
     details.presentModes = device.getSurfacePresentModesKHR(vkSurfaceKHR);
     return details;
-}
-
-auto checkValidationLayerSupport() -> bool {
-    std::vector<::vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
-
-    for (const char* layerName : validationLayers) {
-        bool layerFound = false;
-
-        for (const auto& layerProperties : availableLayers) {
-            if (strcmp(layerName, layerProperties.layerName) == 0) {
-                layerFound = true;
-                break;
-            }
-        }
-
-        if (!layerFound) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 }  // namespace core
