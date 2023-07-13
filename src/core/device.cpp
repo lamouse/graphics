@@ -1,52 +1,51 @@
 #include "device.hpp"
+
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <set>
-#include <spdlog/spdlog.h>
+
 namespace core {
 
-static VKAPI_ATTR auto VKAPI_CALL
-debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT  /*messageSeverity*/,
-              VkDebugUtilsMessageTypeFlagsEXT  /*messageType*/,
-              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-              void * /*pUserData*/) -> VkBool32 {
+static VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
+                                                VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
+                                                const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                void* /*pUserData*/) -> VkBool32 {
     spdlog::debug("validation layer: {}", pCallbackData->pMessage);
     return VK_FALSE;
 }
 
 static void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
-    createInfo.setMessageSeverity(
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
-    createInfo.setMessageType(
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance);   
-  createInfo.pfnUserCallback = debugCallback;
+    createInfo.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
+    createInfo.setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                              vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                              vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance);
+    createInfo.pfnUserCallback = debugCallback;
 }
 
-static auto CreateDebugUtilsMessengerEXT(
-    ::vk::Instance instance,
-    const ::vk::DebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-    const ::vk::AllocationCallbacks *pAllocator,
-    ::vk::DebugUtilsMessengerEXT *pDebugMessenger) -> ::vk::Result {
-  auto func = (PFN_vkCreateDebugUtilsMessengerEXT) instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
-  if (func != nullptr) {
-    return (::vk::Result)func(instance, (VkDebugUtilsMessengerCreateInfoEXT*)pCreateInfo, (const VkAllocationCallbacks*)pAllocator, (VkDebugUtilsMessengerEXT*)pDebugMessenger);
-  }  
+static auto CreateDebugUtilsMessengerEXT(::vk::Instance instance,
+                                         const ::vk::DebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                         const ::vk::AllocationCallbacks* pAllocator,
+                                         ::vk::DebugUtilsMessengerEXT* pDebugMessenger) -> ::vk::Result {
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        return (::vk::Result)func(instance, (VkDebugUtilsMessengerCreateInfoEXT*)pCreateInfo,
+                                  (const VkAllocationCallbacks*)pAllocator, (VkDebugUtilsMessengerEXT*)pDebugMessenger);
+    }
     return ::vk::Result::eErrorExtensionNotPresent;
- 
 }
 
-static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                          const VkAllocationCallbacks* pAllocator) {
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
     }
 }
 
 void setupDebugMessenger(::vk::Instance& instance, ::vk::DebugUtilsMessengerEXT& debugMessenger) {
-
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
 
@@ -59,8 +58,8 @@ static auto checkValidationLayerSupport() -> bool;
 
 ::std::unique_ptr<Device> Device::instance = nullptr;
 
-Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc, bool enableValidationLayers)
-{   
+Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
+               bool enableValidationLayers) {
     enableValidationLayers_ = enableValidationLayers;
     createInstance(instanceExtends);
     vkSurfaceKHR = createFunc(vkInstance);
@@ -70,8 +69,7 @@ Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurf
     initCmdPool();
 }
 
-Device::~Device()
-{
+Device::~Device() {
     device_.destroyCommandPool(cmdPool_);
     device_.destroy();
     vkInstance.destroySurfaceKHR(vkSurfaceKHR);
@@ -81,12 +79,11 @@ Device::~Device()
     vkInstance.destroy();
 }
 
-void Device::createInstance(const std::vector<const char*>& instanceExtends)
-{   
+void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     if (enableValidationLayers_ && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
- 
+
     ::vk::ApplicationInfo appInfo;
     appInfo.setPApplicationName("graphics")
         .setPEngineName("engin")
@@ -100,44 +97,39 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends)
         createInfo.setPEnabledLayerNames(validationLayers);
         ::vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo;
         populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
     }
 
     createInfo.setPApplicationInfo(&appInfo)
         .setFlags(::vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR)
         .setPEnabledExtensionNames(instanceExtends);
     vkInstance = ::vk::createInstance(createInfo);
-    if(enableValidationLayers_){
+    if (enableValidationLayers_) {
         setupDebugMessenger(vkInstance, debugMessenger_);
     }
 }
 
-void Device::pickupPhysicalDevice()
-{
+void Device::pickupPhysicalDevice() {
     auto phyDevices = vkInstance.enumeratePhysicalDevices();
-    auto findPhyDevice = ::std::find_if(phyDevices.begin(), phyDevices.end(), [this](auto& device){
-            return isDeviceSuitable(device);
-    });
+    auto findPhyDevice =
+        ::std::find_if(phyDevices.begin(), phyDevices.end(), [this](auto& device) { return isDeviceSuitable(device); });
 
-    if(findPhyDevice != phyDevices.end())
-    {
-            phyDevice = *findPhyDevice;
-            maxMsaaSamples_ = getMaxUsableSampleCount();
-            queueFamilyIndices = queryQueueFamilyIndices(phyDevice);
-    }else 
-    {
+    if (findPhyDevice != phyDevices.end()) {
+        phyDevice = *findPhyDevice;
+        maxMsaaSamples_ = getMaxUsableSampleCount();
+        queueFamilyIndices = queryQueueFamilyIndices(phyDevice);
+    } else {
         throw ::std::runtime_error("failed to find a suitable GPU!");
     }
 }
 
-void Device::createLogicalDevice()
-{
+void Device::createLogicalDevice() {
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
-    ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue.value(), queueFamilyIndices.presentQueue.value()};
+    ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue.value(),
+                                                queueFamilyIndices.presentQueue.value()};
     float priorities = 1.f;
 
-    for(uint32_t queueFamily : uniqueQueueFamilies)
-    {
+    for (uint32_t queueFamily : uniqueQueueFamilies) {
         ::vk::DeviceQueueCreateInfo queueInfo({}, queueFamily, 1, &priorities);
         queueInfos.push_back(queueInfo);
     }
@@ -147,23 +139,22 @@ void Device::createLogicalDevice()
 
     ::vk::DeviceCreateInfo createInfo;
     createInfo.setQueueCreateInfos(queueInfos)
-                .setPEnabledExtensionNames(deviceExtensions)
-                .setPEnabledFeatures(&deviceFeatures);
-    if(enableValidationLayers_){
+        .setPEnabledExtensionNames(deviceExtensions)
+        .setPEnabledFeatures(&deviceFeatures);
+    if (enableValidationLayers_) {
         createInfo.setPEnabledLayerNames(validationLayers);
     }
 
     device_ = phyDevice.createDevice(createInfo);
 }
-    
-auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::QueueFamilyIndices
-{
+
+auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::QueueFamilyIndices {
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
-    auto pos = ::std::find_if(properties.begin(), properties.end(), [&](const auto & property){
-        if((property.queueFlags | ::vk::QueueFlagBits::eGraphics) && (property.queueFlags | ::vk::QueueFlagBits::eCompute))
-        {
-            if(device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
+    auto pos = ::std::find_if(properties.begin(), properties.end(), [&](const auto& property) {
+        if ((property.queueFlags | ::vk::QueueFlagBits::eGraphics) &&
+            (property.queueFlags | ::vk::QueueFlagBits::eCompute)) {
+            if (device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
                 return true;
             }
         }
@@ -172,57 +163,48 @@ auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::Que
     });
 
     QueueFamilyIndices indices;
-    if(pos != properties.end()){
+    if (pos != properties.end()) {
         indices.graphicsQueue = static_cast<uint32_t>(pos - properties.begin());
         indices.presentQueue = indices.graphicsQueue;
         indices.computeQueue = indices.graphicsQueue;
     }
     return indices;
-
 }
 
-
 void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
-                                                    ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory)
-{
+                          ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory) {
     ::vk::BufferCreateInfo bufferInfo;
-    bufferInfo.setSize(size)
-            .setUsage(usage)
-            .setSharingMode(::vk::SharingMode::eExclusive);
+    bufferInfo.setSize(size).setUsage(usage).setSharingMode(::vk::SharingMode::eExclusive);
     buffer = device_.createBuffer(bufferInfo);
     ::vk::MemoryRequirements memoryRequirements = device_.getBufferMemoryRequirements(buffer);
     ::vk::MemoryAllocateInfo allocateInfo;
     allocateInfo.setAllocationSize(memoryRequirements.size)
-            .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
+        .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
     bufferMemory = device_.allocateMemory(allocateInfo);
     device_.bindBufferMemory(buffer, bufferMemory, 0);
 }
 
-
-void Device::getQueues()
-{
+void Device::getQueues() {
     graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
     presentQueue = device_.getQueue(queueFamilyIndices.presentQueue.value(), 0);
     computeQueue = device_.getQueue(queueFamilyIndices.computeQueue.value(), 0);
 }
 
-void Device::initCmdPool()
-{
+void Device::initCmdPool() {
     ::vk::CommandPoolCreateInfo createInfo;
     uint32_t queueFamilyIndex = queueFamilyIndices.graphicsQueue.value();
     createInfo.setQueueFamilyIndex(queueFamilyIndex)
-                .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
-                        ::vk::CommandPoolCreateFlagBits::eTransient);
-    cmdPool_ =  device_.createCommandPool(createInfo);
+        .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer | ::vk::CommandPoolCreateFlagBits::eTransient);
+    cmdPool_ = device_.createCommandPool(createInfo);
 }
 
-void Device::executeCmd(const RecordCmdFunc& func)
-{
+void Device::executeCmd(const RecordCmdFunc& func) {
     ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
     auto commandBuffer = device_.allocateCommandBuffers(allocInfo)[0];
     ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     commandBuffer.begin(beginInfo);
-    if (func) { func(commandBuffer);
+    if (func) {
+        func(commandBuffer);
     }
     commandBuffer.end();
     vk::SubmitInfo submitInfo;
@@ -233,58 +215,39 @@ void Device::executeCmd(const RecordCmdFunc& func)
     device_.freeCommandBuffers(cmdPool_, commandBuffer);
 }
 
-auto Device::getVKInstance() -> ::vk::Instance&
-{
-    return vkInstance;
-}
+auto Device::getVKInstance() -> ::vk::Instance& { return vkInstance; }
 
-auto Device::getSurface() -> ::vk::SurfaceKHR&
-{
-    return vkSurfaceKHR;
-}
+auto Device::getSurface() -> ::vk::SurfaceKHR& { return vkSurfaceKHR; }
 
-auto Device::getPhysicalDevice() -> ::vk::PhysicalDevice&
-{
-    return phyDevice;
-}
+auto Device::getPhysicalDevice() -> ::vk::PhysicalDevice& { return phyDevice; }
 
-auto Device::getGraphicsQueue() -> ::vk::Queue&
-{
-    return graphicsQueue;
-}
+auto Device::getGraphicsQueue() -> ::vk::Queue& { return graphicsQueue; }
 
-auto Device::getPresentQueue() -> ::vk::Queue&
-{
-    return presentQueue;
-}
+auto Device::getPresentQueue() -> ::vk::Queue& { return presentQueue; }
 
-auto Device::findSupportedFormat(
-    const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features) -> ::vk::Format {
+auto Device::findSupportedFormat(const std::vector<::vk::Format>& candidates, ::vk::ImageTiling tiling,
+                                 ::vk::FormatFeatureFlags features) -> ::vk::Format {
     for (::vk::Format format : candidates) {
         ::vk::FormatProperties props = phyDevice.getFormatProperties(format);
-        
+
         if (tiling == ::vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
             return format;
-        } 
-        if (
-            tiling == ::vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+        }
+        if (tiling == ::vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
     throw std::runtime_error("failed to find supported format!");
 }
 
-auto Device::logicalDevice() -> ::vk::Device&
-{
-    return device_;
-}
+auto Device::logicalDevice() -> ::vk::Device& { return device_; }
 
 auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) -> uint32_t {
-    ::vk::PhysicalDeviceMemoryProperties memProperties = phyDevice.getMemoryProperties();;
+    ::vk::PhysicalDeviceMemoryProperties memProperties = phyDevice.getMemoryProperties();
+    ;
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) &&
-            (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
     }
@@ -292,88 +255,93 @@ auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags propert
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-
-
-void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels ,::vk::Format format, ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling, 
-                        ::vk::ImageUsageFlags usage, ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory)
-{
+void Device::createImage(uint32_t width, uint32_t height, uint32_t mipLevels, ::vk::Format format,
+                         ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage,
+                         ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory) {
     ::vk::ImageCreateInfo imageInfo;
     imageInfo.setImageType(::vk::ImageType::e2D)
-            .setExtent(::vk::Extent3D{{width, height}, 1})
-            .setMipLevels(mipLevels)
-            .setArrayLayers(1)
-            .setTiling(tiling)
-            .setFormat(format)
-            .setInitialLayout(::vk::ImageLayout::eUndefined)
-            .setUsage(usage)
-            .setSharingMode(::vk::SharingMode::eExclusive)
-            .setSamples(numSamples);
-    
-   image = device_.createImage(imageInfo);
+        .setExtent(::vk::Extent3D{{width, height}, 1})
+        .setMipLevels(mipLevels)
+        .setArrayLayers(1)
+        .setTiling(tiling)
+        .setFormat(format)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setUsage(usage)
+        .setSharingMode(::vk::SharingMode::eExclusive)
+        .setSamples(numSamples);
+
+    image = device_.createImage(imageInfo);
     ::vk::MemoryRequirements memRequirements = device_.getImageMemoryRequirements(image);
     ::vk::MemoryAllocateInfo allocInfo;
     allocInfo.setAllocationSize(memRequirements.size)
-                .setMemoryTypeIndex(findMemoryType(memRequirements.memoryTypeBits, properties));
+        .setMemoryTypeIndex(findMemoryType(memRequirements.memoryTypeBits, properties));
     imageMemory = device_.allocateMemory(allocInfo);
     device_.bindImageMemory(image, imageMemory, 0);
 }
 
-auto Device::createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels) -> ::vk::ImageView
-{
+auto Device::createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags,
+                             uint32_t mipLevels) -> ::vk::ImageView {
     ::vk::ImageViewCreateInfo viewInfo{};
     ::vk::ImageSubresourceRange imageSubresource;
     imageSubresource.setAspectMask(aspectFlags)
-                    .setBaseMipLevel(0)
-                    .setLevelCount(mipLevels)
-                    .setLayerCount(1)
-                    .setBaseArrayLayer(0);
+        .setBaseMipLevel(0)
+        .setLevelCount(mipLevels)
+        .setLayerCount(1)
+        .setBaseArrayLayer(0);
     viewInfo.setImage(image)
-            .setViewType(::vk::ImageViewType::e2D)
-            .setFormat(format)
-            .setSubresourceRange(imageSubresource);
+        .setViewType(::vk::ImageViewType::e2D)
+        .setFormat(format)
+        .setSubresourceRange(imageSubresource);
 
     return device_.createImageView(viewInfo);
 }
 
-auto Device::getMaxAnisotropy() -> float
-{
+auto Device::getMaxAnisotropy() -> float {
     ::vk::PhysicalDeviceProperties properties = phyDevice.getProperties();
     return properties.limits.maxSamplerAnisotropy;
 }
 
-auto Device::getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits
-{
+auto Device::getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits {
     vk::PhysicalDeviceProperties physicalDevice = phyDevice.getProperties();
-    ::vk::SampleCountFlags counts = physicalDevice.limits.framebufferColorSampleCounts & physicalDevice.limits.framebufferDepthSampleCounts;
-    if(counts & ::vk::SampleCountFlagBits::e64){return ::vk::SampleCountFlagBits::e64;}
-    if(counts & ::vk::SampleCountFlagBits::e32){return ::vk::SampleCountFlagBits::e32;}
-    if(counts & ::vk::SampleCountFlagBits::e16){return ::vk::SampleCountFlagBits::e16;}
-    if(counts & ::vk::SampleCountFlagBits::e8){return ::vk::SampleCountFlagBits::e8;}
-    if(counts & ::vk::SampleCountFlagBits::e4){return ::vk::SampleCountFlagBits::e4;}
-    if(counts & ::vk::SampleCountFlagBits::e2){return ::vk::SampleCountFlagBits::e2;}
+    ::vk::SampleCountFlags counts =
+        physicalDevice.limits.framebufferColorSampleCounts & physicalDevice.limits.framebufferDepthSampleCounts;
+    if (counts & ::vk::SampleCountFlagBits::e64) {
+        return ::vk::SampleCountFlagBits::e64;
+    }
+    if (counts & ::vk::SampleCountFlagBits::e32) {
+        return ::vk::SampleCountFlagBits::e32;
+    }
+    if (counts & ::vk::SampleCountFlagBits::e16) {
+        return ::vk::SampleCountFlagBits::e16;
+    }
+    if (counts & ::vk::SampleCountFlagBits::e8) {
+        return ::vk::SampleCountFlagBits::e8;
+    }
+    if (counts & ::vk::SampleCountFlagBits::e4) {
+        return ::vk::SampleCountFlagBits::e4;
+    }
+    if (counts & ::vk::SampleCountFlagBits::e2) {
+        return ::vk::SampleCountFlagBits::e2;
+    }
 
     return ::vk::SampleCountFlagBits::e1;
 }
 
-auto Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice) -> bool
-{
+auto Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice) -> bool {
     std::vector<vk::ExtensionProperties> availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
     ::std::set<::std::string> requireExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-    for(const auto& extension : availableExtensions)
-    {
+    for (const auto& extension : availableExtensions) {
         requireExtensions.erase(extension.extensionName);
     }
 
     return requireExtensions.empty();
 }
 
-auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool
-{
+auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool {
     bool extensionsSupported = checkDeviceExtensionSupport(checkDevice);
     bool swapChainAdeqate = false;
-    if(extensionsSupported)
-    {
+    if (extensionsSupported) {
         SwapchainSupportDetails swapchainSupport = querySwapchainSupport(checkDevice);
         swapChainAdeqate = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
     }
@@ -382,8 +350,7 @@ auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool
     return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && indices.isComplete();
 }
 
-auto Device::querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails
-{
+auto Device::querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails {
     SwapchainSupportDetails details;
     details.capabilities = device.getSurfaceCapabilitiesKHR(vkSurfaceKHR);
     details.formats = device.getSurfaceFormatsKHR(vkSurfaceKHR);
@@ -412,4 +379,4 @@ auto checkValidationLayerSupport() -> bool {
     return true;
 }
 
-} // namespace core
+}  // namespace core

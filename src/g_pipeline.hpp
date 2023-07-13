@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <memory>
-namespace g
-{
+#include <vulkan/vulkan.hpp>
 
-    struct PipelineConfigInfo{
+namespace g {
+
+struct PipelineConfigInfo {
         ::vk::PipelineDepthStencilStateCreateInfo depthStencilStateInfo;
         ::vk::PipelineRasterizationStateCreateInfo rasterizationStateInfo;
         ::vk::PipelineColorBlendStateCreateInfo colorBlendInfo;
@@ -20,24 +20,26 @@ namespace g
         ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
         ::vk::RenderPass renderPass;
         ::vk::PipelineLayout layout;
-    };
-    class PipeLine
-    {
+};
+class PipeLine {
     private:
         ::vk::Pipeline pipeline;
+
     public:
-        PipeLine()=default;
+        PipeLine() = default;
         void initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo);
         PipeLine(const PipeLine&) = delete;
-        void bind(::vk::CommandBuffer& commandBuffer){commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics ,pipeline);};
+        void bind(::vk::CommandBuffer& commandBuffer) {
+            commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
+        };
         auto operator=(const PipeLine&) -> PipeLine = delete;
         auto operator=(PipeLine&&) -> PipeLine& = default;
-        auto operator()() -> ::vk::Pipeline&{return pipeline;}
+        auto operator()() -> ::vk::Pipeline& { return pipeline; }
         void destroy(::vk::Device& device);
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
         static auto getDefaultConfig() -> PipelineConfigInfo;
 
         ~PipeLine() = default;
-    };
+};
 
-}
+}  // namespace g

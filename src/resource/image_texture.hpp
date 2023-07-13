@@ -1,11 +1,13 @@
 #pragma once
-#include "image.hpp"
-#include "../core/device.hpp"
-#include <vulkan/vulkan.hpp>
 #include <functional>
+#include <vulkan/vulkan.hpp>
+
+#include "../core/device.hpp"
+#include "image.hpp"
+
 namespace resource::image {
 
-class ImageTexture{
+class ImageTexture {
     private:
         ::vk::Sampler sampler_;
         ::vk::Image image_;
@@ -15,14 +17,17 @@ class ImageTexture{
         ::vk::Format format_;
         ::std::reference_wrapper<::vk::Device> device_;
         void loadImage();
-        void transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout)const;
-        static void generateMipmaps(core::Device& device, ::vk::Image image, int texWidth, int texHeight, uint32_t mipLevels);
+        void transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::ImageLayout oldLayout,
+                                   ::vk::ImageLayout newLayout) const;
+        static void generateMipmaps(core::Device& device, ::vk::Image image, int texWidth, int texHeight,
+                                    uint32_t mipLevels);
         void createTextureSampler(core::Device& device);
         void createTextureImageView(core::Device& device);
+
     public:
-        auto sampler() -> ::vk::Sampler{return sampler_;}
-        auto imageView() -> ::vk::ImageView{return imageView_;}
-        [[nodiscard]] auto mipLevels() const -> uint32_t{return imageMipLevels_;}
+        auto sampler() -> ::vk::Sampler { return sampler_; }
+        auto imageView() -> ::vk::ImageView { return imageView_; }
+        [[nodiscard]] auto mipLevels() const -> uint32_t { return imageMipLevels_; }
         ImageTexture(core::Device& device, Image& image, ::vk::Format format);
         auto descriptorImageInfo() -> ::vk::DescriptorImageInfo;
 
@@ -33,4 +38,4 @@ class ImageTexture{
         ~ImageTexture();
 };
 
-}
+}  // namespace resource::image

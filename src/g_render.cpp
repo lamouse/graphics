@@ -1,10 +1,12 @@
 #include "g_render.hpp"
-#include "g_context.hpp"
+
 #include <cassert>
 #include <exception>
-namespace g{
-RenderProcesser::RenderProcesser(core::Device& device):device_(device)
-{
+
+#include "g_context.hpp"
+
+namespace g {
+RenderProcesser::RenderProcesser(core::Device& device) : device_(device) {
     sampleCount_ = Context::Instance().imageQualityConfig.msaaSamples;
     createSwapchain();
     createRenderPass();
@@ -12,45 +14,36 @@ RenderProcesser::RenderProcesser(core::Device& device):device_(device)
     allcoCmdBuffer();
 }
 
-RenderProcesser::~RenderProcesser()
-{
-    device_.logicalDevice().destroyRenderPass(renderPass_);
-}
+RenderProcesser::~RenderProcesser() { device_.logicalDevice().destroyRenderPass(renderPass_); }
 
-void RenderProcesser::createSwapchain()
-{
+void RenderProcesser::createSwapchain() {
     auto extent = Context::getExtent();
-    while (extent.width == 0 || extent.height == 0)
-    {
-        extent = Context::getExtent();  
+    while (extent.width == 0 || extent.height == 0) {
+        extent = Context::getExtent();
         Context::waitWindowEvents();
     }
     device_.logicalDevice().waitIdle();
     ::vk::SampleCountFlagBits sampleCount = Context::Instance().imageQualityConfig.msaaSamples;
-    if(swapchain == nullptr)
-    {
+    if (swapchain == nullptr) {
         swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount);
-    }else{
+    } else {
         ::std::shared_ptr<Swapchain> old = ::std::move(swapchain);
         swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount, old);
         swapchain->createFrameBuffers(renderPass_);
-        if(!old->compareFormats(*swapchain)){
+        if (!old->compareFormats(*swapchain)) {
             throw ::std::runtime_error("swapchain image(or depth) format has changed!");
         }
     }
 }
 
-auto RenderProcesser::beginFrame() -> bool
-{
-    auto result  = swapchain->acquireNextImage();
+auto RenderProcesser::beginFrame() -> bool {
+    auto result = swapchain->acquireNextImage();
 
-    if(result.result == ::vk::Result::eErrorOutOfDateKHR)
-    {
+    if (result.result == ::vk::Result::eErrorOutOfDateKHR) {
         createSwapchain();
         return isFrameStart;
     }
-    if(result.result != ::vk::Result::eSuccess && result.result != ::vk::Result::eSuboptimalKHR)
-    {
+    if (result.result != ::vk::Result::eSuccess && result.result != ::vk::Result::eSuboptimalKHR) {
         throw ::std::runtime_error("faile acquire swapchain image");
     }
 
@@ -65,24 +58,19 @@ auto RenderProcesser::beginFrame() -> bool
     return isFrameStart;
 }
 
-void RenderProcesser::endFrame()
-{
+void RenderProcesser::endFrame() {
     assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
-    try
-    {
+    try {
         auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
 
-        if(result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR || Context::isWindowResize())
-        {
+        if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR ||
+            Context::isWindowResize()) {
             createSwapchain();
             Context::resetWindowResize();
-        }else if (result != ::vk::Result::eSuccess)
-        {
+        } else if (result != ::vk::Result::eSuccess) {
             throw ::std::runtime_error("filed to present swap chain image");
         }
-    }
-    catch(const ::vk::OutOfDateKHRError& e)
-    {
+    } catch (const ::vk::OutOfDateKHRError& e) {
         createSwapchain();
         Context::resetWindowResize();
     }
@@ -91,30 +79,26 @@ void RenderProcesser::endFrame()
     currentFrameIndex = (currentFrameIndex + 1) % swapchain->MAX_FRAME_IN_FLIGHT;
 }
 
-void RenderProcesser::beginSwapchainRenderPass()
-{
+void RenderProcesser::beginSwapchainRenderPass() {
     assert(isFrameStart && "cat't call beginSwapchainRenderPass  is frame not in progress");
     swapchain->beginRenderPass(getCurrentCommadBuffer(), renderPass_, currentImageIndex);
 }
 
-void RenderProcesser::endSwapchainRenderPass()
-{
+void RenderProcesser::endSwapchainRenderPass() {
     getCurrentCommadBuffer().endRenderPass();
     getCurrentCommadBuffer().end();
 }
 
-void RenderProcesser::allcoCmdBuffer()
-{
+void RenderProcesser::allcoCmdBuffer() {
     ::vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.setCommandPool(device_.getCommandPool())
         .setCommandBufferCount(swapchain->MAX_FRAME_IN_FLIGHT)
         .setLevel(::vk::CommandBufferLevel::ePrimary);
-    
+
     commandBuffers_ = device_.logicalDevice().allocateCommandBuffers(allocInfo);
 }
 
-void RenderProcesser::createRenderPass()
-{
+void RenderProcesser::createRenderPass() {
     ::vk::AttachmentDescription colorAttachment;
     colorAttachment.setFormat(swapchain->getSwapchainColorFormat())
         .setSamples(sampleCount_)
@@ -144,7 +128,8 @@ void RenderProcesser::createRenderPass()
         .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(::vk::ImageLayout::eUndefined)
         .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR);
-    ::std::array<::vk::AttachmentDescription, 3> attachments = {colorAttachment, depthAttachment, colorAttachmentResolve};
+    ::std::array<::vk::AttachmentDescription, 3> attachments = {colorAttachment, depthAttachment,
+                                                                colorAttachmentResolve};
 
     ::vk::AttachmentReference colorAttachmentRef(0, ::vk::ImageLayout::eColorAttachmentOptimal);
     ::vk::AttachmentReference depthAttachmentRef(1, ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
@@ -168,10 +153,8 @@ void RenderProcesser::createRenderPass()
                          ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
 
     ::vk::RenderPassCreateInfo createInfo;
-    createInfo.setAttachments(attachments)
-        .setSubpasses(subpass)
-        .setDependencies(subepassDependency);
+    createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subepassDependency);
     renderPass_ = device_.logicalDevice().createRenderPass(createInfo);
 }
 
-}
+}  // namespace g

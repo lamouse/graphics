@@ -1,23 +1,24 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+
 #include "g_camera.hpp"
 #include "g_game_object.hpp"
 
-#include <vulkan/vulkan.hpp>
 namespace g {
 
-    struct UniformBufferObject {
+struct UniformBufferObject {
         glm::mat4 model;
         glm::mat4 view;
         glm::mat4 proj;
-    };
+};
 
-    struct FrameInfo{
+struct FrameInfo {
         uint32_t frameIndex;
         float frameTime;
         ::vk::CommandBuffer commandBuffer;
         Camera& camera;
         ::vk::DescriptorSet descriptorSet;
         GameObject::Map& gameObjects;
-    };
-}
+};
+}  // namespace g

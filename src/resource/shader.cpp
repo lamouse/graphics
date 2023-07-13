@@ -1,13 +1,14 @@
 #include "shader.hpp"
+
 #include <fstream>
-#include <stdexcept>
 #include <iostream>
-namespace resource::shader{
+#include <stdexcept>
 
+namespace resource::shader {
 
-auto readShaderFile(const std::string& filePath) -> ::std::vector<char>{
+auto readShaderFile(const std::string& filePath) -> ::std::vector<char> {
     ::std::ifstream file{filePath, ::std::ios::ate | ::std::ios::binary};
-    if(!file.is_open()){
+    if (!file.is_open()) {
         throw ::std::runtime_error("faild to open file: " + filePath);
     }
     auto fileSize = file.tellg();
@@ -17,21 +18,18 @@ auto readShaderFile(const std::string& filePath) -> ::std::vector<char>{
     return buffer;
 }
 
-
-GraphicsShader::GraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::Device& device):device_(device)
-{
+GraphicsShader::GraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath,
+                               ::vk::Device& device)
+    : device_(device) {
     createGraphicsShader(vertFilePath, fragFilePath);
 }
 
-GraphicsShader::~GraphicsShader()
-{
+GraphicsShader::~GraphicsShader() {
     device_.destroyShaderModule(vertexModule);
     device_.destroyShaderModule(fragmentModule);
 }
 
-
-
-void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath){
+void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath) {
     auto vertCode = readShaderFile(vertFilePath);
     auto fragCode = readShaderFile(fragFilePath);
     ::vk::ShaderModuleCreateInfo createInfo;
@@ -42,30 +40,22 @@ void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath, con
     createInfo.setCodeSize(fragCode.size());
     createInfo.setPCode((uint32_t*)fragCode.data());
     fragmentModule = device_.createShaderModule(createInfo);
-
 }
 
-auto GraphicsShader::getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo>
-{
+auto GraphicsShader::getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo> {
     ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
     shaderStages.resize(2);
-    shaderStages[0].setStage(::vk::ShaderStageFlagBits::eVertex)
-                .setModule(vertexModule)
-                .setPName("main");
+    shaderStages[0].setStage(::vk::ShaderStageFlagBits::eVertex).setModule(vertexModule).setPName("main");
 
-    shaderStages[1].setStage(::vk::ShaderStageFlagBits::eFragment)
-                .setModule(fragmentModule)
-                .setPName("main");
+    shaderStages[1].setStage(::vk::ShaderStageFlagBits::eFragment).setModule(fragmentModule).setPName("main");
     return shaderStages;
 }
 
-ComputeShader::ComputeShader(::vk::Device& device, const ::std::string& filePath):device_(device)
-{
+ComputeShader::ComputeShader(::vk::Device& device, const ::std::string& filePath) : device_(device) {
     createComputeShader(filePath);
 }
 
-void ComputeShader::createComputeShader(const ::std::string& filePath)
-{
+void ComputeShader::createComputeShader(const ::std::string& filePath) {
     auto computeCode = readShaderFile(filePath);
     ::vk::ShaderModuleCreateInfo createInfo;
     createInfo.setCodeSize(computeCode.size());
@@ -73,13 +63,14 @@ void ComputeShader::createComputeShader(const ::std::string& filePath)
     computeModule = device_.createShaderModule(createInfo);
 }
 
-ComputeShader::~ComputeShader()
-{
-    device_.destroyShaderModule(computeModule);
-}
-auto ComputeShader::getShaderStages() -> ::vk::PipelineShaderStageCreateInfo
-{
-    return {{}, ::vk::ShaderStageFlagBits::eCompute, computeModule, "main",};
+ComputeShader::~ComputeShader() { device_.destroyShaderModule(computeModule); }
+auto ComputeShader::getShaderStages() -> ::vk::PipelineShaderStageCreateInfo {
+    return {
+        {},
+        ::vk::ShaderStageFlagBits::eCompute,
+        computeModule,
+        "main",
+    };
 }
 
-}
+}  // namespace resource::shader

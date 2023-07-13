@@ -1,57 +1,53 @@
 #include "g_compute.hpp"
-#include "resource/shader.hpp"
+
 #include <limits>
+
+#include "resource/shader.hpp"
+
 namespace g {
 
-Compute::Compute(::core::Device& device, ::std::string& path, ::vk::DescriptorSetLayout descriptorSetLayout):device_(device)
-{
+Compute::Compute(::core::Device& device, ::std::string& path, ::vk::DescriptorSetLayout descriptorSetLayout)
+    : device_(device) {
     createComputePipelineLayout(descriptorSetLayout);
     createComputePipeline(path);
 }
 
-void Compute::createComputePipeline(::std::string& path)
-{
+void Compute::createComputePipeline(::std::string& path) {
     resource::shader::ComputeShader computeShader(device_.logicalDevice(), path);
     ::vk::ComputePipelineCreateInfo createInfo;
     createInfo.setStage(computeShader.getShaderStages());
     createInfo.setLayout(computePipelineLayout_);
-    auto result = device_.logicalDevice().createComputePipelines(nullptr ,createInfo);
-    if (result.result != ::vk::Result::eSuccess)
-    {
+    auto result = device_.logicalDevice().createComputePipelines(nullptr, createInfo);
+    if (result.result != ::vk::Result::eSuccess) {
         throw ::std::runtime_error("create compute pipeline failed");
     }
     computePipeline_ = result.value[0];
 }
 
-void Compute::createComputePipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout)
-{
+void Compute::createComputePipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout) {
     ::vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
     pipelineLayoutInfo.setSetLayouts(descriptorSetLayout);
     computePipelineLayout_ = device_.logicalDevice().createPipelineLayout(pipelineLayoutInfo, nullptr);
 }
 
-void Compute::init(uint32_t inFlightCount)
-{
+void Compute::init(uint32_t inFlightCount) {
     createCommandBuffers(inFlightCount);
     createSyncs(inFlightCount);
 }
 
-void Compute::createCommandBuffers(uint32_t inFlightCount)
-{
+void Compute::createCommandBuffers(uint32_t inFlightCount) {
     ::vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.setCommandPool(device_.getCommandPool())
         .setCommandBufferCount(inFlightCount)
         .setLevel(::vk::CommandBufferLevel::ePrimary);
-    
+
     commandBuffers_ = device_.logicalDevice().allocateCommandBuffers(allocInfo);
 }
 
-void Compute::createSyncs(uint32_t inFlightCount)
-{
+void Compute::createSyncs(uint32_t inFlightCount) {
     finishedSemaphores_.resize(inFlightCount);
     inFlightFences_.resize(inFlightCount);
-    for(uint32_t i = 0; i < inFlightCount; ++i)
-    {
+    for (uint32_t i = 0; i < inFlightCount; ++i) {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
         ::vk::FenceCreateInfo fenceCreateInfo(::vk::FenceCreateFlagBits::eSignaled);
         finishedSemaphores_[i] = device_.logicalDevice().createSemaphore(semaphoreCreateInfo);
@@ -59,10 +55,8 @@ void Compute::createSyncs(uint32_t inFlightCount)
     }
 }
 
-Compute::~Compute()
-{
-    for(::std::vector<::vk::Semaphore>::size_type i = 0; i < finishedSemaphores_.size(); ++i)
-    {
+Compute::~Compute() {
+    for (::std::vector<::vk::Semaphore>::size_type i = 0; i < finishedSemaphores_.size(); ++i) {
         device_.logicalDevice().destroyFence(inFlightFences_[i]);
         device_.logicalDevice().destroySemaphore(finishedSemaphores_[i]);
     }
@@ -70,34 +64,31 @@ Compute::~Compute()
     device_.logicalDevice().destroyPipelineLayout(computePipelineLayout_);
 }
 
-void Compute::beginCompute(uint32_t currentFrameIndex)
-{
-    auto waitResult = device_.logicalDevice().waitForFences(inFlightFences_[currentFrameIndex], true, ::std::numeric_limits<uint64_t>::max());
-    if(waitResult != ::vk::Result::eSuccess)
-    {
+void Compute::beginCompute(uint32_t currentFrameIndex) {
+    auto waitResult = device_.logicalDevice().waitForFences(inFlightFences_[currentFrameIndex], true,
+                                                            ::std::numeric_limits<uint64_t>::max());
+    if (waitResult != ::vk::Result::eSuccess) {
         throw ::std::runtime_error(" Swapchain::acquireNextImage wait fences");
     }
     device_.logicalDevice().resetFences(inFlightFences_[currentFrameIndex]);
     commandBuffers_[currentFrameIndex].reset();
 }
-auto Compute::compute(uint32_t currentFrameIndex, ::vk::DescriptorSet descriptorSet) -> ::vk::CommandBuffer&
-{
+auto Compute::compute(uint32_t currentFrameIndex, ::vk::DescriptorSet descriptorSet) -> ::vk::CommandBuffer& {
     ::vk::CommandBufferBeginInfo beginInfo{};
     commandBuffers_[currentFrameIndex].begin(beginInfo);
-    commandBuffers_[currentFrameIndex].bindPipeline(vk::PipelineBindPoint::eCompute,computePipeline_);
-    commandBuffers_[currentFrameIndex].bindDescriptorSets(vk::PipelineBindPoint::eCompute, computePipelineLayout_, 0, descriptorSet, nullptr);
+    commandBuffers_[currentFrameIndex].bindPipeline(vk::PipelineBindPoint::eCompute, computePipeline_);
+    commandBuffers_[currentFrameIndex].bindDescriptorSets(vk::PipelineBindPoint::eCompute, computePipelineLayout_, 0,
+                                                          descriptorSet, nullptr);
 
     return commandBuffers_[currentFrameIndex];
 }
 
-void Compute::endCompute(uint32_t currentFrameIndex)
-{
+void Compute::endCompute(uint32_t currentFrameIndex) {
     commandBuffers_[currentFrameIndex].end();
     ::vk::SubmitInfo submitInfo;
     submitInfo.setCommandBuffers(commandBuffers_[currentFrameIndex])
-                .setSignalSemaphores(finishedSemaphores_[currentFrameIndex]);
+        .setSignalSemaphores(finishedSemaphores_[currentFrameIndex]);
     device_.getComputeQueue().submit(submitInfo);
-
 }
 
-}
+}  // namespace g

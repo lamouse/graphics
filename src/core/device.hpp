@@ -1,53 +1,49 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include <cstdint>
-#include <optional>
 #include <functional>
 #include <memory>
+#include <optional>
+#include <vulkan/vulkan.hpp>
 
-namespace core{
-    /**
-     * @brief Validation layers
-     * 
-     */
-    const ::std::vector<const char*> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
 
-    /**
-     * @brief Device extensions
-     * 
-     */
-    const ::std::vector<const char*> deviceExtensions = {
-#if defined(VK_USE_PLATFORM_MACOS_MVK)      
-                "VK_KHR_portability_subset",    // "VK_KHR_portability_subset" macos     
-#endif 
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
+namespace core {
+/**
+ * @brief Validation layers
+ *
+ */
+const ::std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-    /**
-     * @brief Swapchain support
-     * 
-     */
-    struct SwapchainSupportDetails
-    {
+/**
+ * @brief Device extensions
+ *
+ */
+const ::std::vector<const char*> deviceExtensions = {
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    "VK_KHR_portability_subset",  // "VK_KHR_portability_subset" macos
+#endif
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+/**
+ * @brief Swapchain support
+ *
+ */
+struct SwapchainSupportDetails {
         ::vk::SurfaceCapabilitiesKHR capabilities;
         ::std::vector<::vk::SurfaceFormatKHR> formats;
         ::std::vector<::vk::PresentModeKHR> presentModes;
-    };
+};
 
-    /**
-     * @brief create device get surface
-     * 
-     */
-    using CreateSurfaceFunc = ::std::function<vk::SurfaceKHR(vk::Instance)>;
+/**
+ * @brief create device get surface
+ *
+ */
+using CreateSurfaceFunc = ::std::function<vk::SurfaceKHR(vk::Instance)>;
 
-    /**
-     * @brief vulkan device info add util
-     * 
-     */
-    class Device final
-    {
+/**
+ * @brief vulkan device info add util
+ *
+ */
+class Device final {
     private:
         ::vk::PhysicalDevice phyDevice;
         ::vk::Device device_;
@@ -71,41 +67,46 @@ namespace core{
         static ::std::unique_ptr<Device> instance;
 
     public:
-        struct QueueFamilyIndices final{
-            ::std::optional<uint32_t> graphicsQueue;
-            ::std::optional<uint32_t> computeQueue;
-            ::std::optional<uint32_t> presentQueue;
-            [[nodiscard]] auto isComplete() const -> bool{return graphicsQueue.has_value() && presentQueue.has_value();}
+        struct QueueFamilyIndices final {
+                ::std::optional<uint32_t> graphicsQueue;
+                ::std::optional<uint32_t> computeQueue;
+                ::std::optional<uint32_t> presentQueue;
+                [[nodiscard]] auto isComplete() const -> bool {
+                    return graphicsQueue.has_value() && presentQueue.has_value();
+                }
         };
-        Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc, bool enableValidationLayers = false);
+        Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
+               bool enableValidationLayers = false);
         auto queryQueueFamilyIndices(::vk::PhysicalDevice device) -> QueueFamilyIndices;
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;
-        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits{return maxMsaaSamples_;};
+        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return maxMsaaSamples_; };
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
-            ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
-        void createImage(uint32_t width, uint32_t height, uint32_t mipLevels,::vk::Format format, ::vk::SampleCountFlagBits numSamples ,::vk::ImageTiling tiling, 
-                    ::vk::ImageUsageFlags usage, ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
-        auto createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels) -> ::vk::ImageView;
+                          ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
+        void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, ::vk::Format format,
+                         ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage,
+                         ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
+        auto createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags,
+                             uint32_t mipLevels) -> ::vk::ImageView;
         auto getVKInstance() -> ::vk::Instance&;
         auto getSurface() -> ::vk::SurfaceKHR&;
         auto getPhysicalDevice() -> ::vk::PhysicalDevice&;
         auto getGraphicsQueue() -> ::vk::Queue&;
         auto getPresentQueue() -> ::vk::Queue&;
-        auto getComputeQueue() -> ::vk::Queue&{return computeQueue;};
+        auto getComputeQueue() -> ::vk::Queue& { return computeQueue; };
         /**
          * @brief vk logical device
-         * 
-         * @return ::vk::Device& 
+         *
+         * @return ::vk::Device&
          */
         auto logicalDevice() -> ::vk::Device&;
-        auto findSupportedFormat(const std::vector<::vk::Format> &candidates, ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features) -> ::vk::Format;
-        auto getCommandPool() -> ::vk::CommandPool{return cmdPool_;}
+        auto findSupportedFormat(const std::vector<::vk::Format>& candidates, ::vk::ImageTiling tiling,
+                                 ::vk::FormatFeatureFlags features) -> ::vk::Format;
+        auto getCommandPool() -> ::vk::CommandPool { return cmdPool_; }
         auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails;
         void executeCmd(const RecordCmdFunc& func);
         auto getMaxAnisotropy() -> float;
         ~Device();
-        
-    };
-}
+};
+}  // namespace core

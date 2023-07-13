@@ -4,25 +4,25 @@
 
 namespace resource::image {
 
-    struct ImageInfo{
+struct ImageInfo {
         int width;
         int height;
         int channels;
-    };
+};
 
-    class Image
-    {
+class Image {
     private:
         ImageInfo imageInfo;
         unsigned char* data;
+
     public:
         void readImage(::std::string& path);
         Image(::std::string& path);
         auto getData() -> unsigned char*;
         auto getImageInfo() -> ImageInfo;
-        [[nodiscard]] auto getMipLevels()const -> uint32_t;
-        [[nodiscard]] auto size()const -> unsigned long long;
+        [[nodiscard]] auto getMipLevels() const -> uint32_t;
+        [[nodiscard]] auto size() const -> unsigned long long;
         ~Image();
-    };
+};
 
-}
+}  // namespace resource::image

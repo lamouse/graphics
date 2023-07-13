@@ -3,10 +3,10 @@
 
 namespace resource::shader {
 
-template<typename T> class ShaderStage
-{
+template <typename T>
+class ShaderStage {
     public:
         virtual auto getShaderStages() -> T = 0;
 };
 
-}
+}  // namespace resource::shader
