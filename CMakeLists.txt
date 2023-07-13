@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
-
+message("Building with CMake version: ${CMAKE_VERSION}")
 set(EXECUTE_NAME graphics)
 set(CMAKE_CXX_STANDARD 23)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type")
