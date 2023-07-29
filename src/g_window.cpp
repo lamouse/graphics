@@ -65,6 +65,6 @@ Window::~Window() {
     glfwTerminate();
 }
 
-auto Window::shuldClose() -> bool { return glfwWindowShouldClose(window); }
+auto Window::shouldClose() -> bool { return glfwWindowShouldClose(window); }
 
 }  // namespace g

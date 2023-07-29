@@ -10,8 +10,6 @@ class RenderSystem {
         PipeLine pipeline;
         void createPipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout);
         void createPipeline(::vk::RenderPass renderPass);
-        void createDescriptorSets(uint32_t count);
-        void updateDescriptorSet(uint32_t currentImage, ::vk::ImageView imageView, ::vk::Sampler sampler);
 
     public:
         RenderSystem(const RenderSystem &) = delete;

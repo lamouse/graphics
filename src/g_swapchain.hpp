@@ -30,13 +30,13 @@ class Swapchain {
             return swapchainFrameBuffers[index];
         }
 
-        auto getImageCount() { return images.size(); }
+        auto getImageCount() const{ return images.size(); }
         auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
         auto submitCommand(::vk::CommandBuffer& commandBuffer,
                            uint32_t imageIndex) -> ::vk::Result;
         void createFrameBuffers(::vk::RenderPass& renderPass);
-        void beginRenderPass(::vk::CommandBuffer& commandBuffer,
-                             ::vk::RenderPass& renderPass, uint32_t imageIndex);
+        void beginRenderPass(const ::vk::CommandBuffer& commandBuffer,
+                             const ::vk::RenderPass& renderPass, const uint32_t imageIndex);
         [[nodiscard]] auto extentAspectRation() const -> float {
             return static_cast<float>(swapchainInfo.extent2D.width) /
                    static_cast<float>(swapchainInfo.extent2D.width);
@@ -62,7 +62,7 @@ class Swapchain {
         SwapchainInfo swapchainInfo;
         ::std::vector<::vk::Fence> inFlightFences;
         ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
-        ::std::vector<::vk::Semaphore> renderFinshSemaphores;
+        ::std::vector<::vk::Semaphore> renderFinishSemaphores;
         // swapchain image view
         ::std::vector<::vk::Image> images;
         ::std::vector<::vk::ImageView> imageViews;
@@ -75,7 +75,7 @@ class Swapchain {
         // color image view
         ::std::vector<::vk::Image> colorImages;
         ::std::vector<::vk::ImageView> colorImageViews;
-        ::std::vector<::vk::DeviceMemory> colorImageMemorys;
+        ::std::vector<::vk::DeviceMemory> colorImageMemories;
 
         ::vk::Format depthFormat;
         static auto chooseSwapPresentMode(

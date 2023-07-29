@@ -100,7 +100,7 @@ void App::run() {
     debugInfo.radians = 45.f;
     debugInfo.z_far = .1f;
     debugInfo.z_near = 10.f;
-    while (!window.shuldClose()) {
+    while (!window.shouldClose()) {
         draw_imgui(debugInfo);
 
         auto currentTime = ::std::chrono::high_resolution_clock::now();
@@ -323,7 +323,7 @@ void draw_imgui(ImguiDebugInfo& debugInfo) {
 }
 
 App::App() {
-    unsigned count = 1000;
+    constexpr  unsigned count = 1000;
     descriptorPool_ = DescriptorPool::Builder(Context::Instance().device())
                           .setMaxSets(count)
                           .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)

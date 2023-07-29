@@ -111,7 +111,7 @@ namespace g
         for (size_type i = 0; i < MAX_FRAME_IN_FLIGHT; i++) {
             device.destroyFence(inFlightFences[i]);
             device.destroySemaphore(imageAvailableSemaphores[i]);
-            device.destroySemaphore(renderFinshSemaphores[i]);
+            device.destroySemaphore(renderFinishSemaphores[i]);
         }
 
         for (auto& frameBuffer : swapchainFrameBuffers) {
@@ -128,7 +128,7 @@ namespace g
         for (size_type i = 0; i < colorImages.size(); i++)
         {
             device.destroyImageView(colorImageViews[i]);
-            device.freeMemory(colorImageMemorys[i]);
+            device.freeMemory(colorImageMemories[i]);
             device.destroyImage(colorImages[i]);
         }
 
@@ -176,14 +176,14 @@ namespace g
     void Swapchain::createColorResources()
     {
         colorImages.resize(images.size());
-        colorImageMemorys.resize(images.size());
+        colorImageMemories.resize(images.size());
         colorImageViews.resize(images.size());
         uint32_t mipLevels = 1;
         for (size_type i = 0; i < colorImages.size(); i++)
         {
             device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, getSwapchainColorFormat(),
                 sampleCount_, ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment,
-                ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemorys[i]);
+                ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemories[i]);
             colorImageViews[i] = device_.createImageView(colorImages[i], getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, mipLevels);
         }
     }
@@ -225,14 +225,14 @@ namespace g
     void Swapchain::createSemaphores()
     {
         imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
-        renderFinshSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+        renderFinishSemaphores.resize(MAX_FRAME_IN_FLIGHT);
         for (int i = 0; i < MAX_FRAME_IN_FLIGHT; i++)
         {
             ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
             imageAvailableSemaphores[i] = device_.logicalDevice().createSemaphore(semaphoreCreateInfo);
 
             ::vk::SemaphoreCreateInfo renderSemaphoreCreateInfo;
-            renderFinshSemaphores[i] = device_.logicalDevice().createSemaphore(renderSemaphoreCreateInfo);
+            renderFinishSemaphores[i] = device_.logicalDevice().createSemaphore(renderSemaphoreCreateInfo);
         }
     }
 
@@ -256,13 +256,13 @@ namespace g
         ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
         submitInfo.setCommandBuffers(commandBuffer)
             .setWaitSemaphores(imageAvailableSemaphores[currentFrame])
-            .setSignalSemaphores(renderFinshSemaphores[currentFrame])
+            .setSignalSemaphores(renderFinishSemaphores[currentFrame])
             .setWaitDstStageMask(stage);
         device_.getGraphicsQueue().submit(submitInfo, inFlightFences[currentFrame]);
         ::vk::PresentInfoKHR presentInfo;
         presentInfo.setImageIndices(imageIndex)
             .setSwapchains(swapchain)
-            .setWaitSemaphores(renderFinshSemaphores[currentFrame]);
+            .setWaitSemaphores(renderFinishSemaphores[currentFrame]);
 
         auto result = device_.getPresentQueue().presentKHR(presentInfo);
 
@@ -270,7 +270,7 @@ namespace g
         return result;
     }
 
-    void Swapchain::beginRenderPass(::vk::CommandBuffer& commandBuffer, ::vk::RenderPass& renderPass, uint32_t imageIndex)
+    void Swapchain::beginRenderPass(const ::vk::CommandBuffer& commandBuffer, const ::vk::RenderPass& renderPass, const uint32_t imageIndex)
     {
         auto extent = swapchainInfo.extent2D;
         ::vk::RenderPassBeginInfo renderPassBeginInfo;
@@ -278,7 +278,6 @@ namespace g
         area.setOffset({ 0, 0 })
             .setExtent(extent);
 
-        //�±�0 ��ɫ�������±�1��ȸ���
         ::std::array<::vk::ClearValue, 2> clearValues;
         clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({ 0.f, 0.f, 0.f, 1.0f })));
         clearValues[1].setDepthStencil({ 1.0f, 0 });

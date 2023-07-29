@@ -22,7 +22,7 @@ class Window {
         auto operator=(const Window &) -> Window & = delete;
         auto operator()() -> GLFWwindow * { return window; }
         ~Window();
-        auto shuldClose() -> bool;
+        auto shouldClose() -> bool;
         [[nodiscard]] auto getScale() const -> float { return scale; };
 };
 }  // namespace g
