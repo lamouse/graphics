@@ -4,11 +4,8 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
-#include "shader_stage.hpp"
-
-
 namespace resource::shader {
-class GraphicsShader : public ShaderStage<::std::vector<::vk::PipelineShaderStageCreateInfo>> {
+class GraphicsShader {
     private:
         void createGraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath);
         ::vk::ShaderModule vertexModule;
@@ -18,12 +15,12 @@ class GraphicsShader : public ShaderStage<::std::vector<::vk::PipelineShaderStag
     public:
         auto getVertex() -> ::vk::ShaderModule { return vertexModule; }
         auto getFragmentModule() -> ::vk::ShaderModule { return fragmentModule; }
-        auto getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo> override;
+        auto getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo>;
         ~GraphicsShader();
         GraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::Device& device);
 };
 
-class ComputeShader : public ShaderStage<::vk::PipelineShaderStageCreateInfo> {
+class ComputeShader {
     private:
         void createComputeShader(const ::std::string& filePath);
         ::vk::ShaderModule computeModule;
@@ -31,7 +28,7 @@ class ComputeShader : public ShaderStage<::vk::PipelineShaderStageCreateInfo> {
 
     public:
         auto getShaderModule() -> ::vk::ShaderModule { return computeModule; }
-        auto getShaderStages() -> ::vk::PipelineShaderStageCreateInfo override;
+        auto getShaderStages() -> ::vk::PipelineShaderStageCreateInfo;
         ~ComputeShader();
         ComputeShader(::vk::Device& device, const ::std::string& filePath);
 };

@@ -42,4 +42,18 @@ class PipeLine {
         ~PipeLine() = default;
 };
 
+class ComputePipeline {
+    private:
+        ::vk::Pipeline pipeline_;
+        ::vk::PipelineLayout pipelineLayout_;
+        void createPipelineLayout(const ::vk::Device& device, const ::vk::DescriptorSetLayout& descriptorSetLayout);
+        void createPipeline(const ::vk::Device& device,
+                            const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo);
+
+    public:
+        void init(const ::vk::Device& device, const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
+                  const ::vk::DescriptorSetLayout& descriptorSetLayout);
+        void destroy(const ::vk::Device& device) const;
+};
+
 }  // namespace g

@@ -26,7 +26,9 @@ class DescriptorSetLayout {
         ~DescriptorSetLayout();
         DescriptorSetLayout(const DescriptorSetLayout&) = delete;
         auto operator=(const DescriptorSetLayout&) -> DescriptorSetLayout& = delete;
-        auto getDescriptorSetLayout() -> ::vk::DescriptorSetLayout { return descriptorSetLayout_; }
+        auto getDescriptorSetLayout() -> ::vk::DescriptorSetLayout& {
+            return descriptorSetLayout_;
+        }
         friend class DescriptorWriter;
 
     private:
@@ -56,7 +58,7 @@ class DescriptorPool {
         ~DescriptorPool();
         DescriptorPool(const DescriptorPool&) = delete;
         auto operator=(const DescriptorPool&) -> DescriptorPool& = delete;
-        void allocateDescriptor(const ::vk::DescriptorSetLayout& descriptorSetlayout,
+        void allocateDescriptor(const ::vk::DescriptorSetLayout& descriptorSetLayout,
                                 ::vk::DescriptorSet& descriptorSet) const;
         void freeDescriptor(::std::vector<::vk::DescriptorSet>& descriptorSets) const;
         void resetPool();

@@ -89,4 +89,34 @@ auto PipeLine::getDefaultConfig() -> PipelineConfigInfo {
 
 void PipeLine::destroy(::vk::Device& device) { device.destroyPipeline(pipeline); }
 
+void ComputePipeline::init(const ::vk::Device& device, const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
+                           const ::vk::DescriptorSetLayout& descriptorSetLayout) {
+    createPipelineLayout(device, descriptorSetLayout);
+    createPipeline(device, shaderStageCreateInfo);
+}
+
+void ComputePipeline::createPipelineLayout(const ::vk::Device& device,
+                                           const ::vk::DescriptorSetLayout& descriptorSetLayout) {
+    ::vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
+    pipelineLayoutInfo.setSetLayouts(descriptorSetLayout);
+    pipelineLayout_ = device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+}
+
+void ComputePipeline::destroy(const vk::Device& device) const {
+    device.destroyPipeline(pipeline_);
+    device.destroyPipelineLayout(pipelineLayout_);
+}
+
+void ComputePipeline::createPipeline(const ::vk::Device& device,
+                                     const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo) {
+    ::vk::ComputePipelineCreateInfo createInfo;
+    createInfo.setStage(shaderStageCreateInfo);
+    createInfo.setLayout(pipelineLayout_);
+    const auto result = device.createComputePipelines(nullptr, createInfo);
+    if (result.result != ::vk::Result::eSuccess) {
+        throw ::std::runtime_error("create compute pipeline failed");
+    }
+    pipeline_ = result.value[0];
+}
+
 }  // namespace g

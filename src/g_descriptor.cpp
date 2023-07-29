@@ -70,10 +70,10 @@ DescriptorPool::DescriptorPool(::core::Device &device, uint32_t maxSets, ::vk::D
 
 DescriptorPool::~DescriptorPool() { device_.logicalDevice().destroyDescriptorPool(descriptorPool_); }
 
-void DescriptorPool::allocateDescriptor(const ::vk::DescriptorSetLayout &descriptorSetlayout,
+void DescriptorPool::allocateDescriptor(const ::vk::DescriptorSetLayout &descriptorSetLayout,
                                         ::vk::DescriptorSet &descriptorSet) const {
     ::vk::DescriptorSetAllocateInfo allocateInfo;
-    allocateInfo.setDescriptorPool(descriptorPool_).setSetLayouts(descriptorSetlayout);
+    allocateInfo.setDescriptorPool(descriptorPool_).setSetLayouts(descriptorSetLayout);
     descriptorSet = device_.logicalDevice().allocateDescriptorSets(allocateInfo)[0];
 }
 
