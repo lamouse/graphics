@@ -78,7 +78,7 @@ class Device final {
         auto queryQueueFamilyIndices(::vk::PhysicalDevice device) -> QueueFamilyIndices;
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;
-        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return maxMsaaSamples_; };
+        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return maxMsaaSamples_; }
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
                           ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
@@ -92,7 +92,7 @@ class Device final {
         auto getPhysicalDevice() -> ::vk::PhysicalDevice&;
         auto getGraphicsQueue() -> ::vk::Queue&;
         auto getPresentQueue() -> ::vk::Queue&;
-        auto getComputeQueue() -> ::vk::Queue& { return computeQueue; };
+        auto getComputeQueue() -> ::vk::Queue& { return computeQueue; }
         /**
          * @brief vk logical device
          *

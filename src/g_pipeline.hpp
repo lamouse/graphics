@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vulkan/vulkan.hpp>
 
 namespace g {
@@ -21,25 +20,25 @@ struct PipelineConfigInfo {
         ::vk::RenderPass renderPass;
         ::vk::PipelineLayout layout;
 };
-class PipeLine {
+class GraphicsPipeLine {
     private:
         ::vk::Pipeline pipeline;
 
     public:
-        PipeLine() = default;
+        GraphicsPipeLine() = default;
         void initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo);
-        PipeLine(const PipeLine&) = delete;
+        GraphicsPipeLine(const GraphicsPipeLine&) = delete;
         void bind(::vk::CommandBuffer& commandBuffer) {
             commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
         };
-        auto operator=(const PipeLine&) -> PipeLine = delete;
-        auto operator=(PipeLine&&) -> PipeLine& = default;
+        auto operator=(const GraphicsPipeLine&) -> GraphicsPipeLine = delete;
+        auto operator=(GraphicsPipeLine&&) -> GraphicsPipeLine& = default;
         auto operator()() -> ::vk::Pipeline& { return pipeline; }
         void destroy(::vk::Device& device);
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
         static auto getDefaultConfig() -> PipelineConfigInfo;
 
-        ~PipeLine() = default;
+        ~GraphicsPipeLine() = default;
 };
 
 class ComputePipeline {

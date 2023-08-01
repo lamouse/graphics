@@ -7,7 +7,7 @@ class RenderSystem {
     private:
         ::vk::PipelineLayout pipelineLayout;
 
-        PipeLine pipeline;
+        GraphicsPipeLine pipeline;
         void createPipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout);
         void createPipeline(::vk::RenderPass renderPass);
 

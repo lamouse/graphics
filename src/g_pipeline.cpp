@@ -2,7 +2,7 @@
 
 namespace g {
 
-void PipeLine::initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo) {
+void GraphicsPipeLine::initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo) {
     ::vk::GraphicsPipelineCreateInfo createInfo;
 
     ::vk::PipelineVertexInputStateCreateInfo inputState;
@@ -31,7 +31,7 @@ void PipeLine::initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo
     pipeline = result.value;
 }
 
-void PipeLine::enableAlphaBlending(PipelineConfigInfo& configInfo) {
+void GraphicsPipeLine::enableAlphaBlending(PipelineConfigInfo& configInfo) {
     configInfo.colorBlendAttachsInfo.setBlendEnable(VK_TRUE)
         .setColorWriteMask(::vk::ColorComponentFlagBits::eR | ::vk::ColorComponentFlagBits::eG |
                            ::vk::ColorComponentFlagBits::eB | ::vk::ColorComponentFlagBits::eA)
@@ -43,7 +43,7 @@ void PipeLine::enableAlphaBlending(PipelineConfigInfo& configInfo) {
         .setAlphaBlendOp(::vk::BlendOp::eAdd);
 }
 
-auto PipeLine::getDefaultConfig() -> PipelineConfigInfo {
+auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
     PipelineConfigInfo configInfo;
     // dynamicState
     configInfo.dynamicStateEnables = {::vk::DynamicState::eViewport, ::vk::DynamicState::eScissor};
@@ -87,7 +87,7 @@ auto PipeLine::getDefaultConfig() -> PipelineConfigInfo {
     return configInfo;
 }
 
-void PipeLine::destroy(::vk::Device& device) { device.destroyPipeline(pipeline); }
+void GraphicsPipeLine::destroy(::vk::Device& device) { device.destroyPipeline(pipeline); }
 
 void ComputePipeline::init(const ::vk::Device& device, const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
                            const ::vk::DescriptorSetLayout& descriptorSetLayout) {

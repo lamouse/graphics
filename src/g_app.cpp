@@ -147,8 +147,8 @@ void App::loadGameObjects() {
  * @brief 初始化主要是需要自己创建一个renderpass，传入一个descriptorPool
  *
  * @param window
- * @param format
  * @param descriptorPool
+ * @param scale
  */
 void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale) {
     VkAttachmentDescription colorAttachment{};
