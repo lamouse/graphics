@@ -13,7 +13,6 @@
 #include "resource/image_texture.hpp"
 // imgui end
 #include <chrono>
-#include <cmath>
 
 namespace g {
 

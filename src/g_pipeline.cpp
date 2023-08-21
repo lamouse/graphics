@@ -2,7 +2,7 @@
 
 namespace g {
 
-void GraphicsPipeLine::initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo) {
+void GraphicsPipeLine::initPipeline(const ::vk::Device& device, PipelineConfigInfo& configInfo) {
     ::vk::GraphicsPipelineCreateInfo createInfo;
 
     ::vk::PipelineVertexInputStateCreateInfo inputState;
@@ -87,7 +87,7 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
     return configInfo;
 }
 
-void GraphicsPipeLine::destroy(::vk::Device& device) { device.destroyPipeline(pipeline); }
+void GraphicsPipeLine::destroy(const ::vk::Device& device) const { device.destroyPipeline(pipeline); }
 
 void ComputePipeline::init(const ::vk::Device& device, const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
                            const ::vk::DescriptorSetLayout& descriptorSetLayout) {

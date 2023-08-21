@@ -1,7 +1,6 @@
 #include "g_descriptor.hpp"
 
 #include <cassert>
-#include <iostream>
 #include <utility>
 namespace g {
 
@@ -81,7 +80,7 @@ void DescriptorPool::freeDescriptor(::std::vector<::vk::DescriptorSet> &descript
     device_.logicalDevice().freeDescriptorSets(descriptorPool_, descriptorSets);
 }
 
-void DescriptorPool::resetPool() { device_.logicalDevice().resetDescriptorPool(descriptorPool_); }
+void DescriptorPool::resetPool() const { device_.logicalDevice().resetDescriptorPool(descriptorPool_); }
 
 DescriptorWriter::DescriptorWriter(DescriptorSetLayout &descriptorSetLayout, DescriptorPool &pool)
     : descriptorSetLayout_(descriptorSetLayout), pool_(pool) {}

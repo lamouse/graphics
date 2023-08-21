@@ -14,9 +14,8 @@ void RenderSystem::render(FrameInfo& frameInfo) {
     frameInfo.commandBuffer.bindDescriptorSets(::vk::PipelineBindPoint::eGraphics, pipelineLayout, 0,
                                                frameInfo.descriptorSet, nullptr);
     for (auto& [k, v] : frameInfo.gameObjects) {
-        auto& obj = v;
-        obj.model->bind(frameInfo.commandBuffer);
-        obj.model->draw(frameInfo.commandBuffer);
+        v.model->bind(frameInfo.commandBuffer);
+        v.model->draw(frameInfo.commandBuffer);
     }
 }
 

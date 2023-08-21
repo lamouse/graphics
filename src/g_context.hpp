@@ -2,7 +2,6 @@
 #define G_CONTEXT_HPP
 #include <GLFW/glfw3.h>
 
-#include <functional>
 #include <memory>
 
 #include "core/device.hpp"

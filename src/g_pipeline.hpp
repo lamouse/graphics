@@ -26,15 +26,15 @@ class GraphicsPipeLine {
 
     public:
         GraphicsPipeLine() = default;
-        void initPipeline(::vk::Device& device, PipelineConfigInfo& configInfo);
+        void initPipeline(const ::vk::Device& device, PipelineConfigInfo& configInfo);
         GraphicsPipeLine(const GraphicsPipeLine&) = delete;
-        void bind(::vk::CommandBuffer& commandBuffer) {
+        void bind(const ::vk::CommandBuffer& commandBuffer)const {
             commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
-        };
+        }
         auto operator=(const GraphicsPipeLine&) -> GraphicsPipeLine = delete;
         auto operator=(GraphicsPipeLine&&) -> GraphicsPipeLine& = default;
         auto operator()() -> ::vk::Pipeline& { return pipeline; }
-        void destroy(::vk::Device& device);
+        void destroy(const ::vk::Device& device)const;
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
         static auto getDefaultConfig() -> PipelineConfigInfo;
 

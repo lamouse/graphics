@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <unordered_map>
-#include <vulkan/vulkan.hpp>
 
 #include "core/device.hpp"
 
@@ -61,7 +60,7 @@ class DescriptorPool {
         void allocateDescriptor(const ::vk::DescriptorSetLayout& descriptorSetLayout,
                                 ::vk::DescriptorSet& descriptorSet) const;
         void freeDescriptor(::std::vector<::vk::DescriptorSet>& descriptorSets) const;
-        void resetPool();
+        void resetPool()const;
         auto getDescriptorPool() -> ::vk::DescriptorPool& { return descriptorPool_; }
         friend class DescriptorWriter;
 
