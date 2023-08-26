@@ -1,11 +1,8 @@
 #pragma once
-#include <string>
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <cstring>
+#include <string>
 #include <vector>
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
+
 
 #define __FILENAME__ (::std::strrchr(__FILE__, '/') ? ::std::strrchr(__FILE__, '/') + 1 : __FILE__)
 
@@ -21,18 +18,12 @@
 #define models_path \
     ::std::string { "./models/" }
 
-#define DETAIL_INFO(msg)                                                                         \
-    ::std::string("file: ") + __FILENAME__ + ::std::string("\n\tFunc: ") + __PRETTY_FUNCTION__ + \
-    ::std::string(" Line: ") + ::std::to_string(__LINE__) + ::std::string("\n\tMessage: ") + msg
+#define DETAIL_INFO(msg)                                                                                       \
+    ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \
+        __PRETTY_FUNCTION__ + ::std::string("): ") + msg
 
 namespace g {
-struct SimplePushConstantData {
-        ::glm::mat4 transform{1.F};
-        ::glm::vec3 color;
-};
-
 
 using size_type = ::std::vector<int>::size_type;
-
 
 }  // namespace g
