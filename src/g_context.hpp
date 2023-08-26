@@ -35,7 +35,7 @@ class Context final {
         static auto getExtent() -> ::vk::Extent2D {
             return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)};
         }
-        static void init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width,
+        static void initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width,
                          int height, bool enableValidationLayers);
         static void quit();
         static void waitWindowEvents() { glfwWaitEvents(); }

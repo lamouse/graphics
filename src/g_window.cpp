@@ -41,7 +41,7 @@ void Window::initWindow() {
     if (enableValidationLayers) {
         extends.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
-    Context::init(
+    Context::initDevice(
         extends,
         [&](vk::Instance instance) {
             VkSurfaceKHR surface;

@@ -21,7 +21,7 @@ Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSu
 
 Context::~Context() { device_->logicalDevice().waitIdle(); }
 
-void Context::init(std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height,
+void Context::initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height,
                    bool enableValidationLayers) {
     width_ = width;
     height_ = height;
