@@ -7,7 +7,6 @@
 #include "core/device.hpp"
 #include "system/system_config.hpp"
 
-
 namespace g {
 
 class Context final {
@@ -28,15 +27,15 @@ class Context final {
         static void setExtent(int w, int h) {
             width_ = w;
             height_ = h;
+            windowIsResize = true;
         }
-        static void setWindowResize() { windowIsResize = true; }
         static void resetWindowResize() { windowIsResize = false; }
         static auto isWindowResize() -> bool { return windowIsResize; }
         static auto getExtent() -> ::vk::Extent2D {
             return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)};
         }
-        static void initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width,
-                         int height, bool enableValidationLayers);
+        static void initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc,
+                               int width, int height, bool enableValidationLayers);
         static void quit();
         static void waitWindowEvents() { glfwWaitEvents(); }
         static auto Instance() -> Context&;

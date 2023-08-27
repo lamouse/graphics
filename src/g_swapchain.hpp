@@ -17,12 +17,9 @@ class Swapchain {
                 ::vk::PresentModeKHR presentMode;
         };
         [[nodiscard]] auto getSwapchain() const -> ::vk::SwapchainKHR { return swapchain; }
-        [[nodiscard]] auto getSwapchainInfo() const -> SwapchainInfo { return swapchainInfo; }
         [[nodiscard]] auto getSwapchainColorFormat() const -> ::vk::Format;
         [[nodiscard]] auto getSwapchainDepthFormat() const -> ::vk::Format { return depthFormat; }
-        auto getFrameBuffer(int index) -> ::vk::Framebuffer { return frameBuffers[index]; }
 
-        [[nodiscard]] auto getImageCount() const { return images.size(); }
         auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
         auto submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result;
         void createFrameBuffers(::vk::RenderPass& renderPass);
@@ -46,6 +43,7 @@ class Swapchain {
         ::vk::SwapchainKHR swapchain;
         uint32_t currentFrame = 0;
         ::vk::SampleCountFlagBits sampleCount_;
+        uint32_t mipLevels = 1;
         SwapchainInfo swapchainInfo;
         ::std::vector<::vk::Fence> inFlightFences;
         ::std::vector<::vk::Semaphore> imageAvailableSemaphores;

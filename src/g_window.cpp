@@ -55,7 +55,6 @@ void Window::initWindow() {
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* /*window*/, int w, int h) {
         Context::setExtent(w, h);
-        Context::setWindowResize();
     });
 }
 

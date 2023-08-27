@@ -158,7 +158,6 @@ void Swapchain::createColorResources() {
     colorImages.resize(images.size());
     colorImageMemories.resize(images.size());
     colorImageViews.resize(images.size());
-    uint32_t mipLevels = 1;
     for (size_type i = 0; i < colorImages.size(); i++) {
         device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels,
                             getSwapchainColorFormat(), sampleCount_, ::vk::ImageTiling::eOptimal,
@@ -175,7 +174,6 @@ void Swapchain::createDepthResources() {
     depthImages.resize(images.size());
     depthImageMemorys.resize(images.size());
     depthImageViews.resize(images.size());
-    uint32_t mipLevels = 1;
     for (size_type i = 0; i < depthImages.size(); i++) {
         device_.createImage(swapchainInfo.extent2D.width, swapchainInfo.extent2D.height, mipLevels, depthFormat,
                             sampleCount_, ::vk::ImageTiling::eOptimal,
