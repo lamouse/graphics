@@ -1,7 +1,6 @@
 #include "shader.hpp"
 
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 
 namespace resource::shader {

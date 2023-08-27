@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <iostream>
 #include <utility>
 
 #include "g_defines.hpp"

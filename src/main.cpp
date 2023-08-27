@@ -1,10 +1,9 @@
 
-#include "g_app.hpp"
 #include <spdlog/spdlog.h>
 
-#include <iostream>
 #include <stdexcept>
 
+#include "g_app.hpp"
 
 using namespace std;
 using namespace g;
@@ -15,7 +14,7 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
     try {
         app.run();
     } catch (const ::std::exception& e) {
-        ::std::cerr << e.what() << "\n";
+        ::spdlog::error(e.what());
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

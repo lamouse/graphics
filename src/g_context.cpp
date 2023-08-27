@@ -1,7 +1,6 @@
 #include "g_context.hpp"
 
 #include <cassert>
-#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -21,8 +20,8 @@ Context::Context(const std::vector<const char*>& instanceExtends, core::CreateSu
 
 Context::~Context() { device_->logicalDevice().waitIdle(); }
 
-void Context::initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width, int height,
-                   bool enableValidationLayers) {
+void Context::initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc, int width,
+                         int height, bool enableValidationLayers) {
     width_ = width;
     height_ = height;
     pInstance.reset(new Context(instanceExtends, std::move(createFunc), enableValidationLayers));

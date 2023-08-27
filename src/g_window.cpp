@@ -1,7 +1,6 @@
 
 #include "g_window.hpp"
 
-#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -53,9 +52,7 @@ void Window::initWindow() {
         },
         width, height, enableValidationLayers);
     glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* /*window*/, int w, int h) {
-        Context::setExtent(w, h);
-    });
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* /*window*/, int w, int h) { Context::setExtent(w, h); });
 }
 
 Window::~Window() {
