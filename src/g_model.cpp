@@ -10,20 +10,20 @@ namespace g {
 
 void Model::draw(const ::vk::CommandBuffer& commandBuffer) const { commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0); }
 void Model::bind(const ::vk::CommandBuffer& commandBuffer) {
-    ::std::array<::vk::Buffer, 1> buffers = {vertexBuffer_()};
-    ::std::array<::vk::DeviceSize, 1> offsets = {0};
+    const ::std::array<::vk::Buffer, 1> buffers = {vertexBuffer_()};
+    constexpr ::std::array<::vk::DeviceSize, 1> offsets = {0};
     commandBuffer.bindVertexBuffers(0, buffers.size(), buffers.data(), offsets.data());
     commandBuffer.bindIndexBuffer(indexBuffer_(), 0, ::vk::IndexType::eUint16);
 }
 
-Model::Model(const ::std::vector<Vertex>& vertices, ::std::vector<uint16_t> indices, core::Device& device)
+Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices, core::Device& device)
     : vertexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(),
                                                sizeof(vertices[0]) * vertices.size())),
       indexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eIndexBuffer, indices.data(),
                                               sizeof(indices[0]) * indices.size())) {
     vertexCount = static_cast<uint32_t>(vertices.size());
-    indicesSize = indices.size();
-    assert(vertexCount >= 3 && "Verex count must be at least 3");
+    indicesSize = static_cast<uint32_t>(indices.size());
+    assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
 auto Model::Vertex::getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription> {

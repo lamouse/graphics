@@ -17,7 +17,7 @@ class RenderSystem {
         auto operator=(const RenderSystem &) -> RenderSystem & = delete;
         auto operator=(RenderSystem &&) -> RenderSystem & = delete;
         RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayout descriptorSetLayout);
-        void render(FrameInfo &frameInfo);
+        void render(FrameInfo &frameInfo)const;
         ~RenderSystem();
 };
 

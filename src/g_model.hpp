@@ -1,10 +1,10 @@
 #pragma once
 
-
 #include "core/device.hpp"
 #include "core/device_buffer.hpp"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 #include <memory>
 #include <vector>
@@ -28,7 +28,7 @@ class Model {
         auto operator=(const Model&) -> Model& = delete;
         void bind(const ::vk::CommandBuffer& commandBuffer);
         void draw(const ::vk::CommandBuffer& commandBuffer) const;
-        Model(const ::std::vector<Vertex>& vertices, ::std::vector<uint16_t> indices, core::Device& device);
+        Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices, core::Device& device);
         ~Model() = default;
 
     private:

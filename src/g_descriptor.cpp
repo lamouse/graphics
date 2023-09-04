@@ -1,6 +1,7 @@
 #include "g_descriptor.hpp"
 
 #include <cassert>
+#include <ranges>
 #include <utility>
 namespace g {
 
@@ -27,8 +28,8 @@ DescriptorSetLayout::DescriptorSetLayout(::core::Device &device,
     : device_(device), descriptorSetLayoutBindings_(std::move(bindings)) {
     ::std::vector<::vk::DescriptorSetLayoutBinding> setLayoutBindings;
     setLayoutBindings.reserve(descriptorSetLayoutBindings_.size());
-    for (auto &binding : descriptorSetLayoutBindings_) {
-        setLayoutBindings.push_back(binding.second);
+    for (auto &v : descriptorSetLayoutBindings_ | std::views::values) {
+        setLayoutBindings.push_back(v);
     }
 
     ::vk::DescriptorSetLayoutCreateInfo setLayoutCreateInfo;

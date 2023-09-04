@@ -30,7 +30,7 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         .setPresentMode(swapchainInfo.presentMode)
         .setPreTransform(swapchainInfo.transForm)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
-    auto& queueIndices = device_.queueFamilyIndices;
+    const auto& queueIndices = device_.queueFamilyIndices;
     if (queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()) {
         createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     } else {
@@ -138,7 +138,7 @@ void Swapchain::createImageViews() {
     }
 }
 
-void Swapchain::createFrameBuffers(::vk::RenderPass& renderPass) {
+void Swapchain::createFrameBuffers(const ::vk::RenderPass& renderPass) {
     frameBuffers.resize(images.size());
 
     for (size_type i = 0; i < frameBuffers.size(); i++) {
@@ -183,7 +183,7 @@ void Swapchain::createDepthResources() {
     }
 }
 
-auto Swapchain::findDepthFormat() -> ::vk::Format {
+auto Swapchain::findDepthFormat() const -> ::vk::Format {
     return device_.findSupportedFormat(
         {::vk::Format::eD32Sfloat, ::vk::Format::eD32SfloatS8Uint, ::vk::Format::eD24UnormS8Uint},
         ::vk::ImageTiling::eOptimal, ::vk::FormatFeatureFlagBits::eDepthStencilAttachment);

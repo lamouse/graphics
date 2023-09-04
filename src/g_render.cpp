@@ -1,7 +1,6 @@
 #include "g_render.hpp"
 
 #include <cassert>
-#include <exception>
 
 #include "g_context.hpp"
 
@@ -61,7 +60,7 @@ auto RenderProcesser::beginFrame() -> bool {
 void RenderProcesser::endFrame() {
     assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
     try {
-        auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
+        const auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
 
         if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR ||
             Context::isWindowResize()) {
@@ -70,7 +69,7 @@ void RenderProcesser::endFrame() {
         } else if (result != ::vk::Result::eSuccess) {
             throw ::std::runtime_error("filed to present swap chain image");
         }
-    } catch (const ::vk::OutOfDateKHRError& e) {
+    } catch (const ::vk::OutOfDateKHRError&) {
         createSwapchain();
         Context::resetWindowResize();
     }

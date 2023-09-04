@@ -23,7 +23,7 @@ void GraphicsPipeLine::initPipeline(const ::vk::Device& device, PipelineConfigIn
         .setBasePipelineIndex(-1)
         .setRenderPass(configInfo.renderPass)
         .setSubpass(0);
-    auto result = device.createGraphicsPipeline(nullptr, createInfo);
+    const auto result = device.createGraphicsPipeline(nullptr, createInfo);
     if (result.result != vk::Result::eSuccess) {
         throw ::std::runtime_error("create graphics pipeline failed");
     }

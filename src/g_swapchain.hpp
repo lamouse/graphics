@@ -22,7 +22,7 @@ class Swapchain {
 
         auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
         auto submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result;
-        void createFrameBuffers(::vk::RenderPass& renderPass);
+        void createFrameBuffers(const ::vk::RenderPass& renderPass);
         void beginRenderPass(const ::vk::CommandBuffer& commandBuffer, const ::vk::RenderPass& renderPass,
                              uint32_t imageIndex);
         [[nodiscard]] auto extentAspectRation() const -> float {
@@ -68,7 +68,7 @@ class Swapchain {
         ::vk::Format depthFormat;
         static auto chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
             -> ::vk::PresentModeKHR;
-        auto findDepthFormat() -> ::vk::Format;
+        auto findDepthFormat() const -> ::vk::Format;
 
         core::Device& device_;
         void init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain);

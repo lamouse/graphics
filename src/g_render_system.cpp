@@ -1,6 +1,7 @@
 #include "g_render_system.hpp"
 
 #include <spdlog/spdlog.h>
+#include <ranges>
 
 #include "g_context.hpp"
 #include "g_defines.hpp"
@@ -9,11 +10,12 @@
 
 namespace g {
 
-void RenderSystem::render(FrameInfo& frameInfo) {
+void RenderSystem::render(FrameInfo& frameInfo) const {
     pipeline.bind(frameInfo.commandBuffer);
     frameInfo.commandBuffer.bindDescriptorSets(::vk::PipelineBindPoint::eGraphics, pipelineLayout, 0,
                                                frameInfo.descriptorSet, nullptr);
-    for (auto& [k, v] : frameInfo.gameObjects) {
+
+    for (const auto& v : frameInfo.gameObjects | std::views::values) {
         v.model->bind(frameInfo.commandBuffer);
         v.model->draw(frameInfo.commandBuffer);
     }
@@ -26,13 +28,13 @@ RenderSystem::RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayou
 
 RenderSystem::~RenderSystem() {
     spdlog::debug(DETAIL_INFO("RenderSystem"));
-    auto& device = Context::Instance().device().logicalDevice();
+    const auto& device = Context::Instance().device().logicalDevice();
     device.destroyPipeline(pipeline());
     device.destroyPipelineLayout(pipelineLayout);
 }
 
 void RenderSystem::createPipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout) {
-    auto& device = Context::Instance().device().logicalDevice();
+    const auto& device = Context::Instance().device().logicalDevice();
     ::vk::PipelineLayoutCreateInfo layoutCreateInfo;
 
     layoutCreateInfo.setSetLayouts(descriptorSetLayout);
@@ -48,9 +50,10 @@ void RenderSystem::createPipelineLayout(::vk::DescriptorSetLayout descriptorSetL
 }
 
 void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
-    ::std::string vertFilePath = shader_path + "vert.spv";
-    ::std::string fragFilePath = shader_path + "frag.spv";
-    ::resource::shader::GraphicsShader shader(vertFilePath, fragFilePath, Context::Instance().device().logicalDevice());
+    const ::std::string vertexFilePath = shader_path + "vert.spv";
+    const ::std::string fragFilePath = shader_path + "frag.spv";
+    ::resource::shader::GraphicsShader shader(vertexFilePath, fragFilePath,
+                                              Context::Instance().device().logicalDevice());
     auto defaultConfig = GraphicsPipeLine::getDefaultConfig();
     defaultConfig.renderPass = renderPass;
     defaultConfig.layout = pipelineLayout;
