@@ -57,16 +57,10 @@ auto checkValidationLayerSupport() -> bool {
     std::vector<::vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
     for (const char* layerName : validationLayers) {
-        bool layerFound = false;
-
-        for (const auto& layerProperties : availableLayers) {
-            if (strcmp(layerName, layerProperties.layerName) == 0) {
-                layerFound = true;
-                break;
-            }
-        }
-
-        if (!layerFound) {
+        auto layerProperty = ::std::find_if(
+            availableLayers.begin(), availableLayers.end(),
+            [&layerName](const auto& layerProperties) { return strcmp(layerName, layerProperties.layerName) == 0; });
+        if (layerProperty == availableLayers.end()) {
             return false;
         }
     }
