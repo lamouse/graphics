@@ -9,7 +9,7 @@ using namespace std;
 using namespace g;
 
 auto main(int /*argc*/, char** /*argv*/) -> int {
-    ::spdlog::set_level(::spdlog::level::debug);
+    ::spdlog::set_level(::spdlog::level::info);
     g::App app;
     try {
         app.run();

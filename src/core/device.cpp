@@ -7,18 +7,35 @@
 
 namespace core {
 namespace {
-VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
+VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                          VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* /*pUserData*/)
     -> VkBool32 {
-    spdlog::debug("validation layer: {}", pCallbackData->pMessage);
+    switch (messageSeverity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: {
+            spdlog::warn("validation layer: {}", pCallbackData->pMessage);
+            break;
+        }
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: {
+            spdlog::debug("validation layer: {}", pCallbackData->pMessage);
+            break;
+        }
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: {
+            spdlog::error("validation layer: {}", pCallbackData->pMessage);
+            break;
+        }
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+            break;
+    }
+
     return VK_FALSE;
 }
 
 void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
-    createInfo.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
+    createInfo.setMessageSeverity(
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
     createInfo.setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
                               vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
                               vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance);
@@ -100,7 +117,7 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     appInfo.setPApplicationName("graphics")
         .setPEngineName("engin")
         .setApiVersion(VK_API_VERSION_1_0)
-        .setEngineVersion(VK_MAKE_VERSION(1, 0, 0))
+        .setEngineVersion(VK_MAKE_VERSION(1, 3, 0))
         .setApplicationVersion(VK_MAKE_VERSION(1, 0, 0));
 
     ::vk::InstanceCreateInfo createInfo;
