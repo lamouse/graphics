@@ -9,28 +9,27 @@ namespace g {
 
 class Swapchain {
     public:
-        struct SwapchainInfo {
-                ::vk::Extent2D extent2D;
-                uint32_t imageCount;
-                ::vk::SurfaceFormatKHR formatKHR;
-                ::vk::SurfaceTransformFlagBitsKHR transForm;
-                ::vk::PresentModeKHR presentMode;
-        };
+        //     struct SwapchainInfo {
+        //             ::vk::Extent2D extent2D;
+        //             uint32_t imageCount;
+        //             ::vk::SurfaceFormatKHR formatKHR;
+        //             ::vk::SurfaceTransformFlagBitsKHR transForm;
+        //             ::vk::PresentModeKHR presentMode;
+        //     };
         [[nodiscard]] auto getSwapchain() const -> ::vk::SwapchainKHR { return swapchain; }
-        [[nodiscard]] auto getSwapchainColorFormat() const -> ::vk::Format;
-        [[nodiscard]] auto getSwapchainDepthFormat() const -> ::vk::Format { return depthFormat; }
+        [[nodiscard]] auto getSwapchainColorFormat() const { return imageFormat; };
+        [[nodiscard]] auto getSwapchainDepthFormat() const { return depthFormat; }
 
         auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
         auto submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result;
         void createFrameBuffers(const ::vk::RenderPass& renderPass);
         void beginRenderPass(const ::vk::CommandBuffer& commandBuffer, const ::vk::RenderPass& renderPass,
-                             uint32_t imageIndex);
+                             uint32_t imageIndex) const;
         [[nodiscard]] auto extentAspectRation() const -> float {
-            return static_cast<float>(swapchainInfo.extent2D.width) / static_cast<float>(swapchainInfo.extent2D.width);
+            return static_cast<float>(extent_.width) / static_cast<float>(extent_.width);
         }
         [[nodiscard]] auto compareFormats(const Swapchain& compareSwapchain) const -> bool {
-            return depthFormat == compareSwapchain.depthFormat &&
-                   swapchainInfo.formatKHR.format == compareSwapchain.swapchainInfo.formatKHR.format;
+            return depthFormat == compareSwapchain.depthFormat && imageFormat == compareSwapchain.imageFormat;
         }
         ~Swapchain();
         Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount,
@@ -38,13 +37,15 @@ class Swapchain {
         Swapchain(const Swapchain&) = delete;
         auto operator=(const Swapchain&) -> Swapchain& = delete;
         static constexpr int MAX_FRAME_IN_FLIGHT = 2;
+        static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eB8G8R8A8Srgb;
+        static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = ::vk::ColorSpaceKHR::eSrgbNonlinear;
 
     private:
         ::vk::SwapchainKHR swapchain;
         uint32_t currentFrame = 0;
         ::vk::SampleCountFlagBits sampleCount_;
         uint32_t mipLevels = 1;
-        SwapchainInfo swapchainInfo;
+        // SwapchainInfo swapchainInfo;
         ::std::vector<::vk::Fence> inFlightFences;
         ::std::vector<::vk::Semaphore> imageAvailableSemaphores;
         ::std::vector<::vk::Semaphore> renderFinishSemaphores;
@@ -57,7 +58,7 @@ class Swapchain {
         ::std::vector<::vk::ImageView> imageViews;
         // depth image view
         ::std::vector<::vk::Image> depthImages;
-        ::std::vector<::vk::DeviceMemory> depthImageMemorys;
+        ::std::vector<::vk::DeviceMemory> depthImageMemories_;
         ::std::vector<::vk::ImageView> depthImageViews;
 
         // color image view
@@ -65,10 +66,19 @@ class Swapchain {
         ::std::vector<::vk::ImageView> colorImageViews;
         ::std::vector<::vk::DeviceMemory> colorImageMemories;
 
+        // swapchain formats
         ::vk::Format depthFormat;
+        ::vk::Format imageFormat;
+
+        ::vk::Extent2D extent_;
+
         static auto chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
             -> ::vk::PresentModeKHR;
-        auto findDepthFormat() const -> ::vk::Format;
+        static auto chooseSwapSurfaceFormat(const ::std::vector<::vk::SurfaceFormatKHR>& availableFormats)
+            -> ::vk::SurfaceFormatKHR;
+        static auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width, int height)
+            -> ::vk::Extent2D;
+        [[nodiscard]] auto findDepthFormat() const -> ::vk::Format;
 
         core::Device& device_;
         void init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain);
@@ -79,7 +89,6 @@ class Swapchain {
         void createSemaphores();
         void createColorResources();
         void createDepthResources();
-        void querySwapchainInfo(int width, int height);
 };
 
 }  // namespace g
