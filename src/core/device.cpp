@@ -140,6 +140,9 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
 
 void Device::pickupPhysicalDevice() {
     auto phyDevices = vkInstance.enumeratePhysicalDevices();
+    if (phyDevices.empty()) {
+        throw ::std::runtime_error("failed to find GPUs with Vulkan support!");
+    }
     auto findPhyDevice =
         ::std::find_if(phyDevices.begin(), phyDevices.end(), [this](auto& device) { return isDeviceSuitable(device); });
 
