@@ -84,7 +84,7 @@ void App::run() {
     }
 
     RenderProcesser render(Context::Instance().device());
-    RenderSystem renderSystem(render.getRenderPass(), setLayout->getDescriptorSetLayout());
+    RenderSystem renderSystem(render, setLayout->getDescriptorSetLayout());
 
     init_imgui(window(), descriptorPool_->getDescriptorPool(), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
@@ -322,7 +322,7 @@ void draw_imgui(ImguiDebugInfo& debugInfo) {
 }
 
 App::App() {
-    constexpr  unsigned count = 1000;
+    constexpr unsigned count = 1000;
     descriptorPool_ = DescriptorPool::Builder(Context::Instance().device())
                           .setMaxSets(count)
                           .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)

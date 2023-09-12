@@ -25,12 +25,12 @@ class RenderProcesser {
         void beginSwapchainRenderPass();
         void endSwapchainRenderPass();
         void endFrame();
-        auto getRenderPass() { return renderPass_; }
+        operator auto() & { return renderPass_; }
         auto getCurrentCommadBuffer() -> ::vk::CommandBuffer& { return commandBuffers_[currentFrameIndex]; };
         [[nodiscard]] auto getCurrentFrameIndex() const -> uint32_t { return currentFrameIndex; }
         RenderProcesser(core::Device& device);
         ~RenderProcesser();
-        auto extentAspectRation() -> auto { return swapchain->extentAspectRation(); }
+        auto extentAspectRation() { return swapchain->extentAspectRation(); }
 };
 
 }  // namespace g

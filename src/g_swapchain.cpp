@@ -14,17 +14,14 @@ Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleC
 }
 
 void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain) {
-    auto& phyDevice = device_.getPhysicalDevice();
-    auto& surface = device_.getSurface();
-    auto availableFormats = phyDevice.getSurfaceFormatsKHR(surface);
-    auto format = chooseSwapSurfaceFormat(availableFormats);
+    auto swapchainSupports = device_.querySwapchainSupport(device_.getPhysicalDevice());
+    auto format = chooseSwapSurfaceFormat(swapchainSupports.formats);
     imageFormat = format.format;
-    const auto capabilities = phyDevice.getSurfaceCapabilitiesKHR(surface);
-    extent_ = chooseSwapExtent(capabilities, width, height);
-    const auto presents = phyDevice.getSurfacePresentModesKHR(surface);
-    auto presentMode = chooseSwapPresentMode(presents);
-    auto imageCount =
-        ::std::clamp<uint32_t>(capabilities.minImageCount, capabilities.minImageCount, capabilities.maxImageCount);
+    extent_ = chooseSwapExtent(swapchainSupports.capabilities, width, height);
+    auto presentMode = chooseSwapPresentMode(swapchainSupports.presentModes);
+    auto imageCount = ::std::clamp<uint32_t>(swapchainSupports.capabilities.minImageCount + 1,
+                                             swapchainSupports.capabilities.minImageCount,
+                                             swapchainSupports.capabilities.maxImageCount);
 
     vk::SwapchainCreateInfoKHR createInfo;
     createInfo.setClipped(true)
@@ -37,7 +34,7 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         .setImageExtent(extent_)
         .setMinImageCount(imageCount)
         .setPresentMode(presentMode)
-        .setPreTransform(capabilities.currentTransform)
+        .setPreTransform(swapchainSupports.capabilities.currentTransform)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
     const auto& queueIndices = device_.queueFamilyIndices;
     if (queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()) {
@@ -47,7 +44,7 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         createInfo.setQueueFamilyIndices(indices).setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
     if (oldSwapchain != nullptr) {
-        createInfo.setOldSwapchain(oldSwapchain->getSwapchain());
+        createInfo.setOldSwapchain(oldSwapchain->swapchain);
     }
     swapchain = device_.logicalDevice().createSwapchainKHR(createInfo);
 

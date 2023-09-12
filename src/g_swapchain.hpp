@@ -9,14 +9,6 @@ namespace g {
 
 class Swapchain {
     public:
-        //     struct SwapchainInfo {
-        //             ::vk::Extent2D extent2D;
-        //             uint32_t imageCount;
-        //             ::vk::SurfaceFormatKHR formatKHR;
-        //             ::vk::SurfaceTransformFlagBitsKHR transForm;
-        //             ::vk::PresentModeKHR presentMode;
-        //     };
-        [[nodiscard]] auto getSwapchain() const -> ::vk::SwapchainKHR { return swapchain; }
         [[nodiscard]] auto getSwapchainColorFormat() const { return imageFormat; };
         [[nodiscard]] auto getSwapchainDepthFormat() const { return depthFormat; }
 
