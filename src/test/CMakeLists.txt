@@ -6,7 +6,10 @@ if(WIN32)
   include(FetchContent)
   FetchContent_Declare(
     googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v1.14.0
+    SOURCE_DIR D:/libs/c++/gtest/1.14.0
+    FIND_PACKAGE_ARGS NAMES GTest
   )
 
   # # For Windows: Prevent overriding the parent project's compiler/linker settings
