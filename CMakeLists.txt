@@ -68,7 +68,7 @@ endforeach()
 
 message(STATUS "compile shader OK")
 
-# set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/build-tools")
 add_subdirectory(src/test)
