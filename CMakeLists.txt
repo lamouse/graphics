@@ -16,13 +16,6 @@ aux_source_directory(./src/imgui IMGUI)
 set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC} ${IMGUI})
 add_executable(${EXECUTE_NAME} ${SRC})
 
-find_program(GLSLC_PROGRAM glslc REQUIRED)
-message(STATUS "run glslc to compile shaders ...")
-execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/simple_shader.vert -o ${CMAKE_SOURCE_DIR}/shader/vert.spv)
-execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/simple_shader.frag -o ${CMAKE_SOURCE_DIR}/shader/frag.spv)
-execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/compute.comp -o ${CMAKE_SOURCE_DIR}/shader/compute.spv)
-message(STATUS "compile shader OK")
-
 # need vcpkg start
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
@@ -44,17 +37,37 @@ target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw fmt::fmt-heade
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
 set(CPACK_GENERATOR "ZIP;TGZ")
-file(GLOB SHADER_FILE
-        "shader/*.spv"
-)
-file(COPY ${SHADER_FILE} DESTINATION shader)
+#file(GLOB SHADER_FILE
+#        "shader/*.spv"
+#)
+
+# file(COPY ${SHADER_FILE} DESTINATION shader)
+# install(DIRECTORY "shader/"
+# DESTINATION "shader"
+# FILES_MATCHING PATTERN "*.spv")
+
 file(COPY images DESTINATION .)
 file(COPY models DESTINATION .)
-install(DIRECTORY "shader/"
-        DESTINATION "shader"
-        FILES_MATCHING PATTERN "*.spv")
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+find_program(GLSLC_PROGRAM glslc REQUIRED)
+message(STATUS "run glslc to compile shaders ...")
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/shader)
+file(GLOB_RECURSE SHADER_SRC_LIST ${CMAKE_SOURCE_DIR}/shader/*)
+foreach (shader_file ${SHADER_SRC_LIST})
+        # file relative path from src/
+        string(REGEX MATCH "shader/.*" relative_path ${shader_file})
+        # delete string "src/"
+        string(REGEX REPLACE "shader/" "" target_name ${relative_path})
+        # rename '/' and '.' to '_'
+        string(REGEX REPLACE "\\.[^\\.]*$" ".spv" target_name ${target_name})
+        execute_process(COMMAND ${GLSLC_PROGRAM} ${shader_file} -o ./shader/${target_name})
+
+endforeach ()
+#execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/simple_shader.frag -o ./shader/frag.spv)
+#execute_process(COMMAND ${GLSLC_PROGRAM} ${CMAKE_SOURCE_DIR}/shader/compute.comp -o ./shader/compute.spv)
+message(STATUS "compile shader OK")
+
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/build-tools")

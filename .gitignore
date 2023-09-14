@@ -10,8 +10,6 @@ cmake-build/
 .vs/
 .vscode
 out/
-*.spv
-shader/*.spv
 cmake*/
 *idea/
 CPTCMakeBuild/
