@@ -1,11 +1,26 @@
 cmake_minimum_required(VERSION 3.26)
+
+if(WIN32)
+        if(CMAKE_C_COMPILER MATCHES "gcc.exe" OR CMAKE_CXX_COMPILER MATCHES "g\\+\\+.exe")
+                message(STATUS "Building with mingw")
+                set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+        endif()
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
 message("Building with CMake version: ${CMAKE_VERSION}")
+
 set(EXECUTE_NAME graphics)
 set(CMAKE_CXX_STANDARD 23)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type
+if(WIN32)
+elseif(UNIX AND APPLE)
+        add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
+endif()
+
+# set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type
+
 # -fstack-check -fstack-clash-protection")
 set(BUILD_TESTING ON)
 aux_source_directory(./src MAIN_SRC)
@@ -27,13 +42,8 @@ find_package(GSL REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
-if(WIN32)
-elseif(UNIX AND APPLE)
-        add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
-endif()
-
 # fmt::fmt-header-only spdlog::spdlog_header_only使用mingw编译时需要修改为header-only
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw fmt::fmt-header-only spdlog::spdlog_header_only GSL::gsl GSL::gslcblas)
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw fmt::fmt spdlog::spdlog GSL::gsl GSL::gslcblas)
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
 set(CPACK_GENERATOR "ZIP;TGZ")
@@ -68,7 +78,6 @@ endforeach()
 
 message(STATUS "compile shader OK")
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/build-tools")
 add_subdirectory(src/test)
