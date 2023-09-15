@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.26)
 
 if(WIN32)
-        if(CMAKE_C_COMPILER MATCHES "gcc.exe" OR CMAKE_CXX_COMPILER MATCHES "g\\+\\+.exe")
-                message(STATUS "Building with mingw")
+        if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
+                message(STATUS "---Building with mingw---")
                 set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
         endif()
 endif()
