@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-
 #define __FILENAME__ (::std::strrchr(__FILE__, '/') ? ::std::strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #if !defined(__PRETTY_FUNCTION__) && !defined(__GNUC__)
@@ -21,9 +20,3 @@
 #define DETAIL_INFO(msg)                                                                                       \
     ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \
         __PRETTY_FUNCTION__ + ::std::string("): ") + msg
-
-namespace g {
-
-using size_type = ::std::vector<int>::size_type;
-
-}  // namespace g

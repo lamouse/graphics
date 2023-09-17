@@ -2,7 +2,10 @@
 
 #include <spdlog/spdlog.h>
 
+#include <gsl/gsl>
+
 #include "g_defines.hpp"
+
 
 namespace g {
 
@@ -98,7 +101,7 @@ auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilitie
 Swapchain::~Swapchain() {
     ::spdlog::debug(DETAIL_INFO("Swapchain"));
     const auto& device = device_.logicalDevice();
-    for (size_type i = 0; i < MAX_FRAME_IN_FLIGHT; i++) {
+    for (::gsl::index i = 0; i < MAX_FRAME_IN_FLIGHT; i++) {
         device.destroyFence(inFlightFences[i]);
         device.destroySemaphore(imageAvailableSemaphores[i]);
         device.destroySemaphore(renderFinishSemaphores[i]);
@@ -108,13 +111,13 @@ Swapchain::~Swapchain() {
         device.destroyFramebuffer(frameBuffer);
     }
 
-    for (size_type i = 0; i < depthImages.size(); i++) {
+    for (::gsl::index i = 0; i < depthImages.size(); i++) {
         device.destroyImageView(depthImageViews[i]);
         device.freeMemory(depthImageMemories_[i]);
         device.destroyImage(depthImages[i]);
     }
 
-    for (size_type i = 0; i < colorImages.size(); i++) {
+    for (::gsl::index i = 0; i < colorImages.size(); i++) {
         device.destroyImageView(colorImageViews[i]);
         device.freeMemory(colorImageMemories[i]);
         device.destroyImage(colorImages[i]);
@@ -132,7 +135,7 @@ void Swapchain::getImages() { images = device_.logicalDevice().getSwapchainImage
 void Swapchain::createImageViews() {
     getImages();
     imageViews.resize(images.size());
-    for (size_type i = 0; i < images.size(); i++) {
+    for (::gsl::index i = 0; i < images.size(); i++) {
         imageViews[i] =
             device_.createImageView(images[i], getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, 1);
     }
@@ -141,7 +144,7 @@ void Swapchain::createImageViews() {
 void Swapchain::createFrameBuffers(const ::vk::RenderPass& renderPass) {
     frameBuffers.resize(images.size());
 
-    for (size_type i = 0; i < frameBuffers.size(); i++) {
+    for (::gsl::index i = 0; i < frameBuffers.size(); i++) {
         ::vk::FramebufferCreateInfo createInfo;
         std::array<vk::ImageView, 3> attachments = {colorImageViews[i], depthImageViews[i], imageViews[i]};
         createInfo.setAttachments(attachments)
@@ -157,7 +160,7 @@ void Swapchain::createColorResources() {
     colorImages.resize(images.size());
     colorImageMemories.resize(images.size());
     colorImageViews.resize(images.size());
-    for (size_type i = 0; i < colorImages.size(); i++) {
+    for (::gsl::index i = 0; i < colorImages.size(); i++) {
         device_.createImage(extent_.width, extent_.height, mipLevels, getSwapchainColorFormat(), sampleCount_,
                             ::vk::ImageTiling::eOptimal,
                             ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment,
@@ -173,7 +176,7 @@ void Swapchain::createDepthResources() {
     depthImages.resize(images.size());
     depthImageMemories_.resize(images.size());
     depthImageViews.resize(images.size());
-    for (size_type i = 0; i < depthImages.size(); i++) {
+    for (::gsl::index i = 0; i < depthImages.size(); i++) {
         device_.createImage(extent_.width, extent_.height, mipLevels, depthFormat, sampleCount_,
                             ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
                             ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemories_[i]);
