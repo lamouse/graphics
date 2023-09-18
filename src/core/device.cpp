@@ -25,14 +25,14 @@ VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT 
             spdlog::error("validation layer: {}", pCallbackData->pMessage);
             break;
         }
-        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-            break;
+        default:
+            spdlog::error("validation layer unknow messageSeverity: {}", pCallbackData->pMessage);
     }
 
     return VK_FALSE;
 }
 
-void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
+inline void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo.setMessageSeverity(
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
@@ -42,32 +42,11 @@ void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& crea
     createInfo.pfnUserCallback = debugCallback;
 }
 
-auto CreateDebugUtilsMessengerEXT(::vk::Instance instance, const ::vk::DebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                  const ::vk::AllocationCallbacks* pAllocator,
-                                  ::vk::DebugUtilsMessengerEXT* pDebugMessenger) -> ::vk::Result {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)instance.getProcAddr("vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        return (::vk::Result)func(instance, (VkDebugUtilsMessengerCreateInfoEXT*)pCreateInfo,
-                                  (const VkAllocationCallbacks*)pAllocator, (VkDebugUtilsMessengerEXT*)pDebugMessenger);
-    }
-    return ::vk::Result::eErrorExtensionNotPresent;
-}
-
-void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                   const VkAllocationCallbacks* pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        func(instance, debugMessenger, pAllocator);
-    }
-}
-
-void setupDebugMessenger(::vk::Instance& instance, ::vk::DebugUtilsMessengerEXT& debugMessenger) {
+inline auto setupDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMessengerEXT {
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
-
-    if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != ::vk::Result::eSuccess) {
-        throw std::runtime_error("failed to set up debug messenger!");
-    }
+    return *instance.createDebugUtilsMessengerEXTUnique(createInfo, nullptr,
+                                                        vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr});
 }
 
 auto checkValidationLayerSupport() -> bool {
@@ -88,23 +67,21 @@ auto checkValidationLayerSupport() -> bool {
 }  // namespace
 
 Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
-               bool enableValidationLayers) {
-    enableValidationLayers_ = enableValidationLayers;
+               bool enableValidationLayers)
+    : enableValidationLayers_(enableValidationLayers) {
     createInstance(instanceExtends);
     vkSurfaceKHR = createFunc(vkInstance);
     pickupPhysicalDevice();
     createLogicalDevice();
     getQueues();
     initCmdPool();
+    maxMsaaSamples_ = getMaxUsableSampleCount();
 }
 
 Device::~Device() {
     device_.destroyCommandPool(cmdPool_);
     device_.destroy();
     vkInstance.destroySurfaceKHR(vkSurfaceKHR);
-    if (enableValidationLayers_) {
-        DestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger_, nullptr);
-    }
     vkInstance.destroy();
 }
 
@@ -126,7 +103,7 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
         createInfo.setPEnabledLayerNames(validationLayers);
         ::vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo;
         populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+        createInfo.pNext = &debugCreateInfo;
     }
 
     createInfo.setPApplicationInfo(&appInfo)
@@ -134,7 +111,7 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
         .setPEnabledExtensionNames(instanceExtends);
     vkInstance = ::vk::createInstance(createInfo);
     if (enableValidationLayers_) {
-        setupDebugMessenger(vkInstance, debugMessenger_);
+        debugMessenger_ = setupDebugMessenger(vkInstance);
     }
 }
 
@@ -148,7 +125,6 @@ void Device::pickupPhysicalDevice() {
 
     if (findPhyDevice != phyDevices.end()) {
         phyDevice = *findPhyDevice;
-        maxMsaaSamples_ = getMaxUsableSampleCount();
         queueFamilyIndices = queryQueueFamilyIndices(phyDevice);
     } else {
         throw ::std::runtime_error("failed to find a suitable GPU!");
@@ -159,7 +135,7 @@ void Device::createLogicalDevice() {
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
     ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue.value(),
                                                 queueFamilyIndices.presentQueue.value()};
-    float priorities = 1.f;
+    constexpr float priorities = 1.f;
 
     for (uint32_t queueFamily : uniqueQueueFamilies) {
         ::vk::DeviceQueueCreateInfo queueInfo({}, queueFamily, 1, &priorities);
@@ -279,7 +255,8 @@ auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags propert
     ;
 
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+        if ((typeFilter & ((uint32_t)1 << i)) &&
+            (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
     }
