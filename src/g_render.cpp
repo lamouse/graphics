@@ -5,8 +5,7 @@
 #include "g_context.hpp"
 
 namespace g {
-RenderProcesser::RenderProcesser(core::Device& device) : device_(device) {
-    sampleCount_ = Context::Instance().imageQualityConfig.msaaSamples;
+RenderProcesser::RenderProcesser(core::Device& device) : device_(device), sampleCount_(device_.getMaxMsaaSamples()) {
     createSwapchain();
     createRenderPass();
     swapchain->createFrameBuffers(renderPass_);
@@ -22,7 +21,7 @@ void RenderProcesser::createSwapchain() {
         Context::waitWindowEvents();
     }
     device_.logicalDevice().waitIdle();
-    ::vk::SampleCountFlagBits sampleCount = Context::Instance().imageQualityConfig.msaaSamples;
+    ::vk::SampleCountFlagBits sampleCount = device_.getMaxMsaaSamples();
     if (swapchain == nullptr) {
         swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount);
     } else {

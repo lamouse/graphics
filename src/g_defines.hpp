@@ -1,7 +1,6 @@
 #pragma once
 #include <cstring>
 #include <string>
-#include <vector>
 
 #define __FILENAME__ (::std::strrchr(__FILE__, '/') ? ::std::strrchr(__FILE__, '/') + 1 : __FILE__)
 
@@ -20,3 +19,10 @@
 #define DETAIL_INFO(msg)                                                                                       \
     ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \
         __PRETTY_FUNCTION__ + ::std::string("): ") + msg
+
+namespace g {
+struct ScreenExtent {
+        int width;
+        int height;
+};
+}  // namespace g

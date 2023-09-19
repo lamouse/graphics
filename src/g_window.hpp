@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "g_defines.hpp"
+
 namespace g {
 class Window {
     private:
@@ -13,15 +15,19 @@ class Window {
         int height;
         float scale;
         void initWindow();
-        ::std::string title;
+        ::std::string title_;
 
     public:
-        Window(int width, int height, ::std::string title);
+        Window(ScreenExtent extent, ::std::string title);
         Window(const Window &) = delete;
         auto operator=(const Window &) -> Window & = delete;
+        Window(Window &&) = default;
+        auto operator=(Window &&) -> Window & = default;
         auto operator()() -> GLFWwindow * { return window; }
         ~Window();
         auto shouldClose() -> bool;
         [[nodiscard]] auto getScale() const -> float { return scale; };
+        static auto getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char *>;
+        auto getSurface(VkInstance instance) -> VkSurfaceKHR;
 };
 }  // namespace g

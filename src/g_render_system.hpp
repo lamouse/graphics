@@ -6,7 +6,7 @@ namespace g {
 class RenderSystem {
     private:
         ::vk::PipelineLayout pipelineLayout;
-
+        ::core::Device &device_;
         GraphicsPipeLine pipeline;
         void createPipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout);
         void createPipeline(::vk::RenderPass renderPass);
@@ -16,8 +16,9 @@ class RenderSystem {
         RenderSystem(RenderSystem &&) = delete;
         auto operator=(const RenderSystem &) -> RenderSystem & = delete;
         auto operator=(RenderSystem &&) -> RenderSystem & = delete;
-        RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayout descriptorSetLayout);
-        void render(FrameInfo &frameInfo)const;
+        RenderSystem(::core::Device &device, ::vk::RenderPass renderPass,
+                     ::vk::DescriptorSetLayout descriptorSetLayout);
+        void render(FrameInfo &frameInfo) const;
         ~RenderSystem();
 };
 

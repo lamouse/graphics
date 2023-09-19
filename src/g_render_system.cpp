@@ -1,9 +1,9 @@
 #include "g_render_system.hpp"
 
 #include <spdlog/spdlog.h>
+
 #include <ranges>
 
-#include "g_context.hpp"
 #include "g_defines.hpp"
 #include "g_model.hpp"
 #include "resource/shader.hpp"
@@ -21,20 +21,22 @@ void RenderSystem::render(FrameInfo& frameInfo) const {
     }
 }
 
-RenderSystem::RenderSystem(::vk::RenderPass renderPass, ::vk::DescriptorSetLayout descriptorSetLayout) {
+RenderSystem::RenderSystem(::core::Device& device, ::vk::RenderPass renderPass,
+                           ::vk::DescriptorSetLayout descriptorSetLayout)
+    : device_(device) {
     createPipelineLayout(descriptorSetLayout);
     createPipeline(renderPass);
 }
 
 RenderSystem::~RenderSystem() {
     spdlog::debug(DETAIL_INFO("RenderSystem"));
-    const auto& device = Context::Instance().device().logicalDevice();
+    const auto& device = device_.logicalDevice();
     device.destroyPipeline(pipeline());
     device.destroyPipelineLayout(pipelineLayout);
 }
 
 void RenderSystem::createPipelineLayout(::vk::DescriptorSetLayout descriptorSetLayout) {
-    const auto& device = Context::Instance().device().logicalDevice();
+    const auto& device = device_.logicalDevice();
     ::vk::PipelineLayoutCreateInfo layoutCreateInfo;
 
     layoutCreateInfo.setSetLayouts(descriptorSetLayout);
@@ -52,16 +54,15 @@ void RenderSystem::createPipelineLayout(::vk::DescriptorSetLayout descriptorSetL
 void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
     const ::std::string vertexFilePath = shader_path + "vert.spv";
     const ::std::string fragFilePath = shader_path + "frag.spv";
-    ::resource::shader::GraphicsShader shader(vertexFilePath, fragFilePath,
-                                              Context::Instance().device().logicalDevice());
+    ::resource::shader::GraphicsShader shader(vertexFilePath, fragFilePath, device_.logicalDevice());
     auto defaultConfig = GraphicsPipeLine::getDefaultConfig();
     defaultConfig.renderPass = renderPass;
     defaultConfig.layout = pipelineLayout;
     defaultConfig.shaderStages = shader.getShaderStages();
     defaultConfig.attributeDescriptions = Model::Vertex::getAttributeDescription();
     defaultConfig.bindingDescriptions = Model::Vertex::getBindingDescription();
-    defaultConfig.multisampleInfo.setRasterizationSamples(Context::Instance().imageQualityConfig.msaaSamples);
-    pipeline.initPipeline(Context::Instance().device().logicalDevice(), defaultConfig);
+    defaultConfig.multisampleInfo.setRasterizationSamples(device_.getMaxMsaaSamples());
+    pipeline.initPipeline(device_.logicalDevice(), defaultConfig);
 }
 
 }  // namespace g

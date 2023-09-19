@@ -2,7 +2,7 @@
 #include "g_descriptor.hpp"
 #include "g_game_object.hpp"
 #include "g_window.hpp"
-
+#include "system/system_config.hpp"
 
 namespace g {
 class App {
@@ -11,10 +11,23 @@ class App {
         static constexpr int HEIGHT = 600;
         void run();
         App();
+        App(const App &) = delete;
+        App(App &&) = delete;
+        auto operator=(const App &) -> App & = delete;
+        auto operator=(App &&) -> App & = delete;
         ~App();
 
     private:
-        Window window{WIDTH, HEIGHT, "vulkan"};
+        Window window{{WIDTH, HEIGHT}, "vulkan"};
+#ifdef NO_DEBUG
+        static constexpr bool enableValidationLayers = false;
+#else
+        static constexpr bool enableValidationLayers = true;
+#endif
+        core::Device device_{Window::getRequiredInstanceExtends(enableValidationLayers),
+                             [=, this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
+                             enableValidationLayers};
+        config::ImageQuality imageQualityConfig;
         GameObject::Map gameObjects;
         void loadGameObjects();
         ::std::unique_ptr<DescriptorPool> descriptorPool_;

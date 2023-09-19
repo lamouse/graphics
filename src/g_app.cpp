@@ -12,6 +12,8 @@
 #include "imgui/imgui_impl_vulkan.h"
 #include "resource/image_texture.hpp"
 // imgui end
+#include <spdlog/spdlog.h>
+
 #include <chrono>
 
 namespace g {
@@ -39,7 +41,7 @@ struct ImguiDebugInfo {
         float z_near;
 };
 
-void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale = 1.0f);
+void init_imgui(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool& descriptorPool, float scale = 1.0f);
 void draw_imgui(ImguiDebugInfo& debugInfo);
 
 namespace {
@@ -49,7 +51,7 @@ void check_vk_result(VkResult err) {
     if (err == 0) {
         return;
     }
-    fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+    spdlog::error("[vulkan] Error: VkResult = {}", err);
     if (err < 0) {
         abort();
     }
@@ -58,21 +60,21 @@ void check_vk_result(VkResult err) {
 
 void App::run() {
     auto setLayout =
-        DescriptorSetLayout::Builder(Context::Instance().device())
+        DescriptorSetLayout::Builder(device_)
             .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
             .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler, ::vk::ShaderStageFlagBits::eAllGraphics)
             .build();
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
     for (auto& uboBuffer : uboBuffers) {
-        uboBuffer = ::std::make_unique<core::Buffer>(Context::Instance().device(), sizeof(UniformBufferObject), 1,
+        uboBuffer = ::std::make_unique<core::Buffer>(device_, sizeof(UniformBufferObject), 1,
                                                      ::vk::BufferUsageFlagBits::eUniformBuffer,
                                                      ::vk::MemoryPropertyFlagBits::eHostVisible);
         uboBuffer->map();
     }
     ::std::string s(image_path + "viking_room.png");
     resource::image::Image img(s);
-    resource::image::ImageTexture imageTexture{Context::Instance().device(), img, DEFAULT_FORMAT};
+    resource::image::ImageTexture imageTexture{device_, img, DEFAULT_FORMAT};
 
     ::std::vector<::vk::DescriptorSet> descriptorSets(2);
     for (::std::vector<::vk::DescriptorSet>::size_type i = 0; i < descriptorSets.size(); i++) {
@@ -83,10 +85,10 @@ void App::run() {
             .build(descriptorSets[i]);
     }
 
-    RenderProcesser render(Context::Instance().device());
-    RenderSystem renderSystem(render, setLayout->getDescriptorSetLayout());
+    RenderProcesser render(device_);
+    RenderSystem renderSystem(device_, render, setLayout->getDescriptorSetLayout());
 
-    init_imgui(window(), descriptorPool_->getDescriptorPool(), window.getScale());
+    init_imgui(window(), device_, descriptorPool_->getDescriptorPool(), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
     ImguiDebugInfo debugInfo{};
@@ -133,12 +135,12 @@ void App::run() {
         }
     }
 
-    Context::Instance().device().logicalDevice().waitIdle();
+    device_.logicalDevice().waitIdle();
 }
 
 void App::loadGameObjects() {
     auto cube = GameObject::createGameObject();
-    cube.model = Model::createFromFile("models/viking_room.obj", Context::Instance().device());
+    cube.model = Model::createFromFile("models/viking_room.obj", device_);
     gameObjects.emplace(cube.getId(), ::std::move(cube));
 }
 
@@ -149,7 +151,7 @@ void App::loadGameObjects() {
  * @param descriptorPool
  * @param scale
  */
-void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale) {
+void init_imgui(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool& descriptorPool, float scale) {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -186,7 +188,6 @@ void init_imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float 
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &supassDependency;
 
-    auto& device = Context::Instance().device();
     vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &imguiRenderPass);
 
     // 这里使用了imgui的一个分支docking
@@ -323,7 +324,7 @@ void draw_imgui(ImguiDebugInfo& debugInfo) {
 
 App::App() {
     constexpr unsigned count = 1000;
-    descriptorPool_ = DescriptorPool::Builder(Context::Instance().device())
+    descriptorPool_ = DescriptorPool::Builder(device_)
                           .setMaxSets(count)
                           .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
                           .addPoolSize(::vk::DescriptorType::eSampler, count)
@@ -344,6 +345,6 @@ App::~App() {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    Context::Instance().device().logicalDevice().destroyRenderPass(imguiRenderPass);
+    device_.logicalDevice().destroyRenderPass(imguiRenderPass);
 }
 }  // namespace g

@@ -10,30 +10,46 @@
 
 namespace g {
 
-Window::Window(int width, int height, ::std::string title) : width{width}, height{height}, title{std::move(title)} {
-    initWindow();
-}
-void Window::initWindow() {
+Window::Window(ScreenExtent extent, ::std::string title)
+    : width{extent.width}, height{extent.height}, title_{std::move(title)} {
+    Context::setExtent({width, height});
+    Context::resetWindowResize();
     ::glfwInit();
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     //::glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER,GLFW_TRUE);
     ::GLFWmonitor* monitor = ::glfwGetPrimaryMonitor();
-    float xscale, yscale;
+    float xscale{}, yscale{};
     ::glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-    int w = width * xscale;
-    int h = height * yscale;
+    int w = static_cast<int>((float)width * xscale);
+    int h = static_cast<int>((float)height * yscale);
     scale = xscale;
-    window = ::glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr);
+    window = ::glfwCreateWindow(w, h, title_.c_str(), nullptr, nullptr);
     if (!window) {
         ::glfwTerminate();
     }
-#ifdef NO_DEBUG
-    bool enableValidationLayers = false;
-#else
-    bool enableValidationLayers = true;
-#endif
-    uint32_t count;
+    initWindow();
+}
+void Window::initWindow() {
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int, int) {
+        int w{}, h{};
+        glfwGetFramebufferSize(window, &w, &h);
+        Context::setExtent({w, h});
+    });
+}
+
+auto Window::getSurface(VkInstance instance) -> VkSurfaceKHR {
+    VkSurfaceKHR surface{};
+    const auto result = ::glfwCreateWindowSurface(instance, window, nullptr, &surface);
+    if (result != VK_SUCCESS) {
+        throw ::std::runtime_error("createWindowSurface Fail ");
+    }
+    return surface;
+}
+
+auto Window::getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char*> {
+    uint32_t count{0};
     const char** glfwExtens = ::glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> extends(count);
     for (uint32_t i = 0; i < count; i++) {
@@ -46,23 +62,10 @@ void Window::initWindow() {
     if (enableValidationLayers) {
         extends.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
-    Context::initDevice(
-        extends,
-        [&](vk::Instance instance) {
-            VkSurfaceKHR surface;
-            auto result = ::glfwCreateWindowSurface(instance, window, nullptr, &surface);
-            if (result != VK_SUCCESS) {
-                throw ::std::runtime_error("createWindowSurface Fail ");
-            }
-            return surface;
-        },
-        width, height, enableValidationLayers);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* /*window*/, int w, int h) { Context::setExtent(w, h); });
+    return extends;
 }
 
 Window::~Window() {
-    Context::quit();
     glfwDestroyWindow(window);
     glfwTerminate();
 }

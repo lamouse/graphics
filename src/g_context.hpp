@@ -5,41 +5,25 @@
 #include <memory>
 
 #include "core/device.hpp"
+#include "g_defines.hpp"
 #include "system/system_config.hpp"
 
 namespace g {
 
 class Context final {
     private:
-        Context(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc,
-                bool enableValidationLayers);
-        static ::std::unique_ptr<Context> pInstance;
-        ::std::shared_ptr<core::Device> device_;
-
-        static int width_;
-        static int height_;
+        static ScreenExtent extent_;
         static bool windowIsResize;
 
     public:
-        config::ImageQuality imageQualityConfig;
-
-        auto device() -> core::Device& { return *device_; }
-        static void setExtent(int w, int h) {
-            width_ = w;
-            height_ = h;
+        static void setExtent(const ScreenExtent& extent) {
+            extent_ = extent;
             windowIsResize = true;
         }
         static void resetWindowResize() { windowIsResize = false; }
         static auto isWindowResize() -> bool { return windowIsResize; }
-        static auto getExtent() -> ::vk::Extent2D {
-            return {static_cast<uint32_t>(width_), static_cast<uint32_t>(height_)};
-        }
-        static void initDevice(const std::vector<const char*>& instanceExtends, core::CreateSurfaceFunc createFunc,
-                               int width, int height, bool enableValidationLayers);
-        static void quit();
+        static auto getExtent() -> ScreenExtent { return extent_; }
         static void waitWindowEvents() { glfwWaitEvents(); }
-        static auto Instance() -> Context&;
-        ~Context();
 };
 
 }  // namespace g

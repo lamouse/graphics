@@ -6,13 +6,11 @@
 
 #include "g_defines.hpp"
 
-
 namespace g {
 
 Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount,
                      ::std::shared_ptr<Swapchain> oldSwapchain)
-    : device_(device_) {
-    sampleCount_ = sampleCount;
+    : device_(device_), sampleCount_(sampleCount) {
     init(width, height, oldSwapchain);
 }
 
