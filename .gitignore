@@ -13,3 +13,4 @@ out/
 cmake*/
 *idea/
 CPTCMakeBuild/
+CMakeSettings.json

@@ -16,7 +16,7 @@ class DeviceBuffer {
     public:
         static auto create(Device& device, ::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size)
             -> DeviceBuffer;
-        auto operator()() -> ::vk::Buffer { return buffer_; }
+        auto operator()()const -> ::vk::Buffer { return buffer_; }
         ~DeviceBuffer();
 
         DeviceBuffer(const DeviceBuffer&) = delete;

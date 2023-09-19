@@ -1,6 +1,8 @@
 
 #include "g_window.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <utility>
 #include <vector>
 
@@ -26,7 +28,11 @@ void Window::initWindow() {
     if (!window) {
         ::glfwTerminate();
     }
+#ifdef NO_DEBUG
+    bool enableValidationLayers = false;
+#else
     bool enableValidationLayers = true;
+#endif
     uint32_t count;
     const char** glfwExtens = ::glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> extends(count);

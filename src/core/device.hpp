@@ -36,7 +36,7 @@ struct SwapchainSupportDetails {
  * @brief create device get surface
  *
  */
-using CreateSurfaceFunc = ::std::function<vk::SurfaceKHR(vk::Instance)>;
+using CreateSurfaceFunc = ::std::function<::vk::SurfaceKHR(::vk::Instance)>;
 
 /**
  * @brief vulkan device info add util
@@ -52,7 +52,6 @@ class Device final {
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
-        ::vk::SampleCountFlagBits maxMsaaSamples_;
         ::vk::DebugUtilsMessengerEXT debugMessenger_;
         bool enableValidationLayers_;
         void pickupPhysicalDevice();
@@ -73,12 +72,17 @@ class Device final {
                     return graphicsQueue.has_value() && presentQueue.has_value();
                 }
         };
+        Device(Device&) = delete;
+        auto operator=(const Device&) -> Device& = delete;
+        Device(Device&&) = delete;
+        auto operator=(Device&&) -> Device& = delete;
+
         Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
                bool enableValidationLayers = false);
         auto queryQueueFamilyIndices(::vk::PhysicalDevice device) -> QueueFamilyIndices;
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;
-        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return maxMsaaSamples_; }
+        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
                           ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);

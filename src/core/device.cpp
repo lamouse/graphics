@@ -75,7 +75,6 @@ Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurf
     createLogicalDevice();
     getQueues();
     initCmdPool();
-    maxMsaaSamples_ = getMaxUsableSampleCount();
 }
 
 Device::~Device() {
@@ -89,11 +88,10 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     if (enableValidationLayers_ && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
-
     ::vk::ApplicationInfo appInfo;
     appInfo.setPApplicationName("graphics")
         .setPEngineName("engin")
-        .setApiVersion(VK_API_VERSION_1_0)
+        .setApiVersion(VK_API_VERSION_1_3)
         .setEngineVersion(VK_MAKE_VERSION(1, 3, 0))
         .setApplicationVersion(VK_MAKE_VERSION(1, 0, 0));
 
@@ -120,8 +118,8 @@ void Device::pickupPhysicalDevice() {
     if (phyDevices.empty()) {
         throw ::std::runtime_error("failed to find GPUs with Vulkan support!");
     }
-    auto findPhyDevice =
-        ::std::find_if(phyDevices.begin(), phyDevices.end(), [this](auto& device) { return isDeviceSuitable(device); });
+    const auto findPhyDevice = ::std::ranges::find_if(phyDevices.begin(), phyDevices.end(),
+                                                      [this](auto& device) { return isDeviceSuitable(device); });
 
     if (findPhyDevice != phyDevices.end()) {
         phyDevice = *findPhyDevice;

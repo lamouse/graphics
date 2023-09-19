@@ -19,6 +19,10 @@ elseif(UNIX AND APPLE)
         add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
 endif()
 
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_definitions(-DNO_DEBUG)
+endif()
+
 # set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type
 
 # -fstack-check -fstack-clash-protection")

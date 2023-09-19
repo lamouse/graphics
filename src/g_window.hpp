@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 namespace g {
 class Window {
     private:
