@@ -49,7 +49,7 @@ inline auto setupDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMes
                                                         vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr});
 }
 
-auto checkValidationLayerSupport() -> bool {
+auto checkValidationLayerSupport(const ::std::vector<const char*>& validationLayers) -> bool {
     std::vector<::vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
     for (const char* layerName : validationLayers) {
@@ -64,15 +64,28 @@ auto checkValidationLayerSupport() -> bool {
     return true;
 }
 
+auto checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& extensions)
+    -> bool {
+    std::vector<vk::ExtensionProperties> availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
+    ::std::set<::std::string> requireExtensions(extensions.begin(), extensions.end());
+
+    for (const auto& extension : availableExtensions) {
+        requireExtensions.erase(extension.extensionName);
+    }
+
+    return requireExtensions.empty();
+}
+
 }  // namespace
 
-Device::Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
-               bool enableValidationLayers)
+Device::Device(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
+               const CreateSurfaceFunc& createFunc, bool enableValidationLayers)
     : enableValidationLayers_(enableValidationLayers) {
     createInstance(instanceExtends);
     vkSurfaceKHR = createFunc(vkInstance);
-    pickupPhysicalDevice();
-    createLogicalDevice();
+
+    pickupPhysicalDevice(deviceExtensions);
+    createLogicalDevice(deviceExtensions);
     getQueues();
     initCmdPool();
 }
@@ -85,7 +98,7 @@ Device::~Device() {
 }
 
 void Device::createInstance(const std::vector<const char*>& instanceExtends) {
-    if (enableValidationLayers_ && !checkValidationLayerSupport()) {
+    if (enableValidationLayers_ && !checkValidationLayerSupport(validationLayers)) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
     ::vk::ApplicationInfo appInfo;
@@ -113,26 +126,29 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     }
 }
 
-void Device::pickupPhysicalDevice() {
+void Device::pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     auto phyDevices = vkInstance.enumeratePhysicalDevices();
     if (phyDevices.empty()) {
         throw ::std::runtime_error("failed to find GPUs with Vulkan support!");
     }
-    const auto findPhyDevice = ::std::ranges::find_if(phyDevices.begin(), phyDevices.end(),
-                                                      [this](auto& device) { return isDeviceSuitable(device); });
+    const auto findPhyDevice = ::std::ranges::find_if(
+        phyDevices.begin(), phyDevices.end(), [&](auto& device) { return isDeviceSuitable(device, deviceExtensions); });
 
     if (findPhyDevice != phyDevices.end()) {
         phyDevice = *findPhyDevice;
-        queueFamilyIndices = queryQueueFamilyIndices(phyDevice);
+        auto indices = queryQueueFamilyIndices(phyDevice);
+        if (indices.has_value()) {
+            queueFamilyIndices = indices.value();
+        }
     } else {
         throw ::std::runtime_error("failed to find a suitable GPU!");
     }
 }
 
-void Device::createLogicalDevice() {
+void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
-    ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue.value(),
-                                                queueFamilyIndices.presentQueue.value()};
+    ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue, queueFamilyIndices.presentQueue,
+                                                queueFamilyIndices.computeQueue};
     constexpr float priorities = 1.f;
 
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -154,10 +170,10 @@ void Device::createLogicalDevice() {
     device_ = phyDevice.createDevice(createInfo);
 }
 
-auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::QueueFamilyIndices {
+auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> std::optional<Device::QueueFamilyIndices> {
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
-    auto pos = ::std::find_if(properties.begin(), properties.end(), [&](const auto& property) {
+    auto pos = ::std::ranges::find_if(properties.begin(), properties.end(), [&](const auto& property) {
         if ((property.queueFlags | ::vk::QueueFlagBits::eGraphics) &&
             (property.queueFlags | ::vk::QueueFlagBits::eCompute)) {
             if (device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
@@ -168,12 +184,13 @@ auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> Device::Que
         return false;
     });
 
-    QueueFamilyIndices indices;
-    if (pos != properties.end()) {
-        indices.graphicsQueue = static_cast<uint32_t>(pos - properties.begin());
-        indices.presentQueue = indices.graphicsQueue;
-        indices.computeQueue = indices.graphicsQueue;
+    if (pos == properties.end()) {
+        return std::nullopt;
     }
+    QueueFamilyIndices indices{};
+    indices.graphicsQueue = static_cast<uint32_t>(pos - properties.begin());
+    indices.presentQueue = indices.graphicsQueue;
+    indices.computeQueue = indices.graphicsQueue;
     return indices;
 }
 
@@ -182,7 +199,7 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, :
     ::vk::BufferCreateInfo bufferInfo;
     bufferInfo.setSize(size).setUsage(usage).setSharingMode(::vk::SharingMode::eExclusive);
     buffer = device_.createBuffer(bufferInfo);
-    ::vk::MemoryRequirements memoryRequirements = device_.getBufferMemoryRequirements(buffer);
+    const ::vk::MemoryRequirements memoryRequirements = device_.getBufferMemoryRequirements(buffer);
     ::vk::MemoryAllocateInfo allocateInfo;
     allocateInfo.setAllocationSize(memoryRequirements.size)
         .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
@@ -191,20 +208,20 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, :
 }
 
 void Device::getQueues() {
-    graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsQueue.value(), 0);
-    presentQueue = device_.getQueue(queueFamilyIndices.presentQueue.value(), 0);
-    computeQueue = device_.getQueue(queueFamilyIndices.computeQueue.value(), 0);
+    graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsQueue, 0);
+    presentQueue = device_.getQueue(queueFamilyIndices.presentQueue, 0);
+    computeQueue = device_.getQueue(queueFamilyIndices.computeQueue, 0);
 }
 
 void Device::initCmdPool() {
     ::vk::CommandPoolCreateInfo createInfo;
-    uint32_t queueFamilyIndex = queueFamilyIndices.graphicsQueue.value();
+    uint32_t queueFamilyIndex = queueFamilyIndices.graphicsQueue;
     createInfo.setQueueFamilyIndex(queueFamilyIndex)
         .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer | ::vk::CommandPoolCreateFlagBits::eTransient);
     cmdPool_ = device_.createCommandPool(createInfo);
 }
 
-void Device::executeCmd(const RecordCmdFunc& func) {
+void Device::executeCmd(const RecordCmdFunc& func) const {
     ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
     auto commandBuffer = device_.allocateCommandBuffers(allocInfo)[0];
     ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -334,19 +351,9 @@ auto Device::getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits {
     return ::vk::SampleCountFlagBits::e1;
 }
 
-auto Device::checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice) -> bool {
-    std::vector<vk::ExtensionProperties> availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
-    ::std::set<::std::string> requireExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
-    for (const auto& extension : availableExtensions) {
-        requireExtensions.erase(extension.extensionName);
-    }
-
-    return requireExtensions.empty();
-}
-
-auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool {
-    bool extensionsSupported = checkDeviceExtensionSupport(checkDevice);
+auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& deviceExtensions)
+    -> bool {
+    bool extensionsSupported = checkDeviceExtensionSupport(checkDevice, deviceExtensions);
     bool swapChainAdeqate = false;
     if (extensionsSupported) {
         SwapchainSupportDetails swapchainSupport = querySwapchainSupport(checkDevice);
@@ -354,7 +361,7 @@ auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool {
     }
     ::vk::PhysicalDeviceFeatures deviceFeatures = checkDevice.getFeatures();
     auto indices = queryQueueFamilyIndices(checkDevice);
-    return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && indices.isComplete();
+    return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && indices.has_value();
 }
 
 auto Device::querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails {

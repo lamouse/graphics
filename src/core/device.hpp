@@ -6,21 +6,6 @@
 #include <vulkan/vulkan.hpp>
 
 namespace core {
-/**
- * @brief Validation layers
- *
- */
-const ::std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-
-/**
- * @brief Device extensions
- *
- */
-const ::std::vector<const char*> deviceExtensions = {
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-    "VK_KHR_portability_subset",  // "VK_KHR_portability_subset" macos
-#endif
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 /**
  * @brief Swapchain support
@@ -54,32 +39,33 @@ class Device final {
         ::vk::CommandPool cmdPool_;
         ::vk::DebugUtilsMessengerEXT debugMessenger_;
         bool enableValidationLayers_;
-        void pickupPhysicalDevice();
-        void createLogicalDevice();
+        void pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtensions);
+        void createLogicalDevice(const ::std::vector<const char*>& deviceExtensions);
         void getQueues();
         void initCmdPool();
         void createInstance(const std::vector<const char*>& instanceExtends);
-        static auto checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice) -> bool;
-        auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice) -> bool;
+        auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& deviceExtensions) -> bool;
         auto getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits;
+        /**
+         * @brief Validation layers
+         *
+         */
+        ::std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
     public:
-        struct QueueFamilyIndices final {
-                ::std::optional<uint32_t> graphicsQueue;
-                ::std::optional<uint32_t> computeQueue;
-                ::std::optional<uint32_t> presentQueue;
-                [[nodiscard]] auto isComplete() const -> bool {
-                    return graphicsQueue.has_value() && presentQueue.has_value();
-                }
+        struct QueueFamilyIndices {
+                uint32_t graphicsQueue;
+                uint32_t computeQueue;
+                uint32_t presentQueue;
         };
         Device(Device&) = delete;
         auto operator=(const Device&) -> Device& = delete;
         Device(Device&&) = delete;
         auto operator=(Device&&) -> Device& = delete;
 
-        Device(const std::vector<const char*>& instanceExtends, const CreateSurfaceFunc& createFunc,
+        Device(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions, const CreateSurfaceFunc& createFunc,
                bool enableValidationLayers = false);
-        auto queryQueueFamilyIndices(::vk::PhysicalDevice device) -> QueueFamilyIndices;
+        auto queryQueueFamilyIndices(::vk::PhysicalDevice device) -> ::std::optional<QueueFamilyIndices>;
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;
         auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }
@@ -107,7 +93,7 @@ class Device final {
                                  ::vk::FormatFeatureFlags features) -> ::vk::Format;
         auto getCommandPool() -> ::vk::CommandPool { return cmdPool_; }
         auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails;
-        void executeCmd(const RecordCmdFunc& func);
+        void executeCmd(const RecordCmdFunc& func) const;
         auto getMaxAnisotropy() -> float;
         ~Device();
 };

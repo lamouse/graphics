@@ -38,10 +38,10 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         .setPreTransform(swapchainSupports.capabilities.currentTransform)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
     const auto& queueIndices = device_.queueFamilyIndices;
-    if (queueIndices.graphicsQueue.value() == queueIndices.presentQueue.value()) {
+    if (queueIndices.graphicsQueue == queueIndices.presentQueue) {
         createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     } else {
-        ::std::array indices = {queueIndices.graphicsQueue.value(), queueIndices.presentQueue.value()};
+        ::std::array indices = {queueIndices.graphicsQueue, queueIndices.presentQueue};
         createInfo.setQueueFamilyIndices(indices).setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
     if (oldSwapchain != nullptr) {
@@ -97,7 +97,7 @@ auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilitie
 }
 
 Swapchain::~Swapchain() {
-    ::spdlog::debug(DETAIL_INFO("Swapchain"));
+    ::spdlog::debug(DETAIL_INFO("destroy swapchain"));
     const auto& device = device_.logicalDevice();
     for (::gsl::index i = 0; i < MAX_FRAME_IN_FLIGHT; i++) {
         device.destroyFence(inFlightFences[i]);

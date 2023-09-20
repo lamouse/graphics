@@ -220,7 +220,7 @@ void init_imgui(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool& 
     init_info.Instance = device.getVKInstance();
     init_info.PhysicalDevice = device.getPhysicalDevice();
     init_info.Device = device.logicalDevice();
-    init_info.QueueFamily = device.queueFamilyIndices.graphicsQueue.value();
+    init_info.QueueFamily = device.queueFamilyIndices.graphicsQueue;
     init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = descriptorPool;
@@ -257,7 +257,6 @@ void draw_imgui(ImguiDebugInfo& debugInfo) {
         if (show_demo_window) {
             ImGui::ShowDemoWindow(&show_demo_window);
         }
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
         {
             static int counter = 0;
 
@@ -290,8 +289,6 @@ void draw_imgui(ImguiDebugInfo& debugInfo) {
 
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
-
-            ImGui::ColorEdit3("clear color", (float*)&clear_color);  // Edit 3 floats representing a color
 
             if (ImGui::Button(
                     "Button")) {  // Buttons return true when clicked (most widgets return true when edited/activated)
