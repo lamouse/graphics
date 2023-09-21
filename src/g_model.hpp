@@ -26,7 +26,7 @@ class Model {
         static auto createFromFile(const ::std::string& path, core::Device& device) -> ::std::unique_ptr<Model>;
         Model(const Model&) = delete;
         auto operator=(const Model&) -> Model& = delete;
-        void bind(const ::vk::CommandBuffer& commandBuffer);
+        void bind(const ::vk::CommandBuffer& commandBuffer)const;
         void draw(const ::vk::CommandBuffer& commandBuffer) const;
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices, core::Device& device);
         ~Model() = default;

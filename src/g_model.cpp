@@ -9,7 +9,7 @@
 namespace g {
 
 void Model::draw(const ::vk::CommandBuffer& commandBuffer) const { commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0); }
-void Model::bind(const ::vk::CommandBuffer& commandBuffer) {
+void Model::bind(const ::vk::CommandBuffer& commandBuffer)const {
     const ::std::array<::vk::Buffer, 1> buffers = {vertexBuffer_()};
     constexpr ::std::array<::vk::DeviceSize, 1> offsets = {0};
     commandBuffer.bindVertexBuffers(0, buffers.size(), buffers.data(), offsets.data());
