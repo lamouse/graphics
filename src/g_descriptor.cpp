@@ -19,8 +19,8 @@ auto DescriptorSetLayout::Builder::addBinding(uint32_t binding, ::vk::Descriptor
     return *this;
 }
 
-auto DescriptorSetLayout::Builder::build() -> ::std::unique_ptr<DescriptorSetLayout> {
-    return ::std::make_unique<DescriptorSetLayout>(device_, descriptorSetLayoutBindings_);
+auto DescriptorSetLayout::Builder::build(core::Device& device) -> ::std::unique_ptr<DescriptorSetLayout> {
+    return ::std::make_unique<DescriptorSetLayout>(device, descriptorSetLayoutBindings_);
 }
 
 DescriptorSetLayout::DescriptorSetLayout(::core::Device &device,
@@ -56,8 +56,8 @@ auto DescriptorPool::Builder::setMaxSets(uint32_t maxSets) -> DescriptorPool::Bu
     return *this;
 }
 
-auto DescriptorPool::Builder::build() -> ::std::unique_ptr<DescriptorPool> {
-    return ::std::make_unique<DescriptorPool>(device_, maxSets_, flags_, poolSizes_);
+auto DescriptorPool::Builder::build(core::Device& device) -> ::std::unique_ptr<DescriptorPool> {
+    return ::std::make_unique<DescriptorPool>(device, maxSets_, flags_, poolSizes_);
 }
 
 DescriptorPool::DescriptorPool(::core::Device &device, uint32_t maxSets, ::vk::DescriptorPoolCreateFlags flags,

@@ -1,7 +1,6 @@
 #include "g_app.hpp"
 
 #include "core/buffer.hpp"
-#include "g_context.hpp"
 #include "g_defines.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
@@ -60,10 +59,10 @@ void check_vk_result(VkResult err) {
 
 void App::run() {
     auto setLayout =
-        DescriptorSetLayout::Builder(device_)
+        DescriptorSetLayout::Builder()
             .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
             .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler, ::vk::ShaderStageFlagBits::eAllGraphics)
-            .build();
+            .build(device_);
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
     for (auto& uboBuffer : uboBuffers) {
@@ -321,7 +320,7 @@ void draw_imgui(ImguiDebugInfo& debugInfo) {
 
 App::App() {
     constexpr unsigned count = 1000;
-    descriptorPool_ = DescriptorPool::Builder(device_)
+    descriptorPool_ = DescriptorPool::Builder()
                           .setMaxSets(count)
                           .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
                           .addPoolSize(::vk::DescriptorType::eSampler, count)
@@ -334,7 +333,7 @@ App::App() {
                           .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
                           .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
                           .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
-                          .build();
+                          .build(device_);
     loadGameObjects();
 }
 
