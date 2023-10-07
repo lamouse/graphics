@@ -5,10 +5,9 @@
 namespace resource::image {
 
 ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format format)
-    : format_(format), device_(device.logicalDevice()) {
-    imageMipLevels_ = image.getMipLevels();
+    : imageMipLevels_(image.getMipLevels()), format_(format), device_(device.logicalDevice()) {
+
     ImageInfo imgInfo = image.getImageInfo();
-    imageMipLevels_ = image.getMipLevels();
 
     core::StagingBuffer stagingBuffer(device, image.size(), image.getData());
 
@@ -98,7 +97,7 @@ void ImageTexture::createTextureSampler(core::Device& device) {
         .setMipmapMode(::vk::SamplerMipmapMode::eLinear)
         .setMipLodBias(0.0f)
         .setMinLod(0.0f)
-        .setMaxLod(imageMipLevels_);
+        .setMaxLod(static_cast<float>(imageMipLevels_));
     sampler_ = device.logicalDevice().createSampler(samplerInfo);
 }
 
