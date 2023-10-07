@@ -4,9 +4,7 @@
 
 #include <memory>
 
-#include "core/device.hpp"
 #include "g_defines.hpp"
-#include "system/system_config.hpp"
 
 namespace g {
 
