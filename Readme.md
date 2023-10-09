@@ -19,3 +19,7 @@
 ## format
 
     clang-format version 16.0.5
+
+## 依赖
+
+    本项目优先使用vcpkg的包
