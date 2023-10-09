@@ -4,6 +4,7 @@ if(WIN32)
         if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
                 message(STATUS "---Building with mingw---")
                 set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+#                set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type -fstack-check -fstack-clash-protection")
         endif()
 endif()
 
@@ -23,9 +24,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_definitions(-DNO_DEBUG)
 endif()
 
-# set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type
 
-# -fstack-check -fstack-clash-protection")
 set(BUILD_TESTING ON)
 aux_source_directory(./src MAIN_SRC)
 aux_source_directory(./src/resource RESOURCE_SRC)
@@ -46,7 +45,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw fmt::fmt spdlog::spdlog Microsoft.GSL::GSL)
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL)
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
 set(CPACK_GENERATOR "ZIP;TGZ")

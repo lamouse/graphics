@@ -50,7 +50,7 @@ void check_vk_result(VkResult err) {
     if (err == 0) {
         return;
     }
-    spdlog::error("[vulkan] Error: VkResult = {}", err);
+    spdlog::error("[vulkan] Error: VkResult = {}", static_cast<long>(err));
     if (err < 0) {
         abort();
     }
