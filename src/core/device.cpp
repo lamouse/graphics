@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <algorithm>
+#include <ranges>
 #include <set>
 
 namespace core {
@@ -53,9 +53,9 @@ auto checkValidationLayerSupport(const ::std::vector<const char*>& validationLay
     std::vector<::vk::LayerProperties> availableLayers = vk::enumerateInstanceLayerProperties();
 
     for (const char* layerName : validationLayers) {
-        auto layerProperty = ::std::find_if(
-            availableLayers.begin(), availableLayers.end(),
-            [&layerName](const auto& layerProperties) { return strcmp(layerName, layerProperties.layerName) == 0; });
+        auto layerProperty = ::std::ranges::find_if(availableLayers, [&layerName](const auto& layerProperties) {
+            return strcmp(layerName, layerProperties.layerName) == 0;
+        });
         if (layerProperty == availableLayers.end()) {
             return false;
         }
@@ -131,8 +131,8 @@ void Device::pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtens
     if (phyDevices.empty()) {
         throw ::std::runtime_error("failed to find GPUs with Vulkan support!");
     }
-    const auto findPhyDevice = ::std::ranges::find_if(
-        phyDevices.begin(), phyDevices.end(), [&](auto& device) { return isDeviceSuitable(device, deviceExtensions); });
+    const auto findPhyDevice =
+        ::std::ranges::find_if(phyDevices, [&](auto& device) { return isDeviceSuitable(device, deviceExtensions); });
 
     if (findPhyDevice != phyDevices.end()) {
         phyDevice = *findPhyDevice;
@@ -173,7 +173,7 @@ void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensi
 auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> std::optional<Device::QueueFamilyIndices> {
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
-    auto pos = ::std::ranges::find_if(properties.begin(), properties.end(), [&](const auto& property) {
+    auto pos = ::std::ranges::find_if(properties, [&](const auto& property) {
         if ((property.queueFlags | ::vk::QueueFlagBits::eGraphics) &&
             (property.queueFlags | ::vk::QueueFlagBits::eCompute)) {
             if (device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
