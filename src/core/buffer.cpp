@@ -17,9 +17,9 @@ Buffer::Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t ins
     : device_(device),
       instanceCount_(instanceCount),
       instanceSize_(instanceSize),
-      bufferUsage_(bufferUsage),
+      alignmentSize_(getAlignmentSize(instanceSize, minOffsetAlignment)), bufferUsage_(bufferUsage),
       memoryPropertyFlags_(memoryPropertyFlags) {
-    alignmentSize_ = getAlignmentSize(instanceSize_, minOffsetAlignment);
+
     bufferSize_ = instanceCount_ * instanceSize_;
     device.createBuffer(bufferSize_, bufferUsage_, memoryPropertyFlags_, buffer_, bufferMemory_);
 }
