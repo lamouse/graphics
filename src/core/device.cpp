@@ -66,7 +66,7 @@ auto checkValidationLayerSupport(const ::std::vector<const char*>& validationLay
 
 auto checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& extensions)
     -> bool {
-    std::vector<vk::ExtensionProperties> availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
+    auto availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
     ::std::set<::std::string> requireExtensions(extensions.begin(), extensions.end());
 
     for (const auto& extension : availableExtensions) {
@@ -147,11 +147,11 @@ void Device::pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtens
 
 void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
-    ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue, queueFamilyIndices.presentQueue,
+    const ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue, queueFamilyIndices.presentQueue,
                                                 queueFamilyIndices.computeQueue};
     constexpr float priorities = 1.f;
 
-    for (uint32_t queueFamily : uniqueQueueFamilies) {
+    for (const auto queueFamily : uniqueQueueFamilies) {
         ::vk::DeviceQueueCreateInfo queueInfo({}, queueFamily, 1, &priorities);
         queueInfos.push_back(queueInfo);
     }
@@ -215,16 +215,16 @@ void Device::getQueues() {
 
 void Device::initCmdPool() {
     ::vk::CommandPoolCreateInfo createInfo;
-    uint32_t queueFamilyIndex = queueFamilyIndices.graphicsQueue;
+    const uint32_t queueFamilyIndex = queueFamilyIndices.graphicsQueue;
     createInfo.setQueueFamilyIndex(queueFamilyIndex)
         .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer | ::vk::CommandPoolCreateFlagBits::eTransient);
     cmdPool_ = device_.createCommandPool(createInfo);
 }
 
 void Device::executeCmd(const RecordCmdFunc& func) const {
-    ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
+    const ::vk::CommandBufferAllocateInfo allocInfo(cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
     auto commandBuffer = device_.allocateCommandBuffers(allocInfo)[0];
-    ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    const ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     commandBuffer.begin(beginInfo);
     if (func) {
         func(commandBuffer);
@@ -250,13 +250,13 @@ auto Device::getPresentQueue() -> ::vk::Queue& { return presentQueue; }
 
 auto Device::findSupportedFormat(const std::vector<::vk::Format>& candidates, ::vk::ImageTiling tiling,
                                  ::vk::FormatFeatureFlags features) -> ::vk::Format {
-    for (::vk::Format format : candidates) {
-        ::vk::FormatProperties props = phyDevice.getFormatProperties(format);
+    for (const auto& format : candidates) {
+        const auto formatProperties = phyDevice.getFormatProperties(format);
 
-        if (tiling == ::vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
+        if (tiling == ::vk::ImageTiling::eLinear && (formatProperties.linearTilingFeatures & features) == features) {
             return format;
         }
-        if (tiling == ::vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+        if (tiling == ::vk::ImageTiling::eOptimal && (formatProperties.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
