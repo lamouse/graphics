@@ -74,7 +74,7 @@ class DescriptorWriter {
         auto writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo &bufferInfo) -> DescriptorWriter &;
         auto writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter &;
         void build(::vk::DescriptorSet &descriptorSet);
-        void overwrite(::vk::DescriptorSet &descriptorSet);
+        void overwrite(const ::vk::DescriptorSet &descriptorSet);
 
     private:
         DescriptorSetLayout &descriptorSetLayout_;
