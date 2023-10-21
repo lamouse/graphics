@@ -87,10 +87,10 @@ DescriptorWriter::DescriptorWriter(DescriptorSetLayout &descriptorSetLayout, Des
     : descriptorSetLayout_(descriptorSetLayout), pool_(pool) {}
 
 auto DescriptorWriter::writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo &bufferInfo) -> DescriptorWriter & {
-    auto &bindingDescrptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
-    assert(bindingDescrptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
+    const auto &bindingDescriptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
+    assert(bindingDescriptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
     ::vk::WriteDescriptorSet writeDescriptorSet;
-    writeDescriptorSet.setDescriptorType(bindingDescrptor.descriptorType)
+    writeDescriptorSet.setDescriptorType(bindingDescriptor.descriptorType)
         .setDstBinding(binding)
         .setBufferInfo(bufferInfo);
     writeDescriptorSets_.push_back(writeDescriptorSet);
@@ -98,10 +98,10 @@ auto DescriptorWriter::writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo 
 }
 
 auto DescriptorWriter::writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter & {
-    auto &bindingDescrptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
-    assert(bindingDescrptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
+    const auto &bindingDescriptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
+    assert(bindingDescriptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
     ::vk::WriteDescriptorSet writeDescriptorSet;
-    writeDescriptorSet.setDescriptorType(bindingDescrptor.descriptorType)
+    writeDescriptorSet.setDescriptorType(bindingDescriptor.descriptorType)
         .setDstBinding(binding)
         .setImageInfo(imageInfo);
     writeDescriptorSets_.push_back(writeDescriptorSet);
@@ -113,7 +113,7 @@ void DescriptorWriter::build(::vk::DescriptorSet &descriptorSet) {
     overwrite(descriptorSet);
 }
 
-void DescriptorWriter::overwrite(::vk::DescriptorSet &descriptorSet) {
+void DescriptorWriter::overwrite(const ::vk::DescriptorSet &descriptorSet) {
     for (auto &writeDescriptorSet : writeDescriptorSets_) {
         writeDescriptorSet.setDstSet(descriptorSet);
     }
