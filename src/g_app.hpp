@@ -3,6 +3,8 @@
 #include "g_game_object.hpp"
 #include "g_window.hpp"
 #include "system/system_config.hpp"
+#include "core/buffer.hpp"
+
 
 namespace g {
 class App {

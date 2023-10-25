@@ -75,17 +75,17 @@ void App::run() {
     resource::image::Image img(s);
     resource::image::ImageTexture imageTexture{device_, img, DEFAULT_FORMAT};
 
-    ::std::vector<::vk::DescriptorSet> descriptorSets(2);
-    for (::std::vector<::vk::DescriptorSet>::size_type i = 0; i < descriptorSets.size(); i++) {
-        auto bufferInfo = uboBuffers[i]->descriptorInfo();
-        DescriptorWriter(*setLayout, *descriptorPool_)
-            .writeBuffer(0, bufferInfo)
-            .writeImage(1, imageTexture.descriptorImageInfo())
-            .build(descriptorSets[i]);
+    ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
+    for (int i = 0; auto & descriptorSet : descriptorSets) {
+        auto bufferInfo = uboBuffers[i++]->descriptorInfo();
+        descriptorSet = DescriptorWriter()
+            .writeBuffer((*setLayout)(0), bufferInfo)
+            .writeImage((*setLayout)(1), imageTexture.descriptorImageInfo())
+            .build(*descriptorPool_, (*setLayout)());
     }
 
     RenderProcesser render(device_);
-    RenderSystem renderSystem(device_, render, setLayout->getDescriptorSetLayout());
+    RenderSystem renderSystem(device_, render, (*setLayout)());
 
     init_imgui(window(), device_, descriptorPool_->getDescriptorPool(), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
@@ -336,6 +336,8 @@ App::App() {
                           .build(device_);
     loadGameObjects();
 }
+
+
 
 App::~App() {
     ImGui_ImplVulkan_Shutdown();

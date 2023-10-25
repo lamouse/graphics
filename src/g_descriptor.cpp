@@ -19,7 +19,7 @@ auto DescriptorSetLayout::Builder::addBinding(uint32_t binding, ::vk::Descriptor
     return *this;
 }
 
-auto DescriptorSetLayout::Builder::build(core::Device& device) -> ::std::unique_ptr<DescriptorSetLayout> {
+auto DescriptorSetLayout::Builder::build(core::Device &device) -> ::std::unique_ptr<DescriptorSetLayout> {
     return ::std::make_unique<DescriptorSetLayout>(device, descriptorSetLayoutBindings_);
 }
 
@@ -37,9 +37,7 @@ DescriptorSetLayout::DescriptorSetLayout(::core::Device &device,
     descriptorSetLayout_ = device_.createDescriptorSetLayout(setLayoutCreateInfo);
 }
 
-DescriptorSetLayout::~DescriptorSetLayout() {
-    device_.destroyDescriptorSetLayout(descriptorSetLayout_);
-}
+DescriptorSetLayout::~DescriptorSetLayout() { device_.destroyDescriptorSetLayout(descriptorSetLayout_); }
 
 auto DescriptorPool::Builder::addPoolSize(::vk::DescriptorType type, uint32_t count) -> DescriptorPool::Builder & {
     poolSizes_.emplace_back(type, count);
@@ -56,7 +54,7 @@ auto DescriptorPool::Builder::setMaxSets(uint32_t maxSets) -> DescriptorPool::Bu
     return *this;
 }
 
-auto DescriptorPool::Builder::build(core::Device& device) -> ::std::unique_ptr<DescriptorPool> {
+auto DescriptorPool::Builder::build(core::Device &device) -> ::std::unique_ptr<DescriptorPool> {
     return ::std::make_unique<DescriptorPool>(device, maxSets_, flags_, poolSizes_);
 }
 
@@ -70,11 +68,10 @@ DescriptorPool::DescriptorPool(::core::Device &device, uint32_t maxSets, ::vk::D
 
 DescriptorPool::~DescriptorPool() { device_.destroyDescriptorPool(descriptorPool_); }
 
-void DescriptorPool::allocateDescriptor(const ::vk::DescriptorSetLayout &descriptorSetLayout,
-                                        ::vk::DescriptorSet &descriptorSet) const {
+auto DescriptorPool::allocateDescriptor(const ::vk::DescriptorSetLayout &descriptorSetLayout) -> ::vk::DescriptorSet {
     ::vk::DescriptorSetAllocateInfo allocateInfo;
     allocateInfo.setDescriptorPool(descriptorPool_).setSetLayouts(descriptorSetLayout);
-    descriptorSet = device_.allocateDescriptorSets(allocateInfo)[0];
+    return device_.allocateDescriptorSets(allocateInfo)[0];
 }
 
 void DescriptorPool::freeDescriptor(::std::vector<::vk::DescriptorSet> &descriptorSets) const {
@@ -83,42 +80,39 @@ void DescriptorPool::freeDescriptor(::std::vector<::vk::DescriptorSet> &descript
 
 void DescriptorPool::resetPool() const { device_.resetDescriptorPool(descriptorPool_); }
 
-DescriptorWriter::DescriptorWriter(DescriptorSetLayout &descriptorSetLayout, DescriptorPool &pool)
-    : descriptorSetLayout_(descriptorSetLayout), pool_(pool) {}
-
-auto DescriptorWriter::writeBuffer(uint32_t binding, ::vk::DescriptorBufferInfo &bufferInfo) -> DescriptorWriter & {
-    const auto &bindingDescriptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
-    assert(bindingDescriptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
+auto DescriptorWriter::writeBuffer(const ::vk::DescriptorSetLayoutBinding &descriptorSetLayoutBinding,
+                                   ::vk::DescriptorBufferInfo &bufferInfo) -> DescriptorWriter & {
     ::vk::WriteDescriptorSet writeDescriptorSet;
-    writeDescriptorSet.setDescriptorType(bindingDescriptor.descriptorType)
-        .setDstBinding(binding)
+    writeDescriptorSet.setDescriptorType(descriptorSetLayoutBinding.descriptorType)
+        .setDstBinding(descriptorSetLayoutBinding.binding)
         .setBufferInfo(bufferInfo);
     writeDescriptorSets_.push_back(writeDescriptorSet);
     return *this;
 }
 
-auto DescriptorWriter::writeImage(uint32_t binding, ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter & {
-    const auto &bindingDescriptor = descriptorSetLayout_.descriptorSetLayoutBindings_[binding];
-    assert(bindingDescriptor.descriptorCount == 1 && "binding single descriptor info, but binding expects multiple");
+auto DescriptorWriter::writeImage(const ::vk::DescriptorSetLayoutBinding &descriptorSetLayoutBinding,
+                                  ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter & {
     ::vk::WriteDescriptorSet writeDescriptorSet;
-    writeDescriptorSet.setDescriptorType(bindingDescriptor.descriptorType)
-        .setDstBinding(binding)
+    writeDescriptorSet.setDescriptorType(descriptorSetLayoutBinding.descriptorType)
+        .setDstBinding(descriptorSetLayoutBinding.binding)
         .setImageInfo(imageInfo);
     writeDescriptorSets_.push_back(writeDescriptorSet);
     return *this;
 }
 
-void DescriptorWriter::build(::vk::DescriptorSet &descriptorSet) {
-    pool_.allocateDescriptor(descriptorSetLayout_.getDescriptorSetLayout(), descriptorSet);
-    overwrite(descriptorSet);
+auto DescriptorWriter::build(DescriptorPool &pool, const ::vk::DescriptorSetLayout &descriptorSetLayout)
+    -> ::vk::DescriptorSet {
+    auto descriptorSet = pool.allocateDescriptor(descriptorSetLayout);
+    overwrite(pool.device_, descriptorSet);
+    return descriptorSet;
 }
 
-void DescriptorWriter::overwrite(const ::vk::DescriptorSet &descriptorSet) {
+void DescriptorWriter::overwrite(const vk::Device &device, const ::vk::DescriptorSet &descriptorSet) {
     for (auto &writeDescriptorSet : writeDescriptorSets_) {
         writeDescriptorSet.setDstSet(descriptorSet);
     }
-    pool_.device_.updateDescriptorSets(static_cast<uint32_t>(writeDescriptorSets_.size()),
-                                                       writeDescriptorSets_.data(), 0, nullptr);
+    device.updateDescriptorSets(static_cast<uint32_t>(writeDescriptorSets_.size()), writeDescriptorSets_.data(), 0,
+                                nullptr);
 }
 
 }  // namespace g
