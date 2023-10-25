@@ -29,7 +29,7 @@ class DescriptorSetLayout {
         friend class DescriptorWriter;
 
     private:
-        core::Device &device_;
+        ::vk::Device device_;
         ::vk::DescriptorSetLayout descriptorSetLayout_;
         ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings_;
 };
@@ -64,7 +64,7 @@ class DescriptorPool {
         friend class DescriptorWriter;
 
     private:
-        core::Device &device_;
+        ::vk::Device device_;
         ::vk::DescriptorPool descriptorPool_;
 };
 

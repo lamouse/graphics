@@ -37,7 +37,6 @@ class Device final {
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
-        ::vk::DebugUtilsMessengerEXT debugMessenger_;
         bool enableValidationLayers_;
         void pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtensions);
         void createLogicalDevice(const ::std::vector<const char*>& deviceExtensions);

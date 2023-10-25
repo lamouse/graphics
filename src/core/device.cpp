@@ -42,7 +42,7 @@ inline void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
     createInfo.pfnUserCallback = debugCallback;
 }
 
-inline auto setupDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMessengerEXT {
+inline auto setupDebugMessenger(::vk::Instance& instance) {
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
     return *instance.createDebugUtilsMessengerEXTUnique(createInfo, nullptr,
@@ -120,9 +120,10 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     createInfo.setPApplicationInfo(&appInfo)
         .setFlags(::vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR)
         .setPEnabledExtensionNames(instanceExtends);
+
     vkInstance = ::vk::createInstance(createInfo);
     if (enableValidationLayers_) {
-        debugMessenger_ = setupDebugMessenger(vkInstance);
+        setupDebugMessenger(vkInstance);
     }
 }
 
@@ -148,7 +149,7 @@ void Device::pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtens
 void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
     const ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue, queueFamilyIndices.presentQueue,
-                                                queueFamilyIndices.computeQueue};
+                                                      queueFamilyIndices.computeQueue};
     constexpr float priorities = 1.f;
 
     for (const auto queueFamily : uniqueQueueFamilies) {
