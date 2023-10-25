@@ -1,11 +1,12 @@
 #include "g_render.hpp"
 
 #include <cassert>
+#include <utility>
 
-#include "g_context.hpp"
 
 namespace g {
-RenderProcesser::RenderProcesser(core::Device& device) : device_(device), sampleCount_(device_.getMaxMsaaSamples()) {
+RenderProcesser::RenderProcesser(core::Device& device, getScreenExtendFunc getScreenExtend)
+    : device_(device), sampleCount_(device_.getMaxMsaaSamples()), getScreenExtend_(std::move(getScreenExtend)) {
     createSwapchain();
     createRenderPass();
     swapchain->createFrameBuffers(renderPass_);
@@ -15,11 +16,7 @@ RenderProcesser::RenderProcesser(core::Device& device) : device_(device), sample
 RenderProcesser::~RenderProcesser() { device_.logicalDevice().destroyRenderPass(renderPass_); }
 
 void RenderProcesser::createSwapchain() {
-    auto extent = Context::getExtent();
-    while (extent.width == 0 || extent.height == 0) {
-        extent = Context::getExtent();
-        Context::waitWindowEvents();
-    }
+    auto extent = getScreenExtend_();
     device_.logicalDevice().waitIdle();
     ::vk::SampleCountFlagBits sampleCount = device_.getMaxMsaaSamples();
     if (swapchain == nullptr) {
@@ -61,16 +58,13 @@ void RenderProcesser::endFrame() {
     try {
         const auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
 
-        if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR ||
-            Context::isWindowResize()) {
+        if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR){
             createSwapchain();
-            Context::resetWindowResize();
         } else if (result != ::vk::Result::eSuccess) {
             throw ::std::runtime_error("filed to present swap chain image");
         }
     } catch (const ::vk::OutOfDateKHRError&) {
         createSwapchain();
-        Context::resetWindowResize();
     }
 
     isFrameStart = false;

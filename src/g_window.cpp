@@ -6,14 +6,11 @@
 #include <utility>
 #include <vector>
 
-#include "g_context.hpp"
 
 namespace g {
 
 Window::Window(ScreenExtent extent, ::std::string title)
     : width{extent.width}, height{extent.height}, title_{std::move(title)} {
-    Context::setExtent({width, height});
-    Context::resetWindowResize();
     ::glfwInit();
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -35,7 +32,6 @@ void Window::initWindow() {
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int, int) {
         int w{}, h{};
         glfwGetFramebufferSize(window, &w, &h);
-        Context::setExtent({w, h});
     });
 }
 
@@ -63,6 +59,16 @@ auto Window::getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::v
         extends.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
     return extends;
+}
+
+auto Window::getExtent() -> ScreenExtent {
+    int width{}, height{};
+    glfwGetFramebufferSize(window, &width, &height);
+    while (width == 0 || height == 0) {
+        glfwWaitEvents();
+        glfwGetFramebufferSize(window, &width, &height);
+    }
+    return {width, height};
 }
 
 Window::~Window() {

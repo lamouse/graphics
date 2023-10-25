@@ -29,5 +29,6 @@ class Window {
         [[nodiscard]] auto getScale() const -> float { return scale; };
         static auto getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char *>;
         auto getSurface(VkInstance instance) -> VkSurfaceKHR;
+        auto getExtent() -> ScreenExtent;
 };
 }  // namespace g

@@ -84,7 +84,9 @@ void App::run() {
             .build(*descriptorPool_, (*setLayout)());
     }
 
-    RenderProcesser render(device_);
+    RenderProcesser render(device_, [this]() {
+        return window.getExtent();
+    });
     RenderSystem renderSystem(device_, render, (*setLayout)());
 
     init_imgui(window(), device_, descriptorPool_->getDescriptorPool(), window.getScale());
