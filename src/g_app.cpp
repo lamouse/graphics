@@ -88,7 +88,6 @@ void App::run() {
         return window.getExtent();
     });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-
     init_imgui(window(), device_, descriptorPool_->getDescriptorPool(), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
