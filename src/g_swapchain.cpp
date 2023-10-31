@@ -99,14 +99,12 @@ auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilitie
 Swapchain::~Swapchain() {
     ::spdlog::debug(DETAIL_INFO("destroy swapchain"));
     const auto& device = device_.logicalDevice();
-    for (::gsl::index i = 0; i < MAX_FRAME_IN_FLIGHT; i++) {
-        device.destroyFence(inFlightFences[i]);
+
+    for (int i = 0; auto& fence : inFlightFences) {
+        device.destroyFence(fence);
         device.destroySemaphore(imageAvailableSemaphores[i]);
         device.destroySemaphore(renderFinishSemaphores[i]);
-    }
-
-    for (const auto& frameBuffer : frameBuffers) {
-        device.destroyFramebuffer(frameBuffer);
+        i++;
     }
 
     for (::gsl::index i = 0; i < depthImages.size(); i++) {
@@ -123,6 +121,10 @@ Swapchain::~Swapchain() {
 
     for (const auto& view : imageViews) {
         device.destroyImageView(view);
+    }
+
+    for (const auto& frameBuffer : frameBuffers) {
+        device.destroyFramebuffer(frameBuffer);
     }
 
     device.destroySwapchainKHR(swapchain);
