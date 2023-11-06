@@ -17,7 +17,7 @@ class App {
         App(App &&) = delete;
         auto operator=(const App &) -> App & = delete;
         auto operator=(App &&) -> App & = delete;
-        ~App();
+        ~App() = default;
 
     private:
         /**

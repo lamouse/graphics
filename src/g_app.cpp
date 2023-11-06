@@ -122,8 +122,4 @@ App::App() {
     loadGameObjects();
 }
 
-
-
-App::~App() {
-}
 }  // namespace g
