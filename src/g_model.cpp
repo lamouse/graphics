@@ -20,9 +20,8 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t
     : vertexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(),
                                                sizeof(vertices[0]) * vertices.size())),
       indexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eIndexBuffer, indices.data(),
-                                              sizeof(indices[0]) * indices.size())) {
-    vertexCount = static_cast<uint32_t>(vertices.size());
-    indicesSize = static_cast<uint32_t>(indices.size());
+                                              sizeof(indices[0]) * indices.size())), vertexCount(static_cast<uint32_t>(vertices.size())), indicesSize(static_cast<uint32_t>(indices.size())) {
+
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
