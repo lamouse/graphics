@@ -86,7 +86,7 @@ void Imgui::init(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool&
 void Imgui::draw(ImguiDebugInfo& debugInfo) {
     auto* mainviewport = ImGui::GetMainViewport();
     mainviewport->Flags |= ImGuiViewportFlags_NoRendererClear;
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();

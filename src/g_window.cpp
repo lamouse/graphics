@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace g {
 
 Window::Window(ScreenExtent extent, ::std::string title)
@@ -15,11 +14,18 @@ Window::Window(ScreenExtent extent, ::std::string title)
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     //::glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER,GLFW_TRUE);
-    ::GLFWmonitor* monitor = ::glfwGetPrimaryMonitor();
     float xscale{}, yscale{};
+
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    xscale = 1.f;
+    yscale = 1.f;
+#else
+    ::GLFWmonitor* monitor = ::glfwGetPrimaryMonitor();
     ::glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-    int w = static_cast<int>((float)width * xscale);
-    int h = static_cast<int>((float)height * yscale);
+#endif
+
+    int const w = static_cast<int>((float)width * xscale);
+    int const h = static_cast<int>((float)height * yscale);
     scale = xscale;
     window = ::glfwCreateWindow(w, h, title_.c_str(), nullptr, nullptr);
     if (!window) {
