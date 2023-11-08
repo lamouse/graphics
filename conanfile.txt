@@ -1,9 +1,0 @@
-[requires]
-zlib/1.2.11
-
-[tool_requires]
-cmake/3.26.4
-
-[generators]
-CMakeDeps
-CMakeToolchain
