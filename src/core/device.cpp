@@ -76,6 +76,12 @@ auto checkDeviceExtensionSupport(::vk::PhysicalDevice& checkDevice, const ::std:
     return requireExtensions.empty();
 }
 
+/**
+ * @brief Validation layers
+ *
+ */
+const ::std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+
 }  // namespace
 
 Device::Device(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,

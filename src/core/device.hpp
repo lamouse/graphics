@@ -45,11 +45,6 @@ class Device final {
         void createInstance(const std::vector<const char*>& instanceExtends);
         auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& deviceExtensions) -> bool;
         auto getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits;
-        /**
-         * @brief Validation layers
-         *
-         */
-        ::std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
     public:
         struct QueueFamilyIndices {

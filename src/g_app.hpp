@@ -3,8 +3,6 @@
 #include "g_game_object.hpp"
 #include "g_window.hpp"
 #include "system/system_config.hpp"
-#include "core/buffer.hpp"
-
 
 namespace g {
 class App {
@@ -36,7 +34,7 @@ class App {
         static constexpr bool enableValidationLayers = true;
 #endif
         core::Device device_{Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
-                             [=, this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
+                             [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
                              enableValidationLayers};
         config::ImageQuality imageQualityConfig;
         GameObject::Map gameObjects;
