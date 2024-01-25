@@ -61,7 +61,7 @@ void App::run() {
     debugInfo.z_far = .1f;
     debugInfo.z_near = 10.f;
     while (!window.shouldClose()) {
-        imgui.draw(debugInfo);
+        g::Imgui::draw(debugInfo);
 
         auto currentTime = ::std::chrono::high_resolution_clock::now();
         float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
