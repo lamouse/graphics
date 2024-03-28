@@ -43,23 +43,45 @@ class Device final {
         void getQueues();
         void initCmdPool();
         void createInstance(const std::vector<const char*>& instanceExtends);
-        auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& deviceExtensions) -> bool;
+        auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& deviceExtensions)
+            -> bool;
         auto getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits;
 
     public:
         struct QueueFamilyIndices {
-                uint32_t graphicsQueue;
-                uint32_t computeQueue;
-                uint32_t presentQueue;
+                std::optional<uint32_t> graphicsQueue;
+                std::optional<uint32_t> computeQueue;
+                std::optional<uint32_t> presentQueue;
+                [[nodiscard]] auto isComplete() const {
+                    return graphicsQueue.has_value() && presentQueue.has_value() && computeQueue.has_value();
+                }
+                [[nodiscard]] auto graphicsIndex() const {
+                    if (!graphicsQueue.has_value()) {
+                        throw std::runtime_error("no graphics queue");
+                    }
+                    return graphicsQueue.value();
+                }
+                [[nodiscard]] auto presentIndex() const {
+                    if (!presentQueue.has_value()) {
+                        throw std::runtime_error("no present queue");
+                    }
+                    return presentQueue.value();
+                }
+                [[nodiscard]] auto computeIndex() const {
+                    if (!computeQueue.has_value()) {
+                        throw std::runtime_error("no compute queue");
+                    }
+                    return computeQueue.value();
+                }
         };
         Device(Device&) = delete;
         auto operator=(const Device&) -> Device& = delete;
         Device(Device&&) = delete;
         auto operator=(Device&&) -> Device& = delete;
 
-        Device(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions, const CreateSurfaceFunc& createFunc,
-               bool enableValidationLayers = false);
-        auto queryQueueFamilyIndices(::vk::PhysicalDevice device) -> ::std::optional<QueueFamilyIndices>;
+        Device(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
+               const CreateSurfaceFunc& createFunc, bool enableValidationLayers = false);
+        void queryQueueFamilyIndices(::vk::PhysicalDevice device);
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
         QueueFamilyIndices queueFamilyIndices;
         auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }

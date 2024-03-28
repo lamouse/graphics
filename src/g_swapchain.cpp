@@ -38,10 +38,10 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         .setPreTransform(swapchainSupports.capabilities.currentTransform)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
     const auto& queueIndices = device_.queueFamilyIndices;
-    if (queueIndices.graphicsQueue == queueIndices.presentQueue) {
+    if (queueIndices.graphicsIndex() == queueIndices.presentIndex()) {
         createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     } else {
-        ::std::array indices = {queueIndices.graphicsQueue, queueIndices.presentQueue};
+        ::std::array indices = {queueIndices.graphicsIndex(), queueIndices.presentIndex()};
         createInfo.setQueueFamilyIndices(indices).setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
     if (oldSwapchain != nullptr) {

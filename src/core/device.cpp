@@ -107,12 +107,11 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     if (enableValidationLayers_ && !checkValidationLayerSupport(validationLayers)) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
-    ::vk::ApplicationInfo appInfo;
-    appInfo.setPApplicationName("graphics")
-        .setPEngineName("engin")
-        .setApiVersion(VK_API_VERSION_1_3)
-        .setEngineVersion(VK_MAKE_VERSION(1, 3, 0))
-        .setApplicationVersion(VK_MAKE_VERSION(1, 0, 0));
+    uint32_t instanceVerson = ::vk::enumerateInstanceVersion();
+    spdlog::debug("vk instance verson, Major: {}, Minor: {}, Patch: {}", VK_API_VERSION_MAJOR(instanceVerson),
+                  VK_API_VERSION_MINOR(instanceVerson), VK_API_VERSION_PATCH(instanceVerson));
+    uint32_t verson = VK_MAKE_VERSION(1, 3, 0);
+    ::vk::ApplicationInfo appInfo{"graphics", verson, "engin", verson, verson};
 
     ::vk::InstanceCreateInfo createInfo;
 
@@ -143,10 +142,7 @@ void Device::pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtens
 
     if (findPhyDevice != phyDevices.end()) {
         phyDevice = *findPhyDevice;
-        auto indices = queryQueueFamilyIndices(phyDevice);
-        if (indices.has_value()) {
-            queueFamilyIndices = indices.value();
-        }
+        queryQueueFamilyIndices(phyDevice);
     } else {
         throw ::std::runtime_error("failed to find a suitable GPU!");
     }
@@ -154,12 +150,12 @@ void Device::pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtens
 
 void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     ::std::vector<::vk::DeviceQueueCreateInfo> queueInfos;
-    const ::std::set<uint32_t> uniqueQueueFamilies = {queueFamilyIndices.graphicsQueue, queueFamilyIndices.presentQueue,
-                                                      queueFamilyIndices.computeQueue};
+    const ::std::set<uint32_t> uniqueQueueFamilies = {
+        queueFamilyIndices.graphicsIndex(), queueFamilyIndices.presentIndex(), queueFamilyIndices.computeIndex()};
     constexpr float priorities = 1.f;
 
     for (const auto queueFamily : uniqueQueueFamilies) {
-        ::vk::DeviceQueueCreateInfo queueInfo({}, queueFamily, 1, &priorities);
+        ::vk::DeviceQueueCreateInfo queueInfo(::vk::DeviceQueueCreateFlags(), queueFamily, 1, &priorities);
         queueInfos.push_back(queueInfo);
     }
 
@@ -177,28 +173,25 @@ void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensi
     device_ = phyDevice.createDevice(createInfo);
 }
 
-auto Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) -> std::optional<Device::QueueFamilyIndices> {
+void Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) {
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
-    auto pos = ::std::ranges::find_if(properties, [&](const auto& property) {
-        if ((property.queueFlags | ::vk::QueueFlagBits::eGraphics) &&
-            (property.queueFlags | ::vk::QueueFlagBits::eCompute)) {
-            if (device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
-                return true;
-            }
+    for (auto property : properties) {
+        if ((property.queueFlags & ::vk::QueueFlagBits::eGraphics)) {
+            queueFamilyIndices.graphicsQueue = index;
+        }
+        if ((property.queueFlags & ::vk::QueueFlagBits::eCompute)) {
+            queueFamilyIndices.computeQueue = index;
+        }
+
+        if (device.getSurfaceSupportKHR(index, vkSurfaceKHR)) {
+            queueFamilyIndices.presentQueue = index;
+        }
+        if (queueFamilyIndices.isComplete()) {
+            break;
         }
         index++;
-        return false;
-    });
-
-    if (pos == properties.end()) {
-        return std::nullopt;
     }
-    QueueFamilyIndices indices{};
-    indices.graphicsQueue = static_cast<uint32_t>(pos - properties.begin());
-    indices.presentQueue = indices.graphicsQueue;
-    indices.computeQueue = indices.graphicsQueue;
-    return indices;
 }
 
 void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
@@ -215,15 +208,14 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, :
 }
 
 void Device::getQueues() {
-    graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsQueue, 0);
-    presentQueue = device_.getQueue(queueFamilyIndices.presentQueue, 0);
-    computeQueue = device_.getQueue(queueFamilyIndices.computeQueue, 0);
+    graphicsQueue = device_.getQueue(queueFamilyIndices.graphicsIndex(), 0);
+    presentQueue = device_.getQueue(queueFamilyIndices.presentIndex(), 0);
+    computeQueue = device_.getQueue(queueFamilyIndices.computeIndex(), 0);
 }
 
 void Device::initCmdPool() {
     ::vk::CommandPoolCreateInfo createInfo;
-    const uint32_t queueFamilyIndex = queueFamilyIndices.graphicsQueue;
-    createInfo.setQueueFamilyIndex(queueFamilyIndex)
+    createInfo.setQueueFamilyIndex(queueFamilyIndices.graphicsIndex())
         .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer | ::vk::CommandPoolCreateFlagBits::eTransient);
     cmdPool_ = device_.createCommandPool(createInfo);
 }
@@ -367,8 +359,8 @@ auto Device::isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::ve
         swapChainAdeqate = !swapchainSupport.formats.empty() && !swapchainSupport.presentModes.empty();
     }
     ::vk::PhysicalDeviceFeatures deviceFeatures = checkDevice.getFeatures();
-    auto indices = queryQueueFamilyIndices(checkDevice);
-    return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && indices.has_value();
+    queryQueueFamilyIndices(checkDevice);
+    return extensionsSupported && swapChainAdeqate && deviceFeatures.samplerAnisotropy && queueFamilyIndices.isComplete();
 }
 
 auto Device::querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails {
