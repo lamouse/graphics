@@ -68,7 +68,7 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
 
     configInfo.rasterizationStateInfo.setRasterizerDiscardEnable(VK_FALSE)
         .setDepthClampEnable(VK_FALSE)
-        .setDepthClampEnable(VK_FALSE)
+        .setDepthBiasEnable(VK_FALSE)
         .setCullMode(::vk::CullModeFlagBits::eBack)
         .setFrontFace(::vk::FrontFace::eCounterClockwise)
         .setPolygonMode(::vk::PolygonMode::eFill)

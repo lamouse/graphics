@@ -107,11 +107,11 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     if (enableValidationLayers_ && !checkValidationLayerSupport(validationLayers)) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
-    uint32_t instanceVerson = ::vk::enumerateInstanceVersion();
-    spdlog::debug("vk instance verson, Major: {}, Minor: {}, Patch: {}", VK_API_VERSION_MAJOR(instanceVerson),
-                  VK_API_VERSION_MINOR(instanceVerson), VK_API_VERSION_PATCH(instanceVerson));
-    uint32_t verson = VK_MAKE_VERSION(1, 3, 0);
-    ::vk::ApplicationInfo appInfo{"graphics", verson, "engin", verson, verson};
+    uint32_t instanceVersion = ::vk::enumerateInstanceVersion();
+    spdlog::debug("vk instance version, Major: {}, Minor: {}, Patch: {}", VK_API_VERSION_MAJOR(instanceVersion),
+                  VK_API_VERSION_MINOR(instanceVersion), VK_API_VERSION_PATCH(instanceVersion));
+    uint32_t version = VK_MAKE_VERSION(1, 3, 0);
+    ::vk::ApplicationInfo appInfo{"graphics", version, "engine", version, version};
 
     ::vk::InstanceCreateInfo createInfo;
 
@@ -176,7 +176,7 @@ void Device::createLogicalDevice(const ::std::vector<const char*>& deviceExtensi
 void Device::queryQueueFamilyIndices(::vk::PhysicalDevice device) {
     auto properties = device.getQueueFamilyProperties();
     int index = 0;
-    for (auto property : properties) {
+    for (const auto& property : properties) {
         if ((property.queueFlags & ::vk::QueueFlagBits::eGraphics)) {
             queueFamilyIndices.graphicsQueue = index;
         }

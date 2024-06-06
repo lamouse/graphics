@@ -39,24 +39,24 @@ auto RenderProcesser::beginFrame() -> bool {
         return isFrameStart;
     }
     if (result.result != ::vk::Result::eSuccess && result.result != ::vk::Result::eSuboptimalKHR) {
-        throw ::std::runtime_error("faile acquire swapchain image");
+        throw ::std::runtime_error("fail acquire swapchain image");
     }
 
     isFrameStart = true;
     currentImageIndex = result.value;
-    getCurrentCommadBuffer().reset();
+    getCurrentCommandBuffer().reset();
     ::vk::CommandBufferBeginInfo begin;
     // ::vk::CommandBufferInheritanceInfo inherritanceInfo;
     // begin.setFlags(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
     //     .setPInheritanceInfo(&inherritanceInfo);
-    getCurrentCommadBuffer().begin(begin);
+    getCurrentCommandBuffer().begin(begin);
     return isFrameStart;
 }
 
 void RenderProcesser::endFrame() {
-    assert(isFrameStart && "cat't call begin swapchin renderpass is frame not in progress");
+    assert(isFrameStart && "can't call begin swapchin renderpass is frame not in progress");
     try {
-        const auto result = swapchain->submitCommand(getCurrentCommadBuffer(), currentImageIndex);
+        const auto result = swapchain->submitCommand(getCurrentCommandBuffer(), currentImageIndex);
 
         if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR){
             createSwapchain();
@@ -72,13 +72,13 @@ void RenderProcesser::endFrame() {
 }
 
 void RenderProcesser::beginSwapchainRenderPass() {
-    assert(isFrameStart && "cat't call beginSwapchainRenderPass  is frame not in progress");
-    swapchain->beginRenderPass(getCurrentCommadBuffer(), renderPass_, currentImageIndex);
+    assert(isFrameStart && "can't call beginSwapchainRenderPass  is frame not in progress");
+    swapchain->beginRenderPass(getCurrentCommandBuffer(), renderPass_, currentImageIndex);
 }
 
 void RenderProcesser::endSwapchainRenderPass() {
-    getCurrentCommadBuffer().endRenderPass();
-    getCurrentCommadBuffer().end();
+    getCurrentCommandBuffer().endRenderPass();
+    getCurrentCommandBuffer().end();
 }
 
 void RenderProcesser::allcoCmdBuffer() {

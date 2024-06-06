@@ -57,12 +57,12 @@ BraceWrapping:
   AfterControlStatement: Never
   AfterEnum:       false
   AfterExternBlock: false
-  AfterFunction:   false
+  AfterFunction:   true
   AfterNamespace:  false
   AfterObjCDeclaration: false
   AfterStruct:     false
   AfterUnion:      false
-  BeforeCatch:     false
+  BeforeCatch:     true
   BeforeElse:      false
   BeforeLambdaBody: false
   BeforeWhile:     false

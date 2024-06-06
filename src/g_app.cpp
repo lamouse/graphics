@@ -60,6 +60,9 @@ void App::run() {
     debugInfo.radians = 45.f;
     debugInfo.z_far = .1f;
     debugInfo.z_near = 10.f;
+    debugInfo.center_x = 0;
+    debugInfo.center_y = 0;
+    debugInfo.center_z = 0;
     while (!window.shouldClose()) {
         g::Imgui::draw(debugInfo);
 
@@ -82,7 +85,7 @@ void App::run() {
 
             FrameInfo frameInfo{render.getCurrentFrameIndex(),
                                 time,
-                                render.getCurrentCommadBuffer(),
+                                render.getCurrentCommandBuffer(),
                                 camera,
                                 descriptorSets[render.getCurrentFrameIndex()],
                                 gameObjects};
