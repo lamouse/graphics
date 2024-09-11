@@ -1,8 +1,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <stdexcept>
-
 #include "g_app.hpp"
 
 using namespace std;

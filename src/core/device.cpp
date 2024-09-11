@@ -123,7 +123,9 @@ void Device::createInstance(const std::vector<const char*>& instanceExtends) {
     }
 
     createInfo.setPApplicationInfo(&appInfo)
+    #if defined(VK_USE_PLATFORM_MACOS_MVK)
         .setFlags(::vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR)
+    #endif
         .setPEnabledExtensionNames(instanceExtends);
 
     vkInstance = ::vk::createInstance(createInfo);

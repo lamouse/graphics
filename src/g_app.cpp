@@ -109,6 +109,7 @@ void App::loadGameObjects() {
 App::App() {
     constexpr unsigned count = 1000;
     descriptorPool_ = DescriptorPool::Builder()
+                            .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
                           .setMaxSets(count)
                           .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
                           .addPoolSize(::vk::DescriptorType::eSampler, count)

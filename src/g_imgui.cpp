@@ -74,13 +74,8 @@ void Imgui::init(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool&
     init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
-    ImGui_ImplVulkan_Init(&init_info, renderPass);
-    // Upload Fonts
-    {
-        // Use any command queue
-        device.executeCmd(ImGui_ImplVulkan_CreateFontsTexture);
-        ImGui_ImplVulkan_DestroyFontUploadObjects();
-    }
+    init_info.RenderPass = renderPass;
+    ImGui_ImplVulkan_Init(&init_info);
 }
 
 void Imgui::draw(ImguiDebugInfo& debugInfo) {
