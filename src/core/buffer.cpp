@@ -46,7 +46,7 @@ void Buffer::writeToBuffer(void* data, ::vk::DeviceSize size, ::vk::DeviceSize o
     if (size == VK_WHOLE_SIZE) {
         memcpy(data_, data, bufferSize_);
     } else {
-        char* memOffset = (char*)data_;
+         char* memOffset =static_cast<char*>(data_);
         memOffset += offset;
         memcpy(memOffset, data, size);
     }

@@ -2,13 +2,15 @@
 
 #include <fstream>
 #include <stdexcept>
+#include <spdlog/spdlog.h>
 
 namespace resource::shader {
 
 auto readShaderFile(const std::string& filePath) -> ::std::vector<char> {
     ::std::ifstream file{filePath, ::std::ios::ate | ::std::ios::binary};
     if (!file.is_open()) {
-        throw ::std::runtime_error("faild to open file: " + filePath);
+        SPDLOG_ERROR("failed to open file: {}", filePath);
+        throw ::std::runtime_error("failed to open file: " + filePath);
     }
     auto fileSize = file.tellg();
     ::std::vector<char> buffer(static_cast<size_t>(fileSize));

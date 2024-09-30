@@ -54,7 +54,7 @@ auto RenderProcesser::beginFrame() -> bool {
 }
 
 void RenderProcesser::endFrame() {
-    assert(isFrameStart && "can't call begin swapchin renderpass is frame not in progress");
+    assert(isFrameStart && "can't call begin swapchain render pass is frame not in progress");
     try {
         const auto result = swapchain->submitCommand(getCurrentCommandBuffer(), currentImageIndex);
 
@@ -133,8 +133,8 @@ void RenderProcesser::createRenderPass() {
         .setPDepthStencilAttachment(&depthAttachmentRef)
         .setResolveAttachments(colorAttachmentResolveRef);
 
-    ::vk::SubpassDependency subepassDependency;
-    subepassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+    ::vk::SubpassDependency subpassDependency;
+    subpassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
         .setDstSubpass(0)
         .setSrcAccessMask(::vk::AccessFlagBits::eNone)
         .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
@@ -145,7 +145,7 @@ void RenderProcesser::createRenderPass() {
                          ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
 
     ::vk::RenderPassCreateInfo createInfo;
-    createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subepassDependency);
+    createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subpassDependency);
     renderPass_ = device_.logicalDevice().createRenderPass(createInfo);
 }
 

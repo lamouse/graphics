@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.28)
 
 if(WIN32)
         if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
@@ -10,9 +10,11 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
-message("Building with CMake version: ${CMAKE_VERSION}")
 
 set(EXECUTE_NAME graphics)
+set(PROJECT_VERSION_MAJOR 0)
+set(PROJECT_VERSION_MINOR 0)
+set(PROJECT_VERSION_PATCH 1)
 set(CMAKE_CXX_STANDARD 23)
 
 if(WIN32)
@@ -21,7 +23,9 @@ elseif(UNIX AND APPLE)
 endif()
 
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_definitions(-DNO_DEBUG)
+        add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
+else()
+        add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 endif()
 
 
@@ -47,17 +51,6 @@ find_package(Vulkan REQUIRED)
 
 target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL)
 
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/Readme.md")
-set(CPACK_GENERATOR "ZIP;TGZ")
-
-# file(GLOB SHADER_FILE
-# "shader/*.spv"
-# )
-
-# file(COPY ${SHADER_FILE} DESTINATION shader)
-# install(DIRECTORY "shader/"
-# DESTINATION "shader"
-# FILES_MATCHING PATTERN "*.spv")
 file(COPY images DESTINATION .)
 file(COPY models DESTINATION .)
 
