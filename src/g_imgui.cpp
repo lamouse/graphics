@@ -93,28 +93,28 @@ void Imgui::draw(ImguiDebugInfo& debugInfo) {
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
                             ImGuiCond_FirstUseEver);
     {
-        if (show_demo_window) {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        }
+        // if (show_demo_window) {
+        //     ImGui::ShowDemoWindow(&show_demo_window);
+        // }
         {
             static int counter = 0;
 
             ImGui::Begin("debug window");  // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Text("This is some useful text.");           // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);  // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-            float cenetr_x = debugInfo.look_x + 0.3f;
-            float cenetr_y = debugInfo.look_y + 0.3f;
-            float cenetr_z = debugInfo.look_z + 0.3f;
+            //ImGui::Text("This is some useful text.");           // Display some text (you can use a format strings too)
+            //ImGui::Checkbox("Demo Window", &show_demo_window);  // Edit bools storing our window open/close state
+            //ImGui::Checkbox("Another Window", &show_another_window);
+            float center_x = debugInfo.look_x + 0.3f;
+            float center_y = debugInfo.look_y + 0.3f;
+            float center_z = debugInfo.look_z + 0.3f;
             ImGui::SliderFloat("speed", &debugInfo.speed, .0f, 180.0f);
             ImGui::SliderFloat("look at x", &debugInfo.look_x, .0f, 8.f);
             ImGui::SliderFloat("look at y", &debugInfo.look_y, .0f, 8.f);
             ImGui::SliderFloat("look at z", &debugInfo.look_z, .0f, 8.f);
 
-            ImGui::SliderFloat("center x", &debugInfo.center_x, .0f, cenetr_x);
-            ImGui::SliderFloat("center y", &debugInfo.center_y, .0f, cenetr_y);
-            ImGui::SliderFloat("center z", &debugInfo.center_z, .0f, cenetr_z);
+            ImGui::SliderFloat("center x", &debugInfo.center_x, .0f, center_x);
+            ImGui::SliderFloat("center y", &debugInfo.center_y, .0f, center_y);
+            ImGui::SliderFloat("center z", &debugInfo.center_z, .0f, center_z);
 
             ImGui::SliderFloat("up x", &debugInfo.up_x, .0f, 2.f);
             ImGui::SliderFloat("up y", &debugInfo.up_y, .0f, 2.f);
@@ -178,13 +178,13 @@ void Imgui::createRenderPass(){
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &colorReference;
 
-    VkSubpassDependency supassDependency{};
-    supassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    supassDependency.dstSubpass = 0;
-    supassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    supassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    supassDependency.srcAccessMask = 0;
-    supassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkSubpassDependency subpassDependency{};
+    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpassDependency.dstSubpass = 0;
+    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDependency.srcAccessMask = 0;
+    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     VkRenderPassCreateInfo renderPassCreateInfo{};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -193,7 +193,7 @@ void Imgui::createRenderPass(){
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.dependencyCount = 1;
-    renderPassCreateInfo.pDependencies = &supassDependency;
+    renderPassCreateInfo.pDependencies = &subpassDependency;
 
     vkCreateRenderPass(device_, &renderPassCreateInfo, nullptr, &renderPass);
 }
