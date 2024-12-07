@@ -1,9 +1,7 @@
 #pragma once
 #include <memory>
 #include <unordered_map>
-
-#include "core/device.hpp"
-
+#include <vulkan/vulkan.hpp>
 namespace g {
 
 class DescriptorSetLayout {
@@ -15,11 +13,10 @@ class DescriptorSetLayout {
             public:
                 auto addBinding(uint32_t binding, ::vk::DescriptorType type, ::vk::ShaderStageFlags stageFlags,
                                 uint32_t count = 1) -> Builder &;
-                auto build(core::Device &device) -> ::std::unique_ptr<DescriptorSetLayout>;
+                auto build() -> ::std::unique_ptr<DescriptorSetLayout>;
         };
 
-        DescriptorSetLayout(core::Device &device,
-                            ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> bindings);
+        DescriptorSetLayout(::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> bindings);
         ~DescriptorSetLayout();
         DescriptorSetLayout(const DescriptorSetLayout &) = delete;
         DescriptorSetLayout(DescriptorSetLayout &&) = delete;
@@ -32,7 +29,6 @@ class DescriptorSetLayout {
         friend class DescriptorWriter;
 
     private:
-        ::vk::Device device_;
         ::vk::DescriptorSetLayout descriptorSetLayout_;
         ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings_;
 };
@@ -49,9 +45,9 @@ class DescriptorPool {
                 auto addPoolSize(::vk::DescriptorType type, uint32_t count) -> Builder &;
                 auto setPoolFlags(::vk::DescriptorPoolCreateFlags flags) -> Builder &;
                 auto setMaxSets(uint32_t maxSets) -> Builder &;
-                auto build(core::Device &device) -> ::std::unique_ptr<DescriptorPool>;
+                auto build() -> ::std::unique_ptr<DescriptorPool>;
         };
-        DescriptorPool(core::Device &device, uint32_t maxSets, ::vk::DescriptorPoolCreateFlags flags,
+        DescriptorPool(uint32_t maxSets, ::vk::DescriptorPoolCreateFlags flags,
                        ::std::vector<::vk::DescriptorPoolSize> poolSizes);
         ~DescriptorPool();
         DescriptorPool(const DescriptorPool &) = delete;
@@ -66,7 +62,6 @@ class DescriptorPool {
         friend class DescriptorWriter;
 
     private:
-        ::vk::Device device_;
         ::vk::DescriptorPool descriptorPool_;
 };
 
@@ -83,7 +78,7 @@ class DescriptorWriter {
         // DescriptorSetLayout &descriptorSetLayout_;
         // DescriptorPool &pool_;
         std::vector<::vk::WriteDescriptorSet> writeDescriptorSets_;
-        void overwrite(const vk::Device &device, const ::vk::DescriptorSet &descriptorSet);
+        void overwrite(const ::vk::DescriptorSet &descriptorSet);
 };
 
 }  // namespace g

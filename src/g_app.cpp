@@ -22,7 +22,7 @@ void App::run() {
         DescriptorSetLayout::Builder()
             .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
             .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler, ::vk::ShaderStageFlagBits::eAllGraphics)
-            .build(device_);
+            .build();
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
     for (auto& uboBuffer : uboBuffers) {
@@ -118,7 +118,6 @@ App::App() {
         Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); }, enableValidationLayers);
     constexpr unsigned count = 1000;
-    core::Device device_;
 
     descriptorPool_ = DescriptorPool::Builder()
                             .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
@@ -134,7 +133,7 @@ App::App() {
                           .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
                           .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
                           .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
-                          .build(device_);
+                          .build();
     loadGameObjects();
 }
 
