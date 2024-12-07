@@ -28,23 +28,6 @@ using CreateSurfaceFunc = ::std::function<::vk::SurfaceKHR(::vk::Instance)>;
  */
 class Device final {
     private:
-        ::vk::PhysicalDevice phyDevice;
-        ::vk::Device device_;
-        ::vk::Queue graphicsQueue;
-        ::vk::Queue presentQueue;
-        ::vk::Queue computeQueue;
-        ::vk::SurfaceKHR vkSurfaceKHR;
-        ::vk::Instance vkInstance;
-        ::vk::CommandPool cmdPool_;
-        bool enableValidationLayers_;
-        void pickupPhysicalDevice(const ::std::vector<const char*>& deviceExtensions);
-        void createLogicalDevice(const ::std::vector<const char*>& deviceExtensions);
-        void getQueues();
-        void initCmdPool();
-        void createInstance(const std::vector<const char*>& instanceExtends);
-        auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& deviceExtensions)
-            -> bool;
-        auto getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits;
 
     public:
         struct QueueFamilyIndices {
@@ -73,17 +56,13 @@ class Device final {
                     return computeQueue.value();
                 }
         };
-        Device(Device&) = delete;
-        auto operator=(const Device&) -> Device& = delete;
-        Device(Device&&) = delete;
-        auto operator=(Device&&) -> Device& = delete;
-
-        Device(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
+        Device();
+        static void init(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
                const CreateSurfaceFunc& createFunc, bool enableValidationLayers = false);
-        void queryQueueFamilyIndices(::vk::PhysicalDevice device);
+        
         using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
-        QueueFamilyIndices queueFamilyIndices;
-        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }
+        
+        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits;
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
                           ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
@@ -97,7 +76,8 @@ class Device final {
         auto getPhysicalDevice() -> ::vk::PhysicalDevice&;
         auto getGraphicsQueue() -> ::vk::Queue&;
         auto getPresentQueue() -> ::vk::Queue&;
-        auto getComputeQueue() -> ::vk::Queue& { return computeQueue; }
+        auto getComputeQueue() -> ::vk::Queue&;
+        auto getQueueFamilyIndices() -> QueueFamilyIndices;
         /**
          * @brief vk logical device
          *
@@ -106,8 +86,8 @@ class Device final {
         auto logicalDevice() -> ::vk::Device&;
         auto findSupportedFormat(const std::vector<::vk::Format>& candidates, ::vk::ImageTiling tiling,
                                  ::vk::FormatFeatureFlags features) -> ::vk::Format;
-        auto getCommandPool() -> ::vk::CommandPool { return cmdPool_; }
-        auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails;
+        auto getCommandPool() -> ::vk::CommandPool&;
+        auto querySwapchainSupport() -> SwapchainSupportDetails;
         void executeCmd(const RecordCmdFunc& func) const;
         auto getMaxAnisotropy() -> float;
         ~Device();

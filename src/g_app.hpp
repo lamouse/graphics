@@ -33,9 +33,6 @@ class App {
 #else
         static constexpr bool enableValidationLayers = true;
 #endif
-        core::Device device_{Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
-                             [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
-                             enableValidationLayers};
         config::ImageQuality imageQualityConfig;
         GameObject::Map gameObjects;
         void loadGameObjects();

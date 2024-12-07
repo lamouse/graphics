@@ -13,7 +13,10 @@ RenderProcesser::RenderProcesser(core::Device& device, getScreenExtendFunc getSc
     allcoCmdBuffer();
 }
 
-RenderProcesser::~RenderProcesser() { device_.logicalDevice().destroyRenderPass(renderPass_); }
+RenderProcesser::~RenderProcesser() {
+    device_.logicalDevice().destroyRenderPass(renderPass_);
+    device_.logicalDevice().freeCommandBuffers(device_.getCommandPool(), commandBuffers_);
+}
 
 void RenderProcesser::createSwapchain() {
     auto extent = getScreenExtend_();

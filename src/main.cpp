@@ -15,8 +15,8 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
 #else
     #error "need set spd log level"
 #endif
-    g::App app;
     try {
+        g::App app;
         app.run();
     } catch (const ::std::exception& e) {
         ::spdlog::error(e.what());

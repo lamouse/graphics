@@ -16,6 +16,7 @@
 namespace g {
 
 void App::run() {
+    core::Device device_;
     auto setLayout =
         DescriptorSetLayout::Builder()
             .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
@@ -101,13 +102,19 @@ void App::run() {
 }
 
 void App::loadGameObjects() {
+    core::Device device_;
     auto cube = GameObject::createGameObject();
     cube.model = Model::createFromFile("models/viking_room.obj", device_);
     gameObjects.emplace(cube.getId(), ::std::move(cube));
 }
 
 App::App() {
+    core::Device::init(
+        Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
+        [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); }, enableValidationLayers);
     constexpr unsigned count = 1000;
+    core::Device device_;
+
     descriptorPool_ = DescriptorPool::Builder()
                             .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
                           .setMaxSets(count)

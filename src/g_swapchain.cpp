@@ -15,7 +15,7 @@ Swapchain::Swapchain(core::Device& device_, int width, int height, ::vk::SampleC
 }
 
 void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain) {
-    auto swapchainSupports = device_.querySwapchainSupport(device_.getPhysicalDevice());
+    auto swapchainSupports = device_.querySwapchainSupport();
     auto format = chooseSwapSurfaceFormat(swapchainSupports.formats);
     imageFormat = format.format;
     extent_ = chooseSwapExtent(swapchainSupports.capabilities, width, height);
@@ -37,7 +37,7 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         .setPresentMode(presentMode)
         .setPreTransform(swapchainSupports.capabilities.currentTransform)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
-    const auto& queueIndices = device_.queueFamilyIndices;
+    const auto& queueIndices = device_.getQueueFamilyIndices();
     if (queueIndices.graphicsIndex() == queueIndices.presentIndex()) {
         createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     } else {

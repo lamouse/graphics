@@ -64,7 +64,7 @@ void Imgui::init(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool&
     init_info.Instance = device.getVKInstance();
     init_info.PhysicalDevice = device.getPhysicalDevice();
     init_info.Device = device.logicalDevice();
-    init_info.QueueFamily = device.queueFamilyIndices.graphicsIndex();
+    init_info.QueueFamily = device.getQueueFamilyIndices().graphicsIndex();
     init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = descriptorPool;
