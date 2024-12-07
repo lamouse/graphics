@@ -12,6 +12,7 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
+#include <thread>
 
 namespace g {
 
@@ -43,7 +44,7 @@ void App::run() {
             .build(*descriptorPool_, (*setLayout)());
     }
 
-    RenderProcesser render(device_, [this]() {
+    RenderProcessor render( [this]() {
         return window.getExtent();
     });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
@@ -65,8 +66,12 @@ void App::run() {
     debugInfo.center_y = 0;
     debugInfo.center_z = 0;
     while (!window.shouldClose()) {
-        g::Imgui::draw(debugInfo);
+        glfwPollEvents();
 
+        if (glfwGetWindowAttrib(window(), GLFW_ICONIFIED) != 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
         auto currentTime = ::std::chrono::high_resolution_clock::now();
         float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
         UniformBufferObject ubo{};
@@ -79,7 +84,6 @@ void App::run() {
                                       debugInfo.z_near);
         ubo.proj[1][1] *= -1;
 
-        glfwPollEvents();
         if (render.beginFrame()) {
             uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
             uboBuffers[render.getCurrentFrameIndex()]->flush();
@@ -96,6 +100,7 @@ void App::run() {
             render.endSwapchainRenderPass();
             render.endFrame();
         }
+        g::Imgui::draw(debugInfo);
     }
 
     device_.logicalDevice().waitIdle();

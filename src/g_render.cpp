@@ -1,27 +1,29 @@
 #include "g_render.hpp"
-
+#include "core/device.hpp"
 #include <cassert>
 #include <utility>
 
 
 namespace g {
-RenderProcesser::RenderProcesser(core::Device& device, getScreenExtendFunc getScreenExtend)
-    : device_(device), sampleCount_(device_.getMaxMsaaSamples()), getScreenExtend_(std::move(getScreenExtend)) {
+RenderProcessor::RenderProcessor(getScreenExtendFunc getScreenExtend)
+    : getScreenExtend_(std::move(getScreenExtend)) {
     createSwapchain();
     createRenderPass();
     swapchain->createFrameBuffers(renderPass_);
     allcoCmdBuffer();
 }
 
-RenderProcesser::~RenderProcesser() {
-    device_.logicalDevice().destroyRenderPass(renderPass_);
-    device_.logicalDevice().freeCommandBuffers(device_.getCommandPool(), commandBuffers_);
+RenderProcessor::~RenderProcessor() {
+    core::Device device;
+    device.logicalDevice().destroyRenderPass(renderPass_);
+    device.logicalDevice().freeCommandBuffers(device.getCommandPool(), commandBuffers_);
 }
 
-void RenderProcesser::createSwapchain() {
+void RenderProcessor::createSwapchain() {
     auto extent = getScreenExtend_();
-    device_.logicalDevice().waitIdle();
-    ::vk::SampleCountFlagBits sampleCount = device_.getMaxMsaaSamples();
+    core::Device device;
+    device.logicalDevice().waitIdle();
+    ::vk::SampleCountFlagBits sampleCount = device.getMaxMsaaSamples();
     if (swapchain == nullptr) {
         swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height, sampleCount);
     } else {
@@ -34,7 +36,7 @@ void RenderProcesser::createSwapchain() {
     }
 }
 
-auto RenderProcesser::beginFrame() -> bool {
+auto RenderProcessor::beginFrame() -> bool {
     auto result = swapchain->acquireNextImage();
 
     if (result.result == ::vk::Result::eErrorOutOfDateKHR) {
@@ -56,7 +58,7 @@ auto RenderProcesser::beginFrame() -> bool {
     return isFrameStart;
 }
 
-void RenderProcesser::endFrame() {
+void RenderProcessor::endFrame() {
     assert(isFrameStart && "can't call begin swapchain render pass is frame not in progress");
     try {
         const auto result = swapchain->submitCommand(getCurrentCommandBuffer(), currentImageIndex);
@@ -74,29 +76,31 @@ void RenderProcesser::endFrame() {
     currentFrameIndex = (currentFrameIndex + 1) % swapchain->MAX_FRAME_IN_FLIGHT;
 }
 
-void RenderProcesser::beginSwapchainRenderPass() {
+void RenderProcessor::beginSwapchainRenderPass() {
     assert(isFrameStart && "can't call beginSwapchainRenderPass  is frame not in progress");
     swapchain->beginRenderPass(getCurrentCommandBuffer(), renderPass_, currentImageIndex);
 }
 
-void RenderProcesser::endSwapchainRenderPass() {
+void RenderProcessor::endSwapchainRenderPass() {
     getCurrentCommandBuffer().endRenderPass();
     getCurrentCommandBuffer().end();
 }
 
-void RenderProcesser::allcoCmdBuffer() {
+void RenderProcessor::allcoCmdBuffer() {
+    core::Device device;
     ::vk::CommandBufferAllocateInfo allocInfo;
-    allocInfo.setCommandPool(device_.getCommandPool())
+    allocInfo.setCommandPool(device.getCommandPool())
         .setCommandBufferCount(swapchain->MAX_FRAME_IN_FLIGHT)
         .setLevel(::vk::CommandBufferLevel::ePrimary);
 
-    commandBuffers_ = device_.logicalDevice().allocateCommandBuffers(allocInfo);
+    commandBuffers_ = device.logicalDevice().allocateCommandBuffers(allocInfo);
 }
 
-void RenderProcesser::createRenderPass() {
+void RenderProcessor::createRenderPass() {
+    core::Device device;
     ::vk::AttachmentDescription colorAttachment;
     colorAttachment.setFormat(swapchain->getSwapchainColorFormat())
-        .setSamples(sampleCount_)
+        .setSamples(device.getMaxMsaaSamples())
         .setLoadOp(::vk::AttachmentLoadOp::eClear)
         .setStoreOp(::vk::AttachmentStoreOp::eStore)
         .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
@@ -106,7 +110,7 @@ void RenderProcesser::createRenderPass() {
 
     ::vk::AttachmentDescription depthAttachment;
     depthAttachment.setFormat(swapchain->getSwapchainDepthFormat())
-        .setSamples(sampleCount_)
+        .setSamples(device.getMaxMsaaSamples())
         .setLoadOp(::vk::AttachmentLoadOp::eClear)
         .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
         .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
@@ -149,7 +153,7 @@ void RenderProcesser::createRenderPass() {
 
     ::vk::RenderPassCreateInfo createInfo;
     createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subpassDependency);
-    renderPass_ = device_.logicalDevice().createRenderPass(createInfo);
+    renderPass_ = device.logicalDevice().createRenderPass(createInfo);
 }
 
 }  // namespace g

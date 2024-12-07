@@ -6,12 +6,12 @@
 
 #include <spdlog/spdlog.h>
 
+#include "core/device.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
-#include  "core/device.hpp"
-namespace g{
 
+namespace g {
 
 namespace {
 
@@ -47,9 +47,10 @@ void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
     io.ConfigViewportsNoAutoMerge = true;
-    // Setup Dear ImGui style
-    // ImGui::StyleColorsDark();
-    ImGui::StyleColorsLight();
+    io.ConfigViewportsNoTaskBarIcon = true;
+    //  Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsLight();
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular
     // ones.
@@ -80,31 +81,14 @@ void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float
 }
 
 void Imgui::draw(ImguiDebugInfo& debugInfo) {
-    auto* mainviewport = ImGui::GetMainViewport();
-    mainviewport->Flags |= ImGuiViewportFlags_NoRendererClear;
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    static bool show_demo_window = false;
-    static bool show_another_window = false;
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 650, main_viewport->WorkPos.y + 20),
-                            ImGuiCond_FirstUseEver);
     {
-        // if (show_demo_window) {
-        //     ImGui::ShowDemoWindow(&show_demo_window);
-        // }
         {
-            static int counter = 0;
-
             ImGui::Begin("debug window");  // Create a window called "Hello, world!" and append into it.
-
-            //ImGui::Text("This is some useful text.");           // Display some text (you can use a format strings too)
-            //ImGui::Checkbox("Demo Window", &show_demo_window);  // Edit bools storing our window open/close state
-            //ImGui::Checkbox("Another Window", &show_another_window);
             float center_x = debugInfo.look_x + 0.3f;
             float center_y = debugInfo.look_y + 0.3f;
             float center_z = debugInfo.look_z + 0.3f;
@@ -130,24 +114,8 @@ void Imgui::draw(ImguiDebugInfo& debugInfo) {
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
 
-            if (ImGui::Button(
-                    "Button")) {  // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            }
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
-        }
-
-        if (show_another_window) {
-            ImGui::Begin("Another Window");  // Pass a pointer to our bool variable (the window will have a closing
-                                             // button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me")) {
-                show_another_window = false;
-            }
             ImGui::End();
         }
     }
@@ -159,7 +127,7 @@ void Imgui::draw(ImguiDebugInfo& debugInfo) {
     }
 }
 
-void Imgui::createRenderPass(){
+void Imgui::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -208,4 +176,4 @@ Imgui::~Imgui() {
     device.logicalDevice().destroyRenderPass(renderPass);
 }
 
-}
+}  // namespace g

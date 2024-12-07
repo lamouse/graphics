@@ -103,8 +103,8 @@ auto GraphicsPipeLine::operator=(GraphicsPipeLine&& rvalue)  noexcept -> Graphic
     return *this;
 }
 GraphicsPipeLine::~GraphicsPipeLine(){
-    SPDLOG_DEBUG("destroy Graphics pipeline");
     if (pipeline) {
+        SPDLOG_DEBUG("destroy Graphics pipeline");
         core::Device device;
         device.logicalDevice().destroyPipeline(pipeline);
     }
