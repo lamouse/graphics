@@ -31,7 +31,6 @@ RenderSystem::RenderSystem(::core::Device& device, ::vk::RenderPass renderPass,
 RenderSystem::~RenderSystem() {
     spdlog::debug(DETAIL_INFO("RenderSystem"));
     const auto& device = device_.logicalDevice();
-    device.destroyPipeline(pipeline());
     device.destroyPipelineLayout(pipelineLayout);
 }
 
@@ -62,7 +61,7 @@ void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
     defaultConfig.attributeDescriptions = Model::Vertex::getAttributeDescription();
     defaultConfig.bindingDescriptions = Model::Vertex::getBindingDescription();
     defaultConfig.multisampleInfo.setRasterizationSamples(device_.getMaxMsaaSamples());
-    pipeline.initPipeline(device_.logicalDevice(), defaultConfig);
+    pipeline = std:: move(GraphicsPipeLine( defaultConfig));
 }
 
 }  // namespace g

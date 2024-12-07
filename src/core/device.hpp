@@ -3,7 +3,7 @@
 #include <functional>
 #include <optional>
 #include <vulkan/vulkan.hpp>
-
+#include <source_location>
 namespace core {
 
 /**
@@ -56,12 +56,18 @@ class Device final {
                     return computeQueue.value();
                 }
         };
-        Device();
+
+        enum class DeviceQueue : uint8_t { graphics, compute, present};
+        explicit Device(const std::source_location& location = std::source_location::current());
+        Device(const Device&) = default;
+        Device(Device&&) = default;
+        auto operator=(const Device&) -> Device& = default;
+        auto operator=(Device&&) -> Device& = default;
         static void init(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
                const CreateSurfaceFunc& createFunc, bool enableValidationLayers = false);
-        
-        using RecordCmdFunc = std::function<void(vk::CommandBuffer&)>;
-        
+
+        using CmdFunc = std::function<void(vk::CommandBuffer&)>;
+
         auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits;
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
@@ -74,9 +80,7 @@ class Device final {
         auto getVKInstance() -> ::vk::Instance&;
         auto getSurface() -> ::vk::SurfaceKHR&;
         auto getPhysicalDevice() -> ::vk::PhysicalDevice&;
-        auto getGraphicsQueue() -> ::vk::Queue&;
-        auto getPresentQueue() -> ::vk::Queue&;
-        auto getComputeQueue() -> ::vk::Queue&;
+        auto getQueue(DeviceQueue queue) -> ::vk::Queue&;
         auto getQueueFamilyIndices() -> QueueFamilyIndices;
         /**
          * @brief vk logical device
@@ -88,7 +92,8 @@ class Device final {
                                  ::vk::FormatFeatureFlags features) -> ::vk::Format;
         auto getCommandPool() -> ::vk::CommandPool&;
         auto querySwapchainSupport() -> SwapchainSupportDetails;
-        void executeCmd(const RecordCmdFunc& func) const;
+        void executeCmd(const CmdFunc& func) const;
+
         auto getMaxAnisotropy() -> float;
         ~Device();
 };

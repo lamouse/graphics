@@ -8,7 +8,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "core/device.hpp"
+#include <vulkan/vulkan.hpp>
 namespace g{
 struct ImguiDebugInfo {
         float speed;
@@ -35,12 +35,11 @@ struct ImguiDebugInfo {
     class Imgui {
     private:
         ::VkRenderPass renderPass;
-        ::vk::Device device_;
         void createRenderPass();
     public:
-        void init(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool& descriptorPool, float scale = 1.0f);
+        void init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale = 1.0f);
         static void draw(ImguiDebugInfo& debugInfo);
-        explicit Imgui(core::Device& device):device_(device.logicalDevice()){createRenderPass();};
+        explicit Imgui(){createRenderPass();};
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;

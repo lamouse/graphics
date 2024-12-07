@@ -1,5 +1,5 @@
 #include "g_model.hpp"
-
+#include "core/device.hpp"
 #include <cassert>
 #include <unordered_map>
 
@@ -16,10 +16,11 @@ void Model::bind(const ::vk::CommandBuffer& commandBuffer)const {
     commandBuffer.bindIndexBuffer(indexBuffer_(), 0, ::vk::IndexType::eUint16);
 }
 
-Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices, core::Device& device)
-    : vertexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(),
+Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
+    : vertexBuffer_(core::DeviceBuffer::create(::vk::BufferUsageFlagBits::eVertexBuffer,
+                                                                   vertices.data(),
                                                sizeof(vertices[0]) * vertices.size())),
-      indexBuffer_(core::DeviceBuffer::create(device, ::vk::BufferUsageFlagBits::eIndexBuffer, indices.data(),
+      indexBuffer_(core::DeviceBuffer::create(::vk::BufferUsageFlagBits::eIndexBuffer, indices.data(),
                                               sizeof(indices[0]) * indices.size())), vertexCount(static_cast<uint32_t>(vertices.size())), indicesSize(static_cast<uint32_t>(indices.size())) {
 
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
@@ -52,7 +53,8 @@ auto Model::Vertex::getAttributeDescription() -> ::std::vector<::vk::VertexInput
     return attributeDescriptions;
 }
 
-auto Model::createFromFile(const ::std::string& path, core::Device& device) -> ::std::unique_ptr<Model> {
+auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model> {
+    core::Device device;
     ::tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -87,7 +89,7 @@ auto Model::createFromFile(const ::std::string& path, core::Device& device) -> :
         }
     }
 
-    return std::make_unique<Model>(vertices, indices, device);
+    return std::make_unique<Model>(vertices, indices);
 }
 
 }  // namespace g

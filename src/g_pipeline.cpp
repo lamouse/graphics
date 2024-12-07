@@ -1,8 +1,10 @@
 #include "g_pipeline.hpp"
+#include "core/device.hpp"
+#include <spdlog/spdlog.h>
 
 namespace g {
 
-void GraphicsPipeLine::initPipeline(const ::vk::Device& device, PipelineConfigInfo& configInfo) {
+GraphicsPipeLine::GraphicsPipeLine( PipelineConfigInfo& configInfo) {
     ::vk::GraphicsPipelineCreateInfo createInfo;
 
     ::vk::PipelineVertexInputStateCreateInfo inputState;
@@ -23,7 +25,9 @@ void GraphicsPipeLine::initPipeline(const ::vk::Device& device, PipelineConfigIn
         .setBasePipelineIndex(-1)
         .setRenderPass(configInfo.renderPass)
         .setSubpass(0);
-    const auto result = device.createGraphicsPipeline(nullptr, createInfo);
+    core::Device device;
+
+    const auto result = device.logicalDevice().createGraphicsPipeline(nullptr, createInfo);
     if (result.result != vk::Result::eSuccess) {
         throw ::std::runtime_error("create graphics pipeline failed");
     }
@@ -31,8 +35,10 @@ void GraphicsPipeLine::initPipeline(const ::vk::Device& device, PipelineConfigIn
     pipeline = result.value;
 }
 
+GraphicsPipeLine::GraphicsPipeLine() {}
+
 void GraphicsPipeLine::enableAlphaBlending(PipelineConfigInfo& configInfo) {
-    configInfo.colorBlendAttachsInfo.setBlendEnable(VK_TRUE)
+    configInfo.colorBlendAttachmentInfo.setBlendEnable(VK_TRUE)
         .setColorWriteMask(::vk::ColorComponentFlagBits::eR | ::vk::ColorComponentFlagBits::eG |
                            ::vk::ColorComponentFlagBits::eB | ::vk::ColorComponentFlagBits::eA)
         .setSrcColorBlendFactor(::vk::BlendFactor::eSrc1Alpha)
@@ -58,12 +64,12 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
 
     configInfo.multisampleInfo.setSampleShadingEnable(false).setRasterizationSamples(::vk::SampleCountFlagBits::e1);
 
-    configInfo.colorBlendAttachsInfo.setBlendEnable(VK_FALSE).setColorWriteMask(
+    configInfo.colorBlendAttachmentInfo.setBlendEnable(VK_FALSE).setColorWriteMask(
         ::vk::ColorComponentFlagBits::eR | ::vk::ColorComponentFlagBits::eG | ::vk::ColorComponentFlagBits::eB |
         ::vk::ColorComponentFlagBits::eA);
     configInfo.colorBlendInfo.setLogicOpEnable(false)
         .setLogicOp(vk::LogicOp::eCopy)
-        .setAttachments(configInfo.colorBlendAttachsInfo)
+        .setAttachments(configInfo.colorBlendAttachmentInfo)
         .setBlendConstants({.0f, .0f, 0.f, .0f});
 
     configInfo.rasterizationStateInfo.setRasterizerDiscardEnable(VK_FALSE)
@@ -87,32 +93,48 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
     return configInfo;
 }
 
-void GraphicsPipeLine::destroy(const ::vk::Device& device) const { device.destroyPipeline(pipeline); }
+GraphicsPipeLine::GraphicsPipeLine(GraphicsPipeLine&& pipeline) noexcept : pipeline(pipeline.pipeline) {
 
-void ComputePipeline::init(const ::vk::Device& device, const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
-                           const ::vk::DescriptorSetLayout& descriptorSetLayout) {
-    createPipelineLayout(device, descriptorSetLayout);
-    createPipeline(device, shaderStageCreateInfo);
+    pipeline.pipeline = nullptr;
+}
+auto GraphicsPipeLine::operator=(GraphicsPipeLine&& rvalue)  noexcept -> GraphicsPipeLine&{
+    this->pipeline = rvalue.pipeline;
+    rvalue.pipeline = nullptr;
+    return *this;
+}
+GraphicsPipeLine::~GraphicsPipeLine(){
+    SPDLOG_DEBUG("destroy Graphics pipeline");
+    if (pipeline) {
+        core::Device device;
+        device.logicalDevice().destroyPipeline(pipeline);
+    }
 }
 
-void ComputePipeline::createPipelineLayout(const ::vk::Device& device,
-                                           const ::vk::DescriptorSetLayout& descriptorSetLayout) {
+void ComputePipeline::init( const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
+                           const ::vk::DescriptorSetLayout& descriptorSetLayout) {
+    createPipelineLayout(descriptorSetLayout);
+    createPipeline(shaderStageCreateInfo);
+}
+
+void ComputePipeline::createPipelineLayout(const ::vk::DescriptorSetLayout& descriptorSetLayout) {
     ::vk::PipelineLayoutCreateInfo pipelineLayoutInfo;
     pipelineLayoutInfo.setSetLayouts(descriptorSetLayout);
-    pipelineLayout_ = device.createPipelineLayout(pipelineLayoutInfo, nullptr);
+    core::Device device;
+    pipelineLayout_ = device.logicalDevice().createPipelineLayout(pipelineLayoutInfo, nullptr);
 }
 
-void ComputePipeline::destroy(const vk::Device& device) const {
-    device.destroyPipeline(pipeline_);
-    device.destroyPipelineLayout(pipelineLayout_);
+void ComputePipeline::destroy() const {
+    core::Device device;
+    device.logicalDevice().destroyPipeline(pipeline_);
+    device.logicalDevice().destroyPipelineLayout(pipelineLayout_);
 }
 
-void ComputePipeline::createPipeline(const ::vk::Device& device,
-                                     const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo) {
+void ComputePipeline::createPipeline(const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo) {
     ::vk::ComputePipelineCreateInfo createInfo;
     createInfo.setStage(shaderStageCreateInfo);
     createInfo.setLayout(pipelineLayout_);
-    const auto result = device.createComputePipelines(nullptr, createInfo);
+    core::Device device;
+    const auto result = device.logicalDevice().createComputePipelines(nullptr, createInfo);
     if (result.result != ::vk::Result::eSuccess) {
         throw ::std::runtime_error("create compute pipeline failed");
     }

@@ -9,6 +9,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
+#include  "core/device.hpp"
 namespace g{
 
 
@@ -32,8 +33,8 @@ void check_vk_result(VkResult err) {
  * @param descriptorPool
  * @param scale
  */
-void Imgui::init(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool& descriptorPool, float scale) {
-
+void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale) {
+    core::Device device;
     // 这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -65,7 +66,7 @@ void Imgui::init(GLFWwindow* window, core::Device& device, ::vk::DescriptorPool&
     init_info.PhysicalDevice = device.getPhysicalDevice();
     init_info.Device = device.logicalDevice();
     init_info.QueueFamily = device.getQueueFamilyIndices().graphicsIndex();
-    init_info.Queue = device.getGraphicsQueue();
+    init_info.Queue = device.getQueue(core::Device::DeviceQueue::graphics);
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = descriptorPool;
     init_info.Subpass = 0;
@@ -194,15 +195,17 @@ void Imgui::createRenderPass(){
     renderPassCreateInfo.pSubpasses = &subpassDescription;
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &subpassDependency;
-
-    vkCreateRenderPass(device_, &renderPassCreateInfo, nullptr, &renderPass);
+    core::Device device;
+    vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &renderPass);
 }
 
 Imgui::~Imgui() {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    device_.destroyRenderPass(renderPass);
+    core::Device device;
+
+    device.logicalDevice().destroyRenderPass(renderPass);
 }
 
 }

@@ -4,6 +4,7 @@
 #include <ranges>
 #include <set>
 #include <mutex>
+#include <fmt/core.h>
 
 namespace core {
 namespace {
@@ -273,9 +274,9 @@ auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetai
 
 }  // namespace
 
-Device::Device(){
+Device::Device(const std::source_location& location) {
     std::call_once(device_init_once_, [&]() {
-        throw std::runtime_error("use core device fist need call Device::init()");
+        throw std::runtime_error(fmt::format("use core device fist need call Device::init()\n file {}:{}", location.file_name(), location.line()));
     });
 
 }
@@ -300,16 +301,6 @@ Device::~Device() {
 
 }
 
-
-
-
-
-
-
-
-
-
-
 auto Device::getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }
 
 void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
@@ -327,7 +318,7 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, :
 
 
 
-void Device::executeCmd(const RecordCmdFunc& func) const {
+void Device::executeCmd(const CmdFunc& func) const {
     const ::vk::CommandBufferAllocateInfo allocInfo(resource.cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
     auto commandBuffer = resource.device_.allocateCommandBuffers(allocInfo)[0];
     const ::vk::CommandBufferBeginInfo beginInfo(::vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
@@ -350,10 +341,6 @@ auto Device::getSurface() -> ::vk::SurfaceKHR& { return resource.vkSurfaceKHR; }
 
 auto Device::getPhysicalDevice() -> ::vk::PhysicalDevice& { return resource.phyDevice; }
 
-auto Device::getGraphicsQueue() -> ::vk::Queue& { return resource.graphicsQueue; }
-
-auto Device::getPresentQueue() -> ::vk::Queue& { return resource.presentQueue; }
-
 auto Device::findSupportedFormat(const std::vector<::vk::Format>& candidates, ::vk::ImageTiling tiling,
                                  ::vk::FormatFeatureFlags features) -> ::vk::Format {
     for (const auto& format : candidates) {
@@ -370,8 +357,20 @@ auto Device::findSupportedFormat(const std::vector<::vk::Format>& candidates, ::
 }
 
 auto Device::logicalDevice() -> ::vk::Device& { return resource.device_; }
-auto Device::getComputeQueue() -> ::vk::Queue& { return resource.computeQueue; }
 auto Device::getCommandPool() -> ::vk::CommandPool& { return resource.cmdPool_; }
+
+auto Device::getQueue(DeviceQueue queue) -> ::vk::Queue& {
+    switch (queue) {
+        case DeviceQueue::compute:
+            return resource.computeQueue;
+        case DeviceQueue::graphics:
+            return resource.graphicsQueue;
+        case DeviceQueue::present:
+            return resource.presentQueue;
+//        default:
+//                   throw std::runtime_error("un know logic device queue type");
+    }
+}
 
 auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) -> uint32_t {
     ::vk::PhysicalDeviceMemoryProperties memProperties = resource.phyDevice.getMemoryProperties();

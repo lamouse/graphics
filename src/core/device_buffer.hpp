@@ -2,19 +2,16 @@
 #include <functional>
 #include <vulkan/vulkan.hpp>
 
-#include "device.hpp"
-
 
 namespace core {
 class DeviceBuffer {
     private:
         ::vk::Buffer buffer_;
         ::vk::DeviceMemory bufferMemory_;
-        ::std::reference_wrapper<::vk::Device> device_;
-        DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory, ::vk::Device& device);
+        DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory);
 
     public:
-        static auto create(Device& device, ::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size)
+        static auto create(::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size)
             -> DeviceBuffer;
         auto operator()()const -> ::vk::Buffer { return buffer_; }
         ~DeviceBuffer();

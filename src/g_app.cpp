@@ -47,8 +47,8 @@ void App::run() {
         return window.getExtent();
     });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    Imgui imgui(device_);
-    imgui.init(window(), device_, descriptorPool_->getDescriptorPool(), window.getScale());
+    Imgui imgui;
+    imgui.init(window(), descriptorPool_->getDescriptorPool(), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
     ImguiDebugInfo debugInfo{};
@@ -104,7 +104,7 @@ void App::run() {
 void App::loadGameObjects() {
     core::Device device_;
     auto cube = GameObject::createGameObject();
-    cube.model = Model::createFromFile("models/viking_room.obj", device_);
+    cube.model = Model::createFromFile("models/viking_room.obj");
     gameObjects.emplace(cube.getId(), ::std::move(cube));
 }
 

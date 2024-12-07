@@ -232,13 +232,14 @@ auto Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t image
         .setWaitSemaphores(imageAvailableSemaphores[currentFrame])
         .setSignalSemaphores(renderFinishSemaphores[currentFrame])
         .setWaitDstStageMask(stage);
-    device_.getGraphicsQueue().submit(submitInfo, inFlightFences[currentFrame]);
+    auto graphicsQueue = device_.getQueue(core::Device::DeviceQueue::graphics);
+    graphicsQueue.submit(submitInfo, inFlightFences[currentFrame]);
     ::vk::PresentInfoKHR presentInfo;
     presentInfo.setImageIndices(imageIndex)
         .setSwapchains(swapchain)
         .setWaitSemaphores(renderFinishSemaphores[currentFrame]);
-
-    const auto result = device_.getPresentQueue().presentKHR(presentInfo);
+    auto presentQueue = device_.getQueue(core::Device::DeviceQueue::present);
+    const auto result = presentQueue.presentKHR(presentInfo);
 
     currentFrame = (currentFrame + 1) % MAX_FRAME_IN_FLIGHT;
     return result;
