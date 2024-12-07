@@ -3,8 +3,6 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
-#include "core/device.hpp"
-
 namespace g {
 
 class Swapchain {
@@ -24,7 +22,7 @@ class Swapchain {
             return depthFormat == compareSwapchain.depthFormat && imageFormat == compareSwapchain.imageFormat;
         }
         ~Swapchain();
-        Swapchain(core::Device& device_, int width, int height, ::vk::SampleCountFlagBits sampleCount,
+        Swapchain(int width, int height, ::vk::SampleCountFlagBits sampleCount,
                   ::std::shared_ptr<Swapchain> oldSwapchain = nullptr);
         Swapchain(const Swapchain&) = delete;
         Swapchain(Swapchain&&) = delete;
@@ -74,7 +72,6 @@ class Swapchain {
             -> ::vk::Extent2D;
         [[nodiscard]] auto findDepthFormat() const -> ::vk::Format;
 
-        core::Device& device_;
         void init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain);
         void getImages();
         void createImageViews();

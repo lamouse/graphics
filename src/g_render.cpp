@@ -23,10 +23,10 @@ void RenderProcesser::createSwapchain() {
     device_.logicalDevice().waitIdle();
     ::vk::SampleCountFlagBits sampleCount = device_.getMaxMsaaSamples();
     if (swapchain == nullptr) {
-        swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount);
+        swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height, sampleCount);
     } else {
         ::std::shared_ptr<Swapchain> old = ::std::move(swapchain);
-        swapchain = ::std::make_unique<Swapchain>(device_, extent.width, extent.height, sampleCount, old);
+        swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height, sampleCount, old);
         swapchain->createFrameBuffers(renderPass_);
         if (!old->compareFormats(*swapchain)) {
             throw ::std::runtime_error("swapchain image(or depth) format has changed!");
