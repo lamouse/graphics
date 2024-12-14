@@ -1,0 +1,90 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "mingw-path",
+            "hidden": true,
+            "environment": {
+                "PATH":"D:\\Program\\msys264\\mingw64\\bin;$penv{path}"
+            }
+        },
+        {
+            "name": "vcpkg-root",
+            "hidden": true,
+            "environment": {
+                "VCPKG_ROOT": "D:\\Program\\vcpkg"
+            }
+        },
+        {
+            "name": "mingw-gcc-debug",
+            "displayName": "GCC 14.2.0 x86_64 (mingw64 debug)",
+            "description": "",
+            "inherits": ["vcpkg", "mingw-path", "vcpkg-root", "Debug"],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc.exe",
+                "CMAKE_CXX_COMPILER": "g++.exe",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
+            }
+        },
+        {
+            "name": "mingw-gcc-release",
+            "displayName": "GCC 14.2.0 x86_64(mingw64 release)",
+            "description": "",
+            "inherits": ["vcpkg","mingw-path", "vcpkg-root", "Release"],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc.exe",
+                "CMAKE_CXX_COMPILER": "g++.exe",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
+            }
+        },
+        {
+            "name": "msvc-debug",
+            "displayName": "Visual Studio 2022 - amd64(debug)",
+            "description": "将编译器用于 Visual Studio 17 2022 (x64 体系结构)",
+            "inherits": ["vcpkg","vcpkg-root", "Debug"],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            }
+        },
+        {
+            "name": "msvc-release",
+            "displayName": "Visual Studio 2022 - amd64(release)",
+            "description": "将编译器用于 Visual Studio 17 2022 (x64 体系结构)",
+            "inherits": ["vcpkg", "vcpkg-root", "Release"],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "mingw-gcc-debug",
+            "description": "",
+            "displayName": "Debug",
+            "verbose": true,
+            "configurePreset": "mingw-gcc-debug"
+        },
+        {
+            "name": "mingw-gcc-release",
+            "description": "",
+            "displayName": "Release",
+            "verbose": true,
+            "configurePreset": "mingw-gcc-release"
+        },
+        {
+            "name": "msvc-debug",
+            "displayName": "Debug",
+            "verbose": true,
+            "configurePreset": "msvc-debug"
+        },
+        {
+            "name": "msvc-release",
+            "displayName": "Release",
+            "verbose": true,
+            "configurePreset": "msvc-release",
+            "configuration": "Release"
+        }
+    ]
+}
