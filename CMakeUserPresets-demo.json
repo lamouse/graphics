@@ -1,5 +1,5 @@
 {
-    "version": 2,
+    "version": 3,
     "configurePresets": [
         {
             "name": "mingw-path",
@@ -16,46 +16,56 @@
             }
         },
         {
-            "name": "mingw-gcc-debug",
-            "displayName": "GCC 14.2.0 x86_64 (mingw64 debug)",
+            "name": "cmake-build-type",
+            "hidden": true,
+            "inherits": ["Debug", "Release", "MinSizeRel", "RelWithDebInfo"]
+        },
+        {
+            "name": "mingw",
+            "displayName": "GCC 14.2.0 x86_64(mingw64)",
             "description": "",
-            "inherits": ["vcpkg", "mingw-path", "vcpkg-root", "Debug"],
+            "hidden": true,
+            "inherits": ["vcpkg", "mingw-path", "vcpkg-root"],
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc.exe",
                 "CMAKE_CXX_COMPILER": "g++.exe",
                 "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
             }
+        },
+        {
+            "name": "mingw-gcc-debug",
+            "displayName": "GCC 14.2.0 x86_64(mingw64 debug)",
+            "description": "",
+            "inherits": ["mingw", "Debug"]
         },
         {
             "name": "mingw-gcc-release",
             "displayName": "GCC 14.2.0 x86_64(mingw64 release)",
             "description": "",
-            "inherits": ["vcpkg","mingw-path", "vcpkg-root", "Release"],
+            "inherits": ["mingw", "Debug"]
+        },
+        {
+            "name": "msvc",
+            "displayName": "Visual Studio 2022",
+            "description": "",
+            "hidden": true,
+            "inherits": ["vcpkg", "vcpkg-root"],
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc.exe",
-                "CMAKE_CXX_COMPILER": "g++.exe",
-                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
             }
         },
         {
             "name": "msvc-debug",
-            "displayName": "Visual Studio 2022 - amd64(debug)",
-            "description": "将编译器用于 Visual Studio 17 2022 (x64 体系结构)",
-            "inherits": ["vcpkg","vcpkg-root", "Debug"],
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
-            }
+            "displayName": "Visual Studio 2022 (debug)",
+            "description": "",
+            "inherits": ["msvc", "Debug"]
         },
         {
             "name": "msvc-release",
-            "displayName": "Visual Studio 2022 - amd64(release)",
-            "description": "将编译器用于 Visual Studio 17 2022 (x64 体系结构)",
-            "inherits": ["vcpkg", "vcpkg-root", "Release"],
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
-            }
+            "displayName": "Visual Studio 2022 (release)",
+            "description": "",
+            "inherits": ["msvc", "Release"]
         }
     ],
     "buildPresets": [
@@ -77,7 +87,8 @@
             "name": "msvc-debug",
             "displayName": "Debug",
             "verbose": true,
-            "configurePreset": "msvc-debug"
+            "configurePreset": "msvc-debug",
+            "configuration": "Debug"
         },
         {
             "name": "msvc-release",
