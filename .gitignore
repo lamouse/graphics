@@ -14,3 +14,4 @@ cmake*/
 *idea/
 CPTCMakeBuild/
 CMakeSettings.json
+CMakeUserPresets.json

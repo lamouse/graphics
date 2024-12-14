@@ -1,12 +1,19 @@
 cmake_minimum_required(VERSION 3.28)
 
-if(WIN32)
-        if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
-                message(STATUS "---Building with mingw---")
-                set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
-#                set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type -fstack-check -fstack-clash-protection")
-        endif()
-endif()
+# if(WIN32)
+#         if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
+#                 message(STATUS "---Building with mingw---")
+#                 set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+
+#                 # set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type -fstack-check -fstack-clash-protection")
+#         endif()
+
+#         if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+#                 if(WIN32)
+#                         set(CMAKE_TOOLCHAIN_FILE "D:/Program/vcpkg/scripts/buildsystems/vcpkg.cmake")
+#                 endif()
+#         endif()
+# endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
@@ -27,7 +34,6 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
         add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 endif()
-
 
 set(BUILD_TESTING ON)
 aux_source_directory(./src MAIN_SRC)

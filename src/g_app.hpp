@@ -28,7 +28,7 @@ class App {
 #endif
             VK_KHR_SWAPCHAIN_EXTENSION_NAME};
         Window window{{WIDTH, HEIGHT}, "vulkan"};
-#ifdef NO_DEBUG
+#ifdef NDEBUG
         static constexpr bool enableValidationLayers = false;
 #else
         static constexpr bool enableValidationLayers = true;

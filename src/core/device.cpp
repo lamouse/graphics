@@ -138,8 +138,7 @@ void createInstance(const std::vector<const char*>& instanceExtends) {
         createInfo.pNext = &debugCreateInfo;
     }
 
-    createInfo
-        .setPApplicationInfo(&appInfo)
+    createInfo.setPApplicationInfo(&appInfo)
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
         .setFlags(::vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR)
 #endif
@@ -374,10 +373,9 @@ auto Device::getQueue(DeviceQueue queue) -> ::vk::Queue& {
 
 auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) -> uint32_t {
     ::vk::PhysicalDeviceMemoryProperties memProperties = resource.phyDevice.getMemoryProperties();
-    ;
-
+    const uint32_t bytes = 1;
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & ((uint32_t)1 << i)) &&
+        if ((typeFilter & (bytes << i)) &&
             (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
