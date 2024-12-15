@@ -14,7 +14,6 @@ cmake_minimum_required(VERSION 3.28)
 #                 endif()
 #         endif()
 # endif()
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
 
@@ -22,8 +21,14 @@ set(EXECUTE_NAME graphics)
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 1)
-set(CMAKE_CXX_STANDARD 23)
-
+if (MSVC)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)
+    # boost still makes use of deprecated result_of.
+    add_definitions(-D_HAS_DEPRECATED_RESULT_OF)
+else()
+    set(CMAKE_CXX_STANDARD 23)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
 if(WIN32)
 elseif(UNIX AND APPLE)
         add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
@@ -43,10 +48,12 @@ aux_source_directory(./src/system SYSTEM_SRC)
 aux_source_directory(./src/imgui IMGUI)
 set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC} ${IMGUI})
 add_executable(${EXECUTE_NAME} ${SRC})
-
+# Output binaries to bin/
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 # need vcpkg start
-find_package(Stb REQUIRED)
-find_package(tinyobjloader CONFIG REQUIRED)
+find_package(Stb CONFIG)
+# find_package(tinyobjloader CONFIG)
+find_package(assimp CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm REQUIRED)
@@ -55,7 +62,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL)
+target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
 
 file(COPY images DESTINATION .)
 file(COPY models DESTINATION .)

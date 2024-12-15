@@ -5,7 +5,7 @@
             "name": "mingw-path",
             "hidden": true,
             "environment": {
-                "PATH":"D:\\Program\\msys264\\mingw64\\bin;$penv{path}"
+                "PATH":"D:\\Program\\msys2\\ucrt64\\bin;$penv{path}"
             }
         },
         {
@@ -14,11 +14,6 @@
             "environment": {
                 "VCPKG_ROOT": "D:\\Program\\vcpkg"
             }
-        },
-        {
-            "name": "cmake-build-type",
-            "hidden": true,
-            "inherits": ["Debug", "Release", "MinSizeRel", "RelWithDebInfo"]
         },
         {
             "name": "mingw",

@@ -61,7 +61,7 @@ void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
     defaultConfig.attributeDescriptions = Model::Vertex::getAttributeDescription();
     defaultConfig.bindingDescriptions = Model::Vertex::getBindingDescription();
     defaultConfig.multisampleInfo.setRasterizationSamples(device_.getMaxMsaaSamples());
-    pipeline = std:: move(GraphicsPipeLine( defaultConfig));
+    pipeline = GraphicsPipeLine( defaultConfig);
 }
 
 }  // namespace g
