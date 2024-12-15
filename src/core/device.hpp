@@ -4,13 +4,18 @@
 #include <optional>
 #include <vulkan/vulkan.hpp>
 #include <source_location>
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif
 namespace core {
 
 /**
  * @brief Swapchain support
  *
  */
-struct SwapchainSupportDetails {
+struct EXPORT SwapchainSupportDetails {
         ::vk::SurfaceCapabilitiesKHR capabilities;
         ::std::vector<::vk::SurfaceFormatKHR> formats;
         ::std::vector<::vk::PresentModeKHR> presentModes;
@@ -26,7 +31,7 @@ using CreateSurfaceFunc = ::std::function<::vk::SurfaceKHR(::vk::Instance)>;
  * @brief vulkan device info add util
  *
  */
-class Device final {
+class EXPORT Device final {
     private:
 
     public:

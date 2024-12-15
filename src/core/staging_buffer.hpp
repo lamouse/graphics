@@ -3,10 +3,14 @@
 #include <vulkan/vulkan.hpp>
 
 #include "device.hpp"
-
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif
 
 namespace core {
-class StagingBuffer {
+class EXPORT StagingBuffer {
     private:
         ::vk::Buffer buffer;
         ::vk::DeviceMemory bufferMemory;

@@ -1,8 +1,13 @@
 #pragma once
 #include "device.hpp"
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif
 namespace core {
 
-class Buffer {
+class EXPORT Buffer {
     public:
         Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t instanceCount,
                ::vk::BufferUsageFlags bufferUsage, ::vk::MemoryPropertyFlags memoryPropertyFlags,

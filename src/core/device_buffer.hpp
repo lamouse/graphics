@@ -1,10 +1,14 @@
 #pragma once
 #include <functional>
 #include <vulkan/vulkan.hpp>
-
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif
 
 namespace core {
-class DeviceBuffer {
+class EXPORT DeviceBuffer {
     private:
         ::vk::Buffer buffer_;
         ::vk::DeviceMemory bufferMemory_;

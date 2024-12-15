@@ -82,7 +82,6 @@ auto checkDeviceExtensionSupport(const ::vk::PhysicalDevice& checkDevice, const 
  *
  */
 const ::std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-bool device_init_finish = false;
 class VKResource {
     public:
         ::vk::PhysicalDevice phyDevice;
@@ -94,9 +93,13 @@ class VKResource {
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
         ~VKResource() {
-            if (device_init_finish) {
+            if(cmdPool_){
                 device_.destroyCommandPool(cmdPool_);
+            }
+            if (device_) {
                 device_.destroy();
+            }
+            if(vkInstance){
                 vkInstance.destroySurfaceKHR(vkSurfaceKHR);
                 vkInstance.destroy();
             }
@@ -292,7 +295,6 @@ Device::Device(const std::source_location& location) {
         createLogicalDevice(deviceExtensions);
         getQueues();
         initCmdPool();
-        device_init_finish = true;
     });
 }
 

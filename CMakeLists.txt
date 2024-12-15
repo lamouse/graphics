@@ -1,19 +1,17 @@
 cmake_minimum_required(VERSION 3.28)
 
-# if(WIN32)
-#         if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
-#                 message(STATUS "---Building with mingw---")
-#                 set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+if(WIN32)
+        if(CMAKE_C_COMPILER MATCHES "mingw" OR CMAKE_CXX_COMPILER MATCHES "mingw")
+                message(STATUS "---Building with mingw---")
+                set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+        endif()
 
-#                 # set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wnull-dereference -Wuninitialized -Wunused -Wshadow -Wunused-parameter -Wreturn-type -fstack-check -fstack-clash-protection")
-#         endif()
-
-#         if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-#                 if(WIN32)
-#                         set(CMAKE_TOOLCHAIN_FILE "D:/Program/vcpkg/scripts/buildsystems/vcpkg.cmake")
-#                 endif()
-#         endif()
-# endif()
+        if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+                if(WIN32)
+                        set(CMAKE_TOOLCHAIN_FILE "D:/Program/vcpkg/scripts/buildsystems/vcpkg.cmake")
+                endif()
+        endif()
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
 
@@ -39,17 +37,13 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
         add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 endif()
+# 设置可执行文件输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set(BUILD_TESTING ON)
-aux_source_directory(./src MAIN_SRC)
-aux_source_directory(./src/resource RESOURCE_SRC)
-aux_source_directory(./src/core CORE_SRC)
-aux_source_directory(./src/system SYSTEM_SRC)
-aux_source_directory(./src/imgui IMGUI)
-set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${CORE_SRC} ${SYSTEM_SRC} ${IMGUI})
-add_executable(${EXECUTE_NAME} ${SRC})
-# Output binaries to bin/
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
 # need vcpkg start
 find_package(Stb CONFIG)
 # find_package(tinyobjloader CONFIG)
@@ -62,14 +56,12 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
-
-file(COPY images DESTINATION .)
-file(COPY models DESTINATION .)
+file(COPY images DESTINATION ./bin)
+file(COPY models DESTINATION ./bin)
 
 find_program(GLSLC_PROGRAM glslc REQUIRED)
 message(STATUS "run glslc to compile shaders ...")
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/shader)
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin/shader)
 file(GLOB_RECURSE SHADER_SRC_LIST ${CMAKE_SOURCE_DIR}/shader/*)
 
 foreach(shader_file ${SHADER_SRC_LIST})
@@ -81,12 +73,31 @@ foreach(shader_file ${SHADER_SRC_LIST})
 
         # rename
         string(REGEX REPLACE "\\.[^\\.]*$" ".spv" target_name ${target_name})
-        execute_process(COMMAND ${GLSLC_PROGRAM} ${shader_file} -o ./shader/${target_name})
+        execute_process(COMMAND ${GLSLC_PROGRAM} ${shader_file} -o ./bin/shader/${target_name})
 endforeach()
 
 message(STATUS "compile shader OK")
 
+# This function should be passed a list of all files in a target. It will automatically generate
+# file groups following the directory hierarchy, so that the layout of the files in IDEs matches the
+# one in the filesystem.
+function(create_target_directory_groups target_name)
+    # Place any files that aren't in the source list in a separate group so that they don't get in
+    # the way.
+    source_group("Other Files" REGULAR_EXPRESSION ".")
+
+    get_target_property(target_sources "${target_name}" SOURCES)
+
+    foreach(file_name IN LISTS target_sources)
+        get_filename_component(dir_name "${file_name}" PATH)
+        # Group names use '\' as a separator even though the entire rest of CMake uses '/'...
+        string(REPLACE "/" "\\" group_name "${dir_name}")
+        source_group("${group_name}" FILES "${file_name}")
+    endforeach()
+endfunction()
+
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/build-tools")
+add_subdirectory(src)
 add_subdirectory(src/test)
 add_subdirectory(doc)
