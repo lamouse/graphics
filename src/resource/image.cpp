@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
-#if _MSC_VER
+#if _MSC_VER or __APPLE__
 #include <stb_image.h>
 #else
 #include <stb/stb_image.h>

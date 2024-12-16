@@ -9,6 +9,8 @@
     "spdlog",
     "assimp",
     "stb",
-    "glm"
+    "glm",
+    "ms-gsl",
+    "gtest"
   ]
 }
