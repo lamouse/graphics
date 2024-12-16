@@ -39,7 +39,6 @@ if(MSVC)
         /Zo
         /permissive-
         /EHsc
-        /std:c++20
         /utf-8
         /volatile:iso
         /Zc:externConstexpr
@@ -57,8 +56,8 @@ if(MSVC)
 
         # Warnings
         /W4
-        /WX
 
+        # /WX
         /we4062 # Enumerator 'identifier' in a switch of enum 'enumeration' is not handled
         /we4189 # 'identifier': local variable is initialized but not referenced
         /we4265 # 'class': class has virtual functions, but destructor is not virtual
@@ -91,7 +90,6 @@ else()
         # -Werror=missing-declarations
         # -Werror=shadow
         # -Werror=unused
-
         -Wno-attributes
         -Wno-invalid-offsetof
         -Wno-unused-parameter
@@ -152,6 +150,8 @@ else()
         set(CMAKE_CXX_ARCHIVE_APPEND "<CMAKE_AR> qTP  <TARGET> <LINK_FLAGS> <OBJECTS>")
     endif()
 endif()
+
+
 add_subdirectory(core)
 aux_source_directory(. MAIN_SRC)
 aux_source_directory(./resource RESOURCE_SRC)
@@ -162,3 +162,10 @@ add_executable(${EXECUTE_NAME} ${SRC})
 target_link_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(${EXECUTE_NAME} PRIVATE core)
 target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
+if(MSVC)
+    target_link_libraries(${EXECUTE_NAME} PRIVATE version.lib)
+    set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+elseif(MINGW)
+    set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "-Wl,--subsystem,windows")
+endif()
+

@@ -68,7 +68,6 @@ auto Window::getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::v
 }
 
 auto Window::getExtent() -> ScreenExtent {
-    int width{}, height{};
     glfwGetFramebufferSize(window, &width, &height);
     while (width == 0 || height == 0) {
         glfwWaitEvents();
