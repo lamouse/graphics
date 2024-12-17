@@ -70,12 +70,12 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
-file(COPY images DESTINATION ./bin)
-file(COPY models DESTINATION ./bin)
+file(COPY images DESTINATION ${CMAKE_BINARY_DIR}/bin)
+file(COPY models DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 find_program(GLSLC_PROGRAM glslc REQUIRED)
 message(STATUS "run glslc to compile shaders ...")
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin/shader)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shader)
 file(GLOB_RECURSE SHADER_SRC_LIST ${CMAKE_SOURCE_DIR}/shader/*)
 
 foreach(shader_file ${SHADER_SRC_LIST})
@@ -87,7 +87,7 @@ foreach(shader_file ${SHADER_SRC_LIST})
 
         # rename
         string(REGEX REPLACE "\\.[^\\.]*$" ".spv" target_name ${target_name})
-        execute_process(COMMAND ${GLSLC_PROGRAM} ${shader_file} -o ./bin/shader/${target_name})
+        execute_process(COMMAND ${GLSLC_PROGRAM} ${shader_file} -o ${CMAKE_BINARY_DIR}/bin/shader/${target_name})
 endforeach()
 
 message(STATUS "compile shader OK")

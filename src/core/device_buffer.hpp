@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <vulkan/vulkan.hpp>
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
