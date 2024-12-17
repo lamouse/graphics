@@ -1,5 +1,6 @@
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/spdlog.h>
+
 #include "g_app.hpp"
 
 using namespace std;
@@ -13,7 +14,7 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
 #ifdef SPDLOG_ACTIVE_LEVEL
     spdlog::set_level(static_cast<spdlog::level::level_enum>(SPDLOG_ACTIVE_LEVEL));
 #else
-    #error "need set spd log level"
+#error "need set spd log level"
 #endif
     try {
         g::App app;

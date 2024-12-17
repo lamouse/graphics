@@ -6,6 +6,8 @@ set(EXECUTE_NAME graphics)
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 1)
+include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(USE_FASTER_LD "Check if a faster linker is available" ON "NOT WIN32" OFF)
 
 if(NOT MINGW)
         if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
@@ -56,7 +58,6 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(BUILD_TESTING ON)
 
 # need vcpkg start
@@ -110,6 +111,57 @@ function(create_target_directory_groups target_name)
                 source_group("${group_name}" FILES "${file_name}")
         endforeach()
 endfunction()
+
+# Adjustments for MSVC + Ninja
+if(MSVC AND CMAKE_GENERATOR STREQUAL "Ninja")
+        add_compile_options(
+                /wd4464 # relative include path contains '..'
+                /wd4711 # function 'function' selected for automatic inline expansion
+                /wd4820 # 'bytes' bytes padding added after construct 'member_name'
+        )
+endif()
+
+if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # We will assume that if the compiler is GCC, it will attempt to use ld.bfd by default.
+        # Try to pick a faster linker.
+        find_program(LLD lld)
+        find_program(MOLD mold)
+
+        if(MOLD AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "12.1")
+                message(NOTICE "Selecting mold as linker")
+                add_link_options("-fuse-ld=mold")
+        elseif(LLD)
+                message(NOTICE "Selecting lld as linker")
+                add_link_options("-fuse-ld=lld")
+        endif()
+endif()
+
+find_program(CLANG_FORMAT clang-format)
+
+if(NOT CLANG_FORMAT)
+        message(WARNING "Clang format not found! Disabling the clang format target")
+else()
+        set(SRCS ${PROJECT_SOURCE_DIR}/src/core)
+        set(CCOMMENT "Running clang format against all cpp files in src/")
+
+        if(WIN32)
+                add_custom_target(clang-format ALL
+                        COMMAND powershell.exe -Command "Get-ChildItem '${SRCS}/*' -Include *.cpp,*.h,*.hpp,*.cc -Recurse | Foreach {&'${CLANG_FORMAT}' -i $_.fullname}"
+                        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                        COMMENT ${CCOMMENT})
+        elseif(MINGW)
+                add_custom_target(clang-format
+                        COMMAND find `cygpath -u ${SRCS}` -iname *.h -iname *.hpp *.cc -o -iname *.cpp | xargs `cygpath -u ${CLANG_FORMAT}` -i
+                        COMMENT ${CCOMMENT})
+        else()
+                add_custom_target(clang-format
+                        COMMAND find ${SRCS} -iname *.h -o -iname *.cpp | xargs ${CLANG_FORMAT} -i
+                        COMMENT ${CCOMMENT})
+        endif()
+
+        unset(SRCS)
+        unset(CCOMMENT)
+endif()
 
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/build-tools")

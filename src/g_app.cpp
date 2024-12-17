@@ -4,6 +4,8 @@
 #include "g_defines.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
+#include "g_descriptor.hpp"
+#include "g_game_object.hpp"
 
 // imgui begin
 #include "g_imgui.hpp"
@@ -15,9 +17,35 @@
 #include <thread>
 
 namespace g {
+auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
+    return DescriptorPool::Builder()
+        .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
+        .setMaxSets(count)
+        .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eSampler, count)
+        .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
+        .addPoolSize(::vk::DescriptorType::eStorageImage, count)
+        .addPoolSize(::vk::DescriptorType::eSampledImage, count)
+        .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
+        .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
+        .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
+        .build();
+}
 
+auto loadGameObjects() -> GameObject::Map {
+    GameObject::Map gameObjects;
+    auto cube = GameObject::createGameObject();
+    cube.model = Model::createFromFile("models/viking_room.obj");
+    gameObjects.emplace(cube.getId(), ::std::move(cube));
+    return gameObjects;
+}
 void App::run() {
     core::Device device_;
+    auto gameObjects = loadGameObjects();
+    ::std::unique_ptr<DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
     auto setLayout =
         DescriptorSetLayout::Builder()
             .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
@@ -36,17 +64,15 @@ void App::run() {
     resource::image::ImageTexture imageTexture{device_, img, DEFAULT_FORMAT};
 
     ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
-    for (int i = 0; auto & descriptorSet : descriptorSets) {
+    for (int i = 0; auto& descriptorSet : descriptorSets) {
         auto bufferInfo = uboBuffers[i++]->descriptorInfo();
         descriptorSet = DescriptorWriter()
-            .writeBuffer((*setLayout)(0), bufferInfo)
-            .writeImage((*setLayout)(1), imageTexture.descriptorImageInfo())
-            .build(*descriptorPool_, (*setLayout)());
+                            .writeBuffer((*setLayout)(0), bufferInfo)
+                            .writeImage((*setLayout)(1), imageTexture.descriptorImageInfo())
+                            .build(*descriptorPool_, (*setLayout)());
     }
 
-    RenderProcessor render( [this]() {
-        return window.getExtent();
-    });
+    RenderProcessor render([this]() { return window.getExtent(); });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
     Imgui imgui;
     imgui.init(window(), descriptorPool_->getDescriptorPool(), window.getScale());
@@ -106,35 +132,12 @@ void App::run() {
     device_.logicalDevice().waitIdle();
 }
 
-void App::loadGameObjects() {
-    core::Device device_;
-    auto cube = GameObject::createGameObject();
-    cube.model = Model::createFromFile("models/viking_room.obj");
-    gameObjects.emplace(cube.getId(), ::std::move(cube));
-}
-
 App::App() {
     core::Device::init(
         Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); }, enableValidationLayers);
-    constexpr unsigned count = 1000;
-
-    descriptorPool_ = DescriptorPool::Builder()
-                            .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-                          .setMaxSets(count)
-                          .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
-                          .addPoolSize(::vk::DescriptorType::eSampler, count)
-                          .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
-                          .addPoolSize(::vk::DescriptorType::eStorageImage, count)
-                          .addPoolSize(::vk::DescriptorType::eSampledImage, count)
-                          .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
-                          .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
-                          .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
-                          .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
-                          .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
-                          .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
-                          .build();
-    loadGameObjects();
 }
+
+App::~App() { core::Device::destroy(); };
 
 }  // namespace g

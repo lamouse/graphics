@@ -1,10 +1,17 @@
 #include "device.hpp"
 
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
+
+#include <mutex>
 #include <ranges>
 #include <set>
-#include <mutex>
-#include <fmt/core.h>
+
+#if defined(_DLL) || defined(__PIC__)
+#define IS_DYNAMIC_LIBRARY 1
+#else
+#define IS_DYNAMIC_LIBRARY 0
+#endif
 
 namespace core {
 namespace {
@@ -82,7 +89,16 @@ auto checkDeviceExtensionSupport(const ::vk::PhysicalDevice& checkDevice, const 
  *
  */
 const ::std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+::std::once_flag device_clean_once_;
 class VKResource {
+    private:
+        void clean() const {
+            device_.destroyCommandPool(cmdPool_);
+            device_.destroy();
+            vkInstance.destroySurfaceKHR(vkSurfaceKHR);
+            vkInstance.destroy();
+        }
+
     public:
         ::vk::PhysicalDevice phyDevice;
         ::vk::Device device_;
@@ -93,16 +109,19 @@ class VKResource {
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
         ~VKResource() {
-            if(cmdPool_){
-                device_.destroyCommandPool(cmdPool_);
-            }
-            if (device_) {
-                device_.destroy();
-            }
-            if(vkInstance){
-                vkInstance.destroySurfaceKHR(vkSurfaceKHR);
-                vkInstance.destroy();
-            }
+#if !IS_DYNAMIC_LIBRARY
+            destroy();
+#else
+#if IS_DYNAMIC_LIBRARY
+            std::call_once(device_clean_once_, [&]() { spdlog::warn("Device and instance not destroy"); });
+#endif
+#endif
+        }
+        void destroy() const {
+            std::call_once(device_clean_once_, [&]() {
+                spdlog::debug("destroy vk device and vk instance");
+                clean();
+            });
         }
 };
 VKResource resource;
@@ -120,7 +139,6 @@ auto isDeviceSuitable(::vk::PhysicalDevice& checkDevice, const ::std::vector<con
 auto getMaxUsableSampleCount() -> ::vk::SampleCountFlagBits;
 auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetails;
 void queryQueueFamilyIndices(::vk::PhysicalDevice device);
-
 
 void createInstance(const std::vector<const char*>& instanceExtends) {
     if (enableValidationLayers_ && !checkValidationLayerSupport(validationLayers)) {
@@ -141,7 +159,8 @@ void createInstance(const std::vector<const char*>& instanceExtends) {
         createInfo.pNext = &debugCreateInfo;
     }
 
-    createInfo.setPApplicationInfo(&appInfo)
+    createInfo
+        .setPApplicationInfo(&appInfo)
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
         .setFlags(::vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR)
 #endif
@@ -213,7 +232,6 @@ void queryQueueFamilyIndices(::vk::PhysicalDevice device) {
     }
 }
 
-
 void getQueues() {
     resource.graphicsQueue = resource.device_.getQueue(queueFamilyIndices.graphicsIndex(), 0);
     resource.presentQueue = resource.device_.getQueue(queueFamilyIndices.presentIndex(), 0);
@@ -278,14 +296,13 @@ auto querySwapchainSupport(::vk::PhysicalDevice device) -> SwapchainSupportDetai
 
 Device::Device(const std::source_location& location) {
     std::call_once(device_init_once_, [&]() {
-        throw std::runtime_error(fmt::format("use core device fist need call Device::init()\n file {}:{}", location.file_name(), location.line()));
+        throw std::runtime_error(fmt::format("use core device fist need call Device::init()\n file {}:{}",
+                                             location.file_name(), location.line()));
     });
-
 }
 
- void Device::init(const std::vector<const char*>& instanceExtends,
-                       const ::std::vector<const char*>& deviceExtensions,
-                 const CreateSurfaceFunc& createFunc, bool enableValidationLayers) {
+void Device::init(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
+                  const CreateSurfaceFunc& createFunc, bool enableValidationLayers) {
     std::call_once(device_init_once_, [&]() {
         enableValidationLayers_ = enableValidationLayers;
         createInstance(instanceExtends);
@@ -297,10 +314,8 @@ Device::Device(const std::source_location& location) {
         initCmdPool();
     });
 }
-
-Device::~Device() {
-
-}
+void Device::destroy() { resource.destroy(); }
+Device::~Device() {}
 
 auto Device::getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }
 
@@ -316,8 +331,6 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, :
     bufferMemory = resource.device_.allocateMemory(allocateInfo);
     resource.device_.bindBufferMemory(buffer, bufferMemory, 0);
 }
-
-
 
 void Device::executeCmd(const CmdFunc& func) const {
     const ::vk::CommandBufferAllocateInfo allocInfo(resource.cmdPool_, ::vk::CommandBufferLevel::ePrimary, 1);
@@ -368,8 +381,8 @@ auto Device::getQueue(DeviceQueue queue) -> ::vk::Queue& {
             return resource.graphicsQueue;
         case DeviceQueue::present:
             return resource.presentQueue;
-//        default:
-//                   throw std::runtime_error("un know logic device queue type");
+            //        default:
+            //                   throw std::runtime_error("un know logic device queue type");
     }
 }
 
@@ -377,8 +390,7 @@ auto Device::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags propert
     ::vk::PhysicalDeviceMemoryProperties memProperties = resource.phyDevice.getMemoryProperties();
     const uint32_t bytes = 1;
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (bytes << i)) &&
-            (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+        if ((typeFilter & (bytes << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             return i;
         }
     }
@@ -434,5 +446,7 @@ auto Device::getMaxAnisotropy() -> float {
 
 auto Device::getQueueFamilyIndices() -> QueueFamilyIndices { return queueFamilyIndices; }
 
-auto Device::querySwapchainSupport() -> SwapchainSupportDetails { return core::querySwapchainSupport(resource.phyDevice); }
+auto Device::querySwapchainSupport() -> SwapchainSupportDetails {
+    return core::querySwapchainSupport(resource.phyDevice);
+}
 }  // namespace core

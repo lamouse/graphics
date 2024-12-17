@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <functional>
 #include <optional>
-#include <vulkan/vulkan.hpp>
 #include <source_location>
+#include <vulkan/vulkan.hpp>
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -33,7 +33,6 @@ using CreateSurfaceFunc = ::std::function<::vk::SurfaceKHR(::vk::Instance)>;
  */
 class EXPORT Device final {
     private:
-
     public:
         struct QueueFamilyIndices {
                 std::optional<uint32_t> graphicsQueue;
@@ -62,14 +61,16 @@ class EXPORT Device final {
                 }
         };
 
-        enum class DeviceQueue : uint8_t { graphics, compute, present};
+        enum class DeviceQueue : uint8_t { graphics, compute, present };
         explicit Device(const std::source_location& location = std::source_location::current());
         Device(const Device&) = default;
         Device(Device&&) = default;
         auto operator=(const Device&) -> Device& = default;
         auto operator=(Device&&) -> Device& = default;
-        static void init(const std::vector<const char*>& instanceExtends, const ::std::vector<const char*>& deviceExtensions,
-               const CreateSurfaceFunc& createFunc, bool enableValidationLayers = false);
+        static void init(const std::vector<const char*>& instanceExtends,
+                         const ::std::vector<const char*>& deviceExtensions, const CreateSurfaceFunc& createFunc,
+                         bool enableValidationLayers = false);
+        static void destroy();
 
         using CmdFunc = std::function<void(vk::CommandBuffer&)>;
 

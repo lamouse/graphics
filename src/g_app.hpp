@@ -1,6 +1,4 @@
 #pragma once
-#include "g_descriptor.hpp"
-#include "g_game_object.hpp"
 #include "g_window.hpp"
 #include "system/system_config.hpp"
 
@@ -15,7 +13,7 @@ class App {
         App(App &&) = delete;
         auto operator=(const App &) -> App & = delete;
         auto operator=(App &&) -> App & = delete;
-        ~App() = default;
+        ~App();
 
     private:
         /**
@@ -34,8 +32,5 @@ class App {
         static constexpr bool enableValidationLayers = true;
 #endif
         config::ImageQuality imageQualityConfig;
-        GameObject::Map gameObjects;
-        void loadGameObjects();
-        ::std::unique_ptr<DescriptorPool> descriptorPool_;
 };
 }  // namespace g
