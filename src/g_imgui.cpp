@@ -33,7 +33,7 @@ void check_vk_result(VkResult err) {
  * @param descriptorPool
  * @param scale
  */
-void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale) {
+void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
     core::Device device;
     // 这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
@@ -46,18 +46,24 @@ void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
-    io.ConfigViewportsNoAutoMerge = true;
-    io.ConfigViewportsNoTaskBarIcon = true;
+    //io.ConfigViewportsNoAutoMerge = true;
+    //io.ConfigViewportsNoTaskBarIcon = true;
     //  Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    // ImGui::StyleColorsLight();
+    //ImGui::StyleColorsLight();
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular
     // ones.
     ImGuiStyle& style = ImGui::GetStyle();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        style.WindowRounding = 0.0f;
+        style.WindowRounding = .0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        //style.Colors[ImGuiCol_WindowBg] = ImVec4(.0f, .0f, .0f, 1.0f);
+        // style.Colors[ImGuiCol_TitleBg] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        // style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        // style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        // style.Colors[ImGuiCol_DockingPreview] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+
     }
 
     // Setup Platform/Renderer backends
@@ -73,14 +79,15 @@ void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float
     init_info.Subpass = 0;
     init_info.MinImageCount = 2;
     init_info.ImageCount = 2;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_8_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
+    //init_info.UseDynamicRendering = true;
     init_info.RenderPass = renderPass;
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void Imgui::draw(ImguiDebugInfo& debugInfo) {
+void Imgui::draw(ImguiDebugInfo& debugInfo, vk::CommandBuffer& commandBuffer) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui_ImplVulkan_NewFrame();
@@ -88,7 +95,14 @@ void Imgui::draw(ImguiDebugInfo& debugInfo) {
     ImGui::NewFrame();
     {
         {
-            ImGui::Begin("debug window");  // Create a window called "Hello, world!" and append into it.
+            ImGuiWindowFlags window_flags = 0;
+            // window_flags |= ImGuiWindowFlags_NoBackground;
+            // window_flags |= ImGuiWindowFlags_NoTitleBar;
+            // etc.
+            bool open_ptr = true;
+            ImGui::SetNextWindowBgAlpha(1.0f);
+
+            ImGui::Begin("debug window", &open_ptr, window_flags);  // Create a window called "Hello, world!" and append into it.
             float center_x = debugInfo.look_x + 0.3f;
             float center_y = debugInfo.look_y + 0.3f;
             float center_z = debugInfo.look_z + 0.3f;
@@ -104,7 +118,6 @@ void Imgui::draw(ImguiDebugInfo& debugInfo) {
             ImGui::SliderFloat("up x", &debugInfo.up_x, .0f, 2.f);
             ImGui::SliderFloat("up y", &debugInfo.up_y, .0f, 2.f);
             ImGui::SliderFloat("up z", &debugInfo.up_z, .0f, 2.f);
-
             ImGui::SliderFloat("rotate x", &debugInfo.rotate_x, .0f, 10.f);
             ImGui::SliderFloat("rotate y", &debugInfo.rotate_y, .0f, 10.f);
             ImGui::SliderFloat("rotate z", &debugInfo.rotate_z, .1f, 10.f);
@@ -116,64 +129,23 @@ void Imgui::draw(ImguiDebugInfo& debugInfo) {
 
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
             ImGui::End();
         }
     }
     ImGui::Render();
-
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }
 }
 
-void Imgui::createRenderPass() {
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorReference{};
-    colorReference.attachment = 0;
-    colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpassDescription{};
-    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDescription.colorAttachmentCount = 1;
-    subpassDescription.pColorAttachments = &colorReference;
-
-    VkSubpassDependency subpassDependency{};
-    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependency.dstSubpass = 0;
-    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependency.srcAccessMask = 0;
-    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-    VkRenderPassCreateInfo renderPassCreateInfo{};
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassCreateInfo.attachmentCount = 1;
-    renderPassCreateInfo.pAttachments = &colorAttachment;
-    renderPassCreateInfo.subpassCount = 1;
-    renderPassCreateInfo.pSubpasses = &subpassDescription;
-    renderPassCreateInfo.dependencyCount = 1;
-    renderPassCreateInfo.pDependencies = &subpassDependency;
-    core::Device device;
-    vkCreateRenderPass(device.logicalDevice(), &renderPassCreateInfo, nullptr, &renderPass);
-}
 
 Imgui::~Imgui() {
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    core::Device device;
-
-    device.logicalDevice().destroyRenderPass(renderPass);
 }
 
 }  // namespace g

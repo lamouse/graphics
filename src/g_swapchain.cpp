@@ -99,7 +99,7 @@ auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilitie
 }
 
 Swapchain::~Swapchain() {
-    
+
     ::spdlog::debug(DETAIL_INFO("destroy swapchain"));
     core::Device device;
     const auto& logicalDevice = device.logicalDevice();

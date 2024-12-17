@@ -29,7 +29,7 @@ class Swapchain {
         auto operator=(Swapchain&&) -> Swapchain& = delete;
         auto operator=(const Swapchain&) -> Swapchain& = delete;
         static constexpr int MAX_FRAME_IN_FLIGHT = 2;
-        static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eB8G8R8A8Srgb;
+        static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eR8G8B8A8Unorm;
         static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = ::vk::ColorSpaceKHR::eSrgbNonlinear;
 
     private:

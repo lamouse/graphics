@@ -34,12 +34,10 @@ struct ImguiDebugInfo {
 };
     class Imgui {
     private:
-        ::VkRenderPass renderPass;
-        void createRenderPass();
     public:
-        void init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, float scale = 1.0f);
-        static void draw(ImguiDebugInfo& debugInfo);
-        explicit Imgui(){createRenderPass();};
+        void init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale = 1.0f);
+        static void draw(ImguiDebugInfo& debugInfo, vk::CommandBuffer& commandBuffer);
+        explicit Imgui(){};
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;

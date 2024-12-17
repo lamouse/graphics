@@ -75,7 +75,7 @@ void App::run() {
     RenderProcessor render([this]() { return window.getExtent(); });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
     Imgui imgui;
-    imgui.init(window(), descriptorPool_->getDescriptorPool(), window.getScale());
+    imgui.init(window(), descriptorPool_->getDescriptorPool(), static_cast<::vk::RenderPass>(render), window.getScale());
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     Camera camera{};
     ImguiDebugInfo debugInfo{};
@@ -123,10 +123,11 @@ void App::run() {
 
             render.beginSwapchainRenderPass();
             renderSystem.render(frameInfo);
+            g::Imgui::draw(debugInfo, render.getCurrentCommandBuffer());
             render.endSwapchainRenderPass();
             render.endFrame();
         }
-        g::Imgui::draw(debugInfo);
+
     }
 
     device_.logicalDevice().waitIdle();
