@@ -8,7 +8,6 @@
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
-#define DEFAULT_FORMAT vk::Format::eR8G8B8A8Srgb
 #define image_path \
     ::std::string { "./images/" }
 #define shader_path \

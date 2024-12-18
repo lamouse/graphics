@@ -61,7 +61,7 @@ void App::run() {
     }
     ::std::string s(image_path + "viking_room.png");
     resource::image::Image img(s);
-    resource::image::ImageTexture imageTexture{device_, img, DEFAULT_FORMAT};
+    resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
 
     ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
     for (int i = 0; auto& descriptorSet : descriptorSets) {

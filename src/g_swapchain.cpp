@@ -74,8 +74,8 @@ auto Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>&
 }
 auto Swapchain::chooseSwapSurfaceFormat(const ::std::vector<::vk::SurfaceFormatKHR>& availableFormats)
     -> ::vk::SurfaceFormatKHR {
-    const auto format = std::ranges::find_if(availableFormats, [](auto format) {
-        return format.format == DEFAULT_COLOR_FORMAT && format.colorSpace == DEFAULT_COLOR_SPACE;
+    const auto format = std::ranges::find_if(availableFormats, [](auto f) {
+        return f.format == DEFAULT_COLOR_FORMAT && f.colorSpace == DEFAULT_COLOR_SPACE;
     });
     if (format != availableFormats.end()) {
         return *format;
