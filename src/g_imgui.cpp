@@ -87,7 +87,7 @@ void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::R
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void Imgui::draw(ImguiDebugInfo& debugInfo, vk::CommandBuffer& commandBuffer) {
+void Imgui::draw(ImguiDebugInfo& debugInfo, const vk::CommandBuffer& commandBuffer) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui_ImplVulkan_NewFrame();

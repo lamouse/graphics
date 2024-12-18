@@ -153,14 +153,15 @@ endif()
 
 
 add_subdirectory(core)
+add_subdirectory(imgui)
+
 aux_source_directory(. MAIN_SRC)
 aux_source_directory(./resource RESOURCE_SRC)
 aux_source_directory(./system SYSTEM_SRC)
-aux_source_directory(./imgui IMGUI)
-set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${SYSTEM_SRC} ${IMGUI})
+set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${SYSTEM_SRC})
 add_executable(${EXECUTE_NAME} ${SRC})
 target_link_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
-target_link_libraries(${EXECUTE_NAME} PRIVATE core)
+target_link_libraries(${EXECUTE_NAME} PRIVATE core imgui)
 target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
 if(MSVC)
     set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")

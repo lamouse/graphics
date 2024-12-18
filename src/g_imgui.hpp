@@ -36,7 +36,7 @@ struct ImguiDebugInfo {
     private:
     public:
         void init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale = 1.0f);
-        static void draw(ImguiDebugInfo& debugInfo, vk::CommandBuffer& commandBuffer);
+        static void draw(ImguiDebugInfo& debugInfo, const vk::CommandBuffer& commandBuffer);
         explicit Imgui(){};
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;

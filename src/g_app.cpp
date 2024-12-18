@@ -17,31 +17,35 @@
 #include <thread>
 
 namespace g {
-auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
-    return DescriptorPool::Builder()
-        .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-        .setMaxSets(count)
-        .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eSampler, count)
-        .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
-        .addPoolSize(::vk::DescriptorType::eStorageImage, count)
-        .addPoolSize(::vk::DescriptorType::eSampledImage, count)
-        .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
-        .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
-        .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
-        .build();
+namespace  {
+    auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
+        return DescriptorPool::Builder()
+            .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
+            .setMaxSets(count)
+            .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eSampler, count)
+            .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
+            .addPoolSize(::vk::DescriptorType::eStorageImage, count)
+            .addPoolSize(::vk::DescriptorType::eSampledImage, count)
+            .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
+            .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
+            .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
+            .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
+            .build();
+    }
+    auto loadGameObjects() -> GameObject::Map {
+        GameObject::Map gameObjects;
+        auto cube = GameObject::createGameObject();
+        cube.model = Model::createFromFile("models/viking_room.obj");
+        gameObjects.emplace(cube.getId(), ::std::move(cube));
+        return gameObjects;
+    }
 }
 
-auto loadGameObjects() -> GameObject::Map {
-    GameObject::Map gameObjects;
-    auto cube = GameObject::createGameObject();
-    cube.model = Model::createFromFile("models/viking_room.obj");
-    gameObjects.emplace(cube.getId(), ::std::move(cube));
-    return gameObjects;
-}
+
+
 void App::run() {
     core::Device device_;
     auto gameObjects = loadGameObjects();
