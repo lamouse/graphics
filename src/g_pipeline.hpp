@@ -14,8 +14,8 @@ struct PipelineConfigInfo {
         ::vk::PipelineInputAssemblyStateCreateInfo inputAssemblyStateInfo;
         ::vk::PipelineDynamicStateCreateInfo dynamicStateInfo;
         ::std::vector<::vk::DynamicState> dynamicStateEnables;
-        ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions{};
-        ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions{};
+        ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions;
+        ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions;
         ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
         ::vk::RenderPass renderPass;
         ::vk::PipelineLayout layout;
@@ -25,7 +25,7 @@ class GraphicsPipeLine {
         ::vk::Pipeline pipeline;
     public:
         explicit GraphicsPipeLine(PipelineConfigInfo& configInfo);
-        GraphicsPipeLine();
+        GraphicsPipeLine() = default;
         GraphicsPipeLine(const GraphicsPipeLine&) = delete;
         void bind(const ::vk::CommandBuffer& commandBuffer)const {
             commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);

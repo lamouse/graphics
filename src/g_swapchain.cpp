@@ -111,16 +111,18 @@ Swapchain::~Swapchain() {
         i++;
     }
 
-    for (::gsl::index i = 0; i < depthImages.size(); i++) {
+    for (int i = 0; auto& depthImage : depthImages) {
         logicalDevice.destroyImageView(depthImageViews[i]);
         logicalDevice.freeMemory(depthImageMemories_[i]);
-        logicalDevice.destroyImage(depthImages[i]);
+        logicalDevice.destroyImage(depthImage);
+        i++;
     }
 
-    for (::gsl::index i = 0; i < colorImages.size(); i++) {
+    for (int i = 0; auto& colorImage : colorImages) {
         logicalDevice.destroyImageView(colorImageViews[i]);
         logicalDevice.freeMemory(colorImageMemories[i]);
-        logicalDevice.destroyImage(colorImages[i]);
+        logicalDevice.destroyImage(colorImage);
+        i++;
     }
 
     for (const auto& view : imageViews) {

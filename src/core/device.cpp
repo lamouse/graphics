@@ -17,8 +17,8 @@ namespace core {
 namespace {
 VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                          VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
-                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* /*pUserData*/)
-    -> VkBool32 {
+                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                         void* /*pUserData*/) -> VkBool32 {
     switch (messageSeverity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: {
             spdlog::warn("validation layer: {}", pCallbackData->pMessage);
@@ -72,8 +72,8 @@ auto checkValidationLayerSupport(const auto& validationLayers) -> bool {
     return true;
 }
 
-auto checkDeviceExtensionSupport(const ::vk::PhysicalDevice& checkDevice, const ::std::vector<const char*>& extensions)
-    -> bool {
+auto checkDeviceExtensionSupport(const ::vk::PhysicalDevice& checkDevice,
+                                 const ::std::vector<const char*>& extensions) -> bool {
     auto availableExtensions = checkDevice.enumerateDeviceExtensionProperties();
     ::std::set<::std::string> requireExtensions(extensions.begin(), extensions.end());
 
@@ -98,7 +98,6 @@ class VKResource {
             vkInstance.destroySurfaceKHR(vkSurfaceKHR);
             vkInstance.destroy();
         }
-
     public:
         ::vk::PhysicalDevice phyDevice;
         ::vk::Device device_;
@@ -108,6 +107,11 @@ class VKResource {
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
+        VKResource() = default;
+        VKResource(const VKResource&) = default;
+        VKResource(VKResource&&) = default;
+        auto operator=(const VKResource&) -> VKResource& = default;
+        auto operator=(VKResource&&) -> VKResource& = default;
         ~VKResource() {
 #if !IS_DYNAMIC_LIBRARY
             destroy();
@@ -208,6 +212,9 @@ void createLogicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     if (enableValidationLayers_) {
         createInfo.setPEnabledLayerNames(validationLayers);
     }
+    constexpr ::vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature{VK_TRUE};
+    createInfo.pNext = &dynamic_rendering_feature;
+
     resource.device_ = resource.phyDevice.createDevice(createInfo);
 }
 

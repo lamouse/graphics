@@ -35,9 +35,9 @@ Window::Window(ScreenExtent extent, ::std::string title)
 }
 void Window::initWindow() {
     glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int, int) {
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* glfw_window, int, int) {
         int w{}, h{};
-        glfwGetFramebufferSize(window, &w, &h);
+        glfwGetFramebufferSize(glfw_window, &w, &h);
     });
 }
 
@@ -52,10 +52,10 @@ auto Window::getSurface(VkInstance instance) -> VkSurfaceKHR {
 
 auto Window::getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char*> {
     uint32_t count{0};
-    const char** glfwExtens = ::glfwGetRequiredInstanceExtensions(&count);
+    const char** glfwExtends = ::glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> extends(count);
     for (uint32_t i = 0; i < count; i++) {
-        extends[i] = glfwExtens[i];
+        extends[i] = glfwExtends[i];
     }
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
     extends.push_back("VK_KHR_portability_enumeration");

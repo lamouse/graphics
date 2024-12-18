@@ -35,8 +35,6 @@ GraphicsPipeLine::GraphicsPipeLine( PipelineConfigInfo& configInfo) {
     pipeline = result.value;
 }
 
-GraphicsPipeLine::GraphicsPipeLine() {}
-
 void GraphicsPipeLine::enableAlphaBlending(PipelineConfigInfo& configInfo) {
     configInfo.colorBlendAttachmentInfo.setBlendEnable(VK_TRUE)
         .setColorWriteMask(::vk::ColorComponentFlagBits::eR | ::vk::ColorComponentFlagBits::eG |
