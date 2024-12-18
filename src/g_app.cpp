@@ -78,23 +78,8 @@ void App::run() {
 
     RenderProcessor render([this]() { return window.getExtent(); });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    Imgui imgui;
-    imgui.init(window(), descriptorPool_->getDescriptorPool(), static_cast<::vk::RenderPass>(render), window.getScale());
-    static auto startTime = ::std::chrono::high_resolution_clock::now();
-    Camera camera{};
-    ImguiDebugInfo debugInfo{};
-    debugInfo.speed = 90.0F;
-    debugInfo.look_x = 2.0f;
-    debugInfo.look_y = 2.0f;
-    debugInfo.look_z = 2.0F;
-    debugInfo.up_z = 1.f;
-    debugInfo.rotate_z = 2.0;
-    debugInfo.radians = 45.f;
-    debugInfo.z_far = .1f;
-    debugInfo.z_near = 10.f;
-    debugInfo.center_x = 0;
-    debugInfo.center_y = 0;
-    debugInfo.center_z = 0;
+    Imgui imgui(window(), descriptorPool_->getDescriptorPool(), static_cast<::vk::RenderPass>(render), window.getScale());
+
     while (!window.shouldClose()) {
         glfwPollEvents();
 
@@ -102,32 +87,20 @@ void App::run() {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
-        auto currentTime = ::std::chrono::high_resolution_clock::now();
-        float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-        UniformBufferObject ubo{};
-        ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed),
-                                  glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
-        ubo.view = ::glm::lookAt(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
-                                 glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
-                                 glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
-        ubo.proj = ::glm::perspective(glm::radians(debugInfo.radians), render.extentAspectRation(), debugInfo.z_far,
-                                      debugInfo.z_near);
-        ubo.proj[1][1] *= -1;
+        UniformBufferObject ubo = imgui.get_uniform_buffer(render.extentAspectRation());
 
         if (render.beginFrame()) {
             uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
             uboBuffers[render.getCurrentFrameIndex()]->flush();
 
             FrameInfo frameInfo{render.getCurrentFrameIndex(),
-                                time,
                                 render.getCurrentCommandBuffer(),
-                                camera,
                                 descriptorSets[render.getCurrentFrameIndex()],
                                 gameObjects};
 
             render.beginSwapchainRenderPass();
             renderSystem.render(frameInfo);
-            g::Imgui::draw(debugInfo, render.getCurrentCommandBuffer());
+            imgui.draw(render.getCurrentCommandBuffer());
             render.endSwapchainRenderPass();
             render.endFrame();
         }

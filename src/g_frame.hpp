@@ -15,9 +15,7 @@ struct UniformBufferObject {
 
 struct FrameInfo {
         uint32_t frameIndex;
-        float frameTime;
         ::vk::CommandBuffer commandBuffer;
-        Camera& camera;
         ::vk::DescriptorSet descriptorSet;
         GameObject::Map& gameObjects;
 };

@@ -26,14 +26,9 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-/**
- * @brief 初始化主要是需要自己创建一个renderpass，传入一个descriptorPool
- *
- * @param window
- * @param descriptorPool
- * @param scale
- */
-void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
+
+Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
+    init_debug_info();
     core::Device device;
     // 这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
@@ -87,7 +82,38 @@ void Imgui::init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::R
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void Imgui::draw(ImguiDebugInfo& debugInfo, const vk::CommandBuffer& commandBuffer) {
+void Imgui::init_debug_info() {
+    debugInfo.speed = 90.0F;
+    debugInfo.look_x = 2.0f;
+    debugInfo.look_y = 2.0f;
+    debugInfo.look_z = 2.0F;
+    debugInfo.up_z = 1.f;
+    debugInfo.rotate_z = 2.0;
+    debugInfo.radians = 45.f;
+    debugInfo.z_far = .1f;
+    debugInfo.z_near = 10.f;
+    debugInfo.center_x = 0;
+    debugInfo.center_y = 0;
+    debugInfo.center_z = 0;
+}
+
+UniformBufferObject Imgui::get_uniform_buffer(float extentAspectRation) {
+    static auto startTime = ::std::chrono::high_resolution_clock::now();
+    auto currentTime = ::std::chrono::high_resolution_clock::now();
+    float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    UniformBufferObject ubo;
+    ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed),
+        glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
+    ubo.view = ::glm::lookAt(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
+        glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
+        glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
+    ubo.proj = ::glm::perspective(glm::radians(debugInfo.radians), extentAspectRation, debugInfo.z_far,
+        debugInfo.z_near);
+    ubo.proj[1][1] *= -1;
+    return ubo;
+}
+
+void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui_ImplVulkan_NewFrame();

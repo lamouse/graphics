@@ -8,6 +8,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include <chrono>
+#include <g_frame.hpp>
 #include <vulkan/vulkan.hpp>
 namespace g{
 struct ImguiDebugInfo {
@@ -34,10 +36,13 @@ struct ImguiDebugInfo {
 };
     class Imgui {
     private:
+        ImguiDebugInfo debugInfo{};
+        void init_debug_info();
+
     public:
-        void init(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale = 1.0f);
-        static void draw(ImguiDebugInfo& debugInfo, const vk::CommandBuffer& commandBuffer);
-        explicit Imgui(){};
+        UniformBufferObject get_uniform_buffer(float extentAspectRation);
+        void draw(const vk::CommandBuffer& commandBuffer);
+        explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale = 1.0f);
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;
