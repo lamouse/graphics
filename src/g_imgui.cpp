@@ -26,7 +26,6 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-
 Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
     init_debug_info();
     core::Device device;
@@ -41,11 +40,11 @@ Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::Rende
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
-    //io.ConfigViewportsNoAutoMerge = true;
-    //io.ConfigViewportsNoTaskBarIcon = true;
-    //  Setup Dear ImGui style
+    // io.ConfigViewportsNoAutoMerge = true;
+    // io.ConfigViewportsNoTaskBarIcon = true;
+    //   Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
+    // ImGui::StyleColorsLight();
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular
     // ones.
@@ -53,12 +52,11 @@ Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::Rende
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         style.WindowRounding = .0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-        //style.Colors[ImGuiCol_WindowBg] = ImVec4(.0f, .0f, .0f, 1.0f);
-        // style.Colors[ImGuiCol_TitleBg] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-        // style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-        // style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-        // style.Colors[ImGuiCol_DockingPreview] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-
+        // style.Colors[ImGuiCol_WindowBg] = ImVec4(.0f, .0f, .0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBg] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_DockingPreview] = ImVec4(.0f, .0f, 0.0f, 1.0f);
     }
 
     // Setup Platform/Renderer backends
@@ -77,7 +75,7 @@ Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::Rende
     init_info.MSAASamples = VK_SAMPLE_COUNT_8_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
-    //init_info.UseDynamicRendering = true;
+    // init_info.UseDynamicRendering = true;
     init_info.RenderPass = renderPass;
     ImGui_ImplVulkan_Init(&init_info);
 }
@@ -97,18 +95,37 @@ void Imgui::init_debug_info() {
     debugInfo.center_z = 0;
 }
 
-UniformBufferObject Imgui::get_uniform_buffer(float extentAspectRation) {
+void fps() {
+    ImGuiIO const& io = ImGui::GetIO();
+    (void)io;
+    ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
+    auto main_size = ImGui::GetMainViewport()->Size;
+    bool fps_open = false;
+    ImGui::SetNextWindowBgAlpha(.0f);
+    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always, ImVec2(1.01f, 0.0f));
+    ImGui::Begin("Window 1", &fps_open,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMouseInputs |
+                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
+                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
+                       io.Framerate);
+    ImGui::End();
+}
+
+void debug() {}
+
+auto Imgui::get_uniform_buffer(float extentAspectRation) -> UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     auto currentTime = ::std::chrono::high_resolution_clock::now();
     float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     UniformBufferObject ubo;
     ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed),
-        glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
+                              glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
     ubo.view = ::glm::lookAt(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
-        glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
-        glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
-    ubo.proj = ::glm::perspective(glm::radians(debugInfo.radians), extentAspectRation, debugInfo.z_far,
-        debugInfo.z_near);
+                             glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
+                             glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
+    ubo.proj =
+        ::glm::perspective(glm::radians(debugInfo.radians), extentAspectRation, debugInfo.z_far, debugInfo.z_near);
     ubo.proj[1][1] *= -1;
     return ubo;
 }
@@ -128,7 +145,8 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
             bool open_ptr = true;
             ImGui::SetNextWindowBgAlpha(1.0f);
 
-            ImGui::Begin("debug window", &open_ptr, window_flags);  // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("debug window", &open_ptr,
+                         window_flags);  // Create a window called "Hello, world!" and append into it.
             float center_x = debugInfo.look_x + 0.3f;
             float center_y = debugInfo.look_y + 0.3f;
             float center_z = debugInfo.look_z + 0.3f;
@@ -152,11 +170,8 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
 
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
-
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-
             ImGui::End();
+            fps();
         }
     }
     ImGui::Render();
@@ -166,7 +181,6 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
         ImGui::RenderPlatformWindowsDefault();
     }
 }
-
 
 Imgui::~Imgui() {
     ImGui_ImplVulkan_Shutdown();

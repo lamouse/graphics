@@ -40,7 +40,7 @@ struct ImguiDebugInfo {
         void init_debug_info();
 
     public:
-        UniformBufferObject get_uniform_buffer(float extentAspectRation);
+        auto get_uniform_buffer(float extentAspectRation) -> UniformBufferObject;
         void draw(const vk::CommandBuffer& commandBuffer);
         explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale = 1.0f);
         Imgui(const Imgui&) = delete;

@@ -55,9 +55,9 @@ else()
 endif()
 
 # 设置可执行文件输出目录
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Library output path")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib CACHE PATH "Single Directory for all static libraries.")
 set(BUILD_TESTING ON)
 
 # need vcpkg start
@@ -70,28 +70,6 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 
 # need vcpkg end
 find_package(Vulkan REQUIRED)
-
-file(COPY images DESTINATION ${CMAKE_BINARY_DIR}/bin)
-file(COPY models DESTINATION ${CMAKE_BINARY_DIR}/bin)
-
-find_program(GLSLC_PROGRAM glslc REQUIRED)
-message(STATUS "run glslc to compile shaders ...")
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shader)
-file(GLOB_RECURSE SHADER_SRC_LIST ${CMAKE_SOURCE_DIR}/shader/*)
-
-foreach(shader_file ${SHADER_SRC_LIST})
-        # file relative path from src/
-        string(REGEX MATCH "shader/.*" relative_path ${shader_file})
-
-        # delete string "src/"
-        string(REGEX REPLACE "shader/" "" target_name ${relative_path})
-
-        # rename
-        string(REGEX REPLACE "\\.[^\\.]*$" ".spv" target_name ${target_name})
-        execute_process(COMMAND ${GLSLC_PROGRAM} ${shader_file} -o ${CMAKE_BINARY_DIR}/bin/shader/${target_name})
-endforeach()
-
-message(STATUS "compile shader OK")
 
 # This function should be passed a list of all files in a target. It will automatically generate
 # file groups following the directory hierarchy, so that the layout of the files in IDEs matches the
@@ -136,35 +114,19 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         endif()
 endif()
 
-find_program(CLANG_FORMAT clang-format)
-
-if(NOT CLANG_FORMAT)
-        message(WARNING "Clang format not found! Disabling the clang format target")
-else()
-        set(SRCS ${PROJECT_SOURCE_DIR}/src/core)
-        set(CCOMMENT "Running clang format against all cpp files in src/")
-
-        if(WIN32)
-                add_custom_target(clang-format ALL
-                        COMMAND powershell.exe -Command "Get-ChildItem '${SRCS}/*' -Include *.cpp,*.h,*.hpp,*.cc -Recurse | Foreach {&'${CLANG_FORMAT}' -i $_.fullname}"
-                        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                        COMMENT ${CCOMMENT})
-        elseif(MINGW)
-                add_custom_target(clang-format
-                        COMMAND find `cygpath -u ${SRCS}` -iname *.h -iname *.hpp *.cc -o -iname *.cpp | xargs `cygpath -u ${CLANG_FORMAT}` -i
-                        COMMENT ${CCOMMENT})
-        else()
-                add_custom_target(clang-format
-                        COMMAND find ${SRCS} -iname *.h -o -iname *.cpp | xargs ${CLANG_FORMAT} -i
-                        COMMENT ${CCOMMENT})
-        endif()
-
-        unset(SRCS)
-        unset(CCOMMENT)
-endif()
-
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
+include(Resource)
+include(ClangFormat)
 add_subdirectory(src)
 add_subdirectory(src/test)
 add_subdirectory(doc)
+# 查找 vulkan-1.dll
+find_file(VULKAN_DLL NAMES vulkan-1.dll HINTS ${Vulkan_LIBRARY_DIR})
+
+if (VULKAN_DLL)
+    message(STATUS "Found Vulkan DLL: ${VULKAN_DLL}")
+else()
+    message(FATAL_ERROR "Vulkan DLL not found")
+endif()
+

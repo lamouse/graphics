@@ -168,3 +168,9 @@ if(MSVC)
 elseif(MINGW)
     set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "-Wl,--subsystem,windows")
 endif()
+
+# 复制 vulkan-1.dll 到 bin 目录
+add_custom_command(TARGET ${EXECUTE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${VULKAN_DLL}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
