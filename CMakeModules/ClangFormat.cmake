@@ -2,13 +2,14 @@ find_program(CLANG_FORMAT clang-format)
 
 if(NOT CLANG_FORMAT)
         message(WARNING "Clang format not found! Disabling the clang format target")
+        return()
 else()
-        set(SRCS ${PROJECT_SOURCE_DIR}/src/core)
+        set(SRCS ${PROJECT_SOURCE_DIR}/src)
         set(CCOMMENT "Running clang format against all cpp files in src")
 
         if(WIN32)
                 add_custom_target(clang-format ALL
-                        COMMAND powershell.exe -Command "Get-ChildItem '${SRCS}/*' -Include *.cpp,*.h,*.hpp,*.cc -Recurse | ForEach-Object {& '${CLANG_FORMAT}' -i $_.FullName}"
+                        COMMAND powershell.exe -Command "Get-ChildItem '${SRCS}/*' -Include *.cpp,*.h,*.hpp,*.cc -Recurse | ForEach-Object {& '${CLANG_FORMAT}' -style=file:./.clang-format -i $_.fullname}"
                         COMMENT ${CCOMMENT})
         elseif(MINGW)
                 add_custom_target(clang-format

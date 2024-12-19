@@ -101,12 +101,6 @@ find_package(Vulkan REQUIRED)
 
 add_subdirectory(third-party)
 
-if(imgui_FOUND)
-        message(STATUS "imgui found")
-else()
-        message(STATUS "imgui not found")
-endif()
-
 # This function should be passed a list of all files in a target. It will automatically generate
 # file groups following the directory hierarchy, so that the layout of the files in IDEs matches the
 # one in the filesystem.
