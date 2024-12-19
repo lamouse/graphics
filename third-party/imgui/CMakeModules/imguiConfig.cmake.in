@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set(ARCHITECTURE "@ARCHITECTURE@")
+
+if (NOT @BUILD_SHARED_LIBS@)
+    find_dependency(Vulkan)
+    find_dependency(glfw3)
+
+    if (@DYNARMIC_USE_LLVM@)
+        find_dependency(LLVM)
+    endif()
+endif()
+message(STATUS "####################### ${CMAKE_CURRENT_LIST_DIR}")
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+check_required_components(@PROJECT_NAME@)

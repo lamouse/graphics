@@ -1,5 +1,5 @@
 include_directories(.)
-
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # CMake seems to only define _DEBUG on Windows
 set_property(DIRECTORY APPEND PROPERTY
     COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
@@ -153,7 +153,6 @@ endif()
 
 
 add_subdirectory(core)
-add_subdirectory(imgui)
 
 aux_source_directory(. MAIN_SRC)
 aux_source_directory(./resource RESOURCE_SRC)
@@ -163,6 +162,7 @@ add_executable(${EXECUTE_NAME} ${SRC})
 target_link_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(${EXECUTE_NAME} PRIVATE core imgui)
 target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
+target_include_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
 if(MSVC)
     set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 elseif(MINGW)

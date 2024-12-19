@@ -98,6 +98,7 @@ class VKResource {
             vkInstance.destroySurfaceKHR(vkSurfaceKHR);
             vkInstance.destroy();
         }
+
     public:
         ::vk::PhysicalDevice phyDevice;
         ::vk::Device device_;
@@ -388,8 +389,8 @@ auto Device::getQueue(DeviceQueue queue) -> ::vk::Queue& {
             return resource.graphicsQueue;
         case DeviceQueue::present:
             return resource.presentQueue;
-            //        default:
-            //                   throw std::runtime_error("un know logic device queue type");
+        default:
+            throw std::runtime_error("un know logic device queue type");
     }
 }
 
