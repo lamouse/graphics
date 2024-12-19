@@ -14,19 +14,19 @@ Window::Window(ScreenExtent extent, ::std::string title)
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     //::glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER,GLFW_TRUE);
-    float xscale{}, yscale{};
+    float x_scale{}, y_scale{};
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-    xscale = 1.f;
-    yscale = 1.f;
+    x_scale = 1.f;
+    y_scale = 1.f;
 #else
     ::GLFWmonitor* monitor = ::glfwGetPrimaryMonitor();
-    ::glfwGetMonitorContentScale(monitor, &xscale, &yscale);
+    ::glfwGetMonitorContentScale(monitor, &x_scale, &y_scale);
 #endif
 
-    int const w = static_cast<int>((float)width * xscale);
-    int const h = static_cast<int>((float)height * yscale);
-    scale = xscale;
+    int const w = static_cast<int>((float)width * x_scale);
+    int const h = static_cast<int>((float)height * y_scale);
+    scale = x_scale;
     window = ::glfwCreateWindow(w, h, title_.c_str(), nullptr, nullptr);
     if (!window) {
         ::glfwTerminate();

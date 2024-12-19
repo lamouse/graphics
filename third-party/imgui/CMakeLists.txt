@@ -23,7 +23,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 aux_source_directory(./src IMGUI_SRC)
 add_library(imgui STATIC ${IMGUI_SRC})
 if(MSVC)
-    target_compile_options(core PRIVATE
+    target_compile_options(imgui PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch

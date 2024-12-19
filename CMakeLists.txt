@@ -1,3 +1,31 @@
+
+if(CMAKE_C_COMPILER MATCHES "ucrt" OR CMAKE_CXX_COMPILER MATCHES "ucrt")
+        message(STATUS "---Building with ucrt---")
+        set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+
+        if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
+                if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
+                        set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+                        option(VCPKG_MANIFEST_MODE "")
+                        include("${CMAKE_TOOLCHAIN_FILE}")
+                else()
+                        option(VCPKG_MANIFEST_MODE "")
+                        include("${CMAKE_TOOLCHAIN_FILE}")
+                endif()
+        else()
+                if(NOT "$ENV{VCPKG_TOOLCHAIN_FILE}" STREQUAL "")
+                        # Disable manifest mode (use vcpkg classic mode) when using a custom vcpkg installation
+                        option(VCPKG_MANIFEST_MODE "")
+                        include("$ENV{VCPKG_TOOLCHAIN_FILE}")
+                endif()
+
+                if(NOT ${CMAKE_TOOLCHAIN_FILE} STREQUAL "")
+                        option(VCPKG_MANIFEST_MODE "")
+                        include("${CMAKE_TOOLCHAIN_FILE}")
+                endif()
+        endif()
+endif()
+
 cmake_minimum_required(VERSION 3.28)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -79,8 +107,6 @@ else()
         message(STATUS "imgui not found")
 endif()
 
-
-
 # This function should be passed a list of all files in a target. It will automatically generate
 # file groups following the directory hierarchy, so that the layout of the files in IDEs matches the
 # one in the filesystem.
@@ -132,12 +158,6 @@ include(ClangFormat)
 add_subdirectory(src)
 add_subdirectory(src/test)
 add_subdirectory(doc)
+
 # 查找 vulkan-1.dll
 find_file(VULKAN_DLL NAMES vulkan-1.dll HINTS ${Vulkan_LIBRARY_DIR})
-
-if (VULKAN_DLL)
-    message(STATUS "Found Vulkan DLL: ${VULKAN_DLL}")
-else()
-    message(FATAL_ERROR "Vulkan DLL not found")
-endif()
-
