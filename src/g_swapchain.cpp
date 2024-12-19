@@ -4,14 +4,14 @@
 
 #include <gsl/gsl>
 
-#include "g_defines.hpp"
 #include "core/device.hpp"
+#include "g_defines.hpp"
 
 namespace g {
 
 Swapchain::Swapchain(int width, int height, ::vk::SampleCountFlagBits sampleCount,
                      ::std::shared_ptr<Swapchain> oldSwapchain)
-    :sampleCount_(sampleCount) {
+    : sampleCount_(sampleCount) {
     init(width, height, oldSwapchain);
 }
 
@@ -99,7 +99,6 @@ auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilitie
 }
 
 Swapchain::~Swapchain() {
-
     ::spdlog::debug(DETAIL_INFO("destroy swapchain"));
     core::Device device;
     const auto& logicalDevice = device.logicalDevice();
@@ -173,11 +172,11 @@ void Swapchain::createColorResources() {
     core::Device device;
     for (::gsl::index i = 0; i < colorImages.size(); i++) {
         device.createImage(extent_.width, extent_.height, mipLevels, getSwapchainColorFormat(), sampleCount_,
-                            ::vk::ImageTiling::eOptimal,
-                            ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment,
-                            ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemories[i]);
+                           ::vk::ImageTiling::eOptimal,
+                           ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment,
+                           ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemories[i]);
         colorImageViews[i] = device.createImageView(colorImages[i], getSwapchainColorFormat(),
-                                                     ::vk::ImageAspectFlagBits::eColor, mipLevels);
+                                                    ::vk::ImageAspectFlagBits::eColor, mipLevels);
     }
 }
 
@@ -190,8 +189,8 @@ void Swapchain::createDepthResources() {
     core::Device device;
     for (::gsl::index i = 0; i < depthImages.size(); i++) {
         device.createImage(extent_.width, extent_.height, mipLevels, depthFormat, sampleCount_,
-                            ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
-                            ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemories_[i]);
+                           ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                           ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemories_[i]);
         depthImageViews[i] =
             device.createImageView(depthImages[i], depthFormat, ::vk::ImageAspectFlagBits::eDepth, mipLevels);
     }
@@ -239,7 +238,7 @@ auto Swapchain::acquireNextImage() -> ::vk::ResultValue<uint32_t> {
     }
     logicalDevice.resetFences(inFlightFences[currentFrame]);
     return logicalDevice.acquireNextImageKHR(swapchain, ::std::numeric_limits<uint64_t>::max(),
-                                      imageAvailableSemaphores[currentFrame]);
+                                             imageAvailableSemaphores[currentFrame]);
 }
 
 auto Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result {

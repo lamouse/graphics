@@ -23,16 +23,17 @@ struct PipelineConfigInfo {
 class GraphicsPipeLine {
     private:
         ::vk::Pipeline pipeline;
+
     public:
         explicit GraphicsPipeLine(PipelineConfigInfo& configInfo);
         GraphicsPipeLine() = default;
         GraphicsPipeLine(const GraphicsPipeLine&) = delete;
-        void bind(const ::vk::CommandBuffer& commandBuffer)const {
+        void bind(const ::vk::CommandBuffer& commandBuffer) const {
             commandBuffer.bindPipeline(::vk::PipelineBindPoint::eGraphics, pipeline);
         }
         auto operator=(const GraphicsPipeLine&) -> GraphicsPipeLine = delete;
-        auto operator=(GraphicsPipeLine&&)  noexcept -> GraphicsPipeLine&;
-        GraphicsPipeLine(GraphicsPipeLine&&) noexcept ;
+        auto operator=(GraphicsPipeLine&&) noexcept -> GraphicsPipeLine&;
+        GraphicsPipeLine(GraphicsPipeLine&&) noexcept;
         auto operator()() -> ::vk::Pipeline& { return pipeline; }
         static void enableAlphaBlending(PipelineConfigInfo& configInfo);
         static auto getDefaultConfig() -> PipelineConfigInfo;

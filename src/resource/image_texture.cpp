@@ -6,7 +6,6 @@ namespace resource::image {
 
 ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format format)
     : imageMipLevels_(image.getMipLevels()), format_(format), device_(device.logicalDevice()) {
-
     ImageInfo imgInfo = image.getImageInfo();
 
     core::StagingBuffer stagingBuffer(device, image.size(), image.getData());

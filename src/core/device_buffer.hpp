@@ -14,9 +14,8 @@ class EXPORT DeviceBuffer {
         DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory);
 
     public:
-        static auto create(::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size)
-            -> DeviceBuffer;
-        auto operator()()const -> ::vk::Buffer { return buffer_; }
+        static auto create(::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size) -> DeviceBuffer;
+        auto operator()() const -> ::vk::Buffer { return buffer_; }
         ~DeviceBuffer();
 
         DeviceBuffer(const DeviceBuffer&) = delete;

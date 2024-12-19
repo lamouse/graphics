@@ -1,9 +1,9 @@
 #include "g_model.hpp"
 
-#include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include <assimp/Importer.hpp>
 #include <cassert>
 #include <format>
 #include <unordered_map>
@@ -61,7 +61,6 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
 
     ::std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
 
-
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene) {
@@ -75,9 +74,9 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
             aiVector3D vertex = mesh->mVertices[j];
             Model::Vertex model_vertex{};
             model_vertex.position = {vertex.x, vertex.y, vertex.z};
-            if(texCoord > 0){
+            if (texCoord > 0) {
                 model_vertex.texCoord = {mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y};
-            }else {
+            } else {
                 model_vertex.texCoord = {0.0f, 0.0f};
             }
             model_vertex.color = {1.0f, 1.0f, 1.0f};

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <memory>
 #include <functional>
-#include "g_swapchain.hpp"
+#include <memory>
+
 #include "g_defines.hpp"
+#include "g_swapchain.hpp"
 
 namespace g {
 class RenderProcessor {
@@ -21,8 +22,8 @@ class RenderProcessor {
         void createRenderPass();
         void allcoCmdBuffer();
         getScreenExtendFunc getScreenExtend_;
-    public:
 
+    public:
         auto beginFrame() -> bool;
         void beginSwapchainRenderPass();
         void endSwapchainRenderPass();

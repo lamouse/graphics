@@ -1,17 +1,15 @@
 #include "device_buffer.hpp"
+
 #include "device.hpp"
 #include "staging_buffer.hpp"
 
-
 namespace core {
 
-void copyBuffer (::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size);
+void copyBuffer(::vk::Buffer srcBuffer, vk::Buffer dstBuffer, ::vk::DeviceSize size);
 
-DeviceBuffer::DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory)
-    : buffer_(buffer), bufferMemory_(memory){}
+DeviceBuffer::DeviceBuffer(::vk::Buffer& buffer, ::vk::DeviceMemory& memory) : buffer_(buffer), bufferMemory_(memory) {}
 
-auto DeviceBuffer::create(::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size)
-    -> DeviceBuffer {
+auto DeviceBuffer::create(::vk::BufferUsageFlags usage, const void* data, ::vk::DeviceSize size) -> DeviceBuffer {
     Device device;
     core::StagingBuffer stagingBuffer(device, size, data);
     ::vk::Buffer vertexBuffer;

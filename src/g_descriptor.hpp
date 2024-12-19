@@ -22,7 +22,7 @@ class DescriptorSetLayout {
         DescriptorSetLayout(DescriptorSetLayout &&) = delete;
         auto operator=(const DescriptorSetLayout &) -> DescriptorSetLayout & = delete;
         auto operator=(DescriptorSetLayout &&) -> DescriptorSetLayout & = delete;
-        auto operator()()const { return descriptorSetLayout_; }
+        auto operator()() const { return descriptorSetLayout_; }
         auto operator()(uint32_t binding) -> ::vk::DescriptorSetLayoutBinding {
             return descriptorSetLayoutBindings_[binding];
         }

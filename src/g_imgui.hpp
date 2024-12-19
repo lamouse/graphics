@@ -11,7 +11,7 @@
 #include <chrono>
 #include <g_frame.hpp>
 #include <vulkan/vulkan.hpp>
-namespace g{
+namespace g {
 struct ImguiDebugInfo {
         float speed;
         float look_x;
@@ -34,7 +34,7 @@ struct ImguiDebugInfo {
         float z_far;
         float z_near;
 };
-    class Imgui {
+class Imgui {
     private:
         ImguiDebugInfo debugInfo{};
         void init_debug_info();
@@ -42,14 +42,15 @@ struct ImguiDebugInfo {
     public:
         auto get_uniform_buffer(float extentAspectRation) -> UniformBufferObject;
         void draw(const vk::CommandBuffer& commandBuffer);
-        explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale = 1.0f);
+        explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass,
+                       float scale = 1.0f);
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;
         Imgui(Imgui&&) = delete;
         ~Imgui();
-    };
+};
 
-}
+}  // namespace g
 
 #endif  // GRAPHICS_G_IMGUI_HPP

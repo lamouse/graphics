@@ -8,12 +8,9 @@
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
-#define image_path \
-    ::std::string { "./images/" }
-#define shader_path \
-    ::std::string { "./shader/" }
-#define models_path \
-    ::std::string { "./models/" }
+#define image_path ::std::string{"./images/"}
+#define shader_path ::std::string{"./shader/"}
+#define models_path ::std::string{"./models/"}
 
 #define DETAIL_INFO(msg)                                                                                       \
     ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \

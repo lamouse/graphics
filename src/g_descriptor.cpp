@@ -1,8 +1,10 @@
 #include "g_descriptor.hpp"
-#include "core/device.hpp"
+
 #include <cassert>
 #include <ranges>
 #include <utility>
+
+#include "core/device.hpp"
 namespace g {
 
 auto DescriptorSetLayout::Builder::addBinding(uint32_t binding, ::vk::DescriptorType type,
@@ -62,7 +64,7 @@ auto DescriptorPool::Builder::build() -> ::std::unique_ptr<DescriptorPool> {
 }
 
 DescriptorPool::DescriptorPool(uint32_t maxSets, ::vk::DescriptorPoolCreateFlags flags,
-                               ::std::vector<::vk::DescriptorPoolSize> poolSizes){
+                               ::std::vector<::vk::DescriptorPoolSize> poolSizes) {
     core::Device device;
     ::vk::DescriptorPoolCreateInfo createInfo;
     createInfo.setPoolSizes(poolSizes).setMaxSets(maxSets).setFlags(flags);
@@ -123,8 +125,8 @@ void DescriptorWriter::overwrite(const ::vk::DescriptorSet &descriptorSet) {
     for (auto &writeDescriptorSet : writeDescriptorSets_) {
         writeDescriptorSet.setDstSet(descriptorSet);
     }
-    device.logicalDevice().updateDescriptorSets(static_cast<uint32_t>(writeDescriptorSets_.size()), writeDescriptorSets_.data(), 0,
-                                nullptr);
+    device.logicalDevice().updateDescriptorSets(static_cast<uint32_t>(writeDescriptorSets_.size()),
+                                                writeDescriptorSets_.data(), 0, nullptr);
 }
 
 }  // namespace g

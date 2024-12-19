@@ -11,7 +11,6 @@
 #endif
 namespace resource::image {
 
-
 void Image::readImage(::std::string& path) {
     data = stbi_load(path.c_str(), &imageInfo.width, &imageInfo.height, &imageInfo.channels, STBI_rgb_alpha);
     if (!data) {

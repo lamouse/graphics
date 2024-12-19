@@ -1,7 +1,7 @@
 #pragma once
+#include "core/device.hpp"
 #include "g_frame.hpp"
 #include "g_pipeline.hpp"
-#include "core/device.hpp"
 
 namespace g {
 class RenderSystem {

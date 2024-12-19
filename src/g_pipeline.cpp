@@ -1,10 +1,12 @@
 #include "g_pipeline.hpp"
-#include "core/device.hpp"
+
 #include <spdlog/spdlog.h>
+
+#include "core/device.hpp"
 
 namespace g {
 
-GraphicsPipeLine::GraphicsPipeLine( PipelineConfigInfo& configInfo) {
+GraphicsPipeLine::GraphicsPipeLine(PipelineConfigInfo& configInfo) {
     ::vk::GraphicsPipelineCreateInfo createInfo;
 
     ::vk::PipelineVertexInputStateCreateInfo inputState;
@@ -92,15 +94,14 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
 }
 
 GraphicsPipeLine::GraphicsPipeLine(GraphicsPipeLine&& pipeline) noexcept : pipeline(pipeline.pipeline) {
-
     pipeline.pipeline = nullptr;
 }
-auto GraphicsPipeLine::operator=(GraphicsPipeLine&& rvalue)  noexcept -> GraphicsPipeLine&{
+auto GraphicsPipeLine::operator=(GraphicsPipeLine&& rvalue) noexcept -> GraphicsPipeLine& {
     this->pipeline = rvalue.pipeline;
     rvalue.pipeline = nullptr;
     return *this;
 }
-GraphicsPipeLine::~GraphicsPipeLine(){
+GraphicsPipeLine::~GraphicsPipeLine() {
     if (pipeline) {
         SPDLOG_DEBUG("destroy Graphics pipeline");
         core::Device device;
@@ -108,7 +109,7 @@ GraphicsPipeLine::~GraphicsPipeLine(){
     }
 }
 
-void ComputePipeline::init( const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
+void ComputePipeline::init(const vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo,
                            const ::vk::DescriptorSetLayout& descriptorSetLayout) {
     createPipelineLayout(descriptorSetLayout);
     createPipeline(shaderStageCreateInfo);

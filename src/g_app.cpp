@@ -2,10 +2,10 @@
 
 #include "core/buffer.hpp"
 #include "g_defines.hpp"
-#include "g_render.hpp"
-#include "g_render_system.hpp"
 #include "g_descriptor.hpp"
 #include "g_game_object.hpp"
+#include "g_render.hpp"
+#include "g_render_system.hpp"
 
 // imgui begin
 #include "g_imgui.hpp"
@@ -17,34 +17,32 @@
 #include <thread>
 
 namespace g {
-namespace  {
-    auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
-        return DescriptorPool::Builder()
-            .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-            .setMaxSets(count)
-            .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
-            .addPoolSize(::vk::DescriptorType::eSampler, count)
-            .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
-            .addPoolSize(::vk::DescriptorType::eStorageImage, count)
-            .addPoolSize(::vk::DescriptorType::eSampledImage, count)
-            .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
-            .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
-            .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
-            .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
-            .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
-            .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
-            .build();
-    }
-    auto loadGameObjects() -> GameObject::Map {
-        GameObject::Map gameObjects;
-        auto cube = GameObject::createGameObject();
-        cube.model = Model::createFromFile("models/viking_room.obj");
-        gameObjects.emplace(cube.getId(), ::std::move(cube));
-        return gameObjects;
-    }
+namespace {
+auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
+    return DescriptorPool::Builder()
+        .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
+        .setMaxSets(count)
+        .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eSampler, count)
+        .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
+        .addPoolSize(::vk::DescriptorType::eStorageImage, count)
+        .addPoolSize(::vk::DescriptorType::eSampledImage, count)
+        .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
+        .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
+        .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
+        .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
+        .build();
 }
-
-
+auto loadGameObjects() -> GameObject::Map {
+    GameObject::Map gameObjects;
+    auto cube = GameObject::createGameObject();
+    cube.model = Model::createFromFile("models/viking_room.obj");
+    gameObjects.emplace(cube.getId(), ::std::move(cube));
+    return gameObjects;
+}
+}  // namespace
 
 void App::run() {
     core::Device device_;
@@ -78,7 +76,8 @@ void App::run() {
 
     RenderProcessor render([this]() { return window.getExtent(); });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    Imgui imgui(window(), descriptorPool_->getDescriptorPool(), static_cast<::vk::RenderPass>(render), window.getScale());
+    Imgui imgui(window(), descriptorPool_->getDescriptorPool(), static_cast<::vk::RenderPass>(render),
+                window.getScale());
 
     while (!window.shouldClose()) {
         glfwPollEvents();
@@ -93,10 +92,8 @@ void App::run() {
             uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
             uboBuffers[render.getCurrentFrameIndex()]->flush();
 
-            FrameInfo frameInfo{render.getCurrentFrameIndex(),
-                                render.getCurrentCommandBuffer(),
-                                descriptorSets[render.getCurrentFrameIndex()],
-                                gameObjects};
+            FrameInfo frameInfo{render.getCurrentFrameIndex(), render.getCurrentCommandBuffer(),
+                                descriptorSets[render.getCurrentFrameIndex()], gameObjects};
 
             render.beginSwapchainRenderPass();
             renderSystem.render(frameInfo);
@@ -104,7 +101,6 @@ void App::run() {
             render.endSwapchainRenderPass();
             render.endFrame();
         }
-
     }
 
     device_.logicalDevice().waitIdle();

@@ -2,7 +2,6 @@
 
 #include <cstdlib>
 
-
 namespace core {
 
 StagingBuffer::StagingBuffer(Device& device, ::vk::DeviceSize size, const void* bufferData)

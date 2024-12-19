@@ -17,9 +17,9 @@ Buffer::Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t ins
     : device_(device),
       instanceCount_(instanceCount),
       instanceSize_(instanceSize),
-      alignmentSize_(getAlignmentSize(instanceSize, minOffsetAlignment)), bufferUsage_(bufferUsage),
+      alignmentSize_(getAlignmentSize(instanceSize, minOffsetAlignment)),
+      bufferUsage_(bufferUsage),
       memoryPropertyFlags_(memoryPropertyFlags) {
-
     bufferSize_ = instanceCount_ * instanceSize_;
     device.createBuffer(bufferSize_, bufferUsage_, memoryPropertyFlags_, buffer_, bufferMemory_);
 }
@@ -46,7 +46,7 @@ void Buffer::writeToBuffer(void* data, ::vk::DeviceSize size, ::vk::DeviceSize o
     if (size == VK_WHOLE_SIZE) {
         memcpy(data_, data, bufferSize_);
     } else {
-         char* memOffset =static_cast<char*>(data_);
+        char* memOffset = static_cast<char*>(data_);
         memOffset += offset;
         memcpy(memOffset, data, size);
     }

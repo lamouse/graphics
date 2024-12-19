@@ -1,12 +1,12 @@
 #include "g_render.hpp"
-#include "core/device.hpp"
+
 #include <cassert>
 #include <utility>
 
+#include "core/device.hpp"
 
 namespace g {
-RenderProcessor::RenderProcessor(getScreenExtendFunc getScreenExtend)
-    : getScreenExtend_(std::move(getScreenExtend)) {
+RenderProcessor::RenderProcessor(getScreenExtendFunc getScreenExtend) : getScreenExtend_(std::move(getScreenExtend)) {
     createSwapchain();
     createRenderPass();
     swapchain->createFrameBuffers(renderPass_);
@@ -63,7 +63,7 @@ void RenderProcessor::endFrame() {
     try {
         const auto result = swapchain->submitCommand(getCurrentCommandBuffer(), currentImageIndex);
 
-        if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR){
+        if (result == ::vk::Result::eErrorOutOfDateKHR || result == ::vk::Result::eSuboptimalKHR) {
             createSwapchain();
         } else if (result != ::vk::Result::eSuccess) {
             throw ::std::runtime_error("filed to present swap chain image");

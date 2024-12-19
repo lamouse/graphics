@@ -1,8 +1,9 @@
 #include "shader.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <fstream>
 #include <stdexcept>
-#include <spdlog/spdlog.h>
 
 namespace resource::shader {
 
