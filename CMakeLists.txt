@@ -152,6 +152,3 @@ include(ClangFormat)
 add_subdirectory(src)
 add_subdirectory(src/test)
 add_subdirectory(doc)
-
-# 查找 vulkan-1.dll
-find_file(VULKAN_DLL NAMES vulkan-1.dll HINTS ${Vulkan_LIBRARY_DIR})
