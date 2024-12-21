@@ -115,7 +115,7 @@ void fps() {
 
 void debug() {}
 
-auto Imgui::get_uniform_buffer(float extentAspectRation) -> UniformBufferObject {
+auto Imgui::get_uniform_buffer(float extentAspectRation) const -> UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     auto currentTime = ::std::chrono::high_resolution_clock::now();
     float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
