@@ -1,5 +1,6 @@
 #include "g_app.hpp"
 
+#include "config.hpp"
 #include "core/buffer.hpp"
 #include "g_defines.hpp"
 #include "g_descriptor.hpp"
@@ -110,6 +111,7 @@ App::App() {
     core::Device::init(
         Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); }, enableValidationLayers);
+    Config config("config/config.yaml");
 }
 
 App::~App() { core::Device::destroy(); };

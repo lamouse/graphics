@@ -162,6 +162,8 @@ add_executable(${EXECUTE_NAME} ${SRC})
 target_link_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 target_link_libraries(${EXECUTE_NAME} PRIVATE core imgui)
 target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
+target_link_libraries(${EXECUTE_NAME} PRIVATE yaml-cpp::yaml-cpp)
+
 target_include_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
 if(MSVC)
     set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")

@@ -95,7 +95,7 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
-
+find_package(yaml-cpp CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
