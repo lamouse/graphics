@@ -41,53 +41,61 @@ def to_snake_case(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
-def generate_struct_code(struct_name, fields, original_name=None, parent_name=None):
-    if original_name is None:
-        original_name = struct_name
-    struct_code = f'struct {struct_name} {{\n'
-    read_code = f'{struct_name} {struct_name}::read_config(const YAML::Node& node) {{\n'
-    read_code += f'    {struct_name} config;\n'
+def generate_struct_and_namespace_code(struct_name, fields, parent_name=None):
+    struct_code = f'struct {struct_name.capitalize()} {{\n'
+    read_code = f'{struct_name.capitalize()} {struct_name.capitalize()}::read_config(const YAML::Node& node);\n'
 
-    sub_struct_codes = []
-    sub_read_codes = []
+    sub_struct_definitions = []
 
     for field_name, subfields in fields.items():
         field_type = get_type_from_comment(struct_name if parent_name is None else parent_name, field_name)
         if field_type == 'struct':
-            sub_struct_name = f'{field_name.capitalize()}Config'
-            sub_struct_code, sub_read_code = generate_struct_code(sub_struct_name, subfields, field_name, struct_name)
-            sub_struct_codes.append(sub_struct_code)
-            sub_read_codes.append(sub_read_code)
-            struct_code += f'    {sub_struct_name} {field_name};\n'
-            read_code += f'    config.{field_name} = {sub_struct_name}::read_config(node["{field_name}"]);\n'
-        elif field_type:
-            cpp_type = type_mapping.get(field_type)
-            if not cpp_type:
-                raise ValueError(f'Unsupported type: {field_type} for field: {field_name}')
-            struct_code += f'    {cpp_type} {field_name};\n'
-            read_code += f'    config.{field_name} = node["{field_name}"].as<{cpp_type}>();\n'
+            sub_struct_name = f'{field_name.capitalize()}'
+            sub_struct_code, sub_read_code = generate_struct_and_namespace_code(field_name, subfields, struct_name)
+            sub_struct_definitions.append(sub_struct_code)
+            struct_code += f'    {field_name.lower()}::{sub_struct_name} {field_name};\n'
         else:
-            raise ValueError(f'No type specified for field: {field_name}')
+            struct_code += f'    {type_mapping.get(field_type, "unknown")} {field_name};\n'
 
-    struct_code += f'\n    static {struct_name} read_config(const YAML::Node& node);\n'
-    struct_code += f'    static const char* node_name() {{ return "{original_name}"; }}\n'  # 添加获取节点名称的静态函数
+    struct_code += f'\n    static {struct_name.capitalize()} read_config(const YAML::Node& node);\n'
+    struct_code += f'    static const char* node_name() {{ return "{struct_name}"; }}\n'
     struct_code += '};\n\n'
+
+    namespace_code = f'namespace {struct_name.lower()} {{\n'
+    namespace_code += ''.join(sub_struct_definitions)
+    namespace_code += struct_code
+    namespace_code += '} // namespace ' + struct_name.lower() + '\n\n'
+
+    return namespace_code, read_code
+
+def generate_source_code(struct_name, fields, parent_name=None):
+    read_code = f'{struct_name.capitalize()} {struct_name.capitalize()}::read_config(const YAML::Node& node) {{\n'
+    read_code += f'    {struct_name.capitalize()} config;\n'
+
+    sub_read_definitions = []
+
+    for field_name, subfields in fields.items():
+        field_type = get_type_from_comment(struct_name if parent_name is None else parent_name, field_name)
+        if field_type == 'struct':
+            sub_struct_code = generate_source_code(field_name, subfields, struct_name)
+            sub_read_definitions.append(sub_struct_code)
+            read_code += f'    config.{field_name} = {field_name.lower()}::{field_name.capitalize()}::read_config(node["{field_name}"]);\n'
+        else:
+            read_code += f'    config.{field_name} = node["{field_name}"].as<{type_mapping.get(field_type, "unknown")}>();\n'
 
     read_code += '    return config;\n'
     read_code += '}\n\n'
 
-    # 确保子结构体在父结构体之前声明
-    struct_code = ''.join(sub_struct_codes) + struct_code
-    read_code += ''.join(sub_read_codes)
+    if parent_name:
+        return f'namespace {struct_name.lower()} {{\n\n' + read_code + f'}} // namespace {struct_name.lower()}\n\n' + ''.join(sub_read_definitions)
+    else:
+        return f'namespace {struct_name.lower()} {{\n\n' + read_code + ''.join(sub_read_definitions) + f'}} // namespace {struct_name.lower()}\n\n'
 
-    return struct_code, read_code
-
-# 生成 C++ struct 和读取配置代码
+# 生成 C++ 命名空间和读取配置代码
 header_codes = []
 source_codes = []
 for struct_name, fields in config.items():
-    struct_name_with_config = f'{struct_name.capitalize()}Config'
-    snake_case_name = to_snake_case(struct_name_with_config)
+    snake_case_name = to_snake_case(struct_name)
 
     header_code = f'// This file is auto-generated. Do not edit.\n\n'
     header_code += '#pragma once\n\n'
@@ -95,14 +103,14 @@ for struct_name, fields in config.items():
     header_code += '#include <string>\n#include <yaml-cpp/yaml.h>\n\n'
     header_code += 'namespace config {\n\n'
 
-    struct_code, read_code = generate_struct_code(struct_name_with_config, fields, struct_name)
-    header_code += struct_code
+    namespace_code, _ = generate_struct_and_namespace_code(struct_name, fields)
+    header_code += namespace_code
     header_code += '} // namespace config\n\n'
     header_codes.append((header_code, snake_case_name))
 
     source_code = f'#include "{snake_case_name}.h"\n\n'
     source_code += 'namespace config {\n\n'
-    source_code += read_code
+    source_code += generate_source_code(struct_name, fields)
     source_code += '} // namespace config\n\n'
     source_codes.append((source_code, snake_case_name))
 

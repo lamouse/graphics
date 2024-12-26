@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "config.hpp"
-#include "config/log_config.h"
+#include "config/log.h"
 #include "g_app.hpp"
 #include "utils/log_util.hpp"
 
@@ -25,7 +25,7 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
 
 void init(const Config& config) {
     // ::spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v");
-    auto logConfig = config.getConfig<config::LogConfig>();
+    auto logConfig = config.getConfig<config::log::Log>();
     auto level = utils::get_log_level_from_string(logConfig.level);
 
     // 创建多接收器日志器

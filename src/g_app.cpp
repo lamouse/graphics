@@ -1,6 +1,6 @@
 #include "g_app.hpp"
 
-#include "config/vulkan_config.h"
+#include "config/vulkan.h"
 #include "core/buffer.hpp"
 #include "g_defines.hpp"
 #include "g_descriptor.hpp"
@@ -107,7 +107,7 @@ void App::run() {
 }
 
 App::App(const Config& config) {
-    auto vulkan_config = config.getConfig<config::VulkanConfig>();
+    auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
     core::Device::init(
         Window::getRequiredInstanceExtends(vulkan_config.validation_layers), deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
