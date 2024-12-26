@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "config.hpp"
+#include "config/log_config.h"
 #include "g_app.hpp"
 #include "utils/log_util.hpp"
 
@@ -24,12 +25,12 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
 
 void init(const Config& config) {
     // ::spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v");
-    auto logConfig = config.getConfig<LogConfig>();
+    auto logConfig = config.getConfig<config::LogConfig>();
     auto level = utils::get_log_level_from_string(logConfig.level);
 
     // 创建多接收器日志器
     std::vector<spdlog::sink_ptr> sinks;
-    if (logConfig.console) {
+    if (logConfig.console.enabled) {
         // 创建控制台接收器
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         // 设置日志级别和格式
@@ -37,9 +38,10 @@ void init(const Config& config) {
         spdlog::set_pattern(logConfig.pattern);
         sinks.push_back(console_sink);
     }
-    if (logConfig.file) {
+    if (logConfig.file.enabled) {
         // 创建文件接收器
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logConfig.file_path, !logConfig.append);
+        auto file_sink =
+            std::make_shared<spdlog::sinks::basic_file_sink_mt>(logConfig.file.path, !logConfig.file.append);
         // 设置日志级别和格式
         spdlog::set_level(level);
         spdlog::set_pattern(logConfig.pattern);

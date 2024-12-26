@@ -1,12 +1,12 @@
 #include "g_app.hpp"
 
+#include "config/vulkan_config.h"
 #include "core/buffer.hpp"
 #include "g_defines.hpp"
 #include "g_descriptor.hpp"
 #include "g_game_object.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
-
 // imgui begin
 #include "g_imgui.hpp"
 #include "resource/image_texture.hpp"
@@ -107,11 +107,11 @@ void App::run() {
 }
 
 App::App(const Config& config) {
-    auto vulkan_config = config.getConfig<VulkanConfig>();
+    auto vulkan_config = config.getConfig<config::VulkanConfig>();
     core::Device::init(
-        Window::getRequiredInstanceExtends(vulkan_config.validationLayers), deviceExtensions,
+        Window::getRequiredInstanceExtends(vulkan_config.validation_layers), deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
-        vulkan_config.validationLayers);
+        vulkan_config.validation_layers);
 }
 
 App::~App() { core::Device::destroy(); };

@@ -19,3 +19,10 @@ configure_file(
     "${CMAKE_BINARY_DIR}/bin/config/config.yaml"
     @ONLY
 )
+
+set(CONFIG_OUTPUT_DIR "${CMAKE_BINARY_DIR}/generated/config")
+find_package(Python3 REQUIRED)
+if(Python3_EXECUTABLE)
+    execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/config/generate_cpp_files.py ${CMAKE_BINARY_DIR}/bin/config ${CONFIG_OUTPUT_DIR})
+
+endif()

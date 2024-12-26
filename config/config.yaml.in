@@ -1,12 +1,12 @@
-vulkan:
-  validation_layers: @VULKAN_VALIDATION@
+vulkan:  #{type:struct}
+  validation_layers: @VULKAN_VALIDATION@    #{type:bool}
 
-log:
-  pattern: "[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v"
-  level: @LOG_LEVEL@
-  console:
-    enabled: @LGO_CONSOLE_ENABLE@
-  file:
-    enabled: @LGO_FILE_ENABLE@
-    path: "logs/graphics.log"
-    append: true
+log:  #{type:struct}
+  pattern: "[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v"  #{type:string}
+  level: @LOG_LEVEL@  #{type:string}
+  console:  #{type:struct}
+    enabled: @LGO_CONSOLE_ENABLE@  #{type:bool}
+  file:  #{type:struct}
+    enabled: @LGO_FILE_ENABLE@  #{type:bool}
+    path: "logs/graphics.log" #{type:string}
+    append: true  #{type:bool}
