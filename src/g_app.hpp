@@ -1,4 +1,5 @@
 #pragma once
+#include "config.hpp"
 #include "g_window.hpp"
 #include "system/system_config.hpp"
 
@@ -8,7 +9,7 @@ class App {
         static constexpr int WIDTH = 800;
         static constexpr int HEIGHT = 600;
         void run();
-        App();
+        App(const Config &config);
         App(const App &) = delete;
         App(App &&) = delete;
         auto operator=(const App &) -> App & = delete;

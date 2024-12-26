@@ -1,6 +1,5 @@
 #include "g_app.hpp"
 
-#include "config.hpp"
 #include "core/buffer.hpp"
 #include "g_defines.hpp"
 #include "g_descriptor.hpp"
@@ -107,8 +106,7 @@ void App::run() {
     device_.logicalDevice().waitIdle();
 }
 
-App::App() {
-    Config config("config/config.yaml");
+App::App(const Config& config) {
     auto vulkan_config = config.getConfig<VulkanConfig>();
     core::Device::init(
         Window::getRequiredInstanceExtends(vulkan_config.validationLayers), deviceExtensions,

@@ -1,2 +1,12 @@
 vulkan:
   validation_layers: @VULKAN_VALIDATION@
+
+log:
+  pattern: "[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v"
+  level: @LOG_LEVEL@
+  console:
+    enabled: @LGO_CONSOLE_ENABLE@
+  file:
+    enabled: @LGO_FILE_ENABLE@
+    path: "logs/graphics.log"
+    append: true

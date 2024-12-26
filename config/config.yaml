@@ -1,2 +1,7 @@
 vulkan:
   validation_layers: true
+
+log:
+  level: debug
+  file: log.txt
+  console: true
