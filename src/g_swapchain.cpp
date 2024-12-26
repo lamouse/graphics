@@ -83,8 +83,8 @@ auto Swapchain::chooseSwapSurfaceFormat(const ::std::vector<::vk::SurfaceFormatK
     return availableFormats[0];
 }
 
-auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width,
-                                 int height) -> ::vk::Extent2D {
+auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width, int height)
+    -> ::vk::Extent2D {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }

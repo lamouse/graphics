@@ -8,8 +8,8 @@
 namespace g {
 
 auto DescriptorSetLayout::Builder::addBinding(uint32_t binding, ::vk::DescriptorType type,
-                                              ::vk::ShaderStageFlags stageFlags,
-                                              uint32_t count) -> DescriptorSetLayout::Builder & {
+                                              ::vk::ShaderStageFlags stageFlags, uint32_t count)
+    -> DescriptorSetLayout::Builder & {
     assert(not descriptorSetLayoutBindings_.contains(binding) && "binding already exists");
 
     ::vk::DescriptorSetLayoutBinding layoutBinding;
@@ -113,8 +113,8 @@ auto DescriptorWriter::writeImage(const ::vk::DescriptorSetLayoutBinding &descri
     return *this;
 }
 
-auto DescriptorWriter::build(DescriptorPool &pool,
-                             const ::vk::DescriptorSetLayout &descriptorSetLayout) -> ::vk::DescriptorSet {
+auto DescriptorWriter::build(DescriptorPool &pool, const ::vk::DescriptorSetLayout &descriptorSetLayout)
+    -> ::vk::DescriptorSet {
     auto descriptorSet = pool.allocateDescriptor(descriptorSetLayout);
     overwrite(descriptorSet);
     return descriptorSet;

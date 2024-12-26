@@ -24,9 +24,9 @@ class App {
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
             "VK_KHR_portability_subset",  // "VK_KHR_portability_subset" macos
 #endif
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME, 
-            //VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME
-            };
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+            // VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME
+        };
         Window window{{WIDTH, HEIGHT}, "vulkan"};
 #ifdef NDEBUG
         static constexpr bool enableValidationLayers = false;

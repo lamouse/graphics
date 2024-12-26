@@ -5,10 +5,9 @@
 #include <string_view>
 namespace g {
 
-
 class Config {
     public:
         explicit Config(std::string_view path);
 };
-}
+}  // namespace g
 #endif

@@ -1,6 +1,7 @@
 #include "config.hpp"
 
 #include <spdlog/spdlog.h>
+#define YAML_CPP_API
 #include <yaml-cpp/yaml.h>
 namespace g {
 Config::Config(std::string_view path) {
