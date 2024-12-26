@@ -108,10 +108,12 @@ void App::run() {
 }
 
 App::App() {
-    core::Device::init(
-        Window::getRequiredInstanceExtends(enableValidationLayers), deviceExtensions,
-        [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); }, enableValidationLayers);
     Config config("config/config.yaml");
+    auto vulkan_config = config.getConfig<VulkanConfig>();
+    core::Device::init(
+        Window::getRequiredInstanceExtends(vulkan_config.validationLayers), deviceExtensions,
+        [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
+        vulkan_config.validationLayers);
 }
 
 App::~App() { core::Device::destroy(); };

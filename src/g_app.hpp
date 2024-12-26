@@ -28,11 +28,6 @@ class App {
             // VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME
         };
         Window window{{WIDTH, HEIGHT}, "vulkan"};
-#ifdef NDEBUG
-        static constexpr bool enableValidationLayers = false;
-#else
-        static constexpr bool enableValidationLayers = true;
-#endif
         config::ImageQuality imageQualityConfig;
 };
 }  // namespace g
