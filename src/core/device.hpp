@@ -74,7 +74,7 @@ class EXPORT Device final {
 
         using CmdFunc = std::function<void(vk::CommandBuffer&)>;
 
-        auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits;
+        static auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits;
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
         void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
                           ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);

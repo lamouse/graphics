@@ -13,6 +13,7 @@ else()
     set(LOG_LEVEL "warn")
 endif()
 
+set(WINDOW_TITLE "${PROJECT_NAME}")
 # 使用 configure_file 生成最终的 config.yaml
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/config/config.yaml.in"

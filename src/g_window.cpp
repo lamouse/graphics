@@ -77,8 +77,26 @@ auto Window::getExtent() -> ScreenExtent {
 }
 
 Window::~Window() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    if (window) {
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+}
+
+Window::Window(Window&& w) noexcept
+    : window(w.window), width(w.width), height(w.height), scale(w.scale), title_(std::move(w.title_)) {
+    w.window = nullptr;
+    w.title_ = "";
+}
+auto Window::operator=(Window&& w) noexcept -> Window& {
+    window = w.window;
+    w.window = nullptr;
+    width = w.width;
+    height = w.height;
+    scale = w.scale;
+    title_ = std::move(w.title_);
+    w.title_ = "";
+    return *this;
 }
 
 auto Window::shouldClose() -> bool { return glfwWindowShouldClose(window); }

@@ -21,9 +21,10 @@ class Window {
         Window(ScreenExtent extent, ::std::string title);
         Window(const Window &) = delete;
         auto operator=(const Window &) -> Window & = delete;
-        Window(Window &&) = default;
-        auto operator=(Window &&) -> Window & = default;
+        Window(Window &&) noexcept;
+        auto operator=(Window &&) noexcept -> Window &;
         auto operator()() -> GLFWwindow * { return window; }
+        Window() = default;
         ~Window();
         auto shouldClose() -> bool;
         [[nodiscard]] auto getScale() const -> float { return scale; };

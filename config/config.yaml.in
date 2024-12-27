@@ -10,3 +10,8 @@ log:  #{type:struct}
     enabled: @LGO_FILE_ENABLE@  #{type:bool}
     path: "logs/graphics.log" #{type:string}
     append: true  #{type:bool}
+
+window: #{type:struct}
+  width: 800  #{type:int}
+  height: 600 #{type:int}
+  title: @WINDOW_TITLE@ #{type:string}
