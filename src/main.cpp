@@ -33,25 +33,23 @@ void init(const Config& config) {
     if (logConfig.console.enabled) {
         // 创建控制台接收器
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        // 设置日志级别和格式
-        spdlog::set_level(level);
-        spdlog::set_pattern(logConfig.pattern);
+        console_sink->set_level(level);
+        console_sink->set_pattern(logConfig.pattern);
         sinks.push_back(console_sink);
     }
     if (logConfig.file.enabled) {
         // 创建文件接收器
         auto file_sink =
             std::make_shared<spdlog::sinks::basic_file_sink_mt>(logConfig.file.path, !logConfig.file.append);
-        // 设置日志级别和格式
-        spdlog::set_level(level);
-        spdlog::set_pattern(logConfig.pattern);
         sinks.push_back(file_sink);
     }
-
     auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks.begin(), sinks.end());
 
     // 设置默认日志器
     spdlog::set_default_logger(logger);
+    // 设置日志级别和格式
+    spdlog::set_pattern(logConfig.pattern);
+    spdlog::set_level(level);
 
     // 刷新日志器
     spdlog::flush_on(level);

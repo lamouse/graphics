@@ -1,6 +1,6 @@
 #include "log_util.hpp"
 namespace utils {
-spdlog::level::level_enum get_log_level_from_string(const std::string& level) {
+auto get_log_level_from_string(const std::string& level) -> spdlog::level::level_enum {
     static const std::unordered_map<std::string, spdlog::level::level_enum> level_map = {
         {"trace", spdlog::level::trace}, {"debug", spdlog::level::debug}, {"info", spdlog::level::info},
         {"warn", spdlog::level::warn},   {"error", spdlog::level::err},   {"critical", spdlog::level::critical},
@@ -9,8 +9,8 @@ spdlog::level::level_enum get_log_level_from_string(const std::string& level) {
     auto it = level_map.find(level);
     if (it != level_map.end()) {
         return it->second;
-    } else {
-        throw std::invalid_argument("Invalid log level: " + level);
     }
+
+    throw std::invalid_argument("Invalid log level: " + level);
 }
 }  // namespace utils

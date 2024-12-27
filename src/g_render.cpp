@@ -10,7 +10,7 @@ RenderProcessor::RenderProcessor(getScreenExtendFunc getScreenExtend) : getScree
     createSwapchain();
     createRenderPass();
     swapchain->createFrameBuffers(renderPass_);
-    allcoCmdBuffer();
+    allocatorCmdBuffer();
 }
 
 RenderProcessor::~RenderProcessor() {
@@ -23,7 +23,7 @@ void RenderProcessor::createSwapchain() {
     auto extent = getScreenExtend_();
     core::Device device;
     device.logicalDevice().waitIdle();
-    ::vk::SampleCountFlagBits sampleCount = device.getMaxMsaaSamples();
+    ::vk::SampleCountFlagBits sampleCount = core::Device::getMaxMsaaSamples();
     if (swapchain == nullptr) {
         swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height, sampleCount);
     } else {
@@ -86,7 +86,7 @@ void RenderProcessor::endSwapchainRenderPass() {
     getCurrentCommandBuffer().end();
 }
 
-void RenderProcessor::allcoCmdBuffer() {
+void RenderProcessor::allocatorCmdBuffer() {
     core::Device device;
     ::vk::CommandBufferAllocateInfo allocInfo;
     allocInfo.setCommandPool(device.getCommandPool())
@@ -100,7 +100,7 @@ void RenderProcessor::createRenderPass() {
     core::Device device;
     ::vk::AttachmentDescription colorAttachment;
     colorAttachment.setFormat(swapchain->getSwapchainColorFormat())
-        .setSamples(device.getMaxMsaaSamples())
+        .setSamples(core::Device::getMaxMsaaSamples())
         .setLoadOp(::vk::AttachmentLoadOp::eClear)
         .setStoreOp(::vk::AttachmentStoreOp::eStore)
         .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
@@ -110,7 +110,7 @@ void RenderProcessor::createRenderPass() {
 
     ::vk::AttachmentDescription depthAttachment;
     depthAttachment.setFormat(swapchain->getSwapchainDepthFormat())
-        .setSamples(device.getMaxMsaaSamples())
+        .setSamples(core::Device::getMaxMsaaSamples())
         .setLoadOp(::vk::AttachmentLoadOp::eClear)
         .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
         .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)

@@ -144,9 +144,9 @@ void Swapchain::createImageViews() {
     core::Device device;
     getImages();
     imageViews.resize(images.size());
-    for (::gsl::index i = 0; i < images.size(); i++) {
-        imageViews[i] =
-            device.createImageView(images[i], getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, 1);
+    for (int i = 0; auto& image : images) {
+        imageViews[i] = device.createImageView(image, getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, 1);
+        i++;
     }
 }
 

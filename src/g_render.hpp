@@ -20,7 +20,7 @@ class RenderProcessor {
         ::vk::RenderPass renderPass_;
         void createSwapchain();
         void createRenderPass();
-        void allcoCmdBuffer();
+        void allocatorCmdBuffer();
         getScreenExtendFunc getScreenExtend_;
 
     public:
