@@ -58,8 +58,31 @@ $penv{path}获取系统的环境变量
 ### 添加了一个功能，将yaml的配置信息生成一个c++结构体使用
 
 ```text
-使用的时候需要在字段后面加入注释#{type:bool}，在项目配置的时候会根据type:后面的类型进行类型确认
+使用的时候需要在字段后面加入注释#{type:bool}，在项目配置的时候会根据type:后面的类型进行类型确认,下面提供一个demo
     1. 支持基础类型
     2. 支持结构体
+    3. 支持vector
+```
+
+```yaml
+vulkan:  #{type:struct}
+  validation_layers: true    #{type:bool}
+
+log:  #{type:struct}
+  pattern: "[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v"  #{type:string}
+  level: debug  #{type:string}
+  console:  #{type:struct}
+    enabled: true  #{type:bool}
+  file:  #{type:struct}
+    enabled: false  #{type:bool}
+    path: "logs/graphics.log" #{type:string}
+    append: true  #{type:bool}
+    points: #{type:vector} {name:point}
+    - x: 1.0 #{type:float}
+      y: 2.0 #{type:float}
+    - x: 1.0
+      y: 2.0
+    - x: 1.0
+      y: 2.0
 
 ```
