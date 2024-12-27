@@ -8,23 +8,35 @@
 #include <format>
 #include <unordered_map>
 
+#include "core/device.hpp"
+
 namespace g {
 
 void Model::draw(const ::vk::CommandBuffer& commandBuffer) const { commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0); }
 void Model::bind(const ::vk::CommandBuffer& commandBuffer) const {
-    const ::std::array<::vk::Buffer, 1> buffers = {vertexBuffer_()};
     constexpr ::std::array<::vk::DeviceSize, 1> offsets = {0};
-    commandBuffer.bindVertexBuffers(0, buffers.size(), buffers.data(), offsets.data());
-    commandBuffer.bindIndexBuffer(indexBuffer_(), 0, ::vk::IndexType::eUint16);
+    std::array<::vk::Buffer, 1> buffers = {vertexBuffer_.getBuffer()};
+    commandBuffer.bindVertexBuffers(0, buffers, offsets);
+    commandBuffer.bindIndexBuffer(indexBuffer_.getBuffer(), 0, ::vk::IndexType::eUint16);
 }
 
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
-    : vertexBuffer_(core::DeviceBuffer::create(::vk::BufferUsageFlagBits::eVertexBuffer, vertices.data(),
-                                               sizeof(vertices[0]) * vertices.size())),
-      indexBuffer_(core::DeviceBuffer::create(::vk::BufferUsageFlagBits::eIndexBuffer, indices.data(),
-                                              sizeof(indices[0]) * indices.size())),
-      vertexCount(static_cast<uint32_t>(vertices.size())),
-      indicesSize(static_cast<uint32_t>(indices.size())) {
+    : vertexCount(static_cast<uint32_t>(vertices.size())), indicesSize(static_cast<uint32_t>(indices.size())) {
+    core::Device device;
+    vertexBuffer_ =
+        device.createBuffer(sizeof(vertices[0]) * vertices.size(), 1,
+                            ::vk::BufferUsageFlagBits::eVertexBuffer | ::vk::BufferUsageFlagBits::eTransferDst,
+                            ::vk::MemoryPropertyFlagBits::eDeviceLocal | ::vk::MemoryPropertyFlagBits::eHostCoherent);
+    vertexBuffer_.map();
+    vertexBuffer_.writeToBuffer(vertices.data());
+
+    indexBuffer_ =
+        device.createBuffer(sizeof(indices[0]) * indices.size(), 1,
+                            ::vk::BufferUsageFlagBits::eIndexBuffer | ::vk::BufferUsageFlagBits::eTransferDst,
+                            ::vk::MemoryPropertyFlagBits::eDeviceLocal | ::vk::MemoryPropertyFlagBits::eHostCoherent);
+    indexBuffer_.map();
+    indexBuffer_.writeToBuffer(indices.data());
+
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 

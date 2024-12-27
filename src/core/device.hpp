@@ -4,6 +4,8 @@
 #include <optional>
 #include <source_location>
 #include <vulkan/vulkan.hpp>
+
+#include "buffer.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -76,8 +78,8 @@ class EXPORT Device final {
 
         static auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits;
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
-        void createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
-                          ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory);
+        auto createBuffer(::vk::DeviceSize instance_size, uint32_t instance_count, ::vk::BufferUsageFlags usage,
+                          ::vk::MemoryPropertyFlags properties) -> Buffer;
         void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, ::vk::Format format,
                          ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage,
                          ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
@@ -99,7 +101,7 @@ class EXPORT Device final {
         auto getCommandPool() -> ::vk::CommandPool&;
         auto querySwapchainSupport() -> SwapchainSupportDetails;
         void executeCmd(const CmdFunc& func) const;
-
+        static void waitIdle();
         auto getMaxAnisotropy() -> float;
         ~Device();
 };

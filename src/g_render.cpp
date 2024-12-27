@@ -21,8 +21,7 @@ RenderProcessor::~RenderProcessor() {
 
 void RenderProcessor::createSwapchain() {
     auto extent = getScreenExtend_();
-    core::Device device;
-    device.logicalDevice().waitIdle();
+    core::Device::waitIdle();
     ::vk::SampleCountFlagBits sampleCount = core::Device::getMaxMsaaSamples();
     if (swapchain == nullptr) {
         swapchain = ::std::make_unique<Swapchain>(extent.width, extent.height, sampleCount);

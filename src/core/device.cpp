@@ -327,10 +327,13 @@ Device::~Device() {}
 
 auto Device::getMaxMsaaSamples() -> ::vk::SampleCountFlagBits { return getMaxUsableSampleCount(); }
 
-void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties,
-                          ::vk::Buffer& buffer, ::vk::DeviceMemory& bufferMemory) {
+auto Device::createBuffer(::vk::DeviceSize instance_size, uint32_t instance_count, ::vk::BufferUsageFlags usage,
+                          ::vk::MemoryPropertyFlags properties) -> Buffer {
+    auto bufferInstance = Buffer(resource.device_, instance_size, instance_count, usage, properties);
+    ::vk::Buffer buffer;
+    ::vk::DeviceMemory bufferMemory;
     ::vk::BufferCreateInfo bufferInfo;
-    bufferInfo.setSize(size).setUsage(usage).setSharingMode(::vk::SharingMode::eExclusive);
+    bufferInfo.setSize(bufferInstance.getBufferSize()).setUsage(usage).setSharingMode(::vk::SharingMode::eExclusive);
     buffer = resource.device_.createBuffer(bufferInfo);
     const ::vk::MemoryRequirements memoryRequirements = resource.device_.getBufferMemoryRequirements(buffer);
     ::vk::MemoryAllocateInfo allocateInfo;
@@ -338,6 +341,10 @@ void Device::createBuffer(::vk::DeviceSize size, ::vk::BufferUsageFlags usage, :
         .setMemoryTypeIndex(findMemoryType(memoryRequirements.memoryTypeBits, properties));
     bufferMemory = resource.device_.allocateMemory(allocateInfo);
     resource.device_.bindBufferMemory(buffer, bufferMemory, 0);
+
+    bufferInstance.buffer_ = buffer;
+    bufferInstance.bufferMemory_ = bufferMemory;
+    return bufferInstance;
 }
 
 void Device::executeCmd(const CmdFunc& func) const {
@@ -457,4 +464,5 @@ auto Device::getQueueFamilyIndices() -> QueueFamilyIndices { return queueFamilyI
 auto Device::querySwapchainSupport() -> SwapchainSupportDetails {
     return core::querySwapchainSupport(resource.phyDevice);
 }
+void Device::waitIdle() { resource.device_.waitIdle(); }
 }  // namespace core

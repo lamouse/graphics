@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/device_buffer.hpp"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
@@ -8,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "core/buffer.hpp"
 namespace g {
 class Model {
     public:
@@ -31,8 +31,8 @@ class Model {
         ~Model() = default;
 
     private:
-        core::DeviceBuffer vertexBuffer_;
-        core::DeviceBuffer indexBuffer_;
+        core::Buffer vertexBuffer_;
+        core::Buffer indexBuffer_;
         uint32_t vertexCount;
         uint32_t indicesSize;
 };

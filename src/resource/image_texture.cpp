@@ -1,14 +1,16 @@
 #include "image_texture.hpp"
 
-#include "../core/staging_buffer.hpp"
-
 namespace resource::image {
 
 ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format format)
     : imageMipLevels_(image.getMipLevels()), format_(format), device_(device.logicalDevice()) {
     ImageInfo imgInfo = image.getImageInfo();
 
-    core::StagingBuffer stagingBuffer(device, image.size(), image.getData());
+    auto stagingBuffer =
+        device.createBuffer(image.size(), 1, ::vk::BufferUsageFlagBits::eTransferSrc,
+                            ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent);
+    stagingBuffer.map();
+    stagingBuffer.writeToBuffer(static_cast<void*>(image.getData()));
 
     device.createImage(imgInfo.width, imgInfo.height, imageMipLevels_, format_, ::vk::SampleCountFlagBits::e1,
                        ::vk::ImageTiling::eOptimal,

@@ -1,5 +1,5 @@
 #pragma once
-#include "device.hpp"
+#include "vulkan/vulkan.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -9,14 +9,15 @@ namespace core {
 
 class EXPORT Buffer {
     public:
-        Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t instanceCount,
-               ::vk::BufferUsageFlags bufferUsage, ::vk::MemoryPropertyFlags memoryPropertyFlags,
-               ::vk::DeviceSize minOffsetAlignment = 1);
+        Buffer(const Buffer&) = delete;
+        Buffer(Buffer&&) noexcept;
+        auto operator=(const Buffer&) -> Buffer& = delete;
+        auto operator=(Buffer&&) noexcept -> Buffer&;
         ~Buffer();
-
+        Buffer() = default;
         void map(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
         void unmap();
-        void writeToBuffer(void* data, ::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
+        void writeToBuffer(const void* data, ::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
         /**
          * @brief Flushes a memory of the buffer to make visible to the device
          * @note Only requires for non-coherent memory
@@ -48,8 +49,12 @@ class EXPORT Buffer {
         [[nodiscard]] auto getBufferUsage() const -> ::vk::BufferUsageFlags { return bufferUsage_; }
         [[nodiscard]] auto getMemoryPropertyFlags() const -> ::vk::MemoryPropertyFlags { return memoryPropertyFlags_; }
         [[nodiscard]] auto getBufferSize() const -> ::vk::DeviceSize { return bufferSize_; }
+        friend class Device;
 
     private:
+        Buffer(vk::Device device, ::vk::DeviceSize instanceSize, uint32_t instanceCount,
+               ::vk::BufferUsageFlags bufferUsage, ::vk::MemoryPropertyFlags memoryPropertyFlags,
+               ::vk::DeviceSize minOffsetAlignment = 1);
         /**
          * @brief returns the minimum instance required to compatible with devices minOffsetAlignment
          *
@@ -59,11 +64,10 @@ class EXPORT Buffer {
          */
         static auto getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment)
             -> ::vk::DeviceSize;
-        core::Device& device_;
         void* data_ = nullptr;
         ::vk::Buffer buffer_ = VK_NULL_HANDLE;
         ::vk::DeviceMemory bufferMemory_ = VK_NULL_HANDLE;
-
+        ::vk::Device device_;
         ::vk::DeviceSize bufferSize_;
         uint32_t instanceCount_;
         ::vk::DeviceSize instanceSize_;

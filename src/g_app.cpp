@@ -57,9 +57,9 @@ void App::run() {
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
     for (auto& uboBuffer : uboBuffers) {
-        uboBuffer = ::std::make_unique<core::Buffer>(device_, sizeof(UniformBufferObject), 1,
-                                                     ::vk::BufferUsageFlagBits::eUniformBuffer,
-                                                     ::vk::MemoryPropertyFlagBits::eHostVisible);
+        uboBuffer = ::std::make_unique<core::Buffer>(device_.createBuffer(
+            sizeof(UniformBufferObject), 1, ::vk::BufferUsageFlagBits::eUniformBuffer,
+            ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent));
         uboBuffer->map();
     }
     ::std::string s(image_path + "viking_room.png");
@@ -104,7 +104,7 @@ void App::run() {
         }
     }
 
-    device_.logicalDevice().waitIdle();
+    core::Device::waitIdle();
 }
 
 App::App(const Config& config) {

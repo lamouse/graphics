@@ -11,7 +11,7 @@ auto Buffer::getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize mi
     return instanceSize;
 }
 
-Buffer::Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t instanceCount,
+Buffer::Buffer(vk::Device device, ::vk::DeviceSize instanceSize, uint32_t instanceCount,
                ::vk::BufferUsageFlags bufferUsage, ::vk::MemoryPropertyFlags memoryPropertyFlags,
                ::vk::DeviceSize minOffsetAlignment)
     : device_(device),
@@ -21,27 +21,28 @@ Buffer::Buffer(core::Device& device, ::vk::DeviceSize instanceSize, uint32_t ins
       bufferUsage_(bufferUsage),
       memoryPropertyFlags_(memoryPropertyFlags) {
     bufferSize_ = instanceCount_ * instanceSize_;
-    device.createBuffer(bufferSize_, bufferUsage_, memoryPropertyFlags_, buffer_, bufferMemory_);
 }
 
 Buffer::~Buffer() {
-    unmap();
-    device_.logicalDevice().destroyBuffer(buffer_);
-    device_.logicalDevice().freeMemory(bufferMemory_);
+    if (buffer_ != VK_NULL_HANDLE) {
+        unmap();
+        device_.destroyBuffer(buffer_);
+        device_.freeMemory(bufferMemory_);
+    }
 }
 
 void Buffer::map(::vk::DeviceSize size, ::vk::DeviceSize offset) {
     assert(buffer_ && bufferMemory_ && "Called map on buffer before create");
-    data_ = device_.logicalDevice().mapMemory(bufferMemory_, offset, size);
+    data_ = device_.mapMemory(bufferMemory_, offset, size);
 }
 void Buffer::unmap() {
     if (data_) {
-        device_.logicalDevice().unmapMemory(bufferMemory_);
+        device_.unmapMemory(bufferMemory_);
         data_ = nullptr;
     }
 }
 
-void Buffer::writeToBuffer(void* data, ::vk::DeviceSize size, ::vk::DeviceSize offset) {
+void Buffer::writeToBuffer(const void* data, ::vk::DeviceSize size, ::vk::DeviceSize offset) {
     assert(data_ && "Can't copy to unmapped buffer");
     if (size == VK_WHOLE_SIZE) {
         memcpy(data_, data, bufferSize_);
@@ -54,12 +55,12 @@ void Buffer::writeToBuffer(void* data, ::vk::DeviceSize size, ::vk::DeviceSize o
 
 auto Buffer::flush(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::Result {
     ::vk::MappedMemoryRange flushRange{bufferMemory_, offset, size};
-    return device_.logicalDevice().flushMappedMemoryRanges(1, &flushRange);
+    return device_.flushMappedMemoryRanges(1, &flushRange);
 }
 
 auto Buffer::invalidate(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::Result {
     ::vk::MappedMemoryRange invalidateRange{bufferMemory_, offset, size};
-    return device_.logicalDevice().invalidateMappedMemoryRanges(1, &invalidateRange);
+    return device_.invalidateMappedMemoryRanges(1, &invalidateRange);
 }
 
 auto Buffer::descriptorInfo(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::DescriptorBufferInfo {
@@ -81,5 +82,39 @@ auto Buffer::descriptorInfoForIndex(::vk::DeviceSize index) -> ::vk::DescriptorB
 auto Buffer::invalidateIndex(::vk::DeviceSize index) -> ::vk::Result {
     return invalidate(alignmentSize_, index * alignmentSize_);
 }
+Buffer::Buffer(Buffer&& buff) noexcept
+    : data_(buff.data_),
+      buffer_(buff.buffer_),
+      bufferMemory_(buff.bufferMemory_),
+      device_(buff.device_),
+      bufferSize_(buff.bufferSize_),
+      instanceCount_(buff.instanceCount_),
+      instanceSize_(buff.instanceSize_),
+      alignmentSize_(buff.alignmentSize_),
+      bufferUsage_(buff.bufferUsage_),
+      memoryPropertyFlags_(buff.memoryPropertyFlags_) {
+    buff.buffer_ = VK_NULL_HANDLE;
+    buff.bufferMemory_ = VK_NULL_HANDLE;
+    buff.data_ = nullptr;
+}
 
+auto Buffer::operator=(Buffer&& buff) noexcept -> Buffer& {
+    if (this == &buff) {
+        return *this;
+    }
+    data_ = buff.data_;
+    buffer_ = buff.buffer_;
+    bufferMemory_ = buff.bufferMemory_;
+    bufferSize_ = buff.bufferSize_;
+    instanceCount_ = buff.instanceCount_;
+    instanceSize_ = buff.instanceSize_;
+    alignmentSize_ = buff.alignmentSize_;
+    bufferUsage_ = buff.bufferUsage_;
+    memoryPropertyFlags_ = buff.memoryPropertyFlags_;
+    device_ = buff.device_;
+    buff.buffer_ = VK_NULL_HANDLE;
+    buff.bufferMemory_ = VK_NULL_HANDLE;
+    buff.data_ = nullptr;
+    return *this;
+}
 }  // namespace core
