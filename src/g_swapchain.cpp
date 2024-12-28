@@ -39,11 +39,12 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         .setPresentMode(presentMode)
         .setPreTransform(swapchainSupports.capabilities.currentTransform)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque);
-    const auto& queueIndices = device.getQueueFamilyIndices();
-    if (queueIndices.graphicsIndex() == queueIndices.presentIndex()) {
+    // const auto& queueIndices = device.getQueueFamilyIndices();
+    const auto& [graphicsQueue, _, presentQueue] = device.getQueueFamilyIndices();
+    if (graphicsQueue.value() == presentQueue.value()) {
         createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     } else {
-        ::std::array indices = {queueIndices.graphicsIndex(), queueIndices.presentIndex()};
+        ::std::array indices = {graphicsQueue.value(), presentQueue.value()};
         createInfo.setQueueFamilyIndices(indices).setImageSharingMode(::vk::SharingMode::eConcurrent);
     }
     if (oldSwapchain != nullptr) {
