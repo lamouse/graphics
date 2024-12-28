@@ -17,6 +17,7 @@
 #include <chrono>
 #include <thread>
 
+#include "vulkan_surface.hpp"
 namespace g {
 namespace {
 auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
@@ -75,15 +76,15 @@ void App::run() {
                             .build(*descriptorPool_, (*setLayout)());
     }
 
-    RenderProcessor render([this]() { return window.getExtent(); });
+    RenderProcessor render([this]() { return dynamic_cast<Window*>(window.get())->getExtent(); });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    Imgui imgui(window(), descriptorPool_->getDescriptorPool(), static_cast<::vk::RenderPass>(render),
-                window.getScale());
+    Imgui imgui((*dynamic_cast<Window*>(window.get()))(), descriptorPool_->getDescriptorPool(),
+                static_cast<::vk::RenderPass>(render), window->getWindowSystemInfo().render_surface_scale);
 
-    while (!window.shouldClose()) {
+    while (!window->shouldClose()) {
         glfwPollEvents();
 
-        if (glfwGetWindowAttrib(window(), GLFW_ICONIFIED) != 0) {
+        if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
@@ -109,14 +110,18 @@ void App::run() {
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    this->window = Window{{window_config.width, window_config.height}, window_config.title};
+    window = std::make_unique<Window>(ScreenExtent{window_config.width, window_config.height}, window_config.title);
 
     auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
     auto requiredInstanceExtends = Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
     auto deviceExtensions = config::getDeviceExtensions();
     core::Device::init(
         requiredInstanceExtends, deviceExtensions,
-        [this](VkInstance instance) -> VkSurfaceKHR { return window.getSurface(instance); },
+        [this](VkInstance instance) -> VkSurfaceKHR {
+            // return dynamic_cast<Window*>(window.get())->getSurface(instance);
+            return vulkan::createSurface(instance, window->getWindowSystemInfo(),
+                                         (*dynamic_cast<Window*>(window.get()))());
+        },
         vulkan_config.validation_layers);
 }
 

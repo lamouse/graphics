@@ -81,6 +81,15 @@ if(MSVC)
         /wd4201 # nonstandard extension used : nameless struct/union
         /wd4702 # unreachable code (when used with LTO)
     )
+    if (ARCHITECTURE_x86_64)
+        add_compile_options(/QIntel-jcc-erratum)
+    endif()
+
+    # /GS- - No stack buffer overflow checks
+    add_compile_options("$<$<CONFIG:Release>:/GS->")
+
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG   "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MANIFEST:NO /INCREMENTAL:NO /OPT:REF,ICF" CACHE STRING "" FORCE)
 else()
     add_compile_options(
         -fwrapv
@@ -154,23 +163,5 @@ endif()
 
 add_subdirectory(core)
 add_subdirectory(utils)
-aux_source_directory(. MAIN_SRC)
-aux_source_directory(./resource RESOURCE_SRC)
-aux_source_directory(./system SYSTEM_SRC)
-# aux_source_directory(./config CONFIG_SRC)
-aux_source_directory(${CMAKE_BINARY_DIR}/generated/config GENERATED_SRC)
-set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${SYSTEM_SRC} ${GENERATED_SRC})
-add_executable(${EXECUTE_NAME} ${SRC})
-target_link_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
-# 添加生成的代码目录
-include_directories(${CMAKE_BINARY_DIR}/generated)
-target_link_libraries(${EXECUTE_NAME} PRIVATE core imgui utils)
-target_link_libraries(${EXECUTE_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
-target_link_libraries(${EXECUTE_NAME} PRIVATE yaml-cpp::yaml-cpp)
+add_subdirectory(graphics)
 
-target_include_directories(${EXECUTE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
-if(MSVC)
-    set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
-elseif(MINGW)
-    set_target_properties(${EXECUTE_NAME} PROPERTIES LINK_FLAGS_RELEASE "-Wl,--subsystem,windows")
-endif()

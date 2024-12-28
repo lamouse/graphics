@@ -1,8 +1,8 @@
 #pragma once
-#include "config.hpp"
-#include "g_window.hpp"
+#include "../config.hpp"
+#include "glfw_window.hpp"
 #include "system/system_config.hpp"
-
+#include <memory>
 namespace g {
 class App {
     public:
@@ -15,7 +15,7 @@ class App {
         ~App();
 
     private:
-        Window window;
+        std::unique_ptr<core::frontend::BaseWindow> window;
         config::ImageQuality imageQualityConfig;
 };
 }  // namespace g

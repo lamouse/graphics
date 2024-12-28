@@ -6,14 +6,11 @@
 #include <vector>
 
 #include "g_defines.hpp"
-
+#include "core/frontend/window.hpp"
 namespace g {
-class Window {
+class Window : public core::frontend::BaseWindow{
     private:
         GLFWwindow *window;
-        int width;
-        int height;
-        float scale;
         void initWindow();
         ::std::string title_;
 
@@ -25,9 +22,12 @@ class Window {
         auto operator=(Window &&) noexcept -> Window &;
         auto operator()() -> GLFWwindow * { return window; }
         Window() = default;
-        ~Window();
-        auto shouldClose() -> bool;
-        [[nodiscard]] auto getScale() const -> float { return scale; };
+        ~Window() override;
+        [[nodiscard]] auto IsShown() const -> bool override;
+        [[nodiscard]] auto IsMinimized() const -> bool override;
+        [[nodiscard]] auto shouldClose() const -> bool override;
+        [[nodiscard]] auto getActiveConfig() const -> WindowConfig override{ return getWindowConfig(); }
+        [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
         static auto getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char *>;
         auto getSurface(VkInstance instance) -> VkSurfaceKHR;
         auto getExtent() -> ScreenExtent;

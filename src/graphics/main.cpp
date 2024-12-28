@@ -2,7 +2,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "config.hpp"
+#include "../config.hpp"
 #include "config/log.h"
 #include "g_app.hpp"
 #include "utils/log_util.hpp"
