@@ -13,8 +13,8 @@ class Config {
     public:
         explicit Config(std::string_view path) { config = YAML::LoadFile(path.data()); }
         template <typename T>
-        auto getConfig() const -> T {
-            return T::read_config(config[T::node_name()]);
+        auto getConfig(this auto&& self) -> decltype(auto) {
+            return T::read_config(self.config[T::node_name()]);
         }
 };
 }  // namespace g
