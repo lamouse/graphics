@@ -36,7 +36,7 @@ Window::Window(ScreenExtent extent, ::std::string title) : title_{std::move(titl
         ::glfwTerminate();
     }
     window_info.type = GLFWCommon::get_window_system_info();
-    window_info.get_surface = GLFWCommon::get_windows_handles(window);
+    window_info.render_surface = GLFWCommon::get_windows_handles(window);
     initWindow();
 }
 void Window::initWindow() {
@@ -44,6 +44,8 @@ void Window::initWindow() {
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* glfw_window, int, int) {
         int w{}, h{};
         glfwGetFramebufferSize(glfw_window, &w, &h);
+        auto* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        window->notifyFramebufferLayoutChanged({.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h)});
     });
 }
 

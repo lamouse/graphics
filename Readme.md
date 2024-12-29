@@ -16,12 +16,6 @@ instanceCreateInfo.setFlags(flags);
 swapchain重新创建时需要传入旧的swachain
 ```
 
-## imgui
-
-```text
-immgui相关代码主要在src/g_app.cpp下, 当前使用的docking分支
-```
-
 ## format
 
 ```text
@@ -34,6 +28,10 @@ clang-format version 16.0.5
 本项目优先使用vcpkg的包
 VulkanSDK-1.3.290.0
 ```
+
+ ## 代码规范
+
+1. 出现原始指针时一律代表没有该指针的所有权
 
 ## 关于cmake preset
 

@@ -8,11 +8,10 @@
 #include "g_game_object.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
-#include "glfw_common.hpp"
 // imgui begin
 #include "g_imgui.hpp"
 #include "resource/image_texture.hpp"
-#include "vulkan_surface.hpp"
+#include "render_core/vulkan_common/vulkan_surface.hpp"
 // imgui end
 #include <spdlog/spdlog.h>
 

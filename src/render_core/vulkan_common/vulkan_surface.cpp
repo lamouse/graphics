@@ -7,7 +7,7 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
 
 #ifdef _WIN32
     if (wsi.type == core::frontend::WindowSystemType::Windows) {
-        HWND hWnd = static_cast<HWND>(wsi.get_surface);
+        HWND hWnd = static_cast<HWND>(wsi.render_surface);
         const VkWin32SurfaceCreateInfoKHR win32_ci{.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
                                                    .pNext = nullptr,
                                                    .flags = 0,

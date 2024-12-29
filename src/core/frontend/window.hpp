@@ -2,15 +2,12 @@
 
 #include <cstdint>
 #include <functional>
+#include "framebuffer_layout.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
 #define EXPORT
 #endif
-namespace vk {
-class Instance;
-class SurfaceKHR;
-}  // namespace vk
 namespace core::frontend {
 /// Information for the Graphics Backends signifying what type of screen pointer is in
 /// WindowInformation
@@ -32,7 +29,7 @@ class EXPORT BaseWindow {
                 bool fullscreen = false;
                 Extent extent = {.width = 0, .height = 0};
         };
-        using get_surface_fn = std::function<vk::SurfaceKHR(vk::Instance)>;
+
         /// Data describing host window system information
         struct WindowSystemInfo {
                 // Window system type. Determines which GL context or Vulkan WSI is used.
@@ -42,13 +39,20 @@ class EXPORT BaseWindow {
                 void* display_connection = nullptr;
 
                 // in vulkan is no null
-                void* get_surface = nullptr;
+                void* render_surface = nullptr;
 
                 // Scale of the render surface. For hidpi systems, this will be >1.
                 float render_surface_scale = 1.0f;
         };
-        void setWindowConfig(const WindowConfig& config) { this->config = config; }
+        void setWindowConfig(const WindowConfig& conf) { this->config = conf; }
         [[nodiscard]] auto getWindowSystemInfo() const -> WindowSystemInfo { return window_info; }
+        /**
+         * Gets the framebuffer layout (width, height, and screen regions)
+         * @note This method is thread-safe
+         */
+        [[nodiscard]] auto getFramebufferLayout() const -> const layout::FrameBufferLayout& {
+            return frame_buffer_layout;
+        }
         /// Returns if window is shown (not minimized)
         [[nodiscard]] virtual auto IsShown() const -> bool = 0;
         /// Returns if window is minimized
@@ -59,10 +63,17 @@ class EXPORT BaseWindow {
     protected:
         WindowSystemInfo window_info;
         [[nodiscard]] auto getWindowConfig() const -> WindowConfig { return config; }
+        /**
+         * Update framebuffer layout with the given parameter.
+         * @note EmuWindow implementations will usually use this in window resize event handlers.
+         */
+        void notifyFramebufferLayoutChanged(const layout::FrameBufferLayout& layout) { frame_buffer_layout = layout; }
 
     private:
-        WindowConfig config;  ///< Internal configuration (changes pending for being applied in ///
-                              ///< ProcessConfigurationChanges)
+        WindowConfig config;  ///< Internal configuration (changes pending for being applied in
+        ///< Current framebuffer layout
+        layout::FrameBufferLayout frame_buffer_layout;
+
     public:
         BaseWindow() = default;
         BaseWindow(const BaseWindow&) = default;
