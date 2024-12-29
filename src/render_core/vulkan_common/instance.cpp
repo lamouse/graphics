@@ -17,7 +17,7 @@ constexpr const char* LOG_TAG = "Render_Vulkan: ";
 void removeUnavailableLayers(std::vector<const char*>& layers) {
     auto layer_properties = vk::enumerateInstanceLayerProperties();
 
-    if (!layer_properties.empty()) {
+    if (layer_properties.empty()) {
         SPDLOG_ERROR("Failed to query layer properties, disabling layers");
         layers.clear();
     }

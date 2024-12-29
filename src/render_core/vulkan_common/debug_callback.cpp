@@ -36,7 +36,7 @@ inline void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
     createInfo.pfnUserCallback = debugCallback;
 }
 }  // namespace
-auto setupDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMessengerEXT {
+auto createDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMessengerEXT {
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
     return instance.createDebugUtilsMessengerEXT(createInfo, nullptr,

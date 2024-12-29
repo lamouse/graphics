@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 #include "framebuffer_layout.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)

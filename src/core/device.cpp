@@ -96,7 +96,7 @@ class VKResource {
             device_.destroyCommandPool(cmdPool_);
             device_.destroy();
             vkInstance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr,
-              vk::DispatchLoaderDynamic{ vkInstance, vkGetInstanceProcAddr });
+                                                     vk::DispatchLoaderDynamic{vkInstance, vkGetInstanceProcAddr});
             vkInstance.destroySurfaceKHR(vkSurfaceKHR);
             vkInstance.destroy();
         }
