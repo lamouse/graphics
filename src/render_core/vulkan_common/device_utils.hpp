@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
+#include <set>
 // Define all features which may be used by the implementation here.
 // Vulkan version in the macro describes the minimum version required for feature availability.
 // If the Vulkan version is lower than the required version, the named extension is required.
@@ -151,4 +152,14 @@
     FEATURE_NAME(vertex_input_dynamic_state, vertexInputDynamicState)
 namespace render::vulkan::utils {
 auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::Format, vk::FormatProperties>;
+enum class NvidiaArchitecture {
+    Arch_KeplerOrOlder,
+    Arch_Maxwell,
+    Arch_Pascal,
+    Arch_Volta,
+    Arch_Turing,
+    Arch_AmpereOrNewer
+};
+auto getNvidiaArchitecture(vk::PhysicalDevice physical,
+                                         const std::set<std::string, std::less<>>& exts) -> NvidiaArchitecture;
 }

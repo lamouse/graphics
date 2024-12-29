@@ -149,4 +149,51 @@ auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::
     }
     return format_properties;
 }
+
+auto getNvidiaArchitecture(vk::PhysicalDevice physical,
+                                         const std::set<std::string, std::less<>>& exts) -> NvidiaArchitecture {
+    if (exts.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+        VkPhysicalDeviceFragmentShadingRatePropertiesKHR shading_rate_props{};
+        shading_rate_props.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+        VkPhysicalDeviceProperties2 physical_properties{};
+        physical_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        physical_properties.pNext = &shading_rate_props;
+        physical_properties = physical.getProperties2();
+        if (shading_rate_props.primitiveFragmentShadingRateWithMultipleViewports) {
+            // Only Ampere and newer support this feature
+            // TODO: Find a way to differentiate Ampere and Ada
+            return NvidiaArchitecture::Arch_AmpereOrNewer;
+        }
+        return NvidiaArchitecture::Arch_Turing;
+    }
+
+    if (exts.contains(VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME)) {
+        VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT advanced_blending_props{};
+        advanced_blending_props.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT;
+        VkPhysicalDeviceProperties2 physical_properties{};
+        physical_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        physical_properties.pNext = &advanced_blending_props;
+        physical_properties = physical.getProperties2();
+        if (advanced_blending_props.advancedBlendMaxColorAttachments == 1) {
+            return NvidiaArchitecture::Arch_Maxwell;
+        }
+
+        if (exts.contains(VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME)) {
+            VkPhysicalDeviceConservativeRasterizationPropertiesEXT conservative_raster_props{};
+            conservative_raster_props.sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT;
+            physical_properties.pNext = &conservative_raster_props;
+            physical_properties = physical.getProperties2();
+            if (conservative_raster_props.degenerateLinesRasterized) {
+                return NvidiaArchitecture::Arch_Volta;
+            }
+            return NvidiaArchitecture::Arch_Pascal;
+        }
+    }
+
+    return NvidiaArchitecture::Arch_KeplerOrOlder;
+}
+
 }  // namespace render::vulkan::utils

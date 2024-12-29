@@ -66,7 +66,8 @@ class Device {
         // Telemetry parameters
         std::set<std::string, std::less<>> supported_extensions_;  ///< Reported Vulkan extensions.
         std::set<std::string, std::less<>> loaded_extensions_;     ///< Loaded Vulkan extensions.
-        auto GetSuitability(bool requires_swapchain) -> bool;
+        utils::NvidiaArchitecture nvidia_arch{utils::NvidiaArchitecture::Arch_AmpereOrNewer};
+        auto getSuitability(bool requires_swapchain) -> bool;
 
         struct Extensions {
 #define EXTENSION(prefix, macro_name, var_name) bool var_name{};
