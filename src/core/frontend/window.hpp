@@ -42,7 +42,7 @@ class EXPORT BaseWindow {
         void* display_connection = nullptr;
 
         //in vulkan is no null
-        get_surface_fn get_surface = nullptr;
+        void* get_surface = nullptr;
 
         // Scale of the render surface. For hidpi systems, this will be >1.
         float render_surface_scale = 1.0f;

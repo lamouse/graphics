@@ -8,16 +8,17 @@
 #include "g_game_object.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
+#include "glfw_common.hpp"
 // imgui begin
 #include "g_imgui.hpp"
 #include "resource/image_texture.hpp"
+#include "vulkan_surface.hpp"
 // imgui end
 #include <spdlog/spdlog.h>
 
 #include <chrono>
 #include <thread>
 
-#include "vulkan_surface.hpp"
 namespace g {
 namespace {
 auto create_descriptor_pool(int count) -> ::std::unique_ptr<DescriptorPool> {
@@ -80,10 +81,8 @@ void App::run() {
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
     Imgui imgui((*dynamic_cast<Window*>(window.get()))(), descriptorPool_->getDescriptorPool(),
                 static_cast<::vk::RenderPass>(render), window->getWindowSystemInfo().render_surface_scale);
-
     while (!window->shouldClose()) {
         glfwPollEvents();
-
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
@@ -94,8 +93,10 @@ void App::run() {
             uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
             uboBuffers[render.getCurrentFrameIndex()]->flush();
 
-            FrameInfo frameInfo{render.getCurrentFrameIndex(), render.getCurrentCommandBuffer(),
-                                descriptorSets[render.getCurrentFrameIndex()], gameObjects};
+            FrameInfo frameInfo{.frameIndex = render.getCurrentFrameIndex(),
+                                .commandBuffer = render.getCurrentCommandBuffer(),
+                                .descriptorSet = descriptorSets[render.getCurrentFrameIndex()],
+                                .gameObjects = gameObjects};
 
             render.beginSwapchainRenderPass();
             renderSystem.render(frameInfo);
@@ -116,10 +117,12 @@ App::App(const Config& config) {
     auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
     auto requiredInstanceExtends = Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
     auto deviceExtensions = config::getDeviceExtensions();
+
     core::Device::init(
         requiredInstanceExtends, deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR {
-            return dynamic_cast<Window*>(window.get())->getSurface(instance);
+            //return dynamic_cast<Window*>(window.get())->getSurface(instance);
+            return vulkan::createSurface(instance, window->getWindowSystemInfo());
         },
         vulkan_config.validation_layers);
 }

@@ -21,8 +21,9 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
 #elif defined(__APPLE__)
     if (wsi.type == core::frontend::WindowSystemType::Cocoa) {
         const VkMetalSurfaceCreateInfoEXT macos_ci = {
-            .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT, .pNext = nullptr,
-            //.pLayer = static_cast<const CAMetalLayer*>(wsi.render_surface),
+            .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
+            .pNext = nullptr,
+            .pLayer = static_cast<const CAMetalLayer*>(wsi.get_surface),
         };
         auto result = vkCreateMetalSurfaceEXT(instance, &macos_ci, nullptr, &unsafe_surface);
         if (result != VK_SUCCESS) {

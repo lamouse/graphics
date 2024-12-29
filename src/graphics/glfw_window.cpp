@@ -36,6 +36,7 @@ Window::Window(ScreenExtent extent, ::std::string title) : title_{std::move(titl
         ::glfwTerminate();
     }
     window_info.type = GLFWCommon::get_window_system_info();
+    window_info.get_surface = GLFWCommon::get_windows_handles(window);
     initWindow();
 }
 void Window::initWindow() {
