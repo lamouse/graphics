@@ -53,8 +53,8 @@ inline void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
 inline auto setupDebugMessenger(::vk::Instance& instance) {
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
-    return *instance.createDebugUtilsMessengerEXTUnique(createInfo, nullptr,
-                                                        vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr});
+    return instance.createDebugUtilsMessengerEXT(createInfo, nullptr,
+                                                 vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr});
 }
 
 auto checkValidationLayerSupport(const auto& validationLayers) -> bool {
@@ -95,6 +95,8 @@ class VKResource {
         void clean() const {
             device_.destroyCommandPool(cmdPool_);
             device_.destroy();
+            vkInstance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr,
+              vk::DispatchLoaderDynamic{ vkInstance, vkGetInstanceProcAddr });
             vkInstance.destroySurfaceKHR(vkSurfaceKHR);
             vkInstance.destroy();
         }
@@ -108,6 +110,7 @@ class VKResource {
         ::vk::SurfaceKHR vkSurfaceKHR;
         ::vk::Instance vkInstance;
         ::vk::CommandPool cmdPool_;
+        ::vk::DebugUtilsMessengerEXT debugMessenger;
         VKResource() = default;
         VKResource(const VKResource&) = default;
         VKResource(VKResource&&) = default;
@@ -159,9 +162,6 @@ void createInstance(const std::vector<const char*>& instanceExtends) {
 
     if (enableValidationLayers_) {
         createInfo.setPEnabledLayerNames(validationLayers);
-        ::vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-        populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = &debugCreateInfo;
     }
 
     createInfo
@@ -172,7 +172,7 @@ void createInstance(const std::vector<const char*>& instanceExtends) {
         .setPEnabledExtensionNames(instanceExtends);
     resource.vkInstance = vk::createInstance(createInfo);
     if (enableValidationLayers_) {
-        setupDebugMessenger(resource.vkInstance);
+        resource.debugMessenger = setupDebugMessenger(resource.vkInstance);
     }
 }
 

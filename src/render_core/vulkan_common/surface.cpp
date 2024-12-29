@@ -1,7 +1,7 @@
-#include "vulkan_surface.hpp"
+#include "surface.hpp"
 
 #include "vulkan_common.hpp"
-namespace vulkan {
+namespace render::vulkan {
 auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi) -> vk::SurfaceKHR {
     VkSurfaceKHR unsafe_surface = nullptr;
 
@@ -69,4 +69,4 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
 #endif
     return unsafe_surface;
 }
-}  // namespace vulkan
+}  // namespace render::vulkan

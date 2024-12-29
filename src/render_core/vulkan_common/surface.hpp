@@ -4,6 +4,6 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/frontend/window.hpp"
-namespace vulkan {
+namespace render::vulkan {
 auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi) -> vk::SurfaceKHR;
 }

@@ -11,7 +11,7 @@
 // imgui begin
 #include "g_imgui.hpp"
 #include "resource/image_texture.hpp"
-#include "render_core/vulkan_common/vulkan_surface.hpp"
+#include "render_core/vulkan_common/surface.hpp"
 // imgui end
 #include <spdlog/spdlog.h>
 
@@ -121,7 +121,7 @@ App::App(const Config& config) {
         requiredInstanceExtends, deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR {
             // return dynamic_cast<Window*>(window.get())->getSurface(instance);
-            return vulkan::createSurface(instance, window->getWindowSystemInfo());
+            return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
         },
         vulkan_config.validation_layers);
 }

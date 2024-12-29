@@ -24,13 +24,13 @@ Window::Window(ScreenExtent extent, ::std::string title) : title_{std::move(titl
     ::glfwGetMonitorContentScale(monitor, &x_scale, &y_scale);
     window_info.render_surface_scale = x_scale;
 #endif
-    WindowConfig config;
-    config.extent.width = extent.width;
-    config.extent.height = extent.height;
-    config.fullscreen = false;
-    setWindowConfig(config);
-    int const w = static_cast<int>((float)config.extent.width * window_info.render_surface_scale);
-    int const h = static_cast<int>((float)config.extent.height * window_info.render_surface_scale);
+    core::frontend::BaseWindow::WindowConfig conf;
+    conf.extent.width = extent.width;
+    conf.extent.height = extent.height;
+    conf.fullscreen = false;
+    setWindowConfig(conf);
+    int const w = static_cast<int>((float)conf.extent.width * window_info.render_surface_scale);
+    int const h = static_cast<int>((float)conf.extent.height * window_info.render_surface_scale);
     window = ::glfwCreateWindow(w, h, title_.c_str(), nullptr, nullptr);
     if (!window) {
         ::glfwTerminate();
