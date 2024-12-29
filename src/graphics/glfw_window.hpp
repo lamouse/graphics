@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "g_defines.hpp"
 #include "core/frontend/window.hpp"
+#include "g_defines.hpp"
 namespace g {
-class Window : public core::frontend::BaseWindow{
+class Window : public core::frontend::BaseWindow {
     private:
         GLFWwindow *window;
         void initWindow();
@@ -26,7 +26,7 @@ class Window : public core::frontend::BaseWindow{
         [[nodiscard]] auto IsShown() const -> bool override;
         [[nodiscard]] auto IsMinimized() const -> bool override;
         [[nodiscard]] auto shouldClose() const -> bool override;
-        [[nodiscard]] auto getActiveConfig() const -> WindowConfig override{ return getWindowConfig(); }
+        [[nodiscard]] auto getActiveConfig() const -> WindowConfig override { return getWindowConfig(); }
         [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
         static auto getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char *>;
         auto getSurface(VkInstance instance) -> VkSurfaceKHR;

@@ -1,6 +1,6 @@
 #include "glfw_common.hpp"
 
-#if !defined(WIN32) && !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__)
 #include <qpa/qplatformnativeinterface.h>
 #elif defined(__APPLE__)
 #define GLFW_EXPOSE_NATIVE_COCOA
@@ -73,7 +73,8 @@ void* get_windows_handles(GLFWwindow* window) {
             return layer;
         }
 #elif defined(GLFW_EXPOSE_NATIVE_WIN32)
-        // 其他平台的处理代码...
+        case sys_type_enum::Windows:
+            return glfwGetWin32Window(window);
 #endif
         default:
             return nullptr;

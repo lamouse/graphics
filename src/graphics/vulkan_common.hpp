@@ -2,6 +2,9 @@
 
 #ifdef _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
+#include <vulkan/vulkan_win32.h>
+#include <windows.h>
+
 #elif defined(__APPLE__)
 #define VK_USE_PLATFORM_METAL_EXT
 #elif defined(__ANDROID__)

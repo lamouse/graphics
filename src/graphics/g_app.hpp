@@ -1,8 +1,9 @@
 #pragma once
+#include <memory>
+
 #include "../config.hpp"
 #include "glfw_window.hpp"
 #include "system/system_config.hpp"
-#include <memory>
 namespace g {
 class App {
     public:

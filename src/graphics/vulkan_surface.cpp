@@ -6,16 +6,15 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
     VkSurfaceKHR unsafe_surface = nullptr;
 
 #ifdef _WIN32
-    if (window_info.type == Core::Frontend::WindowSystemType::Windows) {
-        const HWND hWnd = static_cast<HWND>(window_info.render_surface);
-        const VkWin32SurfaceCreateInfoKHR win32_ci{VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR, nullptr, 0, nullptr,
-                                                   hWnd};
-        const auto vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
-            dld.vkGetInstanceProcAddr(*instance, "vkCreateWin32SurfaceKHR"));
-        if (!vkCreateWin32SurfaceKHR ||
-            vkCreateWin32SurfaceKHR(*instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
-            LOG_ERROR(Render_Vulkan, "Failed to initialize Win32 surface");
-            throw vk::Exception(VK_ERROR_INITIALIZATION_FAILED);
+    if (wsi.type == core::frontend::WindowSystemType::Windows) {
+        HWND hWnd = static_cast<HWND>(wsi.get_surface);
+        const VkWin32SurfaceCreateInfoKHR win32_ci{.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+                                                   .pNext = nullptr,
+                                                   .flags = 0,
+                                                   .hinstance = GetModuleHandle(nullptr),
+                                                   .hwnd = hWnd};
+        if (vkCreateWin32SurfaceKHR(instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface!");
         }
     }
 #elif defined(__APPLE__)
