@@ -8,7 +8,7 @@
 #include <objc/message.h>
 #include <objc/objc.h>
 #include <objc/runtime.h>  // 添加这个头文件
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__) || defined(_WIN64)
+#elif defined(_WIN32)
 #define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 #include <GLFW/glfw3native.h>
@@ -26,7 +26,7 @@ auto get_window_system_info() -> core::frontend::WindowSystemType {
     }
 }
 
-void* get_windows_handles(GLFWwindow* window) {
+auto get_windows_handles(GLFWwindow* window) -> void* {
     using sys_type_enum = core::frontend::WindowSystemType;
     auto sys_type = get_window_system_info();
     switch (sys_type) {

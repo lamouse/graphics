@@ -1,8 +1,7 @@
 #pragma once
-
+#include <vulkan/vulkan.h>
 #ifdef _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
-#include <vulkan/vulkan_win32.h>
 #include <windows.h>
 
 #elif defined(__APPLE__)
@@ -17,6 +16,8 @@
 #ifdef __APPLE__
 #include <MoltenVK/mvk_vulkan.h>
 #include <vulkan/vulkan_metal.h>
+#elif defined(_WIN32)
+#include <vulkan/vulkan_win32.h>
 #else
-#include <vulkan/vulkan.h>
+
 #endif
