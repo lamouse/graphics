@@ -35,6 +35,7 @@ Window::Window(ScreenExtent extent, ::std::string title) : title_{std::move(titl
     if (!window) {
         ::glfwTerminate();
     }
+    window_info.type = GLFWCommon::get_window_system_info();
     initWindow();
 }
 void Window::initWindow() {
@@ -43,9 +44,6 @@ void Window::initWindow() {
         int w{}, h{};
         glfwGetFramebufferSize(glfw_window, &w, &h);
     });
-
-    window_info.render_surface = GLFWCommon::get_windows_handles(window);
-    window_info.type = GLFWCommon::get_window_system_info();
 }
 
 auto Window::getSurface(VkInstance instance) -> VkSurfaceKHR {

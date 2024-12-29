@@ -1,12 +1,8 @@
 #include "vulkan_surface.hpp"
 
-#include "glfw_common.hpp"
 #include "vulkan_common.hpp"
-#define GLFW_EXPOSE_NATIVE_COCOA
-#include <GLFW/glfw3native.h>
 namespace vulkan {
-auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi,
-                   GLFWwindow* window) -> vk::SurfaceKHR {
+auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi) -> vk::SurfaceKHR {
     VkSurfaceKHR unsafe_surface = nullptr;
 
 #ifdef _WIN32
@@ -25,9 +21,8 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
 #elif defined(__APPLE__)
     if (wsi.type == core::frontend::WindowSystemType::Cocoa) {
         const VkMetalSurfaceCreateInfoEXT macos_ci = {
-            .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
-            .pNext = nullptr,
-            .pLayer = static_cast<const CAMetalLayer*>(::glfwGetCocoaWindow(window)),
+            .sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT, .pNext = nullptr,
+            //.pLayer = static_cast<const CAMetalLayer*>(wsi.render_surface),
         };
         auto result = vkCreateMetalSurfaceEXT(instance, &macos_ci, nullptr, &unsafe_surface);
         if (result != VK_SUCCESS) {

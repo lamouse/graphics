@@ -32,8 +32,23 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
     switch (sys_type) {
 #if defined(GLFW_EXPOSE_NATIVE_COCOA)
         case sys_type_enum::Cocoa: {
-            auto* id = ::glfwGetCocoaWindow(window);
-            return id;
+            // 获取 NSWindow 对象
+            id cocoaWindow = glfwGetCocoaWindow(window);
+            // 获取 contentView
+            id contentView = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(cocoaWindow, sel_getUid("contentView"));
+
+            // 获取 layer
+            id layer = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(contentView, sel_registerName("layer"));
+            using ObjcMsgSendFunc = BOOL (*)(id, SEL, Class);
+            auto objcMsgSendFunc = reinterpret_cast<ObjcMsgSendFunc>(objc_msgSend);
+            bool isCAMetalLayer = !objcMsgSendFunc(layer, sel_registerName("isKindOfClass:"),
+                                                   static_cast<Class>(objc_getClass("CAMetalLayer")));
+            // 确保 layer 是 CAMetalLayer 类型
+            if (!layer || !isCAMetalLayer) {
+                return nullptr;
+            }
+
+            return layer;
         }
 #elif defined(GLFW_EXPOSE_NATIVE_WIN32)
 #endif

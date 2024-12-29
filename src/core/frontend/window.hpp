@@ -1,14 +1,20 @@
 #pragma once
 
+#include <cstdint>
+#include <functional>
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
 #define EXPORT
 #endif
+namespace vk{
+    class Instance;
+    class SurfaceKHR;
+}
 namespace core::frontend {
 /// Information for the Graphics Backends signifying what type of screen pointer is in
 /// WindowInformation
-enum class WindowSystemType {
+enum class WindowSystemType : uint8_t{
     Headless,
     Windows,
     X11,
@@ -24,8 +30,9 @@ class EXPORT BaseWindow {
         };
         struct WindowConfig {
             bool fullscreen = false;
-            Extent extent = {0, 0};
+            Extent extent = {.width=0, .height=0};
         };
+    using get_surface_fn = std::function< vk::SurfaceKHR(vk::Instance)>;
            /// Data describing host window system information
     struct WindowSystemInfo {
         // Window system type. Determines which GL context or Vulkan WSI is used.
@@ -34,10 +41,8 @@ class EXPORT BaseWindow {
         // Connection to a display server. This is used on X11 and Wayland platforms.
         void* display_connection = nullptr;
 
-        // Render surface. This is a pointer to the native window handle, which depends
-        // on the platform. e.g. HWND for Windows, Window for X11. If the surface is
-        // set to nullptr, the video backend will run in headless mode.
-        void* render_surface = nullptr;
+        //in vulkan is no null
+        get_surface_fn get_surface = nullptr;
 
         // Scale of the render surface. For hidpi systems, this will be >1.
         float render_surface_scale = 1.0f;

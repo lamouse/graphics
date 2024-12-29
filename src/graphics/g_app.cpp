@@ -110,7 +110,8 @@ void App::run() {
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    window = std::make_unique<Window>(ScreenExtent{window_config.width, window_config.height}, window_config.title);
+    window = std::make_unique<Window>(ScreenExtent{.width = window_config.width, .height = window_config.height},
+                                      window_config.title);
 
     auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
     auto requiredInstanceExtends = Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
@@ -118,9 +119,7 @@ App::App(const Config& config) {
     core::Device::init(
         requiredInstanceExtends, deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR {
-            // return dynamic_cast<Window*>(window.get())->getSurface(instance);
-            return vulkan::createSurface(instance, window->getWindowSystemInfo(),
-                                         (*dynamic_cast<Window*>(window.get()))());
+            return dynamic_cast<Window*>(window.get())->getSurface(instance);
         },
         vulkan_config.validation_layers);
 }
