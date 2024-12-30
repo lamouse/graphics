@@ -3,15 +3,16 @@
   "name": "graphics",
   "builtin-baseline": "b545373a9a536dc559dac8583467a21497a0e897",
   "version": "1.0",
-  "dependencies": [
-    "glfw3",
-    "fmt",
-    "spdlog",
-    "assimp",
-    "stb",
-    "glm",
-    "ms-gsl",
-    "gtest",
-    "yaml-cpp"
-  ]
+    "dependencies": [
+        "glfw3",
+        "fmt",
+        "spdlog",
+        "assimp",
+        "stb",
+        "glm",
+        "ms-gsl",
+        "gtest",
+        "yaml-cpp",
+        "vulkan-memory-allocator"
+    ]
 }

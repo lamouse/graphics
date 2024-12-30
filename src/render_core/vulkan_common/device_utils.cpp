@@ -1,5 +1,5 @@
 #include "device_utils.hpp"
-
+#include <spdlog/spdlog.h>
 namespace render::vulkan::utils {
 auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::Format, vk::FormatProperties> {
     static constexpr std::array formats{
@@ -150,12 +150,11 @@ auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::
     return format_properties;
 }
 
-auto getNvidiaArchitecture(vk::PhysicalDevice physical,
-                                         const std::set<std::string, std::less<>>& exts) -> NvidiaArchitecture {
+auto getNvidiaArchitecture(vk::PhysicalDevice physical, const std::set<std::string, std::less<>>& exts)
+    -> NvidiaArchitecture {
     if (exts.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR shading_rate_props{};
-        shading_rate_props.sType =
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+        shading_rate_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
         VkPhysicalDeviceProperties2 physical_properties{};
         physical_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         physical_properties.pNext = &shading_rate_props;
@@ -170,8 +169,7 @@ auto getNvidiaArchitecture(vk::PhysicalDevice physical,
 
     if (exts.contains(VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME)) {
         VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT advanced_blending_props{};
-        advanced_blending_props.sType =
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT;
+        advanced_blending_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT;
         VkPhysicalDeviceProperties2 physical_properties{};
         physical_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         physical_properties.pNext = &advanced_blending_props;
@@ -194,6 +192,41 @@ auto getNvidiaArchitecture(vk::PhysicalDevice physical,
     }
 
     return NvidiaArchitecture::Arch_KeplerOrOlder;
+}
+
+vk::FormatFeatureFlags getFormatFeatures(vk::FormatProperties properties, FormatType format_type) {
+    switch (format_type) {
+        case FormatType::Linear:
+            return properties.linearTilingFeatures;
+        case FormatType::Optimal:
+            return properties.optimalTilingFeatures;
+        case FormatType::Buffer:
+            return properties.bufferFeatures;
+        default:
+            return {};
+    }
+}
+
+bool checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) {
+    if (driver_id == vk::DriverId::eIntelProprietaryWindows) {
+        const uint32_t major = VK_API_VERSION_MAJOR(driver_version);
+        const uint32_t minor = VK_API_VERSION_MINOR(driver_version);
+        const uint32_t patch = VK_API_VERSION_PATCH(driver_version);
+        if (major == 0 && minor == 405 && patch < 286) {
+            SPDLOG_WARN("Intel proprietary drivers 0.405.0 until 0.405.286 have broken compute");
+            return true;
+        }
+    }
+    return false;
+}
+
+auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions) -> std::vector<const char*> {
+    std::vector<const char*> output;
+    output.reserve(extensions.size());
+    for (const auto& extension : extensions) {
+        output.push_back(extension.c_str());
+    }
+    return output;
 }
 
 }  // namespace render::vulkan::utils

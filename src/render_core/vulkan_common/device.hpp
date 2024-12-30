@@ -3,14 +3,20 @@
 #include "device_utils.hpp"
 #include <unordered_map>
 #include <set>
+#include "vma.hpp"
 /**
  * @brief vulkan device
  *
  */
+VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {
+
+/// Subgroup size of the guest emulated hardware (Nvidia has 32 threads per subgroup).
+const uint32_t GUEST_WARP_SIZE = 32;
 class Device {
     public:
-        explicit Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface);
+        explicit Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface,
+                        bool enable_validation = false);
         ~Device();
         /// Returns the logical device.
         [[nodiscard]] auto getLogical() const -> const vk::Device& { return logical_; }
@@ -48,8 +54,10 @@ class Device {
         uint32_t present_family_;
         uint32_t compute_family_;
         uint32_t instance_version_{};
+        VmaAllocator allocator_;      ///< VMA allocator.
         /// Format properties dictionary.
         std::unordered_map<vk::Format, vk::FormatProperties> format_properties_;
+        std::vector<size_t> valid_heap_memory_;  ///< Heaps used.
 
         struct Properties {
                 vk::PhysicalDeviceDriverProperties driver_;
@@ -61,14 +69,28 @@ class Device {
 
                 vk::PhysicalDeviceProperties properties_;
         };
-
-        Properties properties_;
+        utils::MiscFeatures misc_features_;
+        uint64_t device_access_memory_{};  ///< Total size of device local memory in bytes.
+        uint64_t sets_per_pool_{};         ///< Sets per Description Pool
         // Telemetry parameters
         std::set<std::string, std::less<>> supported_extensions_;  ///< Reported Vulkan extensions.
         std::set<std::string, std::less<>> loaded_extensions_;     ///< Loaded Vulkan extensions.
         utils::NvidiaArchitecture nvidia_arch{utils::NvidiaArchitecture::Arch_AmpereOrNewer};
         auto getSuitability(bool requires_swapchain) -> bool;
-
+        void removeUnsuitableExtensions();
+        void removeExtension(bool& extension, const std::string& extension_name);
+        template <typename Feature>
+        void removeExtensionFeatureIfUnsuitable(bool is_suitable, Feature& feature, const std::string& extension_name);
+        template <typename Feature>
+        void removeExtensionFeature(bool& extension, Feature& feature, const std::string& extension_name);
+        auto computeIsOptimalAstcSupported() const -> bool;
+        void setupFamilies(vk::SurfaceKHR surface);
+        bool testDepthStencilBlits(vk::Format format) const;
+        auto getDeviceQueueCreateInfos() const -> std::vector<vk::DeviceQueueCreateInfo>;
+        auto isFormatSupported(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
+                               utils::FormatType format_type) const -> bool;
+        void collectPhysicalMemoryInfo();
+        void collectToolingInfo();
         struct Extensions {
 #define EXTENSION(prefix, macro_name, var_name) bool var_name{};
 #define FEATURE(prefix, struct_name, macro_name, var_name) bool var_name{};
@@ -95,11 +117,13 @@ class Device {
 
 #undef FEATURE_CORE
 #undef FEATURE_EXT
-                Extensions extensions_{};
-                VkPhysicalDeviceFeatures features{};
-                vk::PhysicalDeviceFeatures2 features2;
-                vk::PhysicalDeviceProperties2 properties2;
+                vk::PhysicalDeviceFeatures features{};
         };
+        Extensions extensions_{};
+        Properties properties_;
+        Features features_{};
+        vk::PhysicalDeviceFeatures2 features2_;
+        vk::PhysicalDeviceProperties2 properties2_;
 };
 
 }  // namespace render::vulkan

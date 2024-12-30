@@ -165,4 +165,4 @@ add_subdirectory(core)
 add_subdirectory(render_core)
 add_subdirectory(utils)
 add_subdirectory(graphics)
-
+add_subdirectory(test)
