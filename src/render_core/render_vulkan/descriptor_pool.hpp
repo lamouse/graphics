@@ -5,6 +5,7 @@
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include <shared_mutex>
 #include "shader_tools/shader_info.h"
+#include <memory>
 
 namespace render::vulkan {
 class Device;
@@ -39,21 +40,21 @@ class DescriptorAllocator final : public ResourcePool {
         DescriptorAllocator(DescriptorAllocator&&) noexcept = default;
         CLASS_NON_COPYABLE(DescriptorAllocator);
 
-        auto commit() -> DescriptorSets;
+        auto commit() -> vk::DescriptorSet;
 
     private:
-        explicit DescriptorAllocator(const Device& device_, semaphore::MasterSemaphore& master_semaphore_,
-                                     DescriptorBank& bank_, VkDescriptorSetLayout layout_);
+        explicit DescriptorAllocator(const Device& device, semaphore::MasterSemaphore& master_semaphore,
+                                     DescriptorBank& bank, VkDescriptorSetLayout layout);
 
         void allocate(size_t begin, size_t end) override;
 
         auto allocateDescriptors(size_t count) -> vk::DescriptorSet;
 
-        const Device* device{};
-        DescriptorBank* bank{};
-        VkDescriptorSetLayout layout{};
+        const Device* device_{};
+        DescriptorBank* bank_{};
+        vk::DescriptorSetLayout layout_{};
 
-        std::vector<DescriptorSets> sets;
+        std::vector<DescriptorSets> sets_;
 };
 class DescriptorPool {
     public:
@@ -69,7 +70,7 @@ class DescriptorPool {
     private:
         auto bank(const DescriptorBankInfo& reqs) -> DescriptorBank&;
 
-        const Device& device;
+        const Device& device_;
         semaphore::MasterSemaphore& master_semaphore_;
 
         std::shared_mutex banks_mutex_;

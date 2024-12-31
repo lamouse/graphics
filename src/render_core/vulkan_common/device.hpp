@@ -18,6 +18,7 @@ class Device {
         explicit Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface,
                         bool enable_validation = false);
         ~Device();
+        [[nodiscard]] uint32_t getSetsPerPool() const { return sets_per_pool_; }
         /// Returns the logical device.
         [[nodiscard]] auto getLogical() const -> const vk::Device& { return logical_; }
 
@@ -79,7 +80,7 @@ class Device {
         };
         utils::MiscFeatures misc_features_;
         uint64_t device_access_memory_{};  ///< Total size of device local memory in bytes.
-        uint64_t sets_per_pool_{};         ///< Sets per Description Pool
+        uint32_t sets_per_pool_{};         ///< Sets per Description Pool
         // Telemetry parameters
         std::set<std::string, std::less<>> supported_extensions_;  ///< Reported Vulkan extensions.
         std::set<std::string, std::less<>> loaded_extensions_;     ///< Loaded Vulkan extensions.

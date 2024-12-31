@@ -47,6 +47,6 @@ struct fmt::formatter<shader::IR::Type> {
         static constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
         template <typename FormatContext>
         auto format(const shader::IR::Type& type, FormatContext& ctx) const {
-            return fmt::format_to(ctx.out(), "{}", NameOf(type));
+            return fmt::format_to(ctx.out(), "{}", nameOf(type));
         }
 };
