@@ -1,21 +1,23 @@
+#include <algorithm>
+
 #include "swapchain.hpp"
 #include "vulkan_common/device.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
-#include <algorithm>
 #include "vulkan_common/device_utils.hpp"
 #include <vulkan/vk_enum_string_helper.h>
+#include "scheduler.hpp"
 namespace render::vulkan {
 namespace {
 auto chooseAlphaFlags(const vk::SurfaceCapabilitiesKHR& capabilities) -> vk::CompositeAlphaFlagBitsKHR {
     if (capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque) {
         return vk::CompositeAlphaFlagBitsKHR::eOpaque;
-    } else if (capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eInherit) {
-        return vk::CompositeAlphaFlagBitsKHR::eInherit;
-    } else {
-        SPDLOG_ERROR("Unknown composite alpha flags value");
-        return vk::CompositeAlphaFlagBitsKHR::eOpaque;
     }
+    if (capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eInherit) {
+        return vk::CompositeAlphaFlagBitsKHR::eInherit;
+    }
+    SPDLOG_ERROR("Unknown composite alpha flags value");
+    return vk::CompositeAlphaFlagBitsKHR::eOpaque;
 }
 auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats) -> vk::SurfaceFormatKHR {
     if (formats.size() == 1 && formats[0].format == vk::Format::eUndefined) {
@@ -152,6 +154,8 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
         if (requested_image_count > capabilities.maxImageCount) {
             requested_image_count = capabilities.maxImageCount;
         } else {
+#undef max
+#undef min
             requested_image_count = std::max(requested_image_count, std::min(3U, capabilities.maxImageCount));
         }
     } else {
@@ -226,5 +230,36 @@ void Swapchain::createSemaphores() {
         ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
         return device_.getLogical().createSemaphore(semaphoreCreateInfo);
     });
+}
+
+void Swapchain::present(vk::Semaphore render_semaphore) {
+    const auto present_queue = device_.getPresentQueue();
+    vk::PresentInfoKHR present_info{};
+    present_info.setWaitSemaphores(render_semaphore).setSwapchains(swapchain_).setImageIndices(image_index_);
+
+    std::scoped_lock lock{scheduler_.submit_mutex_};
+    switch (const vk::Result result = present_queue.presentKHR(present_info)) {
+        case vk::Result::eSuccess:
+            break;
+        case vk::Result::eSuboptimalKHR:
+            SPDLOG_DEBUG("Suboptimal swapchain");
+            break;
+        case vk::Result::eErrorOutOfDateKHR:
+            is_outdated_ = true;
+            break;
+        case vk::Result::eErrorSurfaceLostKHR:
+            throw utils::VulkanException(result);
+            break;
+        default:
+            SPDLOG_CRITICAL("Failed to present with error {}", string_VkResult(static_cast<VkResult>(result)));
+            break;
+    }
+    ++frame_index_;
+    frame_index_ %= static_cast<uint32_t>(image_count_);
+}
+
+auto Swapchain::needsPresentModeUpdate() const -> bool {
+    const auto requested_mode = chooseSwapPresentMode(has_imm_, has_mailbox_, has_fifo_relaxed_);
+    return present_mode_ != requested_mode;
 }
 }  // namespace render::vulkan

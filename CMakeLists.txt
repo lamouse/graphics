@@ -87,6 +87,7 @@ set(BUILD_TESTING ON)
 # need vcpkg start
 # find_package(tinyobjloader CONFIG)
 find_package(assimp CONFIG REQUIRED)
+find_package(Boost REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)

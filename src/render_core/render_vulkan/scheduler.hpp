@@ -24,6 +24,7 @@ class Scheduler {
     public:
         explicit Scheduler(const Device& device, StateTracker& state_tracker);
         ~Scheduler();
+        std::mutex submit_mutex_;
 
     private:
         class Command {

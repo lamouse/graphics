@@ -1,6 +1,5 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include "vulkan_common/vulkan_common.hpp"
 namespace render::vulkan {
 class Device;
 namespace scheduler {
@@ -16,6 +15,39 @@ class Swapchain {
         void create(vk::SurfaceKHR surface, uint32_t width, uint32_t height);
         /// Acquires the next image in the swapchain, waits as needed.
         auto acquireNextImage() -> bool;
+        void present(vk::Semaphore render_semaphore);
+        /// Returns true when the swapchain needs to be recreated.
+        [[nodiscard]] auto NeedsRecreation() const -> bool { return isSubOptimal() || needsPresentModeUpdate(); }
+        /// Returns true when the swapchain is outdated.
+        [[nodiscard]] auto isOutDated() const -> bool { return is_outdated_; }
+
+        /// Returns true when the swapchain is suboptimal.
+        [[nodiscard]] auto isSubOptimal() const -> bool { return is_suboptimal_; }
+
+        [[nodiscard]] auto getSize() const -> vk::Extent2D { return extent_; }
+        [[nodiscard]] auto getImageCount() const -> std::size_t { return image_count_; }
+
+        [[nodiscard]] auto getImageIndex() const -> std::size_t { return image_index_; }
+
+        [[nodiscard]] auto getFrameIndex() const -> std::size_t { return frame_index_; }
+        [[nodiscard]] auto getImageIndex(std::size_t index) const -> VkImage { return images_[index]; }
+
+        [[nodiscard]] auto currentImage() const -> vk::Image { return images_[image_index_]; }
+
+        [[nodiscard]] auto getImageViewFormat() const -> vk::Format { return image_view_format_; }
+        [[nodiscard]] auto CurrentPresentSemaphore() const -> vk::Semaphore {
+            return present_semaphores_[frame_index_];
+        }
+
+        [[nodiscard]] auto CurrentRenderSemaphore() const -> vk::Semaphore { return render_semaphores_[frame_index_]; }
+
+        [[nodiscard]] auto getWidth() const { return width_; }
+
+        [[nodiscard]] auto getHeight() const { return height_; }
+
+        [[nodiscard]] auto getExtent() const -> vk::Extent2D { return extent_; }
+
+        [[nodiscard]] auto getImageFormat() const -> vk::Format { return surface_format_.format; }
         static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eB8G8R8A8Unorm;
         static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = ::vk::ColorSpaceKHR::eSrgbNonlinear;
 
@@ -53,5 +85,6 @@ class Swapchain {
         void createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities);
         void init_sync_mode();
         void createSemaphores();
+        [[nodiscard]] auto needsPresentModeUpdate() const -> bool;
 };
 }  // namespace render::vulkan

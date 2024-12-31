@@ -1,12 +1,13 @@
-aux_source_directory(. RENDER_CORE_SRC)
-aux_source_directory(./vulkan_common VULKAN_COMMON_SRC)
-aux_source_directory(./render_vulkan RENDER_VULKAN_SRC)
-add_library(render-core STATIC ${RENDER_CORE_SRC} ${RENDER_VULKAN_SRC}
-    ${VULKAN_COMMON_SRC})
+aux_source_directory(. SHARDER_CORE_SRC)
+aux_source_directory(./fronted SHADER_FRONTED_SRC)
+aux_source_directory(./fronted/ir SHADER_IR_SRC)
+
+add_library(shader STATIC ${SHARDER_CORE_SRC} ${SHADER_FRONTED_SRC}
+    ${SHADER_IR_SRC})
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)
-    target_compile_options(render-core PRIVATE
+    target_compile_options(shader PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
@@ -14,7 +15,7 @@ if(MSVC)
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
 else()
-    target_compile_options(render-core PRIVATE
+    target_compile_options(shader PRIVATE
         -Werror=conversion
 
         -Wno-sign-conversion
@@ -24,11 +25,12 @@ else()
     )
 endif()
 
-target_link_libraries(render-core PUBLIC core shader)
-target_link_libraries(render-core PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
-target_link_libraries(render-core PUBLIC spdlog::spdlog)
+target_link_libraries(shader PUBLIC core)
+target_link_libraries(shader PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
+target_link_libraries(shader PUBLIC spdlog::spdlog)
+target_link_libraries(shader PRIVATE Boost::boost)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-set_target_properties(render-core PROPERTIES VERSION 0.0.1 SOVERSION 0)
-create_target_directory_groups(render-core)
+set_target_properties(shader PROPERTIES VERSION 0.0.1 SOVERSION 0)
+create_target_directory_groups(shader)

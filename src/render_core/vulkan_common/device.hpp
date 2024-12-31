@@ -91,12 +91,12 @@ class Device {
         void removeExtensionFeatureIfUnsuitable(bool is_suitable, Feature& feature, const std::string& extension_name);
         template <typename Feature>
         void removeExtensionFeature(bool& extension, Feature& feature, const std::string& extension_name);
-        auto computeIsOptimalAstcSupported() const -> bool;
+        [[nodiscard]] auto computeIsOptimalAstcSupported() const -> bool;
         void setupFamilies(vk::SurfaceKHR surface);
-        bool testDepthStencilBlits(vk::Format format) const;
-        auto getDeviceQueueCreateInfos() const -> std::vector<vk::DeviceQueueCreateInfo>;
-        auto isFormatSupported(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
-                               utils::FormatType format_type) const -> bool;
+        [[nodiscard]] auto testDepthStencilBlits(vk::Format format) const -> bool;
+        [[nodiscard]] auto getDeviceQueueCreateInfos() const -> std::vector<vk::DeviceQueueCreateInfo>;
+        [[nodiscard]] auto isFormatSupported(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
+                                             utils::FormatType format_type) const -> bool;
         void collectPhysicalMemoryInfo();
         void collectToolingInfo();
         struct Extensions {

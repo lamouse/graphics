@@ -188,7 +188,7 @@ enum class FormatType { Linear, Optimal, Buffer };
 auto getNvidiaArchitecture(vk::PhysicalDevice physical, const std::set<std::string, std::less<>>& exts)
     -> NvidiaArchitecture;
 
-vk::FormatFeatureFlags getFormatFeatures(vk::FormatProperties properties, FormatType format_type);
+auto getFormatFeatures(vk::FormatProperties properties, FormatType format_type) -> vk::FormatFeatureFlags;
 
 [[nodiscard]] auto checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) -> bool;
 
@@ -199,10 +199,10 @@ class VulkanException final : public std::exception {
         /// Construct the exception with a result.
         /// @pre result != VK_SUCCESS
         explicit VulkanException(vk::Result result_) : result{result_} {}
-        virtual ~VulkanException() = default;
+        ~VulkanException() override = default;
 
-        const char* what() const noexcept override;
-        vk::Result getResult() const noexcept { return result; }
+        [[nodiscard]] auto what() const noexcept -> const char* override;
+        [[nodiscard]] auto getResult() const noexcept -> vk::Result { return result; }
 
     private:
         vk::Result result;

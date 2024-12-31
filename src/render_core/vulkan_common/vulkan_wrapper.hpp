@@ -85,4 +85,5 @@ class PoolAllocations {
 
 namespace render::vulkan {
 using CommandBuffers = wrapper::PoolAllocations<vk::CommandBuffer, vk::CommandPool>;
-}
+using DescriptorSets = wrapper::PoolAllocations<vk::DescriptorSet, vk::DescriptorPool>;
+}  // namespace render::vulkan

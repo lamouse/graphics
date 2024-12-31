@@ -791,6 +791,6 @@ auto Device::hasTimelineSemaphore() const -> bool {
         // (e.g. ZTE handsets with Snapdragon 870).
         return false;
     }
-    return features_.timeline_semaphore.timelineSemaphore;
+    return static_cast<bool>(features_.timeline_semaphore.timelineSemaphore);
 }
 }  // namespace render::vulkan

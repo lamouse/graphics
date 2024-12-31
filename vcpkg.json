@@ -12,6 +12,7 @@
         "glm",
         "ms-gsl",
         "gtest",
-        "yaml-cpp"
+        "yaml-cpp",
+        "boost-container"
     ]
 }

@@ -29,4 +29,58 @@
     ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \
         __PRETTY_FUNCTION__ + ::std::string("): ") + msg
 
+#define DECLARE_ENUM_FLAG_OPERATORS(type)                                 \
+    [[nodiscard]] constexpr type operator|(type a, type b) noexcept {     \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<type>(static_cast<T>(a) | static_cast<T>(b));  \
+    }                                                                     \
+    [[nodiscard]] constexpr type operator&(type a, type b) noexcept {     \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<type>(static_cast<T>(a) & static_cast<T>(b));  \
+    }                                                                     \
+    [[nodiscard]] constexpr type operator^(type a, type b) noexcept {     \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<type>(static_cast<T>(a) ^ static_cast<T>(b));  \
+    }                                                                     \
+    [[nodiscard]] constexpr type operator<<(type a, type b) noexcept {    \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<type>(static_cast<T>(a) << static_cast<T>(b)); \
+    }                                                                     \
+    [[nodiscard]] constexpr type operator>>(type a, type b) noexcept {    \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<type>(static_cast<T>(a) >> static_cast<T>(b)); \
+    }                                                                     \
+    constexpr type& operator|=(type& a, type b) noexcept {                \
+        a = a | b;                                                        \
+        return a;                                                         \
+    }                                                                     \
+    constexpr type& operator&=(type& a, type b) noexcept {                \
+        a = a & b;                                                        \
+        return a;                                                         \
+    }                                                                     \
+    constexpr type& operator^=(type& a, type b) noexcept {                \
+        a = a ^ b;                                                        \
+        return a;                                                         \
+    }                                                                     \
+    constexpr type& operator<<=(type& a, type b) noexcept {               \
+        a = a << b;                                                       \
+        return a;                                                         \
+    }                                                                     \
+    constexpr type& operator>>=(type& a, type b) noexcept {               \
+        a = a >> b;                                                       \
+        return a;                                                         \
+    }                                                                     \
+    [[nodiscard]] constexpr type operator~(type key) noexcept {           \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<type>(~static_cast<T>(key));                   \
+    }                                                                     \
+    [[nodiscard]] constexpr bool True(type key) noexcept {                \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<T>(key) != 0;                                  \
+    }                                                                     \
+    [[nodiscard]] constexpr bool False(type key) noexcept {               \
+        using T = std::underlying_type_t<type>;                           \
+        return static_cast<T>(key) == 0;                                  \
+    }
+
 namespace common {}
