@@ -15,10 +15,13 @@ class Model {
                 ::glm::vec3 position;
                 ::glm::vec3 color;
                 ::glm::vec2 texCoord;
-                static auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription>;
-                static auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription>;
+                static auto getBindingDescription()
+                    -> ::std::vector<::vk::VertexInputBindingDescription>;
+                static auto getAttributeDescription()
+                    -> ::std::vector<::vk::VertexInputAttributeDescription>;
                 auto operator==(const Vertex& other) const -> bool {
-                    return position == other.position && color == other.color && texCoord == other.texCoord;
+                    return position == other.position && color == other.color &&
+                           texCoord == other.texCoord;
                 }
         };
 
@@ -43,7 +46,8 @@ namespace std {
 template <>
 struct hash<g::Model::Vertex> {
         auto operator()(g::Model::Vertex const& vertex) const -> size_t {
-            return ((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+            return ((hash<glm::vec3>()(vertex.position) ^ (hash<glm::vec3>()(vertex.color) << 1)) >>
+                    1) ^
                    (hash<glm::vec2>()(vertex.texCoord) << 1);
         }
 };

@@ -7,7 +7,9 @@ namespace shader {
 struct VaryingState {
         std::bitset<512> mask{};
 
-        void Set(IR::Attribute attribute, bool state = true) { mask[static_cast<size_t>(attribute)] = state; }
+        void Set(IR::Attribute attribute, bool state = true) {
+            mask[static_cast<size_t>(attribute)] = state;
+        }
 
         [[nodiscard]] auto operator[](IR::Attribute attribute) const noexcept -> bool {
             return mask[static_cast<size_t>(attribute)];
@@ -36,12 +38,14 @@ struct VaryingState {
         }
 
         [[nodiscard]] auto clipDistances() const noexcept -> bool {
-            return anyComponent(IR::Attribute::ClipDistance0) || anyComponent(IR::Attribute::ClipDistance4);
+            return anyComponent(IR::Attribute::ClipDistance0) ||
+                   anyComponent(IR::Attribute::ClipDistance4);
         }
 
         [[nodiscard]] auto legacy() const noexcept -> bool {
             return anyComponent(IR::Attribute::ColorFrontDiffuseR) ||
-                   anyComponent(IR::Attribute::ColorFrontSpecularR) || anyComponent(IR::Attribute::ColorBackDiffuseR) ||
+                   anyComponent(IR::Attribute::ColorFrontSpecularR) ||
+                   anyComponent(IR::Attribute::ColorBackDiffuseR) ||
                    anyComponent(IR::Attribute::ColorBackSpecularR) || fixedFunctionTexture() ||
                    mask[static_cast<size_t>(IR::Attribute::FogCoordinate)];
         }

@@ -7,7 +7,8 @@
 namespace resource::shader {
 class GraphicsShader {
     private:
-        void createGraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath);
+        void createGraphicsShader(const ::std::string& vertFilePath,
+                                  const ::std::string& fragFilePath);
         ::vk::ShaderModule vertexModule;
         ::vk::ShaderModule fragmentModule;
         ::vk::Device& device_;
@@ -17,7 +18,8 @@ class GraphicsShader {
         auto getFragmentModule() -> ::vk::ShaderModule { return fragmentModule; }
         auto getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo>;
         ~GraphicsShader();
-        GraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath, ::vk::Device& device);
+        GraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath,
+                       ::vk::Device& device);
 };
 
 class ComputeShader {

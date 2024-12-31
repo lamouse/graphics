@@ -66,7 +66,9 @@ class EXPORT BaseWindow {
          * Update framebuffer layout with the given parameter.
          * @note EmuWindow implementations will usually use this in window resize event handlers.
          */
-        void notifyFramebufferLayoutChanged(const layout::FrameBufferLayout& layout) { frame_buffer_layout = layout; }
+        void notifyFramebufferLayoutChanged(const layout::FrameBufferLayout& layout) {
+            frame_buffer_layout = layout;
+        }
 
     private:
         WindowConfig config;  ///< Internal configuration (changes pending for being applied in

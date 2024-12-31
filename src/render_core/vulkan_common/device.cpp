@@ -11,7 +11,8 @@ void SetNext(void**& next, T& data) {
     next = &data.pNext;
 }
 }  // namespace
-Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface, bool enable_validation)
+Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface,
+               bool enable_validation)
     : instance_(instance), physical_(physical) {
     format_properties_ = utils::GetFormatProperties(physical_);
     const bool is_suitable = getSuitability(surface != nullptr);
@@ -42,24 +43,30 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     // GetSuitability has already configured the linked list of features for us.
     // Reuse it here.
     const void* first_next = &features2_;
-    misc_features_.is_blit_depth24_stencil8_supported = testDepthStencilBlits(vk::Format::eD24UnormS8Uint);
-    misc_features_.is_blit_depth32_stencil8_supported = testDepthStencilBlits(vk::Format::eD32SfloatS8Uint);
+    misc_features_.is_blit_depth24_stencil8_supported =
+        testDepthStencilBlits(vk::Format::eD24UnormS8Uint);
+    misc_features_.is_blit_depth32_stencil8_supported =
+        testDepthStencilBlits(vk::Format::eD32SfloatS8Uint);
     misc_features_.is_optimal_astc_supported = computeIsOptimalAstcSupported();
     misc_features_.is_warp_potentially_bigger =
-        !extensions_.subgroup_size_control || properties_.subgroup_size_control_.maxSubgroupSize > GUEST_WARP_SIZE;
+        !extensions_.subgroup_size_control ||
+        properties_.subgroup_size_control_.maxSubgroupSize > GUEST_WARP_SIZE;
 
-    misc_features_.is_integrated = properties_.properties_.deviceType ==
-                                   vk::PhysicalDeviceType::eIntegratedGpu;  // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
-    misc_features_.is_virtual = properties_.properties_.deviceType ==
-                                vk::PhysicalDeviceType::eVirtualGpu;  // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
+    misc_features_.is_integrated =
+        properties_.properties_.deviceType ==
+        vk::PhysicalDeviceType::eIntegratedGpu;  // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
+    misc_features_.is_virtual =
+        properties_.properties_.deviceType ==
+        vk::PhysicalDeviceType::eVirtualGpu;  // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
     misc_features_.is_non_gpu =
         properties_.properties_.deviceType == vk::PhysicalDeviceType::eOther ||
-        properties_.properties_.deviceType == vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
+        properties_.properties_.deviceType ==
+            vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
 
-    misc_features_.supports_d24_depth =
-        isFormatSupported(vk::Format::eD24UnormS8Uint,  // VK_FORMAT_D24_UNORM_S8_UINT,
-                          vk::FormatFeatureFlagBits::eDepthStencilAttachment,
-                          utils::FormatType::Optimal);  // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    misc_features_.supports_d24_depth = isFormatSupported(
+        vk::Format::eD24UnormS8Uint,  // VK_FORMAT_D24_UNORM_S8_UINT,
+        vk::FormatFeatureFlagBits::eDepthStencilAttachment,
+        utils::FormatType::Optimal);  // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 
     misc_features_.supports_conditional_barriers = !(is_intel_anv || is_intel_windows);
     collectPhysicalMemoryInfo();
@@ -95,12 +102,14 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
             features_.shader_float16_int8.shaderFloat16 = false;
         } else if (arch <= utils::NvidiaArchitecture::Arch_Volta) {
             if (nv_major_version < 527) {
-                SPDLOG_WARN("{} Volta and older have broken VK_KHR_push_descriptor", "Render_Vulkan");
+                SPDLOG_WARN("{} Volta and older have broken VK_KHR_push_descriptor",
+                            "Render_Vulkan");
                 removeExtension(extensions_.push_descriptor, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
             }
         }
         if (nv_major_version >= 510) {
-            SPDLOG_WARN("{} NVIDIA Drivers >= 510 do not support MSAA image blits", "Render_Vulkan");
+            SPDLOG_WARN("{} NVIDIA Drivers >= 510 do not support MSAA image blits",
+                        "Render_Vulkan");
             misc_features_.cant_blit_msaa = true;
         }
     }
@@ -109,8 +118,11 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         // Mask driver version variant
         const uint32_t version = (properties_.properties_.driverVersion << 3) >> 3;
         if (version < VK_MAKE_API_VERSION(0, 21, 2, 0)) {
-            SPDLOG_WARN("Render_Vulkan: RADV versions older than 21.2 have broken VK_EXT_extended_dynamic_state");
-            removeExtensionFeature(extensions_.extended_dynamic_state, features_.extended_dynamic_state,
+            SPDLOG_WARN(
+                "Render_Vulkan: RADV versions older than 21.2 have broken "
+                "VK_EXT_extended_dynamic_state");
+            removeExtensionFeature(extensions_.extended_dynamic_state,
+                                   features_.extended_dynamic_state,
                                    VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
         }
     }
@@ -118,18 +130,22 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     if (extensions_.extended_dynamic_state2 && is_radv) {
         const uint32_t version = (properties_.properties_.driverVersion << 3) >> 3;
         if (version < VK_MAKE_API_VERSION(0, 22, 3, 1)) {
-            SPDLOG_WARN("RADV versions older than 22.3.1 have broken VK_EXT_extended_dynamic_state2");
-            removeExtensionFeature(extensions_.extended_dynamic_state2, features_.extended_dynamic_state2,
+            SPDLOG_WARN(
+                "RADV versions older than 22.3.1 have broken VK_EXT_extended_dynamic_state2");
+            removeExtensionFeature(extensions_.extended_dynamic_state2,
+                                   features_.extended_dynamic_state2,
                                    VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
         }
     }
 
     if (extensions_.extended_dynamic_state2 && is_qualcomm) {
         const uint32_t version = (properties_.properties_.driverVersion << 3) >> 3;
-        if (version >= VK_MAKE_API_VERSION(0, 0, 676, 0) && version < VK_MAKE_API_VERSION(0, 0, 680, 0)) {
+        if (version >= VK_MAKE_API_VERSION(0, 0, 676, 0) &&
+            version < VK_MAKE_API_VERSION(0, 0, 680, 0)) {
             // Qualcomm Adreno 7xx drivers do not properly support extended_dynamic_state2.
             SPDLOG_WARN("Qualcomm Adreno 7xx drivers have broken VK_EXT_extended_dynamic_state2");
-            removeExtensionFeature(extensions_.extended_dynamic_state2, features_.extended_dynamic_state2,
+            removeExtensionFeature(extensions_.extended_dynamic_state2,
+                                   features_.extended_dynamic_state2,
                                    VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
         }
     }
@@ -160,10 +176,12 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     if (extensions_.vertex_input_dynamic_state && is_radv) {
         // TODO(ameerj): Blacklist only offending driver versions
         // TODO(ameerj): Confirm if RDNA1 is affected
-        const bool is_rdna2 = supported_extensions_.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
+        const bool is_rdna2 =
+            supported_extensions_.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
         if (is_rdna2) {
             SPDLOG_WARN("RADV has broken VK_EXT_vertex_input_dynamic_state on RDNA2 hardware");
-            removeExtensionFeature(extensions_.vertex_input_dynamic_state, features_.vertex_input_dynamic_state,
+            removeExtensionFeature(extensions_.vertex_input_dynamic_state,
+                                   features_.vertex_input_dynamic_state,
                                    VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
         }
     }
@@ -171,7 +189,8 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     if (extensions_.vertex_input_dynamic_state && is_qualcomm) {
         // Qualcomm drivers do not properly support vertex_input_dynamic_state.
         SPDLOG_WARN("Qualcomm drivers have broken VK_EXT_vertex_input_dynamic_state");
-        removeExtensionFeature(extensions_.vertex_input_dynamic_state, features_.vertex_input_dynamic_state,
+        removeExtensionFeature(extensions_.vertex_input_dynamic_state,
+                               features_.vertex_input_dynamic_state,
                                VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
     }
     sets_per_pool_ = 64;
@@ -196,7 +215,8 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         // Disable ext_sampler_filter_minmax on AMD GCN4 and lower as it is broken.
         if (!features_.shader_float16_int8.shaderFloat16) {
             SPDLOG_WARN("AMD GCN4 and earlier have broken VK_EXT_sampler_filter_minmax");
-            removeExtension(extensions_.sampler_filter_minmax, VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME);
+            removeExtension(extensions_.sampler_filter_minmax,
+                            VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME);
         }
     }
 
@@ -204,7 +224,8 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         const uint32_t version = (properties_.properties_.driverVersion << 3) >> 3;
         if (version < VK_MAKE_API_VERSION(27, 20, 100, 0)) {
             SPDLOG_WARN("Intel has broken VK_EXT_vertex_input_dynamic_state");
-            removeExtensionFeature(extensions_.vertex_input_dynamic_state, features_.vertex_input_dynamic_state,
+            removeExtensionFeature(extensions_.vertex_input_dynamic_state,
+                                   features_.vertex_input_dynamic_state,
                                    VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
         }
     }
@@ -221,7 +242,8 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 
     auto vk_setting = common::settings::get<settings::RenderVulkan>();
     misc_features_.has_broken_compute =
-        utils::checkBrokenCompute(properties_.driver_.driverID, properties_.properties_.driverVersion) &&
+        utils::checkBrokenCompute(properties_.driver_.driverID,
+                                  properties_.properties_.driverVersion) &&
         !vk_setting.enable_compute_pipelines;
     if (is_intel_anv || (is_qualcomm && !is_s8gen2)) {
         SPDLOG_WARN("Driver does not support native BGR format");
@@ -230,7 +252,8 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 
     if (extensions_.push_descriptor && is_intel_anv) {
         const uint32_t version = (properties_.properties_.driverVersion << 3) >> 3;
-        if (version >= VK_MAKE_API_VERSION(0, 22, 3, 0) && version < VK_MAKE_API_VERSION(0, 23, 2, 0)) {
+        if (version >= VK_MAKE_API_VERSION(0, 22, 3, 0) &&
+            version < VK_MAKE_API_VERSION(0, 23, 2, 0)) {
             // Disable VK_KHR_push_descriptor due to
             // mesa/mesa/-/commit/ff91c5ca42bc80aa411cb3fd8f550aa6fdd16bdc
             SPDLOG_WARN("ANV drivers 22.3.0 to 23.1.0 have broken VK_KHR_push_descriptor");
@@ -259,12 +282,14 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 
     if (!extensions_.extended_dynamic_state && extensions_.extended_dynamic_state2) {
         SPDLOG_WARN("Removing extendedDynamicState2 due to missing extendedDynamicState");
-        removeExtensionFeature(extensions_.extended_dynamic_state2, features_.extended_dynamic_state2,
+        removeExtensionFeature(extensions_.extended_dynamic_state2,
+                               features_.extended_dynamic_state2,
                                VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
     }
     if (!extensions_.extended_dynamic_state2 && extensions_.extended_dynamic_state3) {
         SPDLOG_WARN("Removing extendedDynamicState3 due to missing extendedDynamicState2");
-        removeExtensionFeature(extensions_.extended_dynamic_state3, features_.extended_dynamic_state3,
+        removeExtensionFeature(extensions_.extended_dynamic_state3,
+                               features_.extended_dynamic_state3,
                                VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
         misc_features_.dynamic_state3_blending = false;
         misc_features_.dynamic_state3_enables = false;
@@ -383,10 +408,11 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
     features_.var_name.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_##macro_name##_FEATURES; \
     SetNext(next, features_.var_name);
 
-#define EXT_FEATURE(prefix, struct_name, macro_name, var_name)                                         \
-    if (extensions_.var_name) {                                                                        \
-        features_.var_name.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_##macro_name##_FEATURES_##prefix; \
-        SetNext(next, features_.var_name);                                                             \
+#define EXT_FEATURE(prefix, struct_name, macro_name, var_name)                  \
+    if (extensions_.var_name) {                                                 \
+        features_.var_name.sType =                                              \
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_##macro_name##_FEATURES_##prefix; \
+        SetNext(next, features_.var_name);                                      \
     }
 
     FOR_EACH_VK_FEATURE_1_1(FEATURE);
@@ -473,28 +499,35 @@ void Device::removeUnsuitableExtensions() {
     // VK_EXT_custom_border_color
     extensions_.custom_border_color = features_.custom_border_color.customBorderColors &&
                                       features_.custom_border_color.customBorderColorWithoutFormat;
-    removeExtensionFeatureIfUnsuitable(extensions_.custom_border_color, features_.custom_border_color,
+    removeExtensionFeatureIfUnsuitable(extensions_.custom_border_color,
+                                       features_.custom_border_color,
                                        VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
 
     // VK_EXT_depth_bias_control
-    extensions_.depth_bias_control = features_.depth_bias_control.depthBiasControl &&
-                                     features_.depth_bias_control.leastRepresentableValueForceUnormRepresentation;
+    extensions_.depth_bias_control =
+        features_.depth_bias_control.depthBiasControl &&
+        features_.depth_bias_control.leastRepresentableValueForceUnormRepresentation;
     removeExtensionFeatureIfUnsuitable(extensions_.depth_bias_control, features_.depth_bias_control,
                                        VK_EXT_DEPTH_BIAS_CONTROL_EXTENSION_NAME);
 
     // VK_EXT_depth_clip_control
-    extensions_.depth_clip_control = static_cast<bool>(features_.depth_clip_control.depthClipControl);
+    extensions_.depth_clip_control =
+        static_cast<bool>(features_.depth_clip_control.depthClipControl);
     removeExtensionFeatureIfUnsuitable(extensions_.depth_clip_control, features_.depth_clip_control,
                                        VK_EXT_DEPTH_CLIP_CONTROL_EXTENSION_NAME);
 
     // VK_EXT_extended_dynamic_state
-    extensions_.extended_dynamic_state = static_cast<bool>(features_.extended_dynamic_state.extendedDynamicState);
-    removeExtensionFeatureIfUnsuitable(extensions_.extended_dynamic_state, features_.extended_dynamic_state,
+    extensions_.extended_dynamic_state =
+        static_cast<bool>(features_.extended_dynamic_state.extendedDynamicState);
+    removeExtensionFeatureIfUnsuitable(extensions_.extended_dynamic_state,
+                                       features_.extended_dynamic_state,
                                        VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
 
     // VK_EXT_extended_dynamic_state2
-    extensions_.extended_dynamic_state2 = static_cast<bool>(features_.extended_dynamic_state2.extendedDynamicState2);
-    removeExtensionFeatureIfUnsuitable(extensions_.extended_dynamic_state2, features_.extended_dynamic_state2,
+    extensions_.extended_dynamic_state2 =
+        static_cast<bool>(features_.extended_dynamic_state2.extendedDynamicState2);
+    removeExtensionFeatureIfUnsuitable(extensions_.extended_dynamic_state2,
+                                       features_.extended_dynamic_state2,
                                        VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
 
     // VK_EXT_extended_dynamic_state3
@@ -502,8 +535,9 @@ void Device::removeUnsuitableExtensions() {
         features_.extended_dynamic_state3.extendedDynamicState3ColorBlendEnable &&
         features_.extended_dynamic_state3.extendedDynamicState3ColorBlendEquation &&
         features_.extended_dynamic_state3.extendedDynamicState3ColorWriteMask;
-    misc_features_.dynamic_state3_enables = features_.extended_dynamic_state3.extendedDynamicState3DepthClampEnable &&
-                                            features_.extended_dynamic_state3.extendedDynamicState3LogicOpEnable;
+    misc_features_.dynamic_state3_enables =
+        features_.extended_dynamic_state3.extendedDynamicState3DepthClampEnable &&
+        features_.extended_dynamic_state3.extendedDynamicState3LogicOpEnable;
 
     extensions_.extended_dynamic_state3 =
         misc_features_.dynamic_state3_blending || misc_features_.dynamic_state3_enables;
@@ -511,49 +545,56 @@ void Device::removeUnsuitableExtensions() {
         misc_features_.dynamic_state3_blending && extensions_.extended_dynamic_state3;
     misc_features_.dynamic_state3_enables =
         misc_features_.dynamic_state3_enables && extensions_.extended_dynamic_state3;
-    removeExtensionFeatureIfUnsuitable(extensions_.extended_dynamic_state3, features_.extended_dynamic_state3,
+    removeExtensionFeatureIfUnsuitable(extensions_.extended_dynamic_state3,
+                                       features_.extended_dynamic_state3,
                                        VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
 
     // VK_EXT_provoking_vertex
-    extensions_.provoking_vertex = features_.provoking_vertex.provokingVertexLast &&
-                                   features_.provoking_vertex.transformFeedbackPreservesProvokingVertex;
+    extensions_.provoking_vertex =
+        features_.provoking_vertex.provokingVertexLast &&
+        features_.provoking_vertex.transformFeedbackPreservesProvokingVertex;
     removeExtensionFeatureIfUnsuitable(extensions_.provoking_vertex, features_.provoking_vertex,
                                        VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME);
 
     // VK_KHR_shader_atomic_int64
     extensions_.shader_atomic_int64 = features_.shader_atomic_int64.shaderBufferInt64Atomics &&
                                       features_.shader_atomic_int64.shaderSharedInt64Atomics;
-    removeExtensionFeatureIfUnsuitable(extensions_.shader_atomic_int64, features_.shader_atomic_int64,
+    removeExtensionFeatureIfUnsuitable(extensions_.shader_atomic_int64,
+                                       features_.shader_atomic_int64,
                                        VK_KHR_SHADER_ATOMIC_INT64_EXTENSION_NAME);
 
     // VK_EXT_shader_demote_to_helper_invocation
-    extensions_.shader_demote_to_helper_invocation =
-        static_cast<bool>(features_.shader_demote_to_helper_invocation.shaderDemoteToHelperInvocation);
+    extensions_.shader_demote_to_helper_invocation = static_cast<bool>(
+        features_.shader_demote_to_helper_invocation.shaderDemoteToHelperInvocation);
     removeExtensionFeatureIfUnsuitable(extensions_.shader_demote_to_helper_invocation,
                                        features_.shader_demote_to_helper_invocation,
                                        VK_EXT_SHADER_DEMOTE_TO_HELPER_INVOCATION_EXTENSION_NAME);
 
     // VK_EXT_subgroup_size_control
-    extensions_.subgroup_size_control = features_.subgroup_size_control.subgroupSizeControl &&
-                                        properties_.subgroup_size_control_.minSubgroupSize <= GUEST_WARP_SIZE &&
-                                        properties_.subgroup_size_control_.maxSubgroupSize >= GUEST_WARP_SIZE;
-    removeExtensionFeatureIfUnsuitable(extensions_.subgroup_size_control, features_.subgroup_size_control,
+    extensions_.subgroup_size_control =
+        features_.subgroup_size_control.subgroupSizeControl &&
+        properties_.subgroup_size_control_.minSubgroupSize <= GUEST_WARP_SIZE &&
+        properties_.subgroup_size_control_.maxSubgroupSize >= GUEST_WARP_SIZE;
+    removeExtensionFeatureIfUnsuitable(extensions_.subgroup_size_control,
+                                       features_.subgroup_size_control,
                                        VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
 
     // VK_EXT_transform_feedback
-    extensions_.transform_feedback = features_.transform_feedback.transformFeedback &&
-                                     features_.transform_feedback.geometryStreams &&
-                                     properties_.transform_feedback_.maxTransformFeedbackStreams >= 4 &&
-                                     properties_.transform_feedback_.maxTransformFeedbackBuffers > 0 &&
-                                     properties_.transform_feedback_.transformFeedbackQueries &&
-                                     properties_.transform_feedback_.transformFeedbackDraw;
+    extensions_.transform_feedback =
+        features_.transform_feedback.transformFeedback &&
+        features_.transform_feedback.geometryStreams &&
+        properties_.transform_feedback_.maxTransformFeedbackStreams >= 4 &&
+        properties_.transform_feedback_.maxTransformFeedbackBuffers > 0 &&
+        properties_.transform_feedback_.transformFeedbackQueries &&
+        properties_.transform_feedback_.transformFeedbackDraw;
     removeExtensionFeatureIfUnsuitable(extensions_.transform_feedback, features_.transform_feedback,
                                        VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
 
     // VK_EXT_vertex_input_dynamic_state
     extensions_.vertex_input_dynamic_state =
         static_cast<bool>(features_.vertex_input_dynamic_state.vertexInputDynamicState);
-    removeExtensionFeatureIfUnsuitable(extensions_.vertex_input_dynamic_state, features_.vertex_input_dynamic_state,
+    removeExtensionFeatureIfUnsuitable(extensions_.vertex_input_dynamic_state,
+                                       features_.vertex_input_dynamic_state,
                                        VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
 
     // VK_KHR_pipeline_executable_properties
@@ -565,13 +606,15 @@ void Device::removeUnsuitableExtensions() {
                                            features_.pipeline_executable_properties,
                                            VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME);
     } else {
-        removeExtensionFeature(extensions_.pipeline_executable_properties, features_.pipeline_executable_properties,
+        removeExtensionFeature(extensions_.pipeline_executable_properties,
+                               features_.pipeline_executable_properties,
                                VK_KHR_PIPELINE_EXECUTABLE_PROPERTIES_EXTENSION_NAME);
     }
 
     // VK_KHR_workgroup_memory_explicit_layout
     extensions_.workgroup_memory_explicit_layout =
-        features_.features.shaderInt16 && features_.workgroup_memory_explicit_layout.workgroupMemoryExplicitLayout &&
+        features_.features.shaderInt16 &&
+        features_.workgroup_memory_explicit_layout.workgroupMemoryExplicitLayout &&
         features_.workgroup_memory_explicit_layout.workgroupMemoryExplicitLayout8BitAccess &&
         features_.workgroup_memory_explicit_layout.workgroupMemoryExplicitLayout16BitAccess &&
         features_.workgroup_memory_explicit_layout.workgroupMemoryExplicitLayoutScalarBlockLayout;
@@ -580,14 +623,16 @@ void Device::removeUnsuitableExtensions() {
                                        VK_KHR_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_EXTENSION_NAME);
 }
 template <typename Feature>
-void Device::removeExtensionFeatureIfUnsuitable(bool is_suitable, Feature& feature, const std::string& extension_name) {
+void Device::removeExtensionFeatureIfUnsuitable(bool is_suitable, Feature& feature,
+                                                const std::string& extension_name) {
     if (loaded_extensions_.contains(extension_name) && !is_suitable) {
         SPDLOG_WARN("Removing features for unsuitable extension {}", extension_name);
         this->removeExtensionFeature(is_suitable, feature, extension_name);
     }
 }
 template <typename Feature>
-void Device::removeExtensionFeature(bool& extension, Feature& feature, const std::string& extension_name) {
+void Device::removeExtensionFeature(bool& extension, Feature& feature,
+                                    const std::string& extension_name) {
     // Unload extension.
     this->removeExtension(extension, extension_name);
 
@@ -656,12 +701,14 @@ void Device::setupFamilies(vk::SurfaceKHR surface) {
 auto Device::getDeviceQueueCreateInfos() const -> std::vector<vk::DeviceQueueCreateInfo> {
     static constexpr float QUEUE_PRIORITY = 1.0f;
 
-    std::unordered_set<uint32_t> unique_queue_families{graphics_family_, present_family_, compute_family_};
+    std::unordered_set<uint32_t> unique_queue_families{graphics_family_, present_family_,
+                                                       compute_family_};
     std::vector<vk::DeviceQueueCreateInfo> queue_cis;
     queue_cis.reserve(unique_queue_families.size());
 
     for (const uint32_t queue_family : unique_queue_families) {
-        ::vk::DeviceQueueCreateInfo queueCreateInfo(::vk::DeviceQueueCreateFlags(), queue_family, 1, &QUEUE_PRIORITY);
+        ::vk::DeviceQueueCreateInfo queueCreateInfo(::vk::DeviceQueueCreateFlags(), queue_family, 1,
+                                                    &QUEUE_PRIORITY);
         queue_cis.emplace_back(queueCreateInfo);
     }
 
@@ -679,28 +726,47 @@ auto Device::testDepthStencilBlits(vk::Format format) const -> bool {
 
 auto Device::computeIsOptimalAstcSupported() const -> bool {
     // Disable for now to avoid converting ASTC twice.
-    static constexpr std::array astc_formats = {
-        vk::Format::eAstc4x4UnormBlock,   vk::Format::eAstc4x4SrgbBlock,    vk::Format::eAstc5x4UnormBlock,
-        vk::Format::eAstc5x4SrgbBlock,    vk::Format::eAstc5x5UnormBlock,   vk::Format::eAstc5x5SrgbBlock,
-        vk::Format::eAstc6x5UnormBlock,   vk::Format::eAstc6x5SrgbBlock,    vk::Format::eAstc6x6UnormBlock,
-        vk::Format::eAstc6x6SrgbBlock,    vk::Format::eAstc8x5UnormBlock,   vk::Format::eAstc8x5SrgbBlock,
-        vk::Format::eAstc8x6UnormBlock,   vk::Format::eAstc8x6SrgbBlock,    vk::Format::eAstc8x8UnormBlock,
-        vk::Format::eAstc8x8SrgbBlock,    vk::Format::eAstc10x5UnormBlock,  vk::Format::eAstc10x5SrgbBlock,
-        vk::Format::eAstc10x6UnormBlock,  vk::Format::eAstc10x6SrgbBlock,   vk::Format::eAstc10x8UnormBlock,
-        vk::Format::eAstc10x8SrgbBlock,   vk::Format::eAstc10x10UnormBlock, vk::Format::eAstc10x10SrgbBlock,
-        vk::Format::eAstc12x10UnormBlock, vk::Format::eAstc12x10SrgbBlock,  vk::Format::eAstc12x12UnormBlock,
-        vk::Format::eAstc12x12SrgbBlock
+    static constexpr std::array astc_formats = {vk::Format::eAstc4x4UnormBlock,
+                                                vk::Format::eAstc4x4SrgbBlock,
+                                                vk::Format::eAstc5x4UnormBlock,
+                                                vk::Format::eAstc5x4SrgbBlock,
+                                                vk::Format::eAstc5x5UnormBlock,
+                                                vk::Format::eAstc5x5SrgbBlock,
+                                                vk::Format::eAstc6x5UnormBlock,
+                                                vk::Format::eAstc6x5SrgbBlock,
+                                                vk::Format::eAstc6x6UnormBlock,
+                                                vk::Format::eAstc6x6SrgbBlock,
+                                                vk::Format::eAstc8x5UnormBlock,
+                                                vk::Format::eAstc8x5SrgbBlock,
+                                                vk::Format::eAstc8x6UnormBlock,
+                                                vk::Format::eAstc8x6SrgbBlock,
+                                                vk::Format::eAstc8x8UnormBlock,
+                                                vk::Format::eAstc8x8SrgbBlock,
+                                                vk::Format::eAstc10x5UnormBlock,
+                                                vk::Format::eAstc10x5SrgbBlock,
+                                                vk::Format::eAstc10x6UnormBlock,
+                                                vk::Format::eAstc10x6SrgbBlock,
+                                                vk::Format::eAstc10x8UnormBlock,
+                                                vk::Format::eAstc10x8SrgbBlock,
+                                                vk::Format::eAstc10x10UnormBlock,
+                                                vk::Format::eAstc10x10SrgbBlock,
+                                                vk::Format::eAstc12x10UnormBlock,
+                                                vk::Format::eAstc12x10SrgbBlock,
+                                                vk::Format::eAstc12x12UnormBlock,
+                                                vk::Format::eAstc12x12SrgbBlock
 
     };
     if (!features_.features.textureCompressionASTC_LDR) {
         return false;
     }
-    const auto format_feature_usage{vk::FormatFeatureFlagBits::eSampledImage | vk::FormatFeatureFlagBits::eBlitSrc |
-                                    vk::FormatFeatureFlagBits::eBlitDst | vk::FormatFeatureFlagBits::eTransferSrc |
-                                    vk::FormatFeatureFlagBits::eTransferDst};
+    const auto format_feature_usage{
+        vk::FormatFeatureFlagBits::eSampledImage | vk::FormatFeatureFlagBits::eBlitSrc |
+        vk::FormatFeatureFlagBits::eBlitDst | vk::FormatFeatureFlagBits::eTransferSrc |
+        vk::FormatFeatureFlagBits::eTransferDst};
     return std::ranges::all_of(astc_formats, [&](const auto format) {
         const auto physical_format_properties{physical_.getFormatProperties(format)};
-        return (physical_format_properties.optimalTilingFeatures & format_feature_usage) == format_feature_usage;
+        return (physical_format_properties.optimalTilingFeatures & format_feature_usage) ==
+               format_feature_usage;
     });
     return true;
 }
@@ -726,7 +792,8 @@ void Device::collectPhysicalMemoryInfo() {
     // 创建 vk::PhysicalDeviceMemoryBudgetPropertiesEXT 结构体
     vk::PhysicalDeviceMemoryBudgetPropertiesEXT memoryBudgetProperties;
 
-    // 将 vk::PhysicalDeviceMemoryBudgetPropertiesEXT 结构体链接到 vk::PhysicalDeviceMemoryProperties2
+    // 将 vk::PhysicalDeviceMemoryBudgetPropertiesEXT 结构体链接到
+    // vk::PhysicalDeviceMemoryProperties2
     memoryProperties2.pNext = &memoryBudgetProperties;
     physical_.getMemoryProperties2(&memoryProperties2);
     const auto& mem_properties = memoryProperties2.memoryProperties;
@@ -734,8 +801,8 @@ void Device::collectPhysicalMemoryInfo() {
     uint64_t device_initial_usage = 0;
     uint64_t local_memory = 0;
     for (size_t element = 0; auto memory_heaps : mem_properties.memoryHeaps) {
-        const bool is_heap_local =
-            (memory_heaps.flags & vk::MemoryHeapFlagBits::eDeviceLocal) == vk::MemoryHeapFlagBits::eDeviceLocal;
+        const bool is_heap_local = (memory_heaps.flags & vk::MemoryHeapFlagBits::eDeviceLocal) ==
+                                   vk::MemoryHeapFlagBits::eDeviceLocal;
         if (!misc_features_.is_integrated && !is_heap_local) {
             continue;
         }
@@ -760,14 +827,17 @@ void Device::collectPhysicalMemoryInfo() {
             // Account for resolution scaling in memory limits
             const size_t normal_memory = 6_GiB;
             const size_t scaler_memory = 1_GiB * resolutionScalingInfo.ScaleUp(1);
-            device_access_memory_ = std::min<uint64_t>(device_access_memory_, normal_memory + scaler_memory);
+            device_access_memory_ =
+                std::min<uint64_t>(device_access_memory_, normal_memory + scaler_memory);
         }
 
         return;
     }
-    const auto available_memory = static_cast<std::int64_t>(device_access_memory_ - device_initial_usage);
-    device_access_memory_ = static_cast<uint64_t>(std::max<std::int64_t>(
-        std::min<std::int64_t>(available_memory - 8_GiB, 4_GiB), std::min<std::int64_t>(local_memory, 4_GiB)));
+    const auto available_memory =
+        static_cast<std::int64_t>(device_access_memory_ - device_initial_usage);
+    device_access_memory_ = static_cast<uint64_t>(
+        std::max<std::int64_t>(std::min<std::int64_t>(available_memory - 8_GiB, 4_GiB),
+                               std::min<std::int64_t>(local_memory, 4_GiB)));
 }
 void Device::collectToolingInfo() {
     if (!extensions_.tooling_info) {
@@ -778,14 +848,16 @@ void Device::collectToolingInfo() {
         const std::string_view name = tool.name;
         SPDLOG_INFO("Attached debugging tool: {}", name);
         misc_features_.has_renderdoc = misc_features_.has_renderdoc || name == "RenderDoc";
-        misc_features_.has_nsight_graphics = misc_features_.has_nsight_graphics || name == "NVIDIA Nsight Graphics";
+        misc_features_.has_nsight_graphics =
+            misc_features_.has_nsight_graphics || name == "NVIDIA Nsight Graphics";
         misc_features_.has_radeon_gpu_profiler =
             misc_features_.has_radeon_gpu_profiler || name == "Radeon GPU Profiler";
     }
 }
 
 auto Device::hasTimelineSemaphore() const -> bool {
-    if (getDriverID() == vk::DriverId::eQualcommProprietary || getDriverID() == vk::DriverId::eMesaTurnip) {
+    if (getDriverID() == vk::DriverId::eQualcommProprietary ||
+        getDriverID() == vk::DriverId::eMesaTurnip) {
         // Timeline semaphores do not work properly on all Qualcomm drivers.
         // They generally work properly with Turnip drivers, but are problematic on some devices
         // (e.g. ZTE handsets with Snapdragon 870).

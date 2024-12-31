@@ -9,7 +9,8 @@ void condvarWait(Condvar& cv, std::unique_lock<Lock>& lk, std::stop_token token,
 
 class NotifyOnExit {
     public:
-        NotifyOnExit(std::condition_variable_any& cv, std::unique_lock<std::mutex>& lock) : cv_(cv), lock_(lock) {}
+        NotifyOnExit(std::condition_variable_any& cv, std::unique_lock<std::mutex>& lock)
+            : cv_(cv), lock_(lock) {}
         ~NotifyOnExit() { cv_.notify_one(); }
 
     private:

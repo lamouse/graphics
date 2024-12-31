@@ -27,7 +27,9 @@ struct ResolutionScalingInfo {
             if (value == 0) {
                 return 0;
             }
-            return std::max((value * static_cast<std::int32_t>(up_scale)) >> static_cast<std::int32_t>(down_shift), 1);
+            return std::max((value * static_cast<std::int32_t>(up_scale)) >>
+                                static_cast<std::int32_t>(down_shift),
+                            1);
         }
 
         uint32_t ScaleUp(uint32_t value) const {

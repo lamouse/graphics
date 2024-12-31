@@ -25,9 +25,9 @@
  * @brief get the current file name, line number and function name
  *
  */
-#define SOURCE_CODE_DETAIL_INFO(msg)                                                                           \
-    ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \
-        __PRETTY_FUNCTION__ + ::std::string("): ") + msg
+#define SOURCE_CODE_DETAIL_INFO(msg)                                                      \
+    ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + \
+        ::std::string(" ") + __PRETTY_FUNCTION__ + ::std::string("): ") + msg
 
 #define DECLARE_ENUM_FLAG_OPERATORS(type)                                 \
     [[nodiscard]] constexpr type operator|(type a, type b) noexcept {     \

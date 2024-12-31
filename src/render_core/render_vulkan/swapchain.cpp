@@ -9,7 +9,8 @@
 #include "scheduler.hpp"
 namespace render::vulkan {
 namespace {
-auto chooseAlphaFlags(const vk::SurfaceCapabilitiesKHR& capabilities) -> vk::CompositeAlphaFlagBitsKHR {
+auto chooseAlphaFlags(const vk::SurfaceCapabilitiesKHR& capabilities)
+    -> vk::CompositeAlphaFlagBitsKHR {
     if (capabilities.supportedCompositeAlpha & vk::CompositeAlphaFlagBitsKHR::eOpaque) {
         return vk::CompositeAlphaFlagBitsKHR::eOpaque;
     }
@@ -19,7 +20,8 @@ auto chooseAlphaFlags(const vk::SurfaceCapabilitiesKHR& capabilities) -> vk::Com
     SPDLOG_ERROR("Unknown composite alpha flags value");
     return vk::CompositeAlphaFlagBitsKHR::eOpaque;
 }
-auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats) -> vk::SurfaceFormatKHR {
+auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
+    -> vk::SurfaceFormatKHR {
     if (formats.size() == 1 && formats[0].format == vk::Format::eUndefined) {
         vk::SurfaceFormatKHR format;
         format.format = Swapchain::DEFAULT_COLOR_FORMAT;
@@ -27,11 +29,13 @@ auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats) -
         return format;
     }
     const auto& found = std::find_if(formats.begin(), formats.end(), [](const auto& format) {
-        return format.format == Swapchain::DEFAULT_COLOR_FORMAT && format.colorSpace == Swapchain::DEFAULT_COLOR_SPACE;
+        return format.format == Swapchain::DEFAULT_COLOR_FORMAT &&
+               format.colorSpace == Swapchain::DEFAULT_COLOR_SPACE;
     });
     return found != formats.end() ? *found : formats[0];
 }
-auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, bool has_fifo_relaxed) -> vk::PresentModeKHR {
+auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, bool has_fifo_relaxed)
+    -> vk::PresentModeKHR {
     // Mailbox doesn't lock the application like FIFO (vsync)
     // FIFO present mode locks the framerate to the monitor's refresh rate
     settings::enums::VSyncMode setting = [has_imm, has_mailbox]() {
@@ -74,25 +78,25 @@ auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, bool has_fifo_relaxed
     }
 }
 
-auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, uint32_t width, uint32_t height)
-    -> ::vk::Extent2D {
+auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, uint32_t width,
+                      uint32_t height) -> ::vk::Extent2D {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }
     ::vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
-    actualExtent.width =
-        std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-    actualExtent.height =
-        std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+    actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width,
+                                    capabilities.maxImageExtent.width);
+    actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height,
+                                     capabilities.maxImageExtent.height);
 
     return actualExtent;
 }
 
 }  // namespace
 
-Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Scheduler& scheduler, uint32_t width,
-                     uint32_t height)
+Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Scheduler& scheduler,
+                     uint32_t width, uint32_t height)
     : surface_(surface), device_(device), scheduler_(scheduler) {
     create(surface, width, height);
 }
@@ -134,7 +138,8 @@ auto Swapchain::acquireNextImage() -> bool {
             throw utils::VulkanException(result.result);
             break;
         default:
-            SPDLOG_ERROR("vkAcquireNextImageKHR returned {}", string_VkResult(static_cast<VkResult>(result.result)));
+            SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
+                         string_VkResult(static_cast<VkResult>(result.result)));
             break;
     }
     return is_suboptimal_ || is_outdated_;
@@ -156,7 +161,8 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
         } else {
 #undef max
 #undef min
-            requested_image_count = std::max(requested_image_count, std::min(3U, capabilities.maxImageCount));
+            requested_image_count =
+                std::max(requested_image_count, std::min(3U, capabilities.maxImageCount));
         }
     } else {
         requested_image_count = std::max(requested_image_count, 3U);
@@ -168,7 +174,8 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
         .setImageFormat(surface_format_.format)
         .setImageColorSpace(surface_format_.colorSpace)
         .setImageArrayLayers(1)
-        .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst)
+        .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment |
+                       vk::ImageUsageFlagBits::eTransferDst)
         .setImageSharingMode(vk::SharingMode::eExclusive)
         .setPreTransform(capabilities.currentTransform)
         .setCompositeAlpha(alpha_flags)
@@ -179,9 +186,11 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
     const uint32_t present_family{device_.getPresentFamily()};
     const std::array<uint32_t, 2> queue_indices{graphics_family, present_family};
     if (graphics_family != present_family) {
-        createInfo.setImageSharingMode(vk::SharingMode::eConcurrent).setQueueFamilyIndices(queue_indices);
+        createInfo.setImageSharingMode(vk::SharingMode::eConcurrent)
+            .setQueueFamilyIndices(queue_indices);
     }
-    static constexpr std::array view_formats{::vk::Format::eB8G8R8A8Unorm, ::vk::Format::eB8G8R8A8Srgb};
+    static constexpr std::array view_formats{::vk::Format::eB8G8R8A8Unorm,
+                                             ::vk::Format::eB8G8R8A8Srgb};
     vk::ImageFormatListCreateInfo format_list{view_formats};
     if (device_.isKhrSwapchainMutableFormatEnabled()) {
         format_list.pNext = std::exchange(createInfo.pNext, &format_list);
@@ -203,17 +212,18 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
 void Swapchain::init_sync_mode() {
     const auto physical_device{device_.getPhysical()};
     const auto present_modes = physical_device.getSurfacePresentModesKHR(surface_);
-    has_mailbox_ =
-        std::find(present_modes.begin(), present_modes.end(), ::vk::PresentModeKHR::eMailbox) != present_modes.end();
-    has_imm_ =
-        std::find(present_modes.begin(), present_modes.end(), ::vk::PresentModeKHR::eImmediate) != present_modes.end();
-    has_fifo_relaxed_ =
-        std::find(present_modes.begin(), present_modes.end(), ::vk::PresentModeKHR::eFifo) != present_modes.end();
+    has_mailbox_ = std::find(present_modes.begin(), present_modes.end(),
+                             ::vk::PresentModeKHR::eMailbox) != present_modes.end();
+    has_imm_ = std::find(present_modes.begin(), present_modes.end(),
+                         ::vk::PresentModeKHR::eImmediate) != present_modes.end();
+    has_fifo_relaxed_ = std::find(present_modes.begin(), present_modes.end(),
+                                  ::vk::PresentModeKHR::eFifo) != present_modes.end();
 }
 
 void Swapchain::destroy() {
     frame_index_ = 0;
-    std::ranges::for_each(present_semaphores_, [&](auto& semaphore) { device_.getLogical().destroy(semaphore); });
+    std::ranges::for_each(present_semaphores_,
+                          [&](auto& semaphore) { device_.getLogical().destroy(semaphore); });
     present_semaphores_.clear();
     if (swapchain_) {
         device_.getLogical().destroy(swapchain_);
@@ -235,7 +245,9 @@ void Swapchain::createSemaphores() {
 void Swapchain::present(vk::Semaphore render_semaphore) {
     const auto present_queue = device_.getPresentQueue();
     vk::PresentInfoKHR present_info{};
-    present_info.setWaitSemaphores(render_semaphore).setSwapchains(swapchain_).setImageIndices(image_index_);
+    present_info.setWaitSemaphores(render_semaphore)
+        .setSwapchains(swapchain_)
+        .setImageIndices(image_index_);
 
     std::scoped_lock lock{scheduler_.submit_mutex_};
     switch (const vk::Result result = present_queue.presentKHR(present_info)) {
@@ -251,7 +263,8 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
             throw utils::VulkanException(result);
             break;
         default:
-            SPDLOG_CRITICAL("Failed to present with error {}", string_VkResult(static_cast<VkResult>(result)));
+            SPDLOG_CRITICAL("Failed to present with error {}",
+                            string_VkResult(static_cast<VkResult>(result)));
             break;
     }
     ++frame_index_;

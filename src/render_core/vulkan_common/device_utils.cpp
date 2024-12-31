@@ -2,7 +2,8 @@
 #include <spdlog/spdlog.h>
 #include <vulkan/vk_enum_string_helper.h>
 namespace render::vulkan::utils {
-auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::Format, vk::FormatProperties> {
+auto GetFormatProperties(vk::PhysicalDevice physical)
+    -> std::unordered_map<vk::Format, vk::FormatProperties> {
     static constexpr std::array formats{
         vk::Format::eA1R5G5B5UnormPack16,
         vk::Format::eA2B10G10R10SintPack32,
@@ -151,11 +152,12 @@ auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::
     return format_properties;
 }
 
-auto getNvidiaArchitecture(vk::PhysicalDevice physical, const std::set<std::string, std::less<>>& exts)
-    -> NvidiaArchitecture {
+auto getNvidiaArchitecture(vk::PhysicalDevice physical,
+                           const std::set<std::string, std::less<>>& exts) -> NvidiaArchitecture {
     if (exts.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR shading_rate_props{};
-        shading_rate_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+        shading_rate_props.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
         VkPhysicalDeviceProperties2 physical_properties{};
         physical_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         physical_properties.pNext = &shading_rate_props;
@@ -170,7 +172,8 @@ auto getNvidiaArchitecture(vk::PhysicalDevice physical, const std::set<std::stri
 
     if (exts.contains(VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME)) {
         VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT advanced_blending_props{};
-        advanced_blending_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT;
+        advanced_blending_props.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT;
         VkPhysicalDeviceProperties2 physical_properties{};
         physical_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         physical_properties.pNext = &advanced_blending_props;
@@ -221,7 +224,8 @@ bool checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) {
     return false;
 }
 
-auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions) -> std::vector<const char*> {
+auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions)
+    -> std::vector<const char*> {
     std::vector<const char*> output;
     output.reserve(extensions.size());
     for (const auto& extension : extensions) {
@@ -230,6 +234,8 @@ auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions
     return output;
 }
 
-const char* VulkanException::what() const noexcept { return string_VkResult(static_cast<VkResult>(result)); }
+const char* VulkanException::what() const noexcept {
+    return string_VkResult(static_cast<VkResult>(result));
+}
 
 }  // namespace render::vulkan::utils

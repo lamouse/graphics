@@ -41,8 +41,9 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
         return false;
     }
     for (const char* extension : extensions) {
-        const auto it = std::ranges::find_if(
-            properties, [extension](const auto& prop) { return std::strcmp(extension, prop.extensionName) == 0; });
+        const auto it = std::ranges::find_if(properties, [extension](const auto& prop) {
+            return std::strcmp(extension, prop.extensionName) == 0;
+        });
         if (it == properties.end()) {
             SPDLOG_ERROR("{}Required instance extension {} is not available", LOG_TAG, extension);
             return false;
@@ -74,14 +75,16 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
         extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     }
 #ifdef __APPLE__
-    if (checkExtensionsSupported(std::array{VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
-                                            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME})) {
+    if (checkExtensionsSupported(
+            std::array{VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+                       VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME})) {
         extends.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
         extends.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
 
 #endif
-    if (enable_validation && checkExtensionsSupported(std::array{VK_EXT_DEBUG_UTILS_EXTENSION_NAME})) {
+    if (enable_validation &&
+        checkExtensionsSupported(std::array{VK_EXT_DEBUG_UTILS_EXTENSION_NAME})) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
@@ -89,16 +92,18 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
 }
 }  // namespace
 }  // namespace instance
-auto CreateInstance(uint32_t required_version, core::frontend::WindowSystemType wst, bool enable_validation)
-    -> vk::Instance {
+auto CreateInstance(uint32_t required_version, core::frontend::WindowSystemType wst,
+                    bool enable_validation) -> vk::Instance {
     auto layers = instance::layers(enable_validation);
     instance::removeUnavailableLayers(layers);
     auto extensions = instance::requiredExtensions(wst, enable_validation);
     const auto available_version = vk::enumerateInstanceVersion();
     if (available_version < required_version) {
-        SPDLOG_ERROR("{} Required Vulkan version {}.{} is not available, available version is {}.{}", instance::LOG_TAG,
-                     VK_VERSION_MAJOR(required_version), VK_VERSION_MINOR(required_version),
-                     VK_VERSION_MAJOR(available_version), VK_VERSION_MINOR(available_version));
+        SPDLOG_ERROR(
+            "{} Required Vulkan version {}.{} is not available, available version is {}.{}",
+            instance::LOG_TAG, VK_VERSION_MAJOR(required_version),
+            VK_VERSION_MINOR(required_version), VK_VERSION_MAJOR(available_version),
+            VK_VERSION_MINOR(available_version));
         throw std::runtime_error("Required Vulkan version is not available");
     }
     uint32_t version = VK_MAKE_VERSION(1, 3, 0);

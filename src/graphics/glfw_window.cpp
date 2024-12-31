@@ -45,7 +45,8 @@ void Window::initWindow() {
         int w{}, h{};
         glfwGetFramebufferSize(glfw_window, &w, &h);
         auto* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
-        window->notifyFramebufferLayoutChanged({.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h)});
+        window->notifyFramebufferLayoutChanged(
+            {.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h)});
     });
 }
 
@@ -110,8 +111,12 @@ auto Window::operator=(Window&& w) noexcept -> Window& {
     return *this;
 }
 
-[[nodiscard]] auto Window::IsShown() const -> bool { return glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0; }
-[[nodiscard]] auto Window::IsMinimized() const -> bool { return glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0; }
+[[nodiscard]] auto Window::IsShown() const -> bool {
+    return glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
+}
+[[nodiscard]] auto Window::IsMinimized() const -> bool {
+    return glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0;
+}
 
 auto Window::shouldClose() const -> bool { return glfwWindowShouldClose(window); }
 

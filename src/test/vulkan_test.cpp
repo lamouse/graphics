@@ -9,7 +9,8 @@ TEST(VulkanInstance, CreateInstance) {
 #ifdef _WIN32
     instance = render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Windows, true);
 #elif defined(__APPLE__)
-    auto instance = render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
+    auto instance =
+        render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
 #endif
     ASSERT_TRUE(instance);
     instance.destroy();
@@ -20,7 +21,8 @@ TEST(VulkanDriver, CreateDriver) {
 #ifdef _WIN32
     instance = render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Windows, true);
 #elif defined(__APPLE__)
-    auto instance = render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
+    auto instance =
+        render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
 #endif
     ASSERT_TRUE(instance);
     render::vulkan::Device d(instance, nullptr, nullptr);

@@ -13,7 +13,8 @@ struct DescriptorBank {
         std::vector<vk::DescriptorPool> pools;
 };
 auto DescriptorBankInfo::isSuperset(const DescriptorBankInfo& subset) const noexcept -> bool {
-    return uniform_buffers_ >= subset.uniform_buffers_ && storage_buffers_ >= subset.storage_buffers_ &&
+    return uniform_buffers_ >= subset.uniform_buffers_ &&
+           storage_buffers_ >= subset.storage_buffers_ &&
            texture_buffers_ >= subset.texture_buffers_ && image_buffers_ >= subset.image_buffers_ &&
            textures_ >= subset.textures_ && images_ >= subset.image_buffers_;
 }
@@ -35,8 +36,8 @@ static auto makeBankInfo(std::span<const shader::Info> infos) -> DescriptorBankI
         bank.textures_ += accumulate(info.texture_descriptors);
         bank.images_ += accumulate(info.image_descriptors);
     }
-    bank.score_ = bank.uniform_buffers_ + bank.storage_buffers_ + bank.texture_buffers_ + bank.image_buffers_ +
-                  bank.textures_ + bank.images_;
+    bank.score_ = bank.uniform_buffers_ + bank.storage_buffers_ + bank.texture_buffers_ +
+                  bank.image_buffers_ + bank.textures_ + bank.images_;
     return bank;
 }
 static void allocatePool(const Device& device, DescriptorBank& bank) {
@@ -60,16 +61,22 @@ static void allocatePool(const Device& device, DescriptorBank& bank) {
     bank.pools.push_back(device.getLogical().createDescriptorPool(ci));
 }
 
-DescriptorAllocator::DescriptorAllocator(const Device& device, semaphore::MasterSemaphore& master_semaphore,
+DescriptorAllocator::DescriptorAllocator(const Device& device,
+                                         semaphore::MasterSemaphore& master_semaphore,
                                          DescriptorBank& bank, VkDescriptorSetLayout layout)
-    : ResourcePool(&master_semaphore, SETS_GROW_RATE), device_(&device), bank_(&bank), layout_(layout) {}
+    : ResourcePool(&master_semaphore, SETS_GROW_RATE),
+      device_(&device),
+      bank_(&bank),
+      layout_(layout) {}
 
 auto DescriptorAllocator::commit() -> vk::DescriptorSet {
     const size_t index = commitResource();
     return sets_[index / SETS_GROW_RATE][index % SETS_GROW_RATE];
 }
 
-void DescriptorAllocator::allocate(size_t begin, size_t end) { sets_.push_back(allocateDescriptors(end - begin)); }
+void DescriptorAllocator::allocate(size_t begin, size_t end) {
+    sets_.push_back(allocateDescriptors(end - begin));
+}
 
 auto DescriptorAllocator::allocateDescriptors(size_t count) -> DescriptorSets {
     const std::vector<vk::DescriptorSetLayout> layouts(count, layout_);
@@ -87,11 +94,13 @@ auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, std::span<const s
     return allocator(layout, makeBankInfo(infos));
 }
 
-auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, const shader::Info& info) -> DescriptorAllocator {
+auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, const shader::Info& info)
+    -> DescriptorAllocator {
     return allocator(layout, makeBankInfo(std::array{info}));
 }
 
-auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info) -> DescriptorAllocator {
+auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info)
+    -> DescriptorAllocator {
     return DescriptorAllocator(device_, master_semaphore_, bank(info), layout);
 }
 

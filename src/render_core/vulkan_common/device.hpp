@@ -49,7 +49,9 @@ class Device {
 
         [[nodiscard]] auto hasTimelineSemaphore() const -> bool;
         /// Returns the driver ID.
-        [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR { return properties_.driver_.driverID; }
+        [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR {
+            return properties_.driver_.driverID;
+        }
 
     private:
         vk::Instance instance_;
@@ -89,14 +91,18 @@ class Device {
         void removeUnsuitableExtensions();
         void removeExtension(bool& extension, const std::string& extension_name);
         template <typename Feature>
-        void removeExtensionFeatureIfUnsuitable(bool is_suitable, Feature& feature, const std::string& extension_name);
+        void removeExtensionFeatureIfUnsuitable(bool is_suitable, Feature& feature,
+                                                const std::string& extension_name);
         template <typename Feature>
-        void removeExtensionFeature(bool& extension, Feature& feature, const std::string& extension_name);
+        void removeExtensionFeature(bool& extension, Feature& feature,
+                                    const std::string& extension_name);
         [[nodiscard]] auto computeIsOptimalAstcSupported() const -> bool;
         void setupFamilies(vk::SurfaceKHR surface);
         [[nodiscard]] auto testDepthStencilBlits(vk::Format format) const -> bool;
-        [[nodiscard]] auto getDeviceQueueCreateInfos() const -> std::vector<vk::DeviceQueueCreateInfo>;
-        [[nodiscard]] auto isFormatSupported(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
+        [[nodiscard]] auto getDeviceQueueCreateInfos() const
+            -> std::vector<vk::DeviceQueueCreateInfo>;
+        [[nodiscard]] auto isFormatSupported(vk::Format wanted_format,
+                                             vk::FormatFeatureFlags wanted_usage,
                                              utils::FormatType format_type) const -> bool;
         void collectPhysicalMemoryInfo();
         void collectToolingInfo();
@@ -115,7 +121,8 @@ class Device {
         };
 
         struct Features {
-#define FEATURE_CORE(prefix, struct_name, macro_name, var_name) VkPhysicalDevice##struct_name##Features var_name{};
+#define FEATURE_CORE(prefix, struct_name, macro_name, var_name) \
+    VkPhysicalDevice##struct_name##Features var_name{};
 #define FEATURE_EXT(prefix, struct_name, macro_name, var_name) \
     VkPhysicalDevice##struct_name##Features##prefix var_name{};
 

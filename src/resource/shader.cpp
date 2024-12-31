@@ -31,7 +31,8 @@ GraphicsShader::~GraphicsShader() {
     device_.destroyShaderModule(fragmentModule);
 }
 
-void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath, const ::std::string& fragFilePath) {
+void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath,
+                                          const ::std::string& fragFilePath) {
     auto vertCode = readShaderFile(vertFilePath);
     auto fragCode = readShaderFile(fragFilePath);
     ::vk::ShaderModuleCreateInfo createInfo;
@@ -47,13 +48,20 @@ void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath, con
 auto GraphicsShader::getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo> {
     ::std::vector<::vk::PipelineShaderStageCreateInfo> shaderStages;
     shaderStages.resize(2);
-    shaderStages[0].setStage(::vk::ShaderStageFlagBits::eVertex).setModule(vertexModule).setPName("main");
+    shaderStages[0]
+        .setStage(::vk::ShaderStageFlagBits::eVertex)
+        .setModule(vertexModule)
+        .setPName("main");
 
-    shaderStages[1].setStage(::vk::ShaderStageFlagBits::eFragment).setModule(fragmentModule).setPName("main");
+    shaderStages[1]
+        .setStage(::vk::ShaderStageFlagBits::eFragment)
+        .setModule(fragmentModule)
+        .setPName("main");
     return shaderStages;
 }
 
-ComputeShader::ComputeShader(::vk::Device& device, const ::std::string& filePath) : device_(device) {
+ComputeShader::ComputeShader(::vk::Device& device, const ::std::string& filePath)
+    : device_(device) {
     createComputeShader(filePath);
 }
 

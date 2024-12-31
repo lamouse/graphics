@@ -41,7 +41,8 @@ class EXPORT Device final {
                 std::optional<uint32_t> computeQueue;
                 std::optional<uint32_t> presentQueue;
                 [[nodiscard]] auto isComplete() const {
-                    return graphicsQueue.has_value() && presentQueue.has_value() && computeQueue.has_value();
+                    return graphicsQueue.has_value() && presentQueue.has_value() &&
+                           computeQueue.has_value();
                 }
                 [[nodiscard]] auto graphicsIndex() const {
                     if (!graphicsQueue.has_value()) {
@@ -70,21 +71,24 @@ class EXPORT Device final {
         auto operator=(const Device&) -> Device& = default;
         auto operator=(Device&&) -> Device& = default;
         static void init(const std::vector<const char*>& instanceExtends,
-                         const ::std::vector<const char*>& deviceExtensions, const CreateSurfaceFunc& createFunc,
-                         bool enableValidationLayers = false);
+                         const ::std::vector<const char*>& deviceExtensions,
+                         const CreateSurfaceFunc& createFunc, bool enableValidationLayers = false);
         static void destroy();
 
         using CmdFunc = std::function<void(vk::CommandBuffer&)>;
 
         static auto getMaxMsaaSamples() -> ::vk::SampleCountFlagBits;
         auto findMemoryType(uint32_t typeFilter, ::vk::MemoryPropertyFlags properties) -> uint32_t;
-        auto createBuffer(::vk::DeviceSize instance_size, uint32_t instance_count, ::vk::BufferUsageFlags usage,
-                          ::vk::MemoryPropertyFlags properties) -> Buffer;
+        auto createBuffer(::vk::DeviceSize instance_size, uint32_t instance_count,
+                          ::vk::BufferUsageFlags usage, ::vk::MemoryPropertyFlags properties)
+            -> Buffer;
         void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, ::vk::Format format,
-                         ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling, ::vk::ImageUsageFlags usage,
-                         ::vk::MemoryPropertyFlags properties, ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
-        auto createImageView(::vk::Image image, ::vk::Format format, ::vk::ImageAspectFlags aspectFlags,
-                             uint32_t mipLevels) -> ::vk::ImageView;
+                         ::vk::SampleCountFlagBits numSamples, ::vk::ImageTiling tiling,
+                         ::vk::ImageUsageFlags usage, ::vk::MemoryPropertyFlags properties,
+                         ::vk::Image& image, ::vk::DeviceMemory& imageMemory);
+        auto createImageView(::vk::Image image, ::vk::Format format,
+                             ::vk::ImageAspectFlags aspectFlags, uint32_t mipLevels)
+            -> ::vk::ImageView;
         auto getVKInstance() -> ::vk::Instance&;
         auto getSurface() -> ::vk::SurfaceKHR&;
         auto getPhysicalDevice() -> ::vk::PhysicalDevice&;
@@ -96,8 +100,9 @@ class EXPORT Device final {
          * @return ::vk::Device&
          */
         auto logicalDevice() -> ::vk::Device&;
-        auto findSupportedFormat(const std::vector<::vk::Format>& candidates, ::vk::ImageTiling tiling,
-                                 ::vk::FormatFeatureFlags features) -> ::vk::Format;
+        auto findSupportedFormat(const std::vector<::vk::Format>& candidates,
+                                 ::vk::ImageTiling tiling, ::vk::FormatFeatureFlags features)
+            -> ::vk::Format;
         auto getCommandPool() -> ::vk::CommandPool&;
         auto querySwapchainSupport() -> SwapchainSupportDetails;
         void executeCmd(const CmdFunc& func) const;

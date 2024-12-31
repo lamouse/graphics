@@ -17,14 +17,16 @@ class EXPORT Buffer {
         Buffer() = default;
         void map(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
         void unmap();
-        void writeToBuffer(const void* data, ::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0);
+        void writeToBuffer(const void* data, ::vk::DeviceSize size = VK_WHOLE_SIZE,
+                           ::vk::DeviceSize offset = 0);
         /**
          * @brief Flushes a memory of the buffer to make visible to the device
          * @note Only requires for non-coherent memory
          * @param size
          * @param offset
          */
-        auto flush(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::Result;
+        auto flush(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0)
+            -> ::vk::Result;
         /**
          * @brief Invalidates a memory range of the buffer it visible to the host
          * @note Only requires for non-coherent memory
@@ -32,7 +34,8 @@ class EXPORT Buffer {
          * @param offset
          * @return ::vk::Result
          */
-        auto invalidate(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0) -> ::vk::Result;
+        auto invalidate(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0)
+            -> ::vk::Result;
         auto descriptorInfo(::vk::DeviceSize size = VK_WHOLE_SIZE, ::vk::DeviceSize offset = 0)
             -> ::vk::DescriptorBufferInfo;
 
@@ -47,7 +50,9 @@ class EXPORT Buffer {
         [[nodiscard]] auto getInstanceSize() const -> ::vk::DeviceSize { return instanceSize_; }
         [[nodiscard]] auto getAlignmentSize() const -> ::vk::DeviceSize { return instanceSize_; }
         [[nodiscard]] auto getBufferUsage() const -> ::vk::BufferUsageFlags { return bufferUsage_; }
-        [[nodiscard]] auto getMemoryPropertyFlags() const -> ::vk::MemoryPropertyFlags { return memoryPropertyFlags_; }
+        [[nodiscard]] auto getMemoryPropertyFlags() const -> ::vk::MemoryPropertyFlags {
+            return memoryPropertyFlags_;
+        }
         [[nodiscard]] auto getBufferSize() const -> ::vk::DeviceSize { return bufferSize_; }
         friend class Device;
 
@@ -56,14 +61,15 @@ class EXPORT Buffer {
                ::vk::BufferUsageFlags bufferUsage, ::vk::MemoryPropertyFlags memoryPropertyFlags,
                ::vk::DeviceSize minOffsetAlignment = 1);
         /**
-         * @brief returns the minimum instance required to compatible with devices minOffsetAlignment
+         * @brief returns the minimum instance required to compatible with devices
+         * minOffsetAlignment
          *
          * @param instanceSize
          * @param minOffsetAlignment The minimum required alignment, in bytes, for the offset member
          * @return ::vk::DeviceSize
          */
-        static auto getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment)
-            -> ::vk::DeviceSize;
+        static auto getAlignmentSize(::vk::DeviceSize instanceSize,
+                                     ::vk::DeviceSize minOffsetAlignment) -> ::vk::DeviceSize;
         void* data_ = nullptr;
         ::vk::Buffer buffer_ = VK_NULL_HANDLE;
         ::vk::DeviceMemory bufferMemory_ = VK_NULL_HANDLE;

@@ -50,17 +50,19 @@ void App::run() {
     core::Device device_;
     auto gameObjects = loadGameObjects();
     ::std::unique_ptr<DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
-    auto setLayout =
-        DescriptorSetLayout::Builder()
-            .addBinding(0, ::vk::DescriptorType::eUniformBuffer, ::vk::ShaderStageFlagBits::eAllGraphics)
-            .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler, ::vk::ShaderStageFlagBits::eAllGraphics)
-            .build();
+    auto setLayout = DescriptorSetLayout::Builder()
+                         .addBinding(0, ::vk::DescriptorType::eUniformBuffer,
+                                     ::vk::ShaderStageFlagBits::eAllGraphics)
+                         .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler,
+                                     ::vk::ShaderStageFlagBits::eAllGraphics)
+                         .build();
 
     ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
     for (auto& uboBuffer : uboBuffers) {
         uboBuffer = ::std::make_unique<core::Buffer>(device_.createBuffer(
             sizeof(UniformBufferObject), 1, ::vk::BufferUsageFlagBits::eUniformBuffer,
-            ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent));
+            ::vk::MemoryPropertyFlagBits::eHostVisible |
+                ::vk::MemoryPropertyFlagBits::eHostCoherent));
         uboBuffer->map();
     }
     ::std::string s(image_path + "viking_room.png");
@@ -79,7 +81,8 @@ void App::run() {
     RenderProcessor render([this]() { return dynamic_cast<Window*>(window.get())->getExtent(); });
     RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
     Imgui imgui((*dynamic_cast<Window*>(window.get()))(), descriptorPool_->getDescriptorPool(),
-                static_cast<::vk::RenderPass>(render), window->getWindowSystemInfo().render_surface_scale);
+                static_cast<::vk::RenderPass>(render),
+                window->getWindowSystemInfo().render_surface_scale);
     while (!window->shouldClose()) {
         glfwPollEvents();
         if (window->IsMinimized()) {
@@ -110,11 +113,13 @@ void App::run() {
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    window = std::make_unique<Window>(ScreenExtent{.width = window_config.width, .height = window_config.height},
-                                      window_config.title);
+    window = std::make_unique<Window>(
+        ScreenExtent{.width = window_config.width, .height = window_config.height},
+        window_config.title);
 
     auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
-    auto requiredInstanceExtends = Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
+    auto requiredInstanceExtends =
+        Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
     auto deviceExtensions = config::getDeviceExtensions();
 
     core::Device::init(

@@ -35,7 +35,8 @@ class Scheduler {
             public:
                 virtual ~Command() = default;
 
-                virtual void execute(vk::CommandBuffer cmdbuf, vk::CommandBuffer upload_cmdbuf) const = 0;
+                virtual void execute(vk::CommandBuffer cmdbuf,
+                                     vk::CommandBuffer upload_cmdbuf) const = 0;
 
                 [[nodiscard]] auto getNext() const -> Command* { return next_; }
 
@@ -54,7 +55,8 @@ class Scheduler {
                 TypedCommand(TypedCommand&&) = delete;
                 auto operator=(TypedCommand&&) -> TypedCommand& = delete;
 
-                void execute(vk::CommandBuffer cmdBuf, vk::CommandBuffer uploadCmdBuf) const override {
+                void execute(vk::CommandBuffer cmdBuf,
+                             vk::CommandBuffer uploadCmdBuf) const override {
                     command(cmdBuf, uploadCmdBuf);
                 }
 
@@ -100,10 +102,12 @@ class Scheduler {
                 size_t command_offset = 0;
                 bool submit = false;
                 /**
-                 * @brief An array of bytes aligned to the maximum alignment boundary of the target platform.
+                 * @brief An array of bytes aligned to the maximum alignment boundary of the target
+                 * platform.
                  *
-                 * This array is designed to be aligned to the largest alignment boundary required by the platform,
-                 * ensuring that it can be used efficiently for operations requiring specific alignment.
+                 * This array is designed to be aligned to the largest alignment boundary required
+                 * by the platform, ensuring that it can be used efficiently for operations
+                 * requiring specific alignment.
                  */
                 alignas(std::max_align_t) std::array<std::uint8_t, 0x8000> data{};
         };

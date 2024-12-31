@@ -32,8 +32,8 @@ class ResourcePool {
         void grow();
 
         semaphore::MasterSemaphore* master_semaphore_{};
-        size_t grow_step_ = 0;         ///< Number of new resources created after an overflow
-        size_t hint_iterator_ = 0;     ///< Hint to where the next free resources is likely to be found
+        size_t grow_step_ = 0;      ///< Number of new resources created after an overflow
+        size_t hint_iterator_ = 0;  ///< Hint to where the next free resources is likely to be found
         std::vector<uint64_t> ticks_;  ///< Ticks for each resource
 };
 }  // namespace resource

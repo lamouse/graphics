@@ -12,9 +12,9 @@ class GraphicsPipeline {
 
     public:
         // explicit GraphicsPipeline(
-        //     scheduler::Scheduler& scheduler, BufferCache& buffer_cache, TextureCache& texture_cache,
-        //     vk::PipelineCache& pipeline_cache, VideoCore::ShaderNotify* shader_notify,
-        //     const Device& device, DescriptorPool& descriptor_pool,
+        //     scheduler::Scheduler& scheduler, BufferCache& buffer_cache, TextureCache&
+        //     texture_cache, vk::PipelineCache& pipeline_cache, VideoCore::ShaderNotify*
+        //     shader_notify, const Device& device, DescriptorPool& descriptor_pool,
         //     GuestDescriptorQueue& guest_descriptor_queue, Common::ThreadWorker* worker_thread,
         //     PipelineStatistics* pipeline_statistics, RenderPassCache& render_pass_cache,
         //     const GraphicsPipelineCacheKey& key, std::array<vk::ShaderModule, NUM_STAGES> stages,
@@ -22,17 +22,18 @@ class GraphicsPipeline {
 
         CLASS_NON_COPYABLE(GraphicsPipeline);
         CLASS_NON_MOVEABLE(GraphicsPipeline);
+        ~GraphicsPipeline();
 
     private:
         template <typename Spec>
-        void ConfigureImpl(bool is_indexed);
+        void configureImpl(bool is_indexed);
 
         // void ConfigureDraw(const RescalingPushConstant& rescaling,
         //                 const RenderAreaPushConstant& render_are);
 
-        void MakePipeline(VkRenderPass render_pass);
+        void makePipeline(vk::RenderPass render_pass);
 
-        void Validate();
+        void validate();
 };
 }  // namespace pipeline
 }  // namespace render::vulkan

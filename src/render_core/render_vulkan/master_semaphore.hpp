@@ -27,7 +27,9 @@ class MasterSemaphore {
         }
 
         /// Returns true when a tick has been hit by the GPU.
-        [[nodiscard]] auto isFree(uint64_t tick) const noexcept -> bool { return knownGpuTick() >= tick; }
+        [[nodiscard]] auto isFree(uint64_t tick) const noexcept -> bool {
+            return knownGpuTick() >= tick;
+        }
 
         /// Advance to the logical tick and return the old one
         [[nodiscard]] auto nextTick() noexcept -> uint64_t {
@@ -41,14 +43,17 @@ class MasterSemaphore {
         void wait(uint64_t tick);
 
         /// Submits the device graphics queue, updating the tick as necessary
-        auto submitQueue(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf, vk::Semaphore signal_semaphore,
-                         vk::Semaphore wait_semaphore, uint64_t host_tick) -> vk::Result;
+        auto submitQueue(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
+                         vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
+                         uint64_t host_tick) -> vk::Result;
 
     private:
         void submitQueueTimeline(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
-                                 vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore, uint64_t host_tick);
+                                 vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
+                                 uint64_t host_tick);
         void submitQueueFence(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
-                              vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore, uint64_t host_tick);
+                              vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
+                              uint64_t host_tick);
 
         void waitThread(std::stop_token token);
 
@@ -62,7 +67,8 @@ class MasterSemaphore {
         std::mutex free_mutex_;
         std::condition_variable free_cv_;
         std::condition_variable_any wait_cv_;
-        std::queue<Waitable> wait_queue_;   ///< Queue for the fences to be waited on by the wait thread.
+        std::queue<Waitable>
+            wait_queue_;  ///< Queue for the fences to be waited on by the wait thread.
         std::deque<vk::Fence> free_queue_;  ///< Holds available fences for submission.
         std::jthread debug_thread_;         ///< Debug thread to workaround validation layer bugs.
         std::jthread wait_thread_;          ///< Helper thread that waits for submitted fences.

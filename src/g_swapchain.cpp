@@ -45,7 +45,8 @@ void Swapchain::init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwa
         createInfo.setImageSharingMode(::vk::SharingMode::eExclusive);
     } else {
         ::std::array indices = {graphicsQueue.value(), presentQueue.value()};
-        createInfo.setQueueFamilyIndices(indices).setImageSharingMode(::vk::SharingMode::eConcurrent);
+        createInfo.setQueueFamilyIndices(indices).setImageSharingMode(
+            ::vk::SharingMode::eConcurrent);
     }
     if (oldSwapchain != nullptr) {
         createInfo.setOldSwapchain(oldSwapchain->swapchain);
@@ -63,8 +64,8 @@ void Swapchain::createImageFrame() {
     createDepthResources();
 }
 
-auto Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
-    -> ::vk::PresentModeKHR {
+auto Swapchain::chooseSwapPresentMode(
+    const ::std::vector<::vk::PresentModeKHR>& availablePresentModes) -> ::vk::PresentModeKHR {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == ::vk::PresentModeKHR::eMailbox) {
             return availablePresentMode;
@@ -73,8 +74,8 @@ auto Swapchain::chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>&
 
     return ::vk::PresentModeKHR::eFifo;
 }
-auto Swapchain::chooseSwapSurfaceFormat(const ::std::vector<::vk::SurfaceFormatKHR>& availableFormats)
-    -> ::vk::SurfaceFormatKHR {
+auto Swapchain::chooseSwapSurfaceFormat(
+    const ::std::vector<::vk::SurfaceFormatKHR>& availableFormats) -> ::vk::SurfaceFormatKHR {
     const auto format = std::ranges::find_if(availableFormats, [](auto f) {
         return f.format == DEFAULT_COLOR_FORMAT && f.colorSpace == DEFAULT_COLOR_SPACE;
     });
@@ -84,17 +85,17 @@ auto Swapchain::chooseSwapSurfaceFormat(const ::std::vector<::vk::SurfaceFormatK
     return availableFormats[0];
 }
 
-auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width, int height)
-    -> ::vk::Extent2D {
+auto Swapchain::chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width,
+                                 int height) -> ::vk::Extent2D {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
     }
     ::vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
-    actualExtent.width =
-        std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-    actualExtent.height =
-        std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+    actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width,
+                                    capabilities.maxImageExtent.width);
+    actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height,
+                                     capabilities.maxImageExtent.height);
 
     return actualExtent;
 }
@@ -146,7 +147,8 @@ void Swapchain::createImageViews() {
     getImages();
     imageViews.resize(images.size());
     for (int i = 0; auto& image : images) {
-        imageViews[i] = device.createImageView(image, getSwapchainColorFormat(), ::vk::ImageAspectFlagBits::eColor, 1);
+        imageViews[i] = device.createImageView(image, getSwapchainColorFormat(),
+                                               ::vk::ImageAspectFlagBits::eColor, 1);
         i++;
     }
 }
@@ -156,7 +158,8 @@ void Swapchain::createFrameBuffers(const ::vk::RenderPass& renderPass) {
     core::Device device;
     for (::gsl::index i = 0; i < frameBuffers.size(); i++) {
         ::vk::FramebufferCreateInfo createInfo;
-        std::array<vk::ImageView, 3> attachments = {colorImageViews[i], depthImageViews[i], imageViews[i]};
+        std::array<vk::ImageView, 3> attachments = {colorImageViews[i], depthImageViews[i],
+                                                    imageViews[i]};
         createInfo.setAttachments(attachments)
             .setWidth(extent_.width)
             .setHeight(extent_.height)
@@ -172,10 +175,12 @@ void Swapchain::createColorResources() {
     colorImageViews.resize(images.size());
     core::Device device;
     for (::gsl::index i = 0; i < colorImages.size(); i++) {
-        device.createImage(extent_.width, extent_.height, mipLevels, getSwapchainColorFormat(), sampleCount_,
-                           ::vk::ImageTiling::eOptimal,
-                           ::vk::ImageUsageFlagBits::eTransientAttachment | ::vk::ImageUsageFlagBits::eColorAttachment,
-                           ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i], colorImageMemories[i]);
+        device.createImage(extent_.width, extent_.height, mipLevels, getSwapchainColorFormat(),
+                           sampleCount_, ::vk::ImageTiling::eOptimal,
+                           ::vk::ImageUsageFlagBits::eTransientAttachment |
+                               ::vk::ImageUsageFlagBits::eColorAttachment,
+                           ::vk::MemoryPropertyFlagBits::eDeviceLocal, colorImages[i],
+                           colorImageMemories[i]);
         colorImageViews[i] = device.createImageView(colorImages[i], getSwapchainColorFormat(),
                                                     ::vk::ImageAspectFlagBits::eColor, mipLevels);
     }
@@ -189,11 +194,12 @@ void Swapchain::createDepthResources() {
     depthImageViews.resize(images.size());
     core::Device device;
     for (::gsl::index i = 0; i < depthImages.size(); i++) {
-        device.createImage(extent_.width, extent_.height, mipLevels, depthFormat, sampleCount_,
-                           ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
-                           ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemories_[i]);
-        depthImageViews[i] =
-            device.createImageView(depthImages[i], depthFormat, ::vk::ImageAspectFlagBits::eDepth, mipLevels);
+        device.createImage(
+            extent_.width, extent_.height, mipLevels, depthFormat, sampleCount_,
+            ::vk::ImageTiling::eOptimal, ::vk::ImageUsageFlagBits::eDepthStencilAttachment,
+            ::vk::MemoryPropertyFlagBits::eDeviceLocal, depthImages[i], depthImageMemories_[i]);
+        depthImageViews[i] = device.createImageView(depthImages[i], depthFormat,
+                                                    ::vk::ImageAspectFlagBits::eDepth, mipLevels);
     }
 }
 
@@ -232,8 +238,8 @@ auto Swapchain::acquireNextImage() -> ::vk::ResultValue<uint32_t> {
     core::Device device;
     auto logicalDevice = device.logicalDevice();
 
-    const auto waitResult =
-        logicalDevice.waitForFences(inFlightFences[currentFrame], VK_TRUE, ::std::numeric_limits<uint64_t>::max());
+    const auto waitResult = logicalDevice.waitForFences(inFlightFences[currentFrame], VK_TRUE,
+                                                        ::std::numeric_limits<uint64_t>::max());
     if (waitResult != ::vk::Result::eSuccess) {
         throw ::std::runtime_error(" Swapchain::acquireNextImage wait fences");
     }
@@ -242,7 +248,8 @@ auto Swapchain::acquireNextImage() -> ::vk::ResultValue<uint32_t> {
                                              imageAvailableSemaphores[currentFrame]);
 }
 
-auto Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result {
+auto Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+    -> ::vk::Result {
     core::Device device;
     ::vk::SubmitInfo submitInfo;
     ::vk::PipelineStageFlags stage = ::vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -263,8 +270,8 @@ auto Swapchain::submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t image
     return result;
 }
 
-void Swapchain::beginRenderPass(const ::vk::CommandBuffer& commandBuffer, const ::vk::RenderPass& renderPass,
-                                uint32_t imageIndex) const {
+void Swapchain::beginRenderPass(const ::vk::CommandBuffer& commandBuffer,
+                                const ::vk::RenderPass& renderPass, uint32_t imageIndex) const {
     ::vk::RenderPassBeginInfo renderPassBeginInfo;
     ::vk::Rect2D area;
     area.setOffset({0, 0}).setExtent(extent_);

@@ -8,15 +8,17 @@ class DescriptorSetLayout {
     public:
         class Builder {
             private:
-                ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings_;
+                ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding>
+                    descriptorSetLayoutBindings_;
 
             public:
-                auto addBinding(uint32_t binding, ::vk::DescriptorType type, ::vk::ShaderStageFlags stageFlags,
-                                uint32_t count = 1) -> Builder &;
+                auto addBinding(uint32_t binding, ::vk::DescriptorType type,
+                                ::vk::ShaderStageFlags stageFlags, uint32_t count = 1) -> Builder &;
                 auto build() -> ::std::unique_ptr<DescriptorSetLayout>;
         };
 
-        DescriptorSetLayout(::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> bindings);
+        DescriptorSetLayout(
+            ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> bindings);
         ~DescriptorSetLayout();
         DescriptorSetLayout(const DescriptorSetLayout &) = delete;
         DescriptorSetLayout(DescriptorSetLayout &&) = delete;
@@ -30,7 +32,8 @@ class DescriptorSetLayout {
 
     private:
         ::vk::DescriptorSetLayout descriptorSetLayout_;
-        ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings_;
+        ::std::unordered_map<uint32_t, ::vk::DescriptorSetLayoutBinding>
+            descriptorSetLayoutBindings_;
 };
 
 class DescriptorPool {
@@ -55,7 +58,8 @@ class DescriptorPool {
         auto operator=(const DescriptorPool &) -> DescriptorPool & = delete;
         auto operator=(DescriptorPool &&) -> DescriptorPool & = delete;
 
-        auto allocateDescriptor(const ::vk::DescriptorSetLayout &descriptorSetLayout) -> ::vk::DescriptorSet;
+        auto allocateDescriptor(const ::vk::DescriptorSetLayout &descriptorSetLayout)
+            -> ::vk::DescriptorSet;
         void freeDescriptor(::std::vector<::vk::DescriptorSet> &descriptorSets) const;
         void resetPool() const;
         auto getDescriptorPool() -> ::vk::DescriptorPool & { return descriptorPool_; }
@@ -72,7 +76,8 @@ class DescriptorWriter {
                          ::vk::DescriptorBufferInfo &bufferInfo) -> DescriptorWriter &;
         auto writeImage(const ::vk::DescriptorSetLayoutBinding &descriptorSetLayoutBinding,
                         ::vk::DescriptorImageInfo imageInfo) -> DescriptorWriter &;
-        auto build(DescriptorPool &pool, const ::vk::DescriptorSetLayout &descriptorSetLayout) -> ::vk::DescriptorSet;
+        auto build(DescriptorPool &pool, const ::vk::DescriptorSetLayout &descriptorSetLayout)
+            -> ::vk::DescriptorSet;
 
     private:
         // DescriptorSetLayout &descriptorSetLayout_;

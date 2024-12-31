@@ -4,7 +4,8 @@
 #include "common/polyfill_thread.hpp"
 #include "command_pool.hpp"
 namespace render::vulkan::scheduler {
-void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf, vk::CommandBuffer upload_cmdbuf) {
+void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
+                                         vk::CommandBuffer upload_cmdbuf) {
     auto command = first;
     while (command != nullptr) {
         auto* next = gsl::owner<Command*>(command->getNext());
@@ -47,7 +48,8 @@ void Scheduler::workerThread(std::stop_token stop_token) {
             std::unique_lock lk{queue_mutex_};
 
             // Wait for work.
-            common::thread::condvarWait(event_cv_, lk, stop_token, [&] { return TryPopQueue(work); });
+            common::thread::condvarWait(event_cv_, lk, stop_token,
+                                        [&] { return TryPopQueue(work); });
 
             // If we've been asked to stop, we're done.
             if (stop_token.stop_requested()) {

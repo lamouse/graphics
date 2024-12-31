@@ -10,8 +10,10 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
     if (!device.hasTimelineSemaphore()) {
         static constexpr vk::FenceCreateInfo fence_ci;
         free_queue_.resize(FENCE_RESERVE_SIZE);
-        std::ranges::generate(free_queue_, [&] { return device.getLogical().createFence(fence_ci); });
-        wait_thread_ = std::jthread([this](std::stop_token token) { waitThread(std::move(token)); });
+        std::ranges::generate(free_queue_,
+                              [&] { return device.getLogical().createFence(fence_ci); });
+        wait_thread_ =
+            std::jthread([this](std::stop_token token) { waitThread(std::move(token)); });
         return;
     }
 }
@@ -21,7 +23,8 @@ void MasterSemaphore::waitThread(std::stop_token token) {
         vk::Fence fence;
         {
             std::unique_lock lock{wait_mutex_};
-            common::thread::condvarWait(wait_cv_, lock, token, [this] { return !wait_queue_.empty(); });
+            common::thread::condvarWait(wait_cv_, lock, token,
+                                        [this] { return !wait_queue_.empty(); });
             if (token.stop_requested()) {
                 return;
             }
@@ -29,7 +32,8 @@ void MasterSemaphore::waitThread(std::stop_token token) {
             wait_queue_.pop();
         }
 
-        auto waitResult = device_.getLogical().waitForFences(fence, VK_TRUE, ::std::numeric_limits<uint64_t>::max());
+        auto waitResult = device_.getLogical().waitForFences(
+            fence, VK_TRUE, ::std::numeric_limits<uint64_t>::max());
         if (waitResult != ::vk::Result::eSuccess) {
             throw ::std::runtime_error("wait fences");
         }
@@ -89,9 +93,10 @@ void MasterSemaphore::submitQueueFence(vk::CommandBuffer& cmdbuf, vk::CommandBuf
     }
 }
 
-void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
-                                          vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
-                                          uint64_t host_tick) {
+void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf,
+                                          vk::CommandBuffer& upload_cmdbuf,
+                                          vk::Semaphore signal_semaphore,
+                                          vk::Semaphore wait_semaphore, uint64_t host_tick) {
     const vk::Semaphore timeline_semaphore = semaphore_;
 
     const std::array signal_values{host_tick, uint64_t(0)};
@@ -132,8 +137,8 @@ void MasterSemaphore::refresh() {
         if (counter < this_tick) {
             return;
         }
-    } while (
-        !gpu_tick_.compare_exchange_weak(this_tick, counter, std::memory_order_release, std::memory_order_relaxed));
+    } while (!gpu_tick_.compare_exchange_weak(this_tick, counter, std::memory_order_release,
+                                              std::memory_order_relaxed));
 }
 
 }  // namespace render::vulkan::semaphore

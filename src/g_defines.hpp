@@ -12,9 +12,9 @@
 #define shader_path ::std::string{"./shader/"}
 #define models_path ::std::string{"./models/"}
 
-#define DETAIL_INFO(msg)                                                                                       \
-    ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + ::std::string(" ") + \
-        __PRETTY_FUNCTION__ + ::std::string("): ") + msg
+#define DETAIL_INFO(msg)                                                                  \
+    ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + \
+        ::std::string(" ") + __PRETTY_FUNCTION__ + ::std::string("): ") + msg
 
 namespace g {
 struct ScreenExtent {

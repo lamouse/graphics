@@ -26,7 +26,8 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
+Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass,
+             float scale) {
     init_debug_info();
     core::Device device;
     // 这里使用了imgui的一个分支docking
@@ -46,8 +47,8 @@ Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::Rende
     ImGui::StyleColorsDark();
     // ImGui::StyleColorsLight();
 
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular
-    // ones.
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look
+    // identical to regular ones.
     ImGuiStyle& style = ImGui::GetStyle();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         style.WindowRounding = .0f;
@@ -102,14 +103,16 @@ void fps() {
     auto main_size = ImGui::GetMainViewport()->Size;
     bool fps_open = false;
     ImGui::SetNextWindowBgAlpha(.0f);
-    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always, ImVec2(1.01f, 0.0f));
+    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always,
+                            ImVec2(1.01f, 0.0f));
     ImGui::Begin("Window 1", &fps_open,
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMouseInputs |
-                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoScrollbar |
+                     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
                      ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings |
                      ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
-                       io.Framerate);
+    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)",
+                       1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
 }
 
@@ -118,15 +121,18 @@ void debug() {}
 auto Imgui::get_uniform_buffer(float extentAspectRation) const -> UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     auto currentTime = ::std::chrono::high_resolution_clock::now();
-    float time = ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    float time =
+        ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
+            .count();
     UniformBufferObject ubo;
-    ubo.model = ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed),
-                              glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
+    ubo.model =
+        ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed),
+                      glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
     ubo.view = ::glm::lookAt(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
                              glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
                              glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
-    ubo.proj =
-        ::glm::perspective(glm::radians(debugInfo.radians), extentAspectRation, debugInfo.z_far, debugInfo.z_near);
+    ubo.proj = ::glm::perspective(glm::radians(debugInfo.radians), extentAspectRation,
+                                  debugInfo.z_far, debugInfo.z_near);
     ubo.proj[1][1] *= -1;
     return ubo;
 }
@@ -146,8 +152,9 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
             bool open_ptr = true;
             ImGui::SetNextWindowBgAlpha(1.0f);
 
-            ImGui::Begin("debug window", &open_ptr,
-                         window_flags);  // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin(
+                "debug window", &open_ptr,
+                window_flags);  // Create a window called "Hello, world!" and append into it.
             float center_x = debugInfo.look_x + 0.3f;
             float center_y = debugInfo.look_y + 0.3f;
             float center_z = debugInfo.look_z + 0.3f;

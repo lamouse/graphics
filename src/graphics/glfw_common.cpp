@@ -39,26 +39,32 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
             }
 
             // 获取 contentView
-            id contentView = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(cocoaWindow, sel_getUid("contentView"));
+            id contentView = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(
+                cocoaWindow, sel_getUid("contentView"));
             if (!contentView) {
                 return nullptr;
             }
 
             // 获取 layer
-            id layer = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(contentView, sel_registerName("layer"));
+            id layer = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(contentView,
+                                                                       sel_registerName("layer"));
             using ObjcMsgSendFunc = BOOL (*)(id, SEL, Class);
             auto objcMsgSendFunc = reinterpret_cast<ObjcMsgSendFunc>(objc_msgSend);
-            bool isCAMetalLayer = objcMsgSendFunc(layer, sel_registerName("isKindOfClass:"),
-                                                  static_cast<Class>(objc_getClass("CAMetalLayer")));
+            bool isCAMetalLayer =
+                objcMsgSendFunc(layer, sel_registerName("isKindOfClass:"),
+                                static_cast<Class>(objc_getClass("CAMetalLayer")));
             if (!isCAMetalLayer) {
                 // 创建 CAMetalLayer
-                id metalLayer = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("CAMetalLayer"),
-                                                                                   sel_getUid("alloc"));
-                metalLayer = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(metalLayer, sel_getUid("init"));
+                id metalLayer = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(
+                    objc_getClass("CAMetalLayer"), sel_getUid("alloc"));
+                metalLayer =
+                    reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(metalLayer, sel_getUid("init"));
 
                 // 设置 contentView 的 layer
-                reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(contentView, sel_getUid("setLayer:"), metalLayer);
-                reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(contentView, sel_getUid("setWantsLayer:"), YES);
+                reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(
+                    contentView, sel_getUid("setLayer:"), metalLayer);
+                reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(
+                    contentView, sel_getUid("setWantsLayer:"), YES);
 
                 layer = metalLayer;
             }
@@ -67,7 +73,8 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
             // if (glfwGetWindowAttrib(window, GLFW_SCALE_TO_MONITOR)) {
             reinterpret_cast<void (*)(id, SEL, CGFloat)>(objc_msgSend)(
                 layer, sel_getUid("setContentsScale:"),
-                reinterpret_cast<CGFloat (*)(id, SEL)>(objc_msgSend)(cocoaWindow, sel_getUid("backingScaleFactor")));
+                reinterpret_cast<CGFloat (*)(id, SEL)>(objc_msgSend)(
+                    cocoaWindow, sel_getUid("backingScaleFactor")));
             //}
 
             return layer;

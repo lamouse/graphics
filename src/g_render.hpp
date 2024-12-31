@@ -29,7 +29,9 @@ class RenderProcessor {
         void endSwapchainRenderPass();
         void endFrame();
         explicit operator auto() & { return renderPass_; }
-        auto getCurrentCommandBuffer() -> ::vk::CommandBuffer& { return commandBuffers_[currentFrameIndex]; };
+        auto getCurrentCommandBuffer() -> ::vk::CommandBuffer& {
+            return commandBuffers_[currentFrameIndex];
+        };
         [[nodiscard]] auto getCurrentFrameIndex() const -> uint32_t { return currentFrameIndex; }
         RenderProcessor(getScreenExtendFunc getScreenExtend);
         ~RenderProcessor();

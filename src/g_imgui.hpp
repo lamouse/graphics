@@ -40,10 +40,11 @@ class Imgui {
         void init_debug_info();
 
     public:
-        [[nodiscard]] auto get_uniform_buffer(float extentAspectRation) const -> UniformBufferObject;
+        [[nodiscard]] auto get_uniform_buffer(float extentAspectRation) const
+            -> UniformBufferObject;
         void draw(const vk::CommandBuffer& commandBuffer);
-        explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass,
-                       float scale = 1.0f);
+        explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool,
+                       vk::RenderPass renderPass, float scale = 1.0f);
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;

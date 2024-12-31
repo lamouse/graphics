@@ -13,17 +13,23 @@ class PoolAllocations {
         PoolAllocations() = default;
         CLASS_NON_COPYABLE(PoolAllocations);
         /// Construct an allocation. Errors are reported through IsOutOfPoolMemory().
-        explicit PoolAllocations(std::vector<AllocationType> allocations_, vk::Device device_, PoolType pool) noexcept
-            : allocations_{std::move(allocations_)}, num_{allocations_.size()}, device_{device_}, pool_{pool} {}
+        explicit PoolAllocations(std::vector<AllocationType> allocations_, vk::Device device_,
+                                 PoolType pool) noexcept
+            : allocations_{std::move(allocations_)},
+              num_{allocations_.size()},
+              device_{device_},
+              pool_{pool} {}
         explicit PoolAllocations(vk::Device device, PoolType pool, std::size_t num) noexcept
             : num_{num}, device_{device}, pool_{pool} {
             if constexpr (std::is_same_v<vk::CommandPool, PoolType> &&
                           std::is_same_v<vk::CommandBuffer, AllocationType>) {
-                const ::vk::CommandBufferAllocateInfo allocInfo{pool_, ::vk::CommandBufferLevel::ePrimary, num_};
+                const ::vk::CommandBufferAllocateInfo allocInfo{
+                    pool_, ::vk::CommandBufferLevel::ePrimary, num_};
                 allocations_ = device_.allocateCommandBuffers(allocInfo);
             }
         }
-        explicit PoolAllocations(vk::Device device, std::size_t num, uint32_t graphics_family) noexcept
+        explicit PoolAllocations(vk::Device device, std::size_t num,
+                                 uint32_t graphics_family) noexcept
             : allocations_{std::move(allocations_)}, num_{num}, device_{device} {
             ::vk::CommandPoolCreateInfo createInfo;
             createInfo.setQueueFamilyIndex(graphics_family)
@@ -32,13 +38,17 @@ class PoolAllocations {
             pool_ = device.createCommandPool(createInfo);
             if constexpr (std::is_same_v<vk::CommandPool, PoolType> &&
                           std::is_same_v<vk::CommandBuffer, AllocationType>) {
-                const ::vk::CommandBufferAllocateInfo allocInfo{pool_, ::vk::CommandBufferLevel::ePrimary, num_};
+                const ::vk::CommandBufferAllocateInfo allocInfo{
+                    pool_, ::vk::CommandBufferLevel::ePrimary, num_};
                 allocations_ = device_.allocateCommandBuffers(allocInfo);
             }
         }
         /// Construct an allocation transferring ownership from another allocation.
         PoolAllocations(PoolAllocations&& rhs) noexcept
-            : allocations_{std::move(rhs.allocations_)}, num_{rhs.num_}, device_{rhs.device_}, pool_{rhs.pool_} {
+            : allocations_{std::move(rhs.allocations_)},
+              num_{rhs.num_},
+              device_{rhs.device_},
+              pool_{rhs.pool_} {
             rhs.device_ = nullptr;
             rhs.pool_ = nullptr;
         }
@@ -69,7 +79,9 @@ class PoolAllocations {
 
         /// Returns the allocation in the specified index.
         /// @pre index < size()
-        auto operator[](std::size_t index) const noexcept -> AllocationType { return allocations_[index]; }
+        auto operator[](std::size_t index) const noexcept -> AllocationType {
+            return allocations_[index];
+        }
 
         /// True when a pool fails to construct.
         [[nodiscard]] auto isOutOfPoolMemory() const noexcept -> bool { return !device_; }

@@ -1,8 +1,9 @@
 aux_source_directory(. RENDER_CORE_SRC)
 aux_source_directory(./vulkan_common VULKAN_COMMON_SRC)
 aux_source_directory(./render_vulkan RENDER_VULKAN_SRC)
+aux_source_directory(./buffer_cache BUFFER_CACHE_SRC)
 add_library(render-core STATIC ${RENDER_CORE_SRC} ${RENDER_VULKAN_SRC}
-    ${VULKAN_COMMON_SRC})
+    ${VULKAN_COMMON_SRC} ${BUFFER_CACHE_SRC})
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)

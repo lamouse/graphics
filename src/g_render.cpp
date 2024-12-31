@@ -6,7 +6,8 @@
 #include "core/device.hpp"
 
 namespace g {
-RenderProcessor::RenderProcessor(getScreenExtendFunc getScreenExtend) : getScreenExtend_(std::move(getScreenExtend)) {
+RenderProcessor::RenderProcessor(getScreenExtendFunc getScreenExtend)
+    : getScreenExtend_(std::move(getScreenExtend)) {
     createSwapchain();
     createRenderPass();
     swapchain->createFrameBuffers(renderPass_);
@@ -130,8 +131,10 @@ void RenderProcessor::createRenderPass() {
                                                                 colorAttachmentResolve};
 
     ::vk::AttachmentReference colorAttachmentRef(0, ::vk::ImageLayout::eColorAttachmentOptimal);
-    ::vk::AttachmentReference depthAttachmentRef(1, ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
-    ::vk::AttachmentReference colorAttachmentResolveRef(2, ::vk::ImageLayout::eColorAttachmentOptimal);
+    ::vk::AttachmentReference depthAttachmentRef(1,
+                                                 ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
+    ::vk::AttachmentReference colorAttachmentResolveRef(2,
+                                                        ::vk::ImageLayout::eColorAttachmentOptimal);
 
     ::vk::SubpassDescription subpass;
     subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)

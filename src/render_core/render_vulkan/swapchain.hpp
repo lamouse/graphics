@@ -7,8 +7,8 @@ class Scheduler;
 }
 class Swapchain {
     public:
-        explicit Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Scheduler& scheduler,
-                           uint32_t width, uint32_t height);
+        explicit Swapchain(vk::SurfaceKHR surface, const Device& device,
+                           scheduler::Scheduler& scheduler, uint32_t width, uint32_t height);
         ~Swapchain() = default;
 
         /// Creates (or recreates) the swapchain with a given size.
@@ -17,7 +17,9 @@ class Swapchain {
         auto acquireNextImage() -> bool;
         void present(vk::Semaphore render_semaphore);
         /// Returns true when the swapchain needs to be recreated.
-        [[nodiscard]] auto NeedsRecreation() const -> bool { return isSubOptimal() || needsPresentModeUpdate(); }
+        [[nodiscard]] auto NeedsRecreation() const -> bool {
+            return isSubOptimal() || needsPresentModeUpdate();
+        }
         /// Returns true when the swapchain is outdated.
         [[nodiscard]] auto isOutDated() const -> bool { return is_outdated_; }
 
@@ -30,7 +32,9 @@ class Swapchain {
         [[nodiscard]] auto getImageIndex() const -> std::size_t { return image_index_; }
 
         [[nodiscard]] auto getFrameIndex() const -> std::size_t { return frame_index_; }
-        [[nodiscard]] auto getImageIndex(std::size_t index) const -> VkImage { return images_[index]; }
+        [[nodiscard]] auto getImageIndex(std::size_t index) const -> VkImage {
+            return images_[index];
+        }
 
         [[nodiscard]] auto currentImage() const -> vk::Image { return images_[image_index_]; }
 
@@ -39,7 +43,9 @@ class Swapchain {
             return present_semaphores_[frame_index_];
         }
 
-        [[nodiscard]] auto CurrentRenderSemaphore() const -> vk::Semaphore { return render_semaphores_[frame_index_]; }
+        [[nodiscard]] auto CurrentRenderSemaphore() const -> vk::Semaphore {
+            return render_semaphores_[frame_index_];
+        }
 
         [[nodiscard]] auto getWidth() const { return width_; }
 
@@ -49,7 +55,8 @@ class Swapchain {
 
         [[nodiscard]] auto getImageFormat() const -> vk::Format { return surface_format_.format; }
         static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eB8G8R8A8Unorm;
-        static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = ::vk::ColorSpaceKHR::eSrgbNonlinear;
+        static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE =
+            ::vk::ColorSpaceKHR::eSrgbNonlinear;
 
     private:
         vk::SurfaceKHR surface_;

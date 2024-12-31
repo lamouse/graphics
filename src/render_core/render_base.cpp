@@ -2,7 +2,9 @@
 #include <cassert>
 
 namespace render {
-RenderBase::RenderBase(core::frontend::BaseWindow* window) : window_(window) { assert(window_ != nullptr); }
+RenderBase::RenderBase(core::frontend::BaseWindow* window) : window_(window) {
+    assert(window_ != nullptr);
+}
 
 auto RenderBase::getCurrentFPS() const -> float { return current_fp_; }
 auto RenderBase::getCurrentFrame() const -> int { return current_frame_; }

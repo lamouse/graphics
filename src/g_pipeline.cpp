@@ -62,11 +62,12 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
     // Viewport and Scissor
     configInfo.viewportStateInfo.setViewportCount(1).setScissorCount(1);
 
-    configInfo.multisampleInfo.setSampleShadingEnable(false).setRasterizationSamples(::vk::SampleCountFlagBits::e1);
+    configInfo.multisampleInfo.setSampleShadingEnable(false).setRasterizationSamples(
+        ::vk::SampleCountFlagBits::e1);
 
     configInfo.colorBlendAttachmentInfo.setBlendEnable(VK_FALSE).setColorWriteMask(
-        ::vk::ColorComponentFlagBits::eR | ::vk::ColorComponentFlagBits::eG | ::vk::ColorComponentFlagBits::eB |
-        ::vk::ColorComponentFlagBits::eA);
+        ::vk::ColorComponentFlagBits::eR | ::vk::ColorComponentFlagBits::eG |
+        ::vk::ColorComponentFlagBits::eB | ::vk::ColorComponentFlagBits::eA);
     configInfo.colorBlendInfo.setLogicOpEnable(false)
         .setLogicOp(vk::LogicOp::eCopy)
         .setAttachments(configInfo.colorBlendAttachmentInfo)
@@ -93,7 +94,8 @@ auto GraphicsPipeLine::getDefaultConfig() -> PipelineConfigInfo {
     return configInfo;
 }
 
-GraphicsPipeLine::GraphicsPipeLine(GraphicsPipeLine&& pipeline) noexcept : pipeline(pipeline.pipeline) {
+GraphicsPipeLine::GraphicsPipeLine(GraphicsPipeLine&& pipeline) noexcept
+    : pipeline(pipeline.pipeline) {
     pipeline.pipeline = nullptr;
 }
 auto GraphicsPipeLine::operator=(GraphicsPipeLine&& rvalue) noexcept -> GraphicsPipeLine& {
@@ -128,7 +130,8 @@ void ComputePipeline::destroy() const {
     device.logicalDevice().destroyPipelineLayout(pipelineLayout_);
 }
 
-void ComputePipeline::createPipeline(const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo) {
+void ComputePipeline::createPipeline(
+    const ::vk::PipelineShaderStageCreateInfo& shaderStageCreateInfo) {
     ::vk::ComputePipelineCreateInfo createInfo;
     createInfo.setStage(shaderStageCreateInfo);
     createInfo.setLayout(pipelineLayout_);

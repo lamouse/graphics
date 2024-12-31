@@ -6,19 +6,21 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
     : imageMipLevels_(image.getMipLevels()), format_(format), device_(device.logicalDevice()) {
     ImageInfo imgInfo = image.getImageInfo();
 
-    auto stagingBuffer =
-        device.createBuffer(image.size(), 1, ::vk::BufferUsageFlagBits::eTransferSrc,
-                            ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent);
+    auto stagingBuffer = device.createBuffer(
+        image.size(), 1, ::vk::BufferUsageFlagBits::eTransferSrc,
+        ::vk::MemoryPropertyFlagBits::eHostVisible | ::vk::MemoryPropertyFlagBits::eHostCoherent);
     stagingBuffer.map();
     stagingBuffer.writeToBuffer(static_cast<void*>(image.getData()));
 
-    device.createImage(imgInfo.width, imgInfo.height, imageMipLevels_, format_, ::vk::SampleCountFlagBits::e1,
-                       ::vk::ImageTiling::eOptimal,
-                       ::vk::ImageUsageFlagBits::eTransferSrc | ::vk::ImageUsageFlagBits::eTransferDst |
+    device.createImage(imgInfo.width, imgInfo.height, imageMipLevels_, format_,
+                       ::vk::SampleCountFlagBits::e1, ::vk::ImageTiling::eOptimal,
+                       ::vk::ImageUsageFlagBits::eTransferSrc |
+                           ::vk::ImageUsageFlagBits::eTransferDst |
                            ::vk::ImageUsageFlagBits::eSampled,
                        ::vk::MemoryPropertyFlagBits::eDeviceLocal, image_, imageMemory_);
 
-    transitionImageLayout(device, image_, ::vk::ImageLayout::eUndefined, ::vk::ImageLayout::eTransferDstOptimal);
+    transitionImageLayout(device, image_, ::vk::ImageLayout::eUndefined,
+                          ::vk::ImageLayout::eTransferDstOptimal);
 
     device.executeCmd([&](::vk::CommandBuffer cmdBuf) {
         ::vk::BufferImageCopy region;
@@ -32,8 +34,10 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
             .setBufferImageHeight(0)
             .setImageSubresource(imageSubresourceLayers)
             .setImageOffset({0, 0, 0})
-            .setImageExtent({static_cast<uint32_t>(imgInfo.width), static_cast<uint32_t>(imgInfo.height), 1});
-        cmdBuf.copyBufferToImage(stagingBuffer.getBuffer(), image_, ::vk::ImageLayout::eTransferDstOptimal, region);
+            .setImageExtent(
+                {static_cast<uint32_t>(imgInfo.width), static_cast<uint32_t>(imgInfo.height), 1});
+        cmdBuf.copyBufferToImage(stagingBuffer.getBuffer(), image_,
+                                 ::vk::ImageLayout::eTransferDstOptimal, region);
     });
 
     generateMipmaps(device, image_, imgInfo.width, imgInfo.height, imageMipLevels_);
@@ -41,7 +45,8 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
     createTextureSampler(device);
 }
 
-void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::ImageLayout oldLayout,
+void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image,
+                                         ::vk::ImageLayout oldLayout,
                                          ::vk::ImageLayout newLayout) const {
     device.executeCmd([&](::vk::CommandBuffer& cmd) {
         ::vk::ImageMemoryBarrier barrier;
@@ -61,7 +66,8 @@ void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image
         ::vk::PipelineStageFlags sourceStage;
         ::vk::PipelineStageFlags destinationStage;
 
-        if (oldLayout == ::vk::ImageLayout::eUndefined && newLayout == ::vk::ImageLayout::eTransferDstOptimal) {
+        if (oldLayout == ::vk::ImageLayout::eUndefined &&
+            newLayout == ::vk::ImageLayout::eTransferDstOptimal) {
             barrier.setSrcAccessMask(::vk::AccessFlagBits::eNone)
                 .setDstAccessMask(::vk::AccessFlagBits::eTransferWrite);
 
@@ -77,8 +83,8 @@ void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image
         } else {
             throw std::invalid_argument("unsupported layout transition!");
         }
-        cmd.pipelineBarrier(sourceStage, destinationStage, ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr,
-                            barrier);
+        cmd.pipelineBarrier(sourceStage, destinationStage, ::vk::DependencyFlagBits::eByRegion,
+                            nullptr, nullptr, barrier);
     });
 }
 
@@ -103,14 +109,16 @@ void ImageTexture::createTextureSampler(core::Device& device) {
 }
 
 void ImageTexture::createTextureImageView(core::Device& device) {
-    imageView_ = device.createImageView(image_, format_, ::vk::ImageAspectFlagBits::eColor, imageMipLevels_);
+    imageView_ =
+        device.createImageView(image_, format_, ::vk::ImageAspectFlagBits::eColor, imageMipLevels_);
 }
 
-void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int texWidth, int texHeight,
-                                   uint32_t mipLevels) {
+void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int texWidth,
+                                   int texHeight, uint32_t mipLevels) {
     ::vk::FormatProperties formatProperties =
         device.getPhysicalDevice().getFormatProperties(::vk::Format::eR8G8B8A8Srgb);
-    if (!(formatProperties.optimalTilingFeatures & ::vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
+    if (!(formatProperties.optimalTilingFeatures &
+          ::vk::FormatFeatureFlagBits::eSampledImageFilterLinear)) {
         throw ::std::runtime_error("texture image format does not suport linear blitting");
     }
 
@@ -134,13 +142,15 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
                 .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
                 .setDstAccessMask(vk::AccessFlagBits::eTransferRead);
             barrier.setSubresourceRange(subresourceRange);
-            cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer, ::vk::PipelineStageFlagBits::eTransfer,
+            cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer,
+                                ::vk::PipelineStageFlagBits::eTransfer,
                                 ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr, barrier);
             ::vk::ImageBlit blit;
-            std::array<::vk::Offset3D, 2> srcOffsets{::vk::Offset3D{0, 0, 0}, ::vk::Offset3D{mipWidth, mipHeight, 1}};
+            std::array<::vk::Offset3D, 2> srcOffsets{::vk::Offset3D{0, 0, 0},
+                                                     ::vk::Offset3D{mipWidth, mipHeight, 1}};
             std::array<::vk::Offset3D, 2> dstOffsets{
-                ::vk::Offset3D{0, 0, 0},
-                ::vk::Offset3D{mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1}};
+                ::vk::Offset3D{0, 0, 0}, ::vk::Offset3D{mipWidth > 1 ? mipWidth / 2 : 1,
+                                                        mipHeight > 1 ? mipHeight / 2 : 1, 1}};
             vk::ImageSubresourceLayers srcSubresource;
             srcSubresource.setAspectMask(vk::ImageAspectFlagBits::eColor)
                 .setMipLevel(i - 1)
@@ -155,13 +165,14 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
                 .setDstOffsets(dstOffsets)
                 .setSrcSubresource(srcSubresource)
                 .setDstSubresource(dstSubresource);
-            cmd.blitImage(image, ::vk::ImageLayout::eTransferSrcOptimal, image, ::vk::ImageLayout::eTransferDstOptimal,
-                          blit, ::vk::Filter::eLinear);
+            cmd.blitImage(image, ::vk::ImageLayout::eTransferSrcOptimal, image,
+                          ::vk::ImageLayout::eTransferDstOptimal, blit, ::vk::Filter::eLinear);
             barrier.setOldLayout(vk::ImageLayout::eTransferSrcOptimal)
                 .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
                 .setSrcAccessMask(vk::AccessFlagBits::eTransferRead)
                 .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
-            cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer, ::vk::PipelineStageFlagBits::eFragmentShader,
+            cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer,
+                                ::vk::PipelineStageFlagBits::eFragmentShader,
                                 ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr, barrier);
             if (mipWidth > 1) {
                 mipWidth /= 2;
@@ -178,7 +189,8 @@ void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int 
             .setSubresourceRange(subresourceRange)
             .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
 
-        cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer, ::vk::PipelineStageFlagBits::eFragmentShader,
+        cmd.pipelineBarrier(::vk::PipelineStageFlagBits::eTransfer,
+                            ::vk::PipelineStageFlagBits::eFragmentShader,
                             ::vk::DependencyFlagBits::eByRegion, nullptr, nullptr, barrier);
     });
 }

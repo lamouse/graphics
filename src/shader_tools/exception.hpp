@@ -14,7 +14,9 @@ class Exception : public std::exception {
     public:
         explicit Exception(std::string message) noexcept : err_message{std::move(message)} {}
 
-        [[nodiscard]] auto what() const noexcept -> const char* override { return err_message.c_str(); }
+        [[nodiscard]] auto what() const noexcept -> const char* override {
+            return err_message.c_str();
+        }
 
         void Prepend(std::string_view prepend) { err_message.insert(0, prepend); }
 

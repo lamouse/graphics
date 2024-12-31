@@ -13,13 +13,14 @@ class Swapchain {
         auto acquireNextImage() -> ::vk::ResultValue<uint32_t>;
         auto submitCommand(::vk::CommandBuffer& commandBuffer, uint32_t imageIndex) -> ::vk::Result;
         void createFrameBuffers(const ::vk::RenderPass& renderPass);
-        void beginRenderPass(const ::vk::CommandBuffer& commandBuffer, const ::vk::RenderPass& renderPass,
-                             uint32_t imageIndex) const;
+        void beginRenderPass(const ::vk::CommandBuffer& commandBuffer,
+                             const ::vk::RenderPass& renderPass, uint32_t imageIndex) const;
         [[nodiscard]] auto extentAspectRation() const -> float {
             return static_cast<float>(extent_.width) / static_cast<float>(extent_.width);
         }
         [[nodiscard]] auto compareFormats(const Swapchain& compareSwapchain) const -> bool {
-            return depthFormat == compareSwapchain.depthFormat && imageFormat == compareSwapchain.imageFormat;
+            return depthFormat == compareSwapchain.depthFormat &&
+                   imageFormat == compareSwapchain.imageFormat;
         }
         ~Swapchain();
         Swapchain(int width, int height, ::vk::SampleCountFlagBits sampleCount,
@@ -30,7 +31,8 @@ class Swapchain {
         auto operator=(const Swapchain&) -> Swapchain& = delete;
         static constexpr int MAX_FRAME_IN_FLIGHT = 2;
         static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eR8G8B8A8Unorm;
-        static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = ::vk::ColorSpaceKHR::eSrgbNonlinear;
+        static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE =
+            ::vk::ColorSpaceKHR::eSrgbNonlinear;
 
     private:
         ::vk::SwapchainKHR swapchain;
@@ -64,12 +66,14 @@ class Swapchain {
 
         ::vk::Extent2D extent_;
 
-        static auto chooseSwapPresentMode(const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
+        static auto chooseSwapPresentMode(
+            const ::std::vector<::vk::PresentModeKHR>& availablePresentModes)
             -> ::vk::PresentModeKHR;
-        static auto chooseSwapSurfaceFormat(const ::std::vector<::vk::SurfaceFormatKHR>& availableFormats)
+        static auto chooseSwapSurfaceFormat(
+            const ::std::vector<::vk::SurfaceFormatKHR>& availableFormats)
             -> ::vk::SurfaceFormatKHR;
-        static auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width, int height)
-            -> ::vk::Extent2D;
+        static auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, int width,
+                                     int height) -> ::vk::Extent2D;
         [[nodiscard]] auto findDepthFormat() const -> ::vk::Format;
 
         void init(int width, int height, ::std::shared_ptr<Swapchain>& oldSwapchain);

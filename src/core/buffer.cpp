@@ -4,7 +4,8 @@
 
 namespace core {
 
-auto Buffer::getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment) -> ::vk::DeviceSize {
+auto Buffer::getAlignmentSize(::vk::DeviceSize instanceSize, ::vk::DeviceSize minOffsetAlignment)
+    -> ::vk::DeviceSize {
     if (minOffsetAlignment > 0) {
         return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
     }
@@ -63,7 +64,8 @@ auto Buffer::invalidate(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk:
     return device_.invalidateMappedMemoryRanges(1, &invalidateRange);
 }
 
-auto Buffer::descriptorInfo(::vk::DeviceSize size, ::vk::DeviceSize offset) -> ::vk::DescriptorBufferInfo {
+auto Buffer::descriptorInfo(::vk::DeviceSize size, ::vk::DeviceSize offset)
+    -> ::vk::DescriptorBufferInfo {
     return {buffer_, offset, size};
 }
 

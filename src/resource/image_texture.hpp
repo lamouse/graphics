@@ -17,10 +17,10 @@ class ImageTexture {
         ::vk::Format format_;
         ::std::reference_wrapper<::vk::Device> device_;
         void loadImage();
-        void transitionImageLayout(core::Device& device, ::vk::Image image, ::vk::ImageLayout oldLayout,
-                                   ::vk::ImageLayout newLayout) const;
-        static void generateMipmaps(core::Device& device, ::vk::Image image, int texWidth, int texHeight,
-                                    uint32_t mipLevels);
+        void transitionImageLayout(core::Device& device, ::vk::Image image,
+                                   ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout) const;
+        static void generateMipmaps(core::Device& device, ::vk::Image image, int texWidth,
+                                    int texHeight, uint32_t mipLevels);
         void createTextureSampler(core::Device& device);
         void createTextureImageView(core::Device& device);
 

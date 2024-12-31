@@ -43,7 +43,8 @@ class DescriptorAllocator final : public ResourcePool {
         auto commit() -> vk::DescriptorSet;
 
     private:
-        explicit DescriptorAllocator(const Device& device, semaphore::MasterSemaphore& master_semaphore,
+        explicit DescriptorAllocator(const Device& device,
+                                     semaphore::MasterSemaphore& master_semaphore,
                                      DescriptorBank& bank, VkDescriptorSetLayout layout);
 
         void allocate(size_t begin, size_t end) override;
@@ -63,9 +64,12 @@ class DescriptorPool {
         DescriptorPool() = delete;
         CLASS_NON_COPYABLE(DescriptorPool);
         CLASS_NON_MOVEABLE(DescriptorPool);
-        auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos) -> DescriptorAllocator;
-        auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info) -> DescriptorAllocator;
-        auto allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info) -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
+            -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info)
+            -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info)
+            -> DescriptorAllocator;
 
     private:
         auto bank(const DescriptorBankInfo& reqs) -> DescriptorBank&;

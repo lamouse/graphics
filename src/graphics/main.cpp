@@ -39,8 +39,8 @@ void init(const Config& config) {
     }
     if (logConfig.file.enabled) {
         // 创建文件接收器
-        auto file_sink =
-            std::make_shared<spdlog::sinks::basic_file_sink_mt>(logConfig.file.path, !logConfig.file.append);
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+            logConfig.file.path, !logConfig.file.append);
         sinks.push_back(file_sink);
     }
     auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks.begin(), sinks.end());

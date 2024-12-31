@@ -39,10 +39,12 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                      const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                       const VkAllocationCallbacks* pAllocator,
                                       VkDebugUtilsMessengerEXT* pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     } else {
@@ -52,7 +54,8 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMes
 
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
                                    const VkAllocationCallbacks* pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+        instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
     }
@@ -62,7 +65,9 @@ struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsAndComputeFamily;
         std::optional<uint32_t> presentFamily;
 
-        bool isComplete() { return graphicsAndComputeFamily.has_value() && presentFamily.has_value(); }
+        bool isComplete() {
+            return graphicsAndComputeFamily.has_value() && presentFamily.has_value();
+        }
 };
 
 struct SwapChainSupportDetails {
@@ -185,7 +190,8 @@ class ComputeShaderApplication {
         }
 
         static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-            auto app = reinterpret_cast<ComputeShaderApplication*>(glfwGetWindowUserPointer(window));
+            auto app =
+                reinterpret_cast<ComputeShaderApplication*>(glfwGetWindowUserPointer(window));
             app->framebufferResized = true;
         }
 
@@ -216,8 +222,8 @@ class ComputeShaderApplication {
             while (!glfwWindowShouldClose(window)) {
                 glfwPollEvents();
                 drawFrame();
-                // We want to animate the particle system using the last frames time to get smooth, frame-rate
-                // independent animation
+                // We want to animate the particle system using the last frames time to get smooth,
+                // frame-rate independent animation
                 double currentTime = glfwGetTime();
                 lastFrameTime = (currentTime - lastTime) * 1000.0;
                 lastTime = currentTime;
@@ -361,7 +367,8 @@ class ComputeShaderApplication {
             VkDebugUtilsMessengerCreateInfoEXT createInfo;
             populateDebugMessengerCreateInfo(createInfo);
 
-            if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+            if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) !=
+                VK_SUCCESS) {
                 throw std::runtime_error("failed to set up debug messenger!");
             }
         }
@@ -466,7 +473,8 @@ class ComputeShaderApplication {
             createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
             QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-            uint32_t queueFamilyIndices[] = {indices.graphicsAndComputeFamily.value(), indices.presentFamily.value()};
+            uint32_t queueFamilyIndices[] = {indices.graphicsAndComputeFamily.value(),
+                                             indices.presentFamily.value()};
 
             if (indices.graphicsAndComputeFamily != indices.presentFamily) {
                 createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -512,7 +520,8 @@ class ComputeShaderApplication {
                 createInfo.subresourceRange.baseArrayLayer = 0;
                 createInfo.subresourceRange.layerCount = 1;
 
-                if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
+                if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) !=
+                    VK_SUCCESS) {
                     throw std::runtime_error("failed to create image views!");
                 }
             }
@@ -585,7 +594,8 @@ class ComputeShaderApplication {
             layoutInfo.bindingCount = 3;
             layoutInfo.pBindings = layoutBindings.data();
 
-            if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &computeDescriptorSetLayout) != VK_SUCCESS) {
+            if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+                                            &computeDescriptorSetLayout) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create compute descriptor set layout!");
             }
         }
@@ -609,7 +619,8 @@ class ComputeShaderApplication {
             fragShaderStageInfo.module = fragShaderModule;
             fragShaderStageInfo.pName = "main";
 
-            VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+            VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,
+                                                              fragShaderStageInfo};
 
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -618,7 +629,8 @@ class ComputeShaderApplication {
             auto attributeDescriptions = Particle::getAttributeDescriptions();
 
             vertexInputInfo.vertexBindingDescriptionCount = 1;
-            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+            vertexInputInfo.vertexAttributeDescriptionCount =
+                static_cast<uint32_t>(attributeDescriptions.size());
             vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
             vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
@@ -648,8 +660,9 @@ class ComputeShaderApplication {
             multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
             VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-            colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+            colorBlendAttachment.colorWriteMask =
+                VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT;
             colorBlendAttachment.blendEnable = VK_TRUE;
             colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
             colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
@@ -669,7 +682,8 @@ class ComputeShaderApplication {
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+            std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
+                                                         VK_DYNAMIC_STATE_SCISSOR};
             VkPipelineDynamicStateCreateInfo dynamicState{};
             dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
             dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -680,7 +694,8 @@ class ComputeShaderApplication {
             pipelineLayoutInfo.setLayoutCount = 0;
             pipelineLayoutInfo.pSetLayouts = nullptr;
 
-            if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+            if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
+                VK_SUCCESS) {
                 throw std::runtime_error("failed to create pipeline layout!");
             }
 
@@ -700,8 +715,8 @@ class ComputeShaderApplication {
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-            if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) !=
-                VK_SUCCESS) {
+            if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                                          &graphicsPipeline) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create graphics pipeline!");
             }
 
@@ -725,7 +740,8 @@ class ComputeShaderApplication {
             pipelineLayoutInfo.setLayoutCount = 1;
             pipelineLayoutInfo.pSetLayouts = &computeDescriptorSetLayout;
 
-            if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &computePipelineLayout) != VK_SUCCESS) {
+            if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
+                                       &computePipelineLayout) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create compute pipeline layout!");
             }
 
@@ -734,8 +750,8 @@ class ComputeShaderApplication {
             pipelineInfo.layout = computePipelineLayout;
             pipelineInfo.stage = computeShaderStageInfo;
 
-            if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) !=
-                VK_SUCCESS) {
+            if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                                         &computePipeline) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create compute pipeline!");
             }
 
@@ -757,7 +773,8 @@ class ComputeShaderApplication {
                 framebufferInfo.height = swapChainExtent.height;
                 framebufferInfo.layers = 1;
 
-                if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+                if (vkCreateFramebuffer(device, &framebufferInfo, nullptr,
+                                        &swapChainFramebuffers[i]) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create framebuffer!");
                 }
             }
@@ -790,7 +807,8 @@ class ComputeShaderApplication {
                 float y = r * sin(theta);
                 particle.position = glm::vec2(x, y);
                 particle.velocity = glm::normalize(glm::vec2(x, y)) * 0.00025f;
-                particle.color = glm::vec4(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine), 1.0f);
+                particle.color =
+                    glm::vec4(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine), 1.0f);
             }
 
             VkDeviceSize bufferSize = sizeof(Particle) * PARTICLE_COUNT;
@@ -799,8 +817,8 @@ class ComputeShaderApplication {
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
-                         stagingBufferMemory);
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         stagingBuffer, stagingBufferMemory);
 
             void* data;
             vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -813,7 +831,8 @@ class ComputeShaderApplication {
             // Copy initial particle data to all storage buffers
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 createBuffer(bufferSize,
-                             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                                  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, shaderStorageBuffers[i],
                              shaderStorageBuffersMemory[i]);
@@ -832,11 +851,13 @@ class ComputeShaderApplication {
             uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                             uniformBuffers[i], uniformBuffersMemory[i]);
+                createBuffer(
+                    bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    uniformBuffers[i], uniformBuffersMemory[i]);
 
-                vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+                vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0,
+                            &uniformBuffersMapped[i]);
             }
         }
 
@@ -860,7 +881,8 @@ class ComputeShaderApplication {
         }
 
         void createComputeDescriptorSets() {
-            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, computeDescriptorSetLayout);
+            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT,
+                                                       computeDescriptorSetLayout);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = descriptorPool;
@@ -868,7 +890,8 @@ class ComputeShaderApplication {
             allocInfo.pSetLayouts = layouts.data();
 
             computeDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-            if (vkAllocateDescriptorSets(device, &allocInfo, computeDescriptorSets.data()) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(device, &allocInfo, computeDescriptorSets.data()) !=
+                VK_SUCCESS) {
                 throw std::runtime_error("failed to allocate descriptor sets!");
             }
 
@@ -888,7 +911,8 @@ class ComputeShaderApplication {
                 descriptorWrites[0].pBufferInfo = &uniformBufferInfo;
 
                 VkDescriptorBufferInfo storageBufferInfoLastFrame{};
-                storageBufferInfoLastFrame.buffer = shaderStorageBuffers[(i - 1) % MAX_FRAMES_IN_FLIGHT];
+                storageBufferInfoLastFrame.buffer =
+                    shaderStorageBuffers[(i - 1) % MAX_FRAMES_IN_FLIGHT];
                 storageBufferInfoLastFrame.offset = 0;
                 storageBufferInfoLastFrame.range = sizeof(Particle) * PARTICLE_COUNT;
 
@@ -917,8 +941,9 @@ class ComputeShaderApplication {
             }
         }
 
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                          VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                          VkMemoryPropertyFlags properties, VkBuffer& buffer,
+                          VkDeviceMemory& bufferMemory) {
             VkBufferCreateInfo bufferInfo{};
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             bufferInfo.size = size;
@@ -1014,7 +1039,8 @@ class ComputeShaderApplication {
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             allocInfo.commandBufferCount = (uint32_t)computeCommandBuffers.size();
 
-            if (vkAllocateCommandBuffers(device, &allocInfo, computeCommandBuffers.data()) != VK_SUCCESS) {
+            if (vkAllocateCommandBuffers(device, &allocInfo, computeCommandBuffers.data()) !=
+                VK_SUCCESS) {
                 throw std::runtime_error("failed to allocate compute command buffers!");
             }
         }
@@ -1057,7 +1083,8 @@ class ComputeShaderApplication {
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
             VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &shaderStorageBuffers[currentFrame], offsets);
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, &shaderStorageBuffers[currentFrame],
+                                   offsets);
 
             vkCmdDraw(commandBuffer, PARTICLE_COUNT, 1, 0, 0);
 
@@ -1078,7 +1105,8 @@ class ComputeShaderApplication {
 
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1,
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
+                                    computePipelineLayout, 0, 1,
                                     &computeDescriptorSets[currentFrame], 0, nullptr);
 
             vkCmdDispatch(commandBuffer, PARTICLE_COUNT / 256, 1, 1);
@@ -1103,14 +1131,20 @@ class ComputeShaderApplication {
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-                    vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+                                      &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                    vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+                                      &renderFinishedSemaphores[i]) != VK_SUCCESS ||
                     vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create graphics synchronization objects for a frame!");
+                    throw std::runtime_error(
+                        "failed to create graphics synchronization objects for a frame!");
                 }
-                if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &computeFinishedSemaphores[i]) != VK_SUCCESS ||
-                    vkCreateFence(device, &fenceInfo, nullptr, &computeInFlightFences[i]) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                if (vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+                                      &computeFinishedSemaphores[i]) != VK_SUCCESS ||
+                    vkCreateFence(device, &fenceInfo, nullptr, &computeInFlightFences[i]) !=
+                        VK_SUCCESS) {
+                    throw std::runtime_error(
+                        "failed to create compute synchronization objects for a frame!");
                 }
             }
         }
@@ -1133,7 +1167,8 @@ class ComputeShaderApplication {
 
             vkResetFences(device, 1, &computeInFlightFences[currentFrame]);
 
-            vkResetCommandBuffer(computeCommandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+            vkResetCommandBuffer(computeCommandBuffers[currentFrame],
+                                 /*VkCommandBufferResetFlagBits*/ 0);
             recordComputeCommandBuffer(computeCommandBuffers[currentFrame]);
 
             submitInfo.commandBufferCount = 1;
@@ -1141,7 +1176,8 @@ class ComputeShaderApplication {
             submitInfo.signalSemaphoreCount = 1;
             submitInfo.pSignalSemaphores = &computeFinishedSemaphores[currentFrame];
 
-            if (vkQueueSubmit(computeQueue, 1, &submitInfo, computeInFlightFences[currentFrame]) != VK_SUCCESS) {
+            if (vkQueueSubmit(computeQueue, 1, &submitInfo, computeInFlightFences[currentFrame]) !=
+                VK_SUCCESS) {
                 throw std::runtime_error("failed to submit compute command buffer!");
             };
 
@@ -1149,8 +1185,9 @@ class ComputeShaderApplication {
             vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
             uint32_t imageIndex;
-            VkResult result = vkAcquireNextImageKHR(
-                device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+            VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
+                                                    imageAvailableSemaphores[currentFrame],
+                                                    VK_NULL_HANDLE, &imageIndex);
 
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 recreateSwapChain();
@@ -1179,7 +1216,8 @@ class ComputeShaderApplication {
             submitInfo.signalSemaphoreCount = 1;
             submitInfo.pSignalSemaphores = &renderFinishedSemaphores[currentFrame];
 
-            if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+            if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) !=
+                VK_SUCCESS) {
                 throw std::runtime_error("failed to submit draw command buffer!");
             }
 
@@ -1197,7 +1235,8 @@ class ComputeShaderApplication {
 
             result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+                framebufferResized) {
                 framebufferResized = false;
                 recreateSwapChain();
             } else if (result != VK_SUCCESS) {
@@ -1221,7 +1260,8 @@ class ComputeShaderApplication {
             return shaderModule;
         }
 
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+        VkSurfaceFormatKHR chooseSwapSurfaceFormat(
+            const std::vector<VkSurfaceFormatKHR>& availableFormats) {
             for (const auto& availableFormat : availableFormats) {
                 if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
                     availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -1232,7 +1272,8 @@ class ComputeShaderApplication {
             return availableFormats[0];
         }
 
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+        VkPresentModeKHR chooseSwapPresentMode(
+            const std::vector<VkPresentModeKHR>& availablePresentModes) {
             for (const auto& availablePresentMode : availablePresentModes) {
                 if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                     return availablePresentMode;
@@ -1249,12 +1290,15 @@ class ComputeShaderApplication {
                 int width, height;
                 glfwGetFramebufferSize(window, &width, &height);
 
-                VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+                VkExtent2D actualExtent = {static_cast<uint32_t>(width),
+                                           static_cast<uint32_t>(height)};
 
-                actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width,
-                                                capabilities.maxImageExtent.width);
-                actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height,
-                                                 capabilities.maxImageExtent.height);
+                actualExtent.width =
+                    std::clamp(actualExtent.width, capabilities.minImageExtent.width,
+                               capabilities.maxImageExtent.width);
+                actualExtent.height =
+                    std::clamp(actualExtent.height, capabilities.minImageExtent.height,
+                               capabilities.maxImageExtent.height);
 
                 return actualExtent;
             }
@@ -1270,7 +1314,8 @@ class ComputeShaderApplication {
 
             if (formatCount != 0) {
                 details.formats.resize(formatCount);
-                vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+                vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
+                                                     details.formats.data());
             }
 
             uint32_t presentModeCount;
@@ -1293,7 +1338,8 @@ class ComputeShaderApplication {
             bool swapChainAdequate = false;
             if (extensionsSupported) {
                 SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
-                swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+                swapChainAdequate =
+                    !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
             }
 
             return indices.isComplete() && extensionsSupported && swapChainAdequate;
@@ -1304,9 +1350,11 @@ class ComputeShaderApplication {
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+            vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                                 availableExtensions.data());
 
-            std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+            std::set<std::string> requiredExtensions(deviceExtensions.begin(),
+                                                     deviceExtensions.end());
 
             for (const auto& extension : availableExtensions) {
                 requiredExtensions.erase(extension.extensionName);
@@ -1322,7 +1370,8 @@ class ComputeShaderApplication {
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
             std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
+                                                     queueFamilies.data());
 
             int i = 0;
             for (const auto& queueFamily : queueFamilies) {
@@ -1353,7 +1402,8 @@ class ComputeShaderApplication {
             const char** glfwExtensions;
             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-            std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+            std::vector<const char*> extensions(glfwExtensions,
+                                                glfwExtensions + glfwExtensionCount);
 
             if (enableValidationLayers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -1405,10 +1455,10 @@ class ComputeShaderApplication {
             return buffer;
         }
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                            VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                            void* pUserData) {
+        static VKAPI_ATTR VkBool32 VKAPI_CALL
+        debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                      VkDebugUtilsMessageTypeFlagsEXT messageType,
+                      const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
             std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
             return VK_FALSE;

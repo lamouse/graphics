@@ -12,8 +12,8 @@ namespace g {
 
 void RenderSystem::render(FrameInfo& frameInfo) const {
     pipeline.bind(frameInfo.commandBuffer);
-    frameInfo.commandBuffer.bindDescriptorSets(::vk::PipelineBindPoint::eGraphics, pipelineLayout, 0,
-                                               frameInfo.descriptorSet, nullptr);
+    frameInfo.commandBuffer.bindDescriptorSets(::vk::PipelineBindPoint::eGraphics, pipelineLayout,
+                                               0, frameInfo.descriptorSet, nullptr);
 
     for (const auto& v : frameInfo.gameObjects | std::views::values) {
         v.model->bind(frameInfo.commandBuffer);
@@ -53,7 +53,8 @@ void RenderSystem::createPipelineLayout(::vk::DescriptorSetLayout descriptorSetL
 void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
     const ::std::string vertexFilePath = shader_path + "vert.spv";
     const ::std::string fragFilePath = shader_path + "frag.spv";
-    ::resource::shader::GraphicsShader shader(vertexFilePath, fragFilePath, device_.logicalDevice());
+    ::resource::shader::GraphicsShader shader(vertexFilePath, fragFilePath,
+                                              device_.logicalDevice());
     auto defaultConfig = GraphicsPipeLine::getDefaultConfig();
     defaultConfig.renderPass = renderPass;
     defaultConfig.layout = pipelineLayout;

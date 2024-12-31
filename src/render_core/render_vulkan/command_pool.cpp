@@ -24,12 +24,13 @@ void CommandPool::allocate(size_t begin, size_t end) {
     Pool& pool = pools_.emplace_back();
     ::vk::CommandPoolCreateInfo createInfo;
     createInfo.setQueueFamilyIndex(device_.getGraphicsFamily())
-        .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer | ::vk::CommandPoolCreateFlagBits::eTransient);
+        .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
+                  ::vk::CommandPoolCreateFlagBits::eTransient);
     pool.handle_ = device_.getLogical().createCommandPool(createInfo);
-    const ::vk::CommandBufferAllocateInfo allocInfo(pool.handle_, ::vk::CommandBufferLevel::ePrimary,
-                                                    COMMAND_BUFFER_POOL_SIZE);
-    pool.cmdbufs_ =
-        CommandBuffers{device_.getLogical().allocateCommandBuffers(allocInfo), device_.getLogical(), pool.handle_};
+    const ::vk::CommandBufferAllocateInfo allocInfo(
+        pool.handle_, ::vk::CommandBufferLevel::ePrimary, COMMAND_BUFFER_POOL_SIZE);
+    pool.cmdbufs_ = CommandBuffers{device_.getLogical().allocateCommandBuffers(allocInfo),
+                                   device_.getLogical(), pool.handle_};
 }
 
 auto CommandPool::commit() -> vk::CommandBuffer {

@@ -180,8 +180,10 @@ struct Info {
 
         uint32_t used_clip_distances{};
 
-        boost::container::static_vector<ConstantBufferDescriptor, MAX_CBUFS> constant_buffer_descriptors;
-        boost::container::static_vector<StorageBufferDescriptor, MAX_SSBOS> storage_buffers_descriptors;
+        boost::container::static_vector<ConstantBufferDescriptor, MAX_CBUFS>
+            constant_buffer_descriptors;
+        boost::container::static_vector<StorageBufferDescriptor, MAX_SSBOS>
+            storage_buffers_descriptors;
         TextureBufferDescriptors texture_buffer_descriptors;
         ImageBufferDescriptors image_buffer_descriptors;
         TextureDescriptors texture_descriptors;

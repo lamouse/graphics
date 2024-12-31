@@ -12,7 +12,9 @@
 
 namespace g {
 
-void Model::draw(const ::vk::CommandBuffer& commandBuffer) const { commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0); }
+void Model::draw(const ::vk::CommandBuffer& commandBuffer) const {
+    commandBuffer.drawIndexed(indicesSize, 1, 0, 0, 0);
+}
 void Model::bind(const ::vk::CommandBuffer& commandBuffer) const {
     constexpr ::std::array<::vk::DeviceSize, 1> offsets = {0};
     std::array<::vk::Buffer, 1> buffers = {vertexBuffer_.getBuffer()};
@@ -21,19 +23,20 @@ void Model::bind(const ::vk::CommandBuffer& commandBuffer) const {
 }
 
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
-    : vertexCount(static_cast<uint32_t>(vertices.size())), indicesSize(static_cast<uint32_t>(indices.size())) {
+    : vertexCount(static_cast<uint32_t>(vertices.size())),
+      indicesSize(static_cast<uint32_t>(indices.size())) {
     core::Device device;
-    vertexBuffer_ =
-        device.createBuffer(sizeof(vertices[0]) * vertices.size(), 1,
-                            ::vk::BufferUsageFlagBits::eVertexBuffer | ::vk::BufferUsageFlagBits::eTransferDst,
-                            ::vk::MemoryPropertyFlagBits::eDeviceLocal | ::vk::MemoryPropertyFlagBits::eHostCoherent);
+    vertexBuffer_ = device.createBuffer(
+        sizeof(vertices[0]) * vertices.size(), 1,
+        ::vk::BufferUsageFlagBits::eVertexBuffer | ::vk::BufferUsageFlagBits::eTransferDst,
+        ::vk::MemoryPropertyFlagBits::eDeviceLocal | ::vk::MemoryPropertyFlagBits::eHostCoherent);
     vertexBuffer_.map();
     vertexBuffer_.writeToBuffer(vertices.data());
 
-    indexBuffer_ =
-        device.createBuffer(sizeof(indices[0]) * indices.size(), 1,
-                            ::vk::BufferUsageFlagBits::eIndexBuffer | ::vk::BufferUsageFlagBits::eTransferDst,
-                            ::vk::MemoryPropertyFlagBits::eDeviceLocal | ::vk::MemoryPropertyFlagBits::eHostCoherent);
+    indexBuffer_ = device.createBuffer(
+        sizeof(indices[0]) * indices.size(), 1,
+        ::vk::BufferUsageFlagBits::eIndexBuffer | ::vk::BufferUsageFlagBits::eTransferDst,
+        ::vk::MemoryPropertyFlagBits::eDeviceLocal | ::vk::MemoryPropertyFlagBits::eHostCoherent);
     indexBuffer_.map();
     indexBuffer_.writeToBuffer(indices.data());
 
@@ -47,7 +50,8 @@ auto Model::Vertex::getBindingDescription() -> ::std::vector<::vk::VertexInputBi
 
     return bindingDescriptions;
 }
-auto Model::Vertex::getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription> {
+auto Model::Vertex::getAttributeDescription()
+    -> ::std::vector<::vk::VertexInputAttributeDescription> {
     ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
     attributeDescriptions[0].setBinding(0);
     attributeDescriptions[0].setLocation(0);
@@ -76,7 +80,8 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene) {
-        throw std::runtime_error(std::format("Failed to load model: {}", importer.GetErrorString()));
+        throw std::runtime_error(
+            std::format("Failed to load model: {}", importer.GetErrorString()));
     }
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
         aiMesh* mesh = scene->mMeshes[i];
@@ -87,7 +92,8 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
             Model::Vertex model_vertex{};
             model_vertex.position = {vertex.x, vertex.y, vertex.z};
             if (texCoord > 0) {
-                model_vertex.texCoord = {mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y};
+                model_vertex.texCoord = {mesh->mTextureCoords[0][j].x,
+                                         mesh->mTextureCoords[0][j].y};
             } else {
                 model_vertex.texCoord = {0.0f, 0.0f};
             }
@@ -97,7 +103,8 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
                 vertices.push_back(model_vertex);
             }
 
-            indices.push_back(static_cast<decltype(indices)::value_type>(uniqueVertices[model_vertex]));
+            indices.push_back(
+                static_cast<decltype(indices)::value_type>(uniqueVertices[model_vertex]));
         }
     }
     return std::make_unique<Model>(vertices, indices);

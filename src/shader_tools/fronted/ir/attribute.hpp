@@ -237,7 +237,8 @@ constexpr size_t NUM_FIXEDFNCTEXTURE = 10;
 
 [[nodiscard]] auto nameOf(Attribute attribute) -> std::string;
 
-[[nodiscard]] constexpr auto operator+(IR::Attribute attribute, size_t value) noexcept -> IR::Attribute {
+[[nodiscard]] constexpr auto operator+(IR::Attribute attribute, size_t value) noexcept
+    -> IR::Attribute {
     return static_cast<IR::Attribute>(static_cast<size_t>(attribute) + value);
 }
 }  // namespace shader::IR

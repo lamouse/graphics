@@ -26,9 +26,12 @@ class Window : public core::frontend::BaseWindow {
         [[nodiscard]] auto IsShown() const -> bool override;
         [[nodiscard]] auto IsMinimized() const -> bool override;
         [[nodiscard]] auto shouldClose() const -> bool override;
-        [[nodiscard]] auto getActiveConfig() const -> WindowConfig override { return getWindowConfig(); }
+        [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
+            return getWindowConfig();
+        }
         [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
-        static auto getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char *>;
+        static auto getRequiredInstanceExtends(bool enableValidationLayers)
+            -> ::std::vector<const char *>;
         auto getSurface(VkInstance instance) -> VkSurfaceKHR;
         auto getExtent() -> ScreenExtent;
 };
