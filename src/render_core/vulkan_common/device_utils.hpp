@@ -194,4 +194,18 @@ vk::FormatFeatureFlags getFormatFeatures(vk::FormatProperties properties, Format
 
 auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions) -> std::vector<const char*>;
 
+class VulkanException final : public std::exception {
+    public:
+        /// Construct the exception with a result.
+        /// @pre result != VK_SUCCESS
+        explicit VulkanException(vk::Result result_) : result{result_} {}
+        virtual ~VulkanException() = default;
+
+        const char* what() const noexcept override;
+        vk::Result getResult() const noexcept { return result; }
+
+    private:
+        vk::Result result;
+};
+
 }  // namespace render::vulkan::utils

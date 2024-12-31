@@ -41,6 +41,14 @@ class Device {
         /// Returns main compute queue family index.
         [[nodiscard]] auto getComputeFamily() const -> uint32_t { return compute_family_; }
         [[nodiscard]] auto getInstanceVersion() const -> uint32_t { return instance_version_; }
+        /// Returns true if VK_KHR_swapchain_mutable_format is enabled.
+        [[nodiscard]] auto isKhrSwapchainMutableFormatEnabled() const -> bool {
+            return extensions_.swapchain_mutable_format;
+        }
+
+        [[nodiscard]] auto hasTimelineSemaphore() const -> bool;
+        /// Returns the driver ID.
+        [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR { return properties_.driver_.driverID; }
 
     private:
         vk::Instance instance_;
@@ -54,7 +62,7 @@ class Device {
         uint32_t present_family_;
         uint32_t compute_family_;
         uint32_t instance_version_{};
-        VmaAllocator allocator_;      ///< VMA allocator.
+        VmaAllocator allocator_;  ///< VMA allocator.
         /// Format properties dictionary.
         std::unordered_map<vk::Format, vk::FormatProperties> format_properties_;
         std::vector<size_t> valid_heap_memory_;  ///< Heaps used.

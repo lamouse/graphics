@@ -1,5 +1,6 @@
 #include "device_utils.hpp"
 #include <spdlog/spdlog.h>
+#include <vulkan/vk_enum_string_helper.h>
 namespace render::vulkan::utils {
 auto GetFormatProperties(vk::PhysicalDevice physical) -> std::unordered_map<vk::Format, vk::FormatProperties> {
     static constexpr std::array formats{
@@ -228,5 +229,7 @@ auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions
     }
     return output;
 }
+
+const char* VulkanException::what() const noexcept { return string_VkResult(static_cast<VkResult>(result)); }
 
 }  // namespace render::vulkan::utils

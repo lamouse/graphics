@@ -308,6 +308,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 
     vmaCreateAllocator(&allocator_info, &allocator_);
 }
+Device::~Device() { vmaDestroyAllocator(allocator_); }
 auto Device::getSuitability(bool requires_swapchain) -> bool {
     // Assume we will be suitable
     bool suitable = true;
@@ -697,12 +698,10 @@ auto Device::computeIsOptimalAstcSupported() const -> bool {
     const auto format_feature_usage{vk::FormatFeatureFlagBits::eSampledImage | vk::FormatFeatureFlagBits::eBlitSrc |
                                     vk::FormatFeatureFlagBits::eBlitDst | vk::FormatFeatureFlagBits::eTransferSrc |
                                     vk::FormatFeatureFlagBits::eTransferDst};
-    for (const auto format : astc_formats) {
+    return std::ranges::all_of(astc_formats, [&](const auto format) {
         const auto physical_format_properties{physical_.getFormatProperties(format)};
-        if (!(physical_format_properties.optimalTilingFeatures & format_feature_usage)) {
-            return false;
-        }
-    }
+        return (physical_format_properties.optimalTilingFeatures & format_feature_usage) == format_feature_usage;
+    });
     return true;
 }
 
@@ -785,4 +784,13 @@ void Device::collectToolingInfo() {
     }
 }
 
+auto Device::hasTimelineSemaphore() const -> bool {
+    if (getDriverID() == vk::DriverId::eQualcommProprietary || getDriverID() == vk::DriverId::eMesaTurnip) {
+        // Timeline semaphores do not work properly on all Qualcomm drivers.
+        // They generally work properly with Turnip drivers, but are problematic on some devices
+        // (e.g. ZTE handsets with Snapdragon 870).
+        return false;
+    }
+    return features_.timeline_semaphore.timelineSemaphore;
+}
 }  // namespace render::vulkan

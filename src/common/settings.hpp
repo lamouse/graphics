@@ -10,7 +10,8 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
     public:
         bool renderer_shader_feedback = false;
         bool enable_compute_pipelines = true;
-        settings::enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
+        enums::VSyncMode vSyncMode = enums::VSyncMode::Mailbox;
+        enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
         static auto get() { return RenderVulkan{}; }
 };
 
