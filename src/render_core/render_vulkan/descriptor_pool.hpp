@@ -27,7 +27,7 @@ struct DescriptorBankInfo {
         uint32_t image_buffers_{};    ///< Number of image buffer descriptors
         uint32_t textures_{};         ///< Number of texture descriptors
         uint32_t images_{};           ///< Number of image descriptors
-        uint32_t score_{};            ///< Number of descriptors in total
+        std::int32_t score_{};        ///< Number of descriptors in total
 };
 class DescriptorAllocator final : public ResourcePool {
         friend class DescriptorPool;
@@ -48,7 +48,7 @@ class DescriptorAllocator final : public ResourcePool {
 
         void allocate(size_t begin, size_t end) override;
 
-        auto allocateDescriptors(size_t count) -> vk::DescriptorSet;
+        auto allocateDescriptors(size_t count) -> DescriptorSets;
 
         const Device* device_{};
         DescriptorBank* bank_{};
@@ -59,13 +59,13 @@ class DescriptorAllocator final : public ResourcePool {
 class DescriptorPool {
     public:
         explicit DescriptorPool(const Device& device, scheduler::Scheduler& scheduler);
-        ~DescriptorPool();
+        ~DescriptorPool() = default;
         DescriptorPool() = delete;
         CLASS_NON_COPYABLE(DescriptorPool);
         CLASS_NON_MOVEABLE(DescriptorPool);
-        auto allocator(VkDescriptorSetLayout layout, std::span<const shader::Info> infos) -> DescriptorAllocator;
-        auto Allocator(VkDescriptorSetLayout layout, const shader::Info& info) -> DescriptorAllocator;
-        auto Allocator(VkDescriptorSetLayout layout, const DescriptorBankInfo& info) -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos) -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info) -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info) -> DescriptorAllocator;
 
     private:
         auto bank(const DescriptorBankInfo& reqs) -> DescriptorBank&;

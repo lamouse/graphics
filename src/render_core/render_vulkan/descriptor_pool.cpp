@@ -1,5 +1,9 @@
 #include "descriptor_pool.hpp"
+#include "render_vulkan/scheduler.hpp"
 #include "vulkan_common/device.hpp"
+#include <algorithm>
+#include <ranges>
+#include <cstdlib>
 namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
 constexpr size_t SETS_GROW_RATE = 16;
@@ -63,6 +67,51 @@ DescriptorAllocator::DescriptorAllocator(const Device& device, semaphore::Master
 auto DescriptorAllocator::commit() -> vk::DescriptorSet {
     const size_t index = commitResource();
     return sets_[index / SETS_GROW_RATE][index % SETS_GROW_RATE];
+}
+
+void DescriptorAllocator::allocate(size_t begin, size_t end) { sets_.push_back(allocateDescriptors(end - begin)); }
+
+auto DescriptorAllocator::allocateDescriptors(size_t count) -> DescriptorSets {
+    const std::vector<vk::DescriptorSetLayout> layouts(count, layout_);
+    vk::DescriptorSetAllocateInfo allocate_info{};
+    allocate_info.setDescriptorPool(bank_->pools.back()).setSetLayouts(layouts);
+    auto sets = device_->getLogical().allocateDescriptorSets(allocate_info);
+
+    return DescriptorSets{sets, device_->getLogical(), bank_->pools.back()};
+}
+
+DescriptorPool::DescriptorPool(const Device& device, scheduler::Scheduler& scheduler)
+    : device_{device}, master_semaphore_{scheduler.getMasterSemaphore()} {}
+auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
+    -> DescriptorAllocator {
+    return allocator(layout, makeBankInfo(infos));
+}
+
+auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, const shader::Info& info) -> DescriptorAllocator {
+    return allocator(layout, makeBankInfo(std::array{info}));
+}
+
+auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info) -> DescriptorAllocator {
+    return DescriptorAllocator(device_, master_semaphore_, bank(info), layout);
+}
+
+auto DescriptorPool::bank(const DescriptorBankInfo& reqs) -> DescriptorBank& {
+    std::shared_lock read_lock{banks_mutex_};
+    const auto it = std::ranges::find_if(bank_infos_, [&reqs](DescriptorBankInfo& bank) {
+        return std::abs(bank.score_ - reqs.score_) < SCORE_THRESHOLD && bank.isSuperset(reqs);
+    });
+    if (it != bank_infos_.end()) {
+        return *banks_[std::distance(bank_infos_.begin(), it)];
+    }
+    read_lock.unlock();
+
+    std::unique_lock write_lock{banks_mutex_};
+    bank_infos_.push_back(reqs);
+
+    auto& bank = *banks_.emplace_back(std::make_unique<DescriptorBank>());
+    bank.info = reqs;
+    allocatePool(device_, bank);
+    return bank;
 }
 
 }  // namespace render::vulkan::resource
