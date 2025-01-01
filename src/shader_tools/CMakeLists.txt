@@ -26,9 +26,10 @@ else()
 endif()
 
 target_link_libraries(shader PUBLIC core)
-target_link_libraries(shader PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
+target_link_libraries(shader PUBLIC Vulkan::Vulkan)
 target_link_libraries(shader PUBLIC spdlog::spdlog)
-target_link_libraries(shader PRIVATE Boost::boost)
+target_link_libraries(shader PRIVATE Boost::boost )
+target_link_libraries(shader PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)

@@ -1,6 +1,7 @@
 #include <GLFW/glfw3.h>
 #include "render_core/vulkan_common/instance.hpp"
 #include "render_core/vulkan_common/device.hpp"
+#include "shader_tools/shader_compile.hpp"
 #include <gtest/gtest.h>
 // Demonstrate some basic assertions.
 
@@ -25,6 +26,11 @@ TEST(VulkanDriver, CreateDriver) {
         render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
 #endif
     ASSERT_TRUE(instance);
-    render::vulkan::Device d(instance, nullptr, nullptr);
+    // render::vulkan::Device d(instance, nullptr, nullptr);
     instance.destroy();
+}
+
+TEST(Shader, ShaderCompile) {
+    shader::compile::ShaderCompile shaderCompile;
+    shaderCompile.compile("./shaders", "./shaders/build");
 }

@@ -5,7 +5,7 @@
 
 namespace shader {
 struct VaryingState {
-        std::bitset<512> mask{};
+        std::bitset<512> mask;
 
         void Set(IR::Attribute attribute, bool state = true) {
             mask[static_cast<size_t>(attribute)] = state;

@@ -13,6 +13,7 @@
         "ms-gsl",
         "gtest",
         "yaml-cpp",
-        "boost-container"
+        "boost-container",
+        "glslang"
     ]
 }

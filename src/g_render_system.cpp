@@ -51,8 +51,8 @@ void RenderSystem::createPipelineLayout(::vk::DescriptorSetLayout descriptorSetL
 }
 
 void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
-    const ::std::string vertexFilePath = shader_path + "vert.spv";
-    const ::std::string fragFilePath = shader_path + "frag.spv";
+    const ::std::string vertexFilePath = shader_path + "vulkan_present.spv";
+    const ::std::string fragFilePath = shader_path + "vulkan_present.spv";
     ::resource::shader::GraphicsShader shader(vertexFilePath, fragFilePath,
                                               device_.logicalDevice());
     auto defaultConfig = GraphicsPipeLine::getDefaultConfig();

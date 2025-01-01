@@ -2,8 +2,9 @@ aux_source_directory(. RENDER_CORE_SRC)
 aux_source_directory(./vulkan_common VULKAN_COMMON_SRC)
 aux_source_directory(./render_vulkan RENDER_VULKAN_SRC)
 aux_source_directory(./buffer_cache BUFFER_CACHE_SRC)
+aux_source_directory(./render_vulkan/present PRESENT_SRC)
 add_library(render-core STATIC ${RENDER_CORE_SRC} ${RENDER_VULKAN_SRC}
-    ${VULKAN_COMMON_SRC} ${BUFFER_CACHE_SRC})
+    ${VULKAN_COMMON_SRC} ${BUFFER_CACHE_SRC} ${PRESENT_SRC})
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)
@@ -24,6 +25,10 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
+add_subdirectory(host_shaders)
+
+add_dependencies(render-core host_shaders)
+target_include_directories(render-core PRIVATE ${HOST_SHADERS_INCLUDE})
 
 target_link_libraries(render-core PUBLIC core shader)
 target_link_libraries(render-core PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)

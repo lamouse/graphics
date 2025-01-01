@@ -82,8 +82,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Library o
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib CACHE PATH "Single Directory for all static libraries.")
 set(BUILD_TESTING ON)
 
-
-
 # need vcpkg start
 # find_package(tinyobjloader CONFIG)
 find_package(assimp CONFIG REQUIRED)
@@ -93,6 +91,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
+find_package(glslang CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 

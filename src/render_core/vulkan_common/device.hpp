@@ -18,7 +18,7 @@ class Device {
         explicit Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface,
                         bool enable_validation = false);
         ~Device();
-        [[nodiscard]] uint32_t getSetsPerPool() const { return sets_per_pool_; }
+        [[nodiscard]] auto getSetsPerPool() const -> uint32_t { return sets_per_pool_; }
         /// Returns the logical device.
         [[nodiscard]] auto getLogical() const -> const vk::Device& { return logical_; }
 
@@ -133,7 +133,7 @@ class Device {
 
 #undef FEATURE_CORE
 #undef FEATURE_EXT
-                vk::PhysicalDeviceFeatures features{};
+                vk::PhysicalDeviceFeatures features;
         };
         Extensions extensions_{};
         Properties properties_;

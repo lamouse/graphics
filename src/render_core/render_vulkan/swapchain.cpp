@@ -7,6 +7,14 @@
 #include "vulkan_common/device_utils.hpp"
 #include <vulkan/vk_enum_string_helper.h>
 #include "scheduler.hpp"
+#if defined max
+#undef max
+#endif
+
+#if defined min
+#undef min
+#endif
+
 namespace render::vulkan {
 namespace {
 auto chooseAlphaFlags(const vk::SurfaceCapabilitiesKHR& capabilities)
@@ -159,8 +167,6 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
         if (requested_image_count > capabilities.maxImageCount) {
             requested_image_count = capabilities.maxImageCount;
         } else {
-#undef max
-#undef min
             requested_image_count =
                 std::max(requested_image_count, std::min(3U, capabilities.maxImageCount));
         }
