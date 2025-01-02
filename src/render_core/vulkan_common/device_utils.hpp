@@ -59,6 +59,7 @@
     EXTENSION(EXT, SHADER_VIEWPORT_INDEX_LAYER, shader_viewport_index_layer)   \
     EXTENSION(EXT, TOOLING_INFO, tooling_info)                                 \
     EXTENSION(EXT, VERTEX_ATTRIBUTE_DIVISOR, vertex_attribute_divisor)         \
+    EXTENSION(EXT, EXTERNAL_MEMORY_HOST, external_memory_host)         \
     EXTENSION(KHR, DRAW_INDIRECT_COUNT, draw_indirect_count)                   \
     EXTENSION(KHR, DRIVER_PROPERTIES, driver_properties)                       \
     EXTENSION(KHR, PUSH_DESCRIPTOR, push_descriptor)                           \

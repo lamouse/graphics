@@ -50,7 +50,7 @@ class Device {
         [[nodiscard]] auto hasTimelineSemaphore() const -> bool;
         /// Returns the driver ID.
         [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR {
-            return properties_.driver_.driverID;
+            return  static_cast<vk::DriverIdKHR>(properties_.driver_.driverID);
         }
 
     private:
@@ -62,7 +62,7 @@ class Device {
         vk::Queue compute_queue_;
 
         uint32_t graphics_family_;
-        uint32_t present_family_;
+        uint32_t present_family_ = 0;
         uint32_t compute_family_;
         uint32_t instance_version_{};
         VmaAllocator allocator_;  ///< VMA allocator.
@@ -71,14 +71,14 @@ class Device {
         std::vector<size_t> valid_heap_memory_;  ///< Heaps used.
 
         struct Properties {
-                vk::PhysicalDeviceDriverProperties driver_;
-                vk::PhysicalDeviceSubgroupProperties subgroup_properties_;
-                vk::PhysicalDeviceFloatControlsProperties float_controls_;
-                vk::PhysicalDevicePushDescriptorPropertiesKHR push_descriptor_;
-                vk::PhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_;
-                vk::PhysicalDeviceTransformFeedbackPropertiesEXT transform_feedback_;
+                VkPhysicalDeviceDriverProperties driver_;
+                VkPhysicalDeviceSubgroupProperties subgroup_properties_;
+                VkPhysicalDeviceFloatControlsProperties float_controls_;
+                VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_;
+                VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_;
+                VkPhysicalDeviceTransformFeedbackPropertiesEXT transform_feedback_;
 
-                vk::PhysicalDeviceProperties properties_;
+                VkPhysicalDeviceProperties properties_;
         };
         utils::MiscFeatures misc_features_;
         uint64_t device_access_memory_{};  ///< Total size of device local memory in bytes.
@@ -133,13 +133,13 @@ class Device {
 
 #undef FEATURE_CORE
 #undef FEATURE_EXT
-                vk::PhysicalDeviceFeatures features;
+                VkPhysicalDeviceFeatures features;
         };
         Extensions extensions_{};
         Properties properties_;
         Features features_{};
-        vk::PhysicalDeviceFeatures2 features2_;
-        vk::PhysicalDeviceProperties2 properties2_;
+        VkPhysicalDeviceFeatures2 features2_{};
+        VkPhysicalDeviceProperties2 properties2_{};
 };
 
 }  // namespace render::vulkan

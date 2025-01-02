@@ -198,7 +198,8 @@ auto getNvidiaArchitecture(vk::PhysicalDevice physical,
     return NvidiaArchitecture::Arch_KeplerOrOlder;
 }
 
-vk::FormatFeatureFlags getFormatFeatures(vk::FormatProperties properties, FormatType format_type) {
+auto getFormatFeatures(vk::FormatProperties properties, FormatType format_type)
+    -> vk::FormatFeatureFlags {
     switch (format_type) {
         case FormatType::Linear:
             return properties.linearTilingFeatures;
@@ -211,7 +212,7 @@ vk::FormatFeatureFlags getFormatFeatures(vk::FormatProperties properties, Format
     }
 }
 
-bool checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) {
+auto checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) -> bool {
     if (driver_id == vk::DriverId::eIntelProprietaryWindows) {
         const uint32_t major = VK_API_VERSION_MAJOR(driver_version);
         const uint32_t minor = VK_API_VERSION_MINOR(driver_version);
@@ -234,7 +235,7 @@ auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions
     return output;
 }
 
-const char* VulkanException::what() const noexcept {
+auto VulkanException::what() const noexcept -> const char* {
     return string_VkResult(static_cast<VkResult>(result));
 }
 

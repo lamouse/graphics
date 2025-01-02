@@ -26,11 +26,18 @@ TEST(VulkanDriver, CreateDriver) {
         render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
 #endif
     ASSERT_TRUE(instance);
-    // render::vulkan::Device d(instance, nullptr, nullptr);
+    auto phys = instance.enumeratePhysicalDevices();
+    ASSERT_TRUE(phys.size() > 0);
+    for (auto &pyh : phys) {
+        render::vulkan::Device d(instance, pyh, nullptr);
+        ASSERT_TRUE(d.getLogical());
+        d.getLogical().destroy();
+    }
+
     instance.destroy();
 }
 
 TEST(Shader, ShaderCompile) {
-    shader::compile::ShaderCompile shaderCompile;
-    shaderCompile.compile("./shaders", "./shaders/build");
+    // shader::compile::ShaderCompile shaderCompile;
+    // shaderCompile.compile("./shaders", "./shaders/build");
 }

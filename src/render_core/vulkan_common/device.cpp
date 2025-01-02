@@ -16,7 +16,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     : instance_(instance), physical_(physical) {
     format_properties_ = utils::GetFormatProperties(physical_);
     const bool is_suitable = getSuitability(surface != nullptr);
-    const vk::DriverId driver_id = properties_.driver_.driverID;
+    const vk::DriverId driver_id = static_cast<vk::DriverId>(properties_.driver_.driverID);
     const auto device_id = properties_.properties_.deviceID;
     const bool is_radv = driver_id == ::vk::DriverId::eMesaRadv;
     const bool is_amd_driver =
@@ -47,20 +47,21 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         testDepthStencilBlits(vk::Format::eD24UnormS8Uint);
     misc_features_.is_blit_depth32_stencil8_supported =
         testDepthStencilBlits(vk::Format::eD32SfloatS8Uint);
+    vk::PhysicalDeviceProperties properties = properties_.properties_;
     misc_features_.is_optimal_astc_supported = computeIsOptimalAstcSupported();
     misc_features_.is_warp_potentially_bigger =
         !extensions_.subgroup_size_control ||
         properties_.subgroup_size_control_.maxSubgroupSize > GUEST_WARP_SIZE;
 
     misc_features_.is_integrated =
-        properties_.properties_.deviceType ==
+        properties.deviceType ==
         vk::PhysicalDeviceType::eIntegratedGpu;  // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
     misc_features_.is_virtual =
-        properties_.properties_.deviceType ==
+        properties.deviceType ==
         vk::PhysicalDeviceType::eVirtualGpu;  // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
     misc_features_.is_non_gpu =
-        properties_.properties_.deviceType == vk::PhysicalDeviceType::eOther ||
-        properties_.properties_.deviceType ==
+        properties.deviceType == vk::PhysicalDeviceType::eOther ||
+        properties.deviceType ==
             vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
 
     misc_features_.supports_d24_depth = isFormatSupported(
@@ -242,7 +243,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 
     auto vk_setting = common::settings::get<settings::RenderVulkan>();
     misc_features_.has_broken_compute =
-        utils::checkBrokenCompute(properties_.driver_.driverID,
+        utils::checkBrokenCompute(static_cast<vk::DriverId>(properties_.driver_.driverID),
                                   properties_.properties_.driverVersion) &&
         !vk_setting.enable_compute_pipelines;
     if (is_intel_anv || (is_qualcomm && !is_s8gen2)) {
@@ -294,13 +295,11 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         misc_features_.dynamic_state3_blending = false;
         misc_features_.dynamic_state3_enables = false;
     }
-    ::vk::PhysicalDeviceFeatures deviceFeatures;
-    deviceFeatures.setSamplerAnisotropy(VK_TRUE);
+
     vk::DeviceCreateInfo ci{};
     auto device_extends = utils::extensionListForVulkan(loaded_extensions_);
     ci.setQueueCreateInfos(queue_cis)
         .setPEnabledExtensionNames(device_extends)
-        .setPEnabledFeatures(&deviceFeatures)
         .setPNext(first_next);
 
     if (enable_validation) {
@@ -337,7 +336,9 @@ Device::~Device() { vmaDestroyAllocator(allocator_); }
 auto Device::getSuitability(bool requires_swapchain) -> bool {
     // Assume we will be suitable
     bool suitable = true;
+
     properties_.properties_ = physical_.getProperties();
+
     // Set instance version.
     instance_version_ = properties_.properties_.apiVersion;
     // Minimum of API version 1.1 is required. (This is well-supported.)
@@ -347,7 +348,7 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 
     // Get the set of supported extensions.
     supported_extensions_.clear();
-    for (const VkExtensionProperties& property : extension_properties) {
+    for (const vk::ExtensionProperties& property : extension_properties) {
         supported_extensions_.insert(property.extensionName);
     }
     // Generate list of extensions to load.
@@ -398,6 +399,8 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 
 #undef LOG_EXTENSION
 #undef CHECK_EXTENSION
+    // Generate the linked list of features to test.
+    features2_.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     // Set next pointer.
     void** next = &features2_.pNext;
 
@@ -430,7 +433,7 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 
 #undef EXT_FEATURE
 #undef FEATURE
-    features2_ = physical_.getFeatures2();
+    vkGetPhysicalDeviceFeatures2(physical_, &features2_);
     features_.features = features2_.features;
 
     // Some features are mandatory. Check those.
@@ -639,11 +642,17 @@ void Device::removeExtensionFeature(bool& extension, Feature& feature,
     // Save sType and pNext for chain.
     VkStructureType sType = feature.sType;
     void* pNext = feature.pNext;
-
+    auto current = static_cast<VkBaseOutStructure*>(features2_.pNext);
     // Clear feature struct and restore chain.
-    feature = {};
-    feature.sType = sType;
-    feature.pNext = pNext;
+    while (current) {
+        if (current->pNext->sType == sType) {
+            current->pNext = static_cast<VkBaseOutStructure*>(pNext);
+            break;
+        }
+   
+        current = current->pNext;
+
+    }
 }
 
 void Device::removeExtension(bool& extension, const std::string& extension_name) {
