@@ -61,8 +61,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         vk::PhysicalDeviceType::eVirtualGpu;  // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
     misc_features_.is_non_gpu =
         properties.deviceType == vk::PhysicalDeviceType::eOther ||
-        properties.deviceType ==
-            vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
+        properties.deviceType == vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
 
     misc_features_.supports_d24_depth = isFormatSupported(
         vk::Format::eD24UnormS8Uint,  // VK_FORMAT_D24_UNORM_S8_UINT,
@@ -642,16 +641,15 @@ void Device::removeExtensionFeature(bool& extension, Feature& feature,
     // Save sType and pNext for chain.
     VkStructureType sType = feature.sType;
     void* pNext = feature.pNext;
-    auto current = static_cast<VkBaseOutStructure*>(features2_.pNext);
+    auto* current = static_cast<VkBaseOutStructure*>(features2_.pNext);
     // Clear feature struct and restore chain.
     while (current) {
         if (current->pNext->sType == sType) {
             current->pNext = static_cast<VkBaseOutStructure*>(pNext);
             break;
         }
-   
-        current = current->pNext;
 
+        current = current->pNext;
     }
 }
 

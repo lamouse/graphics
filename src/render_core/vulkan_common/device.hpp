@@ -50,7 +50,7 @@ class Device {
         [[nodiscard]] auto hasTimelineSemaphore() const -> bool;
         /// Returns the driver ID.
         [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR {
-            return  static_cast<vk::DriverIdKHR>(properties_.driver_.driverID);
+            return static_cast<vk::DriverIdKHR>(properties_.driver_.driverID);
         }
 
     private:
