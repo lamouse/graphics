@@ -17,7 +17,7 @@ class Swapchain {
         auto acquireNextImage() -> bool;
         void present(vk::Semaphore render_semaphore);
         /// Returns true when the swapchain needs to be recreated.
-        [[nodiscard]] auto NeedsRecreation() const -> bool {
+        [[nodiscard]] auto needsRecreation() const -> bool {
             return isSubOptimal() || needsPresentModeUpdate();
         }
         /// Returns true when the swapchain is outdated.
@@ -39,11 +39,11 @@ class Swapchain {
         [[nodiscard]] auto currentImage() const -> vk::Image { return images_[image_index_]; }
 
         [[nodiscard]] auto getImageViewFormat() const -> vk::Format { return image_view_format_; }
-        [[nodiscard]] auto CurrentPresentSemaphore() const -> vk::Semaphore {
+        [[nodiscard]] auto currentPresentSemaphore() const -> vk::Semaphore {
             return present_semaphores_[frame_index_];
         }
 
-        [[nodiscard]] auto CurrentRenderSemaphore() const -> vk::Semaphore {
+        [[nodiscard]] auto currentRenderSemaphore() const -> vk::Semaphore {
             return render_semaphores_[frame_index_];
         }
 

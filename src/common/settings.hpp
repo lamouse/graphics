@@ -1,6 +1,8 @@
 #pragma once
 #include "common_settings.hpp"
 #include "settings_enums.hpp"
+#undef max
+#undef min
 namespace settings {
 
 class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
@@ -10,6 +12,8 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
     public:
         bool renderer_shader_feedback = false;
         bool enable_compute_pipelines = true;
+        bool use_present_thread = false;
+        bool async_presentation = false;
         enums::VSyncMode vSyncMode = enums::VSyncMode::Mailbox;
         enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
         static auto get() { return RenderVulkan{}; }

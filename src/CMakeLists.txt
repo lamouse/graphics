@@ -160,7 +160,7 @@ else()
     endif()
 endif()
 
-
+add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(shader_tools)
 add_subdirectory(render_core)

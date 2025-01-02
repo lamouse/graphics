@@ -3,9 +3,9 @@
 namespace render::vulkan {
 namespace {
 
-auto createColorAttachmentDescription(auto& formats,
-                                      vk::SampleCountFlagBits samples, bool need_resolvet,
-                                      bool need_store) -> std::vector<vk::AttachmentDescription> {
+auto createColorAttachmentDescription(auto& formats, vk::SampleCountFlagBits samples,
+                                      bool need_resolvet, bool need_store)
+    -> std::vector<vk::AttachmentDescription> {
     std::vector<vk::AttachmentDescription> attachments;
     for (auto format : formats) {
         if (format == vk::Format::eUndefined) {
