@@ -93,11 +93,12 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
 
 PresentManager::PresentManager(const vk::Instance& instance,
                                core::frontend::BaseWindow& render_window, const Device& device,
-                               scheduler::Scheduler& scheduler_, Swapchain& swapchain,
-                               SurfaceKHR& surface)
+                               MemoryAllocator& memory_allocator, scheduler::Scheduler& scheduler_,
+                               Swapchain& swapchain, SurfaceKHR& surface)
     : instance_{instance},
       render_window_{render_window},
       device_{device},
+      memory_allocator_(memory_allocator),
       scheduler_{scheduler_},
       swapchain_{swapchain},
       surface_{surface},
@@ -122,7 +123,7 @@ PresentManager::PresentManager(const vk::Instance& instance,
         Frame& frame = frames_[i];
         frame.cmdbuf = vk::CommandBuffer{cmdbuffers[i]};
         vk::SemaphoreCreateInfo semaphore_info;
-        frame.render_ready = dld.createSemaphore(semaphore_info);
+        frame.render_ready = Semaphore{dld.createSemaphore(semaphore_info), dld};
         vk::FenceCreateInfo fence_info;
         fence_info.setFlags(vk::FenceCreateFlagBits::eSignaled);
         frame.present_done = Fence(dld.createFence(fence_info), dld);
@@ -314,7 +315,7 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
 
     const vk::Semaphore present_semaphore = swapchain_.currentPresentSemaphore();
     const vk::Semaphore render_semaphore = swapchain_.currentRenderSemaphore();
-    const std::array wait_semaphores = {present_semaphore, frame->render_ready};
+    const std::array wait_semaphores = {present_semaphore, *frame->render_ready};
 
     static constexpr std::array<vk::PipelineStageFlags, 2> wait_stage_masks{
         vk::PipelineStageFlagBits::eColorAttachmentOutput,
@@ -396,70 +397,53 @@ void PresentManager::waitPresent() {
 
 void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
                                    vk::Format image_view_format, vk::RenderPass rd) {
-    //   auto& dld = device_.getLogical();
+    const auto& dld = device_.getLogical();
 
     frame->width = width;
     frame->height = height;
 
-    //    frame->image = memory_allocator.CreateImage({
-    //        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-    //        .pNext = nullptr,
-    //        .flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
-    //        .imageType = VK_IMAGE_TYPE_2D,
-    //        .format = swapchain_.getImageFormat(),
-    //        .extent =
-    //            {
-    //                .width = width,
-    //                .height = height,
-    //                .depth = 1,
-    //            },
-    //        .mipLevels = 1,
-    //        .arrayLayers = 1,
-    //        .samples = VK_SAMPLE_COUNT_1_BIT,
-    //        .tiling = VK_IMAGE_TILING_OPTIMAL,
-    //        .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-    //        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-    //        .queueFamilyIndexCount = 0,
-    //        .pQueueFamilyIndices = nullptr,
-    //        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-    //        });
-    //
-    //    frame->image_view = dld.createImageView({
-    //        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-    //        .pNext = nullptr,
-    //        .flags = 0,
-    //        .image = *frame->image,
-    //        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-    //        .format = image_view_format,
-    //        .components =
-    //            {
-    //                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-    //                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-    //                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-    //                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
-    //            },
-    //        .subresourceRange =
-    //            {
-    //                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-    //                .baseMipLevel = 0,
-    //                .levelCount = 1,
-    //                .baseArrayLayer = 0,
-    //                .layerCount = 1,
-    //            },
-    //        });
-    //
-    //    const VkImageView image_view{ *frame->image_view };
-    //    frame->framebuffer = dld.createFramebuffer({
-    //        .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-    //        .pNext = nullptr,
-    //        .flags = 0,
-    //        .renderPass = rd,
-    //        .attachmentCount = 1,
-    //        .pAttachments = &image_view,
-    //        .width = width,
-    //        .height = height,
-    //        .layers = 1,
-    //        });
+    frame->image = memory_allocator_.createImage({
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = static_cast<VkFormat>(swapchain_.getImageFormat()),
+        .extent =
+            {
+                .width = width,
+                .height = height,
+                .depth = 1,
+            },
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    });
+    vk::ImageViewCreateInfo{{},
+                            *frame->image,
+                            vk::ImageViewType::e2D,
+                            image_view_format,
+                            {},
+                            vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
+    frame->image_view =
+        ImageView{dld.createImageView(vk::ImageViewCreateInfo{
+                      {},
+                      *frame->image,
+                      vk::ImageViewType::e2D,
+                      image_view_format,
+                      {},
+                      vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}}),
+                  dld};
+
+    const vk::ImageView image_view{*frame->image_view};
+    frame->framebuffer = Framebuffer{
+        dld.createFramebuffer(vk::FramebufferCreateInfo{{}, rd, image_view, width, height, 1}),
+        dld};
 }
 
 }  // namespace render::vulkan

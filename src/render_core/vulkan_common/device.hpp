@@ -48,6 +48,10 @@ class Device {
             return extensions_.swapchain_mutable_format;
         }
 
+        /// Returns true if the device supports VK_KHR_push_descriptor.
+        [[nodiscard]] auto isKhrPushDescriptorSupported() const -> bool {
+            return extensions_.push_descriptor;
+        }
         [[nodiscard]] auto hasTimelineSemaphore() const -> bool;
         /// Returns the driver ID.
         [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR {
@@ -64,6 +68,13 @@ class Device {
             -> DeviceMemory;
         [[nodiscard]] auto createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
             -> VulkanDescriptorPool;
+        /// Returns the maximum number of push descriptors.
+        [[nodiscard]] auto maxPushDescriptors() const -> u32 {
+            return properties_.push_descriptor_.maxPushDescriptors;
+        }
+        auto GetMaxVertexInputAttributes() const -> u32 {
+            return properties_.properties_.limits.maxVertexInputAttributes;
+        }
 
     private:
         vk::Instance instance_;

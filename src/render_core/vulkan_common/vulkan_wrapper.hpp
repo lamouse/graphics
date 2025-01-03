@@ -41,8 +41,11 @@ inline void destroy(vk::Device owner, vk::PipelineLayout handle) noexcept { owne
 inline void destroy(vk::Device owner, vk::PipelineCache handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::RenderPass handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::Sampler handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::Semaphore handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::QueryPool handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::DescriptorPool handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::Buffer handle) noexcept { owner.destroy(handle); }
+
 inline void destroy(vk::Device owner, vk::DescriptorSetLayout handle) noexcept {
     owner.destroy(handle);
 }

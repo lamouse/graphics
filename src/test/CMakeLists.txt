@@ -24,6 +24,7 @@ add_executable(
   hello_test
   a.cpp
   vulkan_test.cpp
+  common_test.cpp
 )
 target_link_libraries(
   hello_test PRIVATE GTest::gtest GTest::gtest_main

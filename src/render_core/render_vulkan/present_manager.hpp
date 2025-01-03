@@ -6,6 +6,7 @@
 #include <mutex>
 #include <thread>
 #include "vulkan_common/vulkan_wrapper.hpp"
+#include "vulkan_common/memory_allocator.hpp"
 namespace core::frontend {
 class BaseWindow;
 }
@@ -22,15 +23,15 @@ struct Frame {
         ImageView image_view;
         Framebuffer framebuffer;
         vk::CommandBuffer cmdbuf;
-        vk::Semaphore render_ready;
+        Semaphore render_ready;
         Fence present_done;
 };
 
 class PresentManager {
     public:
         PresentManager(const vk::Instance& instance, core::frontend::BaseWindow& render_window,
-                       const Device& device, scheduler::Scheduler& scheduler, Swapchain& swapchain,
-                       SurfaceKHR& surface);
+                       const Device& device, MemoryAllocator& memory_allocator,
+                       scheduler::Scheduler& scheduler, Swapchain& swapchain, SurfaceKHR& surface);
         ~PresentManager() = default;
         /// Returns the last used presentation frame
         auto getRenderFrame() -> Frame*;
@@ -60,6 +61,7 @@ class PresentManager {
         const vk::Instance instance_;
         core::frontend::BaseWindow& render_window_;
         const Device& device_;
+        MemoryAllocator& memory_allocator_;
         scheduler::Scheduler& scheduler_;
         Swapchain& swapchain_;
         SurfaceKHR& surface_;
