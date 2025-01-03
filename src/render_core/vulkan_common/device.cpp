@@ -872,4 +872,11 @@ auto Device::hasTimelineSemaphore() const -> bool {
     }
     return static_cast<bool>(features_.timeline_semaphore.timelineSemaphore);
 }
+
+DeviceMemory Device::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept {
+    VkDeviceMemory memory;
+    memory = getLogical().allocateMemory(ai);
+    return DeviceMemory(memory, getLogical());
+}
+
 }  // namespace render::vulkan

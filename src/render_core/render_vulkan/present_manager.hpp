@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include "vulkan_common/vulkan_wrapper.hpp"
 namespace core::frontend {
 class BaseWindow;
 }
@@ -29,7 +30,7 @@ class PresentManager {
     public:
         PresentManager(const vk::Instance& instance, core::frontend::BaseWindow& render_window,
                        const Device& device, scheduler::Scheduler& scheduler, Swapchain& swapchain,
-                       vk::SurfaceKHR& surface);
+                       SurfaceKHR& surface);
         ~PresentManager() = default;
         /// Returns the last used presentation frame
         auto getRenderFrame() -> Frame*;
@@ -39,7 +40,7 @@ class PresentManager {
 
         /// Recreates the present frame to match the provided parameters
         void recreateFrame(Frame* frame, uint32_t width, uint32_t height,
-                           VkFormat image_view_format, vk::RenderPass rd);
+                           vk::Format image_view_format, vk::RenderPass rd);
 
         /// Waits for the present thread to finish presenting all queued frames.
         void waitPresent();
@@ -61,7 +62,7 @@ class PresentManager {
         const Device& device_;
         scheduler::Scheduler& scheduler_;
         Swapchain& swapchain_;
-        vk::SurfaceKHR& surface_;
+        SurfaceKHR& surface_;
         vk::CommandPool cmdpool_;
         std::vector<Frame> frames_;
         std::queue<Frame*> present_queue_;

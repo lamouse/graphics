@@ -5,11 +5,12 @@
 #include <condition_variable>
 #include <queue>
 #include "common/common_funcs.hpp"
+#include "vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
 class Device;
 namespace semaphore {
 class MasterSemaphore {
-        using Waitable = std::pair<uint64_t, vk::Fence>;
+        using Waitable = std::pair<uint64_t, Fence>;
 
     public:
         CLASS_NON_COPYABLE(MasterSemaphore);
@@ -57,7 +58,7 @@ class MasterSemaphore {
 
         void waitThread(std::stop_token token);
 
-        auto getFreeFence() -> vk::Fence;
+        auto getFreeFence() -> Fence;
 
         const Device& device_;                   ///< Device.
         vk::Semaphore semaphore_;                ///< Timeline semaphore.
@@ -69,9 +70,9 @@ class MasterSemaphore {
         std::condition_variable_any wait_cv_;
         std::queue<Waitable>
             wait_queue_;  ///< Queue for the fences to be waited on by the wait thread.
-        std::deque<vk::Fence> free_queue_;  ///< Holds available fences for submission.
-        std::jthread debug_thread_;         ///< Debug thread to workaround validation layer bugs.
-        std::jthread wait_thread_;          ///< Helper thread that waits for submitted fences.
+        std::deque<Fence> free_queue_;  ///< Holds available fences for submission.
+        std::jthread debug_thread_;     ///< Debug thread to workaround validation layer bugs.
+        std::jthread wait_thread_;      ///< Helper thread that waits for submitted fences.
 };
 }  // namespace semaphore
 }  // namespace render::vulkan

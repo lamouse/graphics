@@ -6,7 +6,7 @@
 #include "common/settings.hpp"
 #include "common/thread.hpp"
 #include "vulkan_common/surface.hpp"
-#include "vulkan_common/device_utils.hpp"
+#include "vulkan_common/vulkan_wrapper.hpp"
 #include "common/microprofile.hpp"
 #if defined min
 #undef min
@@ -94,7 +94,7 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
 PresentManager::PresentManager(const vk::Instance& instance,
                                core::frontend::BaseWindow& render_window, const Device& device,
                                scheduler::Scheduler& scheduler_, Swapchain& swapchain,
-                               vk::SurfaceKHR& surface)
+                               SurfaceKHR& surface)
     : instance_{instance},
       render_window_{render_window},
       device_{device},
@@ -170,7 +170,7 @@ void PresentManager::presentThread(std::stop_token token) {
 }
 
 void PresentManager::recreateSwapchain(Frame* frame) {
-    swapchain_.create(surface_, frame->width, frame->height);
+    swapchain_.create(*surface_, frame->width, frame->height);
     setImageCount();
 }
 void PresentManager::copyToSwapchain(Frame* frame) {
@@ -338,6 +338,128 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
 
     // Present
     swapchain_.present(render_semaphore);
+}
+
+auto PresentManager::getRenderFrame() -> Frame* {
+    MICROPROFILE_SCOPE(Vulkan_WaitPresent);
+
+    // Wait for free presentation frames
+    std::unique_lock lock{free_mutex_};
+    free_cv_.wait(lock, [this] { return !free_queue_.empty(); });
+
+    // Take the frame from the queue
+    Frame* frame = free_queue_.front();
+    free_queue_.pop();
+
+    // Wait for the presentation to be finished so all frame resources are free
+    auto result = device_.getLogical().waitForFences(frame->present_done, true, UINT64_MAX);
+    if (result != vk::Result::eSuccess) {
+        spdlog::error("Failed to wait for present done fence: {}", vk::to_string(result));
+        throw utils::VulkanException(result);
+    }
+    device_.getLogical().resetFences(frame->present_done);
+
+    return frame;
+}
+
+void PresentManager::present(Frame* frame) {
+    if (!use_present_thread_) {
+        scheduler_.waitWorker();
+        copyToSwapchain(frame);
+        free_queue_.push(frame);
+        return;
+    }
+
+    scheduler_.record([this, frame](vk::CommandBuffer) {
+        std::unique_lock lock{queue_mutex_};
+        present_queue_.push(frame);
+        frame_cv_.notify_one();
+    });
+}
+
+void PresentManager::waitPresent() {
+    if (!use_present_thread_) {
+        return;
+    }
+
+    // Wait for the present queue to be empty
+    {
+        std::unique_lock queue_lock{queue_mutex_};
+        frame_cv_.wait(queue_lock, [this] { return present_queue_.empty(); });
+    }
+
+    // The above condition will be satisfied when the last frame is taken from the queue.
+    // To ensure that frame has been presented as well take hold of the swapchain
+    // mutex.
+    std::scoped_lock swapchain_lock{swapchain_mutex_};
+}
+
+void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
+                                   vk::Format image_view_format, vk::RenderPass rd) {
+    //   auto& dld = device_.getLogical();
+
+    frame->width = width;
+    frame->height = height;
+
+    //    frame->image = memory_allocator.CreateImage({
+    //        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    //        .pNext = nullptr,
+    //        .flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
+    //        .imageType = VK_IMAGE_TYPE_2D,
+    //        .format = swapchain_.getImageFormat(),
+    //        .extent =
+    //            {
+    //                .width = width,
+    //                .height = height,
+    //                .depth = 1,
+    //            },
+    //        .mipLevels = 1,
+    //        .arrayLayers = 1,
+    //        .samples = VK_SAMPLE_COUNT_1_BIT,
+    //        .tiling = VK_IMAGE_TILING_OPTIMAL,
+    //        .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+    //        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+    //        .queueFamilyIndexCount = 0,
+    //        .pQueueFamilyIndices = nullptr,
+    //        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    //        });
+    //
+    //    frame->image_view = dld.createImageView({
+    //        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    //        .pNext = nullptr,
+    //        .flags = 0,
+    //        .image = *frame->image,
+    //        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+    //        .format = image_view_format,
+    //        .components =
+    //            {
+    //                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+    //                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+    //                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+    //                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+    //            },
+    //        .subresourceRange =
+    //            {
+    //                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+    //                .baseMipLevel = 0,
+    //                .levelCount = 1,
+    //                .baseArrayLayer = 0,
+    //                .layerCount = 1,
+    //            },
+    //        });
+    //
+    //    const VkImageView image_view{ *frame->image_view };
+    //    frame->framebuffer = dld.createFramebuffer({
+    //        .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+    //        .pNext = nullptr,
+    //        .flags = 0,
+    //        .renderPass = rd,
+    //        .attachmentCount = 1,
+    //        .pAttachments = &image_view,
+    //        .width = width,
+    //        .height = height,
+    //        .layers = 1,
+    //        });
 }
 
 }  // namespace render::vulkan

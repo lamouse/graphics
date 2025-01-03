@@ -30,6 +30,27 @@ class Scheduler {
             return *master_semaphore_;
         }
 
+        void waitWorker();
+        void dispatchWork();
+        /// Send work to a separate thread.
+        template <typename T>
+            requires std::is_invocable_v<T, vk::CommandBuffer, vk::CommandBuffer>
+        void recordWithUploadBuffer(T&& command) {
+            if (chunk_->record(command)) {
+                return;
+            }
+            dispatchWork();
+            (void)chunk_->record(command);
+        }
+        template <typename T>
+            requires std::is_invocable_v<T, vk::CommandBuffer>
+        void record(T&& c) {
+            this->recordWithUploadBuffer(
+                [command = std::forward<T>(c)](vk::CommandBuffer cmdbuf, vk::CommandBuffer) {
+                    command(cmdbuf);
+                });
+        }
+
     private:
         class Command {
             public:

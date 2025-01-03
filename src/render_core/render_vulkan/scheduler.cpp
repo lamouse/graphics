@@ -2,8 +2,10 @@
 #include "master_semaphore.hpp"
 #include "command_pool.hpp"
 #include "common/polyfill_thread.hpp"
-#include "command_pool.hpp"
+#include "common/microprofile.hpp"
+
 namespace render::vulkan::scheduler {
+MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
     auto command = first;
@@ -101,6 +103,32 @@ void Scheduler::acquireNewChunk() {
         chunk_ = std::move(chunk_reserve_.back());
         chunk_reserve_.pop_back();
     }
+}
+
+void Scheduler::waitWorker() {
+    MICROPROFILE_SCOPE(Vulkan_WaitForWorker);
+    dispatchWork();
+
+    // Ensure the queue is drained.
+    {
+        std::unique_lock ql{queue_mutex_};
+        event_cv_.wait(ql, [this] { return work_queue_.empty(); });
+    }
+
+    // Now wait for execution to finish.
+    std::scoped_lock el{execution_mutex_};
+}
+
+void Scheduler::dispatchWork() {
+    if (chunk_->empty()) {
+        return;
+    }
+    {
+        std::scoped_lock ql{queue_mutex_};
+        work_queue_.push(std::move(chunk_));
+    }
+    event_cv_.notify_all();
+    acquireNewChunk();
 }
 
 }  // namespace render::vulkan::scheduler

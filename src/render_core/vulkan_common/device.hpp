@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <set>
 #include "vma.hpp"
+#include "vulkan_wrapper.hpp"
 /**
  * @brief vulkan device
  *
@@ -52,6 +53,14 @@ class Device {
         [[nodiscard]] auto getDriverID() const -> vk::DriverIdKHR {
             return static_cast<vk::DriverIdKHR>(properties_.driver_.driverID);
         }
+        /// Returns the VMA allocator.
+        [[nodiscard]] auto getAllocator() const -> VmaAllocator { return allocator_; }
+        /// Returns true when a known debugging tool is attached.
+        [[nodiscard]] auto hasDebuggingToolAttached() const -> bool {
+            return misc_features_.has_renderdoc || misc_features_.has_nsight_graphics ||
+                   misc_features_.has_radeon_gpu_profiler;
+        }
+        DeviceMemory tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept;
 
     private:
         vk::Instance instance_;

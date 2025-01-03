@@ -3,7 +3,7 @@
 #include "vulkan_common.hpp"
 namespace render::vulkan {
 auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi)
-    -> vk::SurfaceKHR {
+    -> SurfaceKHR {
     VkSurfaceKHR unsafe_surface = nullptr;
 
 #ifdef _WIN32
@@ -18,6 +18,7 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
         if (vkCreateWin32SurfaceKHR(instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
+        return SurfaceKHR{unsafe_surface, instance};
     }
 #elif defined(__APPLE__)
     if (wsi.type == core::frontend::WindowSystemType::Cocoa) {
@@ -30,6 +31,7 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
         if (result != VK_SUCCESS) {
             throw std::runtime_error("Failed to create Metal surface");
         }
+        return SurfaceKHR{unsafe_surface, instance};
     }
 #elif defined(__ANDROID__)
     if (window_info.type == Core::Frontend::WindowSystemType::Android) {
@@ -74,6 +76,7 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
         }
     }
 #endif
-    return unsafe_surface;
+    return SurfaceKHR{unsafe_surface, instance};
+    ;
 }
 }  // namespace render::vulkan

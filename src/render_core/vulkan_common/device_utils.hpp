@@ -202,18 +202,4 @@ auto getFormatFeatures(vk::FormatProperties properties, FormatType format_type)
 auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions)
     -> std::vector<const char*>;
 
-class VulkanException final : public std::exception {
-    public:
-        /// Construct the exception with a result.
-        /// @pre result != VK_SUCCESS
-        explicit VulkanException(vk::Result result_) : result{result_} {}
-        ~VulkanException() override = default;
-
-        [[nodiscard]] auto what() const noexcept -> const char* override;
-        [[nodiscard]] auto getResult() const noexcept -> vk::Result { return result; }
-
-    private:
-        vk::Result result;
-};
-
 }  // namespace render::vulkan::utils

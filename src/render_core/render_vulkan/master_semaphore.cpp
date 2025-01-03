@@ -4,14 +4,17 @@
 #include <utility>
 #include "common/polyfill_thread.hpp"
 #include <spdlog/spdlog.h>
+#undef max
+#undef min
 namespace render::vulkan::semaphore {
 constexpr uint64_t FENCE_RESERVE_SIZE = 8;
 MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
     if (!device.hasTimelineSemaphore()) {
         static constexpr vk::FenceCreateInfo fence_ci;
         free_queue_.resize(FENCE_RESERVE_SIZE);
-        std::ranges::generate(free_queue_,
-                              [&] { return device.getLogical().createFence(fence_ci); });
+        std::ranges::generate(free_queue_, [&] {
+            return Fence(device.getLogical().createFence(fence_ci), device.getLogical());
+        });
         wait_thread_ =
             std::jthread([this](std::stop_token token) { waitThread(std::move(token)); });
         return;
@@ -20,7 +23,7 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
 void MasterSemaphore::waitThread(std::stop_token token) {
     while (!token.stop_requested()) {
         uint64_t host_tick{};
-        vk::Fence fence;
+        Fence fence;
         {
             std::unique_lock lock{wait_mutex_};
             common::thread::condvarWait(wait_cv_, lock, token,
@@ -28,34 +31,34 @@ void MasterSemaphore::waitThread(std::stop_token token) {
             if (token.stop_requested()) {
                 return;
             }
-            std::tie(host_tick, fence) = wait_queue_.front();
+            std::tie(host_tick, fence) = std::move(wait_queue_.front());
             wait_queue_.pop();
         }
 
-        auto waitResult = device_.getLogical().waitForFences(
-            fence, VK_TRUE, ::std::numeric_limits<uint64_t>::max());
+        auto waitResult = fence.Wait();
         if (waitResult != ::vk::Result::eSuccess) {
             throw ::std::runtime_error("wait fences");
         }
-        device_.getLogical().resetFences(fence);
+        fence.Reset();
 
         {
             std::scoped_lock lock{free_mutex_};
-            free_queue_.push_front(fence);
+            free_queue_.push_front(std::move(fence));
             gpu_tick_.store(host_tick);
         }
         free_cv_.notify_one();
     }
 }
 
-auto MasterSemaphore::getFreeFence() -> vk::Fence {
+auto MasterSemaphore::getFreeFence() -> Fence {
     std::scoped_lock lock{free_mutex_};
     if (free_queue_.empty()) {
         static constexpr VkFenceCreateInfo fence_ci{};
-        return device_.getLogical().createFence(fence_ci);
+        auto fence = device_.getLogical().createFence(fence_ci);
+        return Fence{fence, device_.getLogical()};
     }
 
-    auto fence = free_queue_.back();
+    auto fence = std::move(free_queue_.back());
     free_queue_.pop_back();
     return fence;
 }
@@ -80,14 +83,14 @@ void MasterSemaphore::submitQueueFence(vk::CommandBuffer& cmdbuf, vk::CommandBuf
 
     auto fence = getFreeFence();
     try {
-        device_.getGraphicsQueue().submit(submit_info, fence);
+        device_.getGraphicsQueue().submit(submit_info, *fence);
         std::scoped_lock lock{wait_mutex_};
-        wait_queue_.emplace(host_tick, fence);
+        wait_queue_.emplace(host_tick, std::move(fence));
         wait_cv_.notify_one();
     } catch (std::exception& e) {
         SPDLOG_ERROR("GraphicsQueue submit error: {}", e.what());
         std::scoped_lock lock{wait_mutex_};
-        wait_queue_.emplace(host_tick, fence);
+        wait_queue_.emplace(host_tick, std::move(fence));
         wait_cv_.notify_one();
         throw e;
     }

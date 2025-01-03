@@ -125,8 +125,8 @@ App::App(const Config& config) {
     core::Device::init(
         requiredInstanceExtends, deviceExtensions,
         [this](VkInstance instance) -> VkSurfaceKHR {
-            // return dynamic_cast<Window*>(window.get())->getSurface(instance);
-            return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
+            return dynamic_cast<Window*>(window.get())->getSurface(instance);
+            // return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
         },
         vulkan_config.validation_layers);
 }

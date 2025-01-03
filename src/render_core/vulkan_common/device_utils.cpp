@@ -234,9 +234,4 @@ auto extensionListForVulkan(const std::set<std::string, std::less<>>& extensions
     }
     return output;
 }
-
-auto VulkanException::what() const noexcept -> const char* {
-    return string_VkResult(static_cast<VkResult>(result));
-}
-
 }  // namespace render::vulkan::utils

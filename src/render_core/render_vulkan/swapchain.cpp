@@ -4,9 +4,9 @@
 #include "vulkan_common/device.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
-#include "vulkan_common/device_utils.hpp"
 #include <vulkan/vk_enum_string_helper.h>
 #include "scheduler.hpp"
+#include "vulkan_common/vulkan_wrapper.hpp"
 #if defined max
 #undef max
 #endif

@@ -3,7 +3,102 @@
 #include "common/common_funcs.hpp"
 #include <vector>
 #include <type_traits>
+#include "vk_mem_alloc.h"
+#include "common/common_types.hpp"
+#include <span>
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+#ifdef _MSC_VER
+#pragma warning(disable : 26812)  // Disable prefer enum class over enum
+#endif
+#undef max
+
+VK_DEFINE_HANDLE(VmaAllocator)
+VK_DEFINE_HANDLE(VmaAllocation)
 namespace render::vulkan::wrapper {
+/// Dummy type used to specify a handle has no owner.
+struct NoOwner {};
+inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::Image handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::DeviceMemory val) noexcept { owner.free(val); }
+inline void destroy(vk::Device owner, vk::ImageView handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::BufferView handle) noexcept { owner.destroy(handle); }
+
+inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.destroy(val); }
+inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
+inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
+    owner.destroyDebugUtilsMessengerEXT(handle, nullptr,
+                                        vk::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+}
+inline void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle) noexcept {
+    owner.destroyDebugReportCallbackEXT(handle, nullptr,
+                                        vk::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+}
+
+template <typename Type, typename OwnerType>
+class Handle {
+    public:
+        /// Construct a handle and hold it's ownership.
+        explicit Handle(Type handle_, OwnerType owner_) noexcept : handle{handle_}, owner{owner_} {}
+
+        /// Construct an empty handle.
+        Handle() = default;
+
+        /// Construct an empty handle.
+        Handle(std::nullptr_t) {}
+
+        /// Copying Vulkan objects is not supported and will never be.
+        Handle(const Handle&) = delete;
+        auto operator=(const Handle&) -> Handle& = delete;
+
+        /// Construct a handle transferring the ownership from another handle.
+        Handle(Handle&& rhs) noexcept
+            : handle{std::exchange(rhs.handle, nullptr)}, owner{rhs.owner} {}
+
+        /// Assign the current handle transferring the ownership from another handle.
+        /// Destroys any previously held object.
+        auto operator=(Handle&& rhs) noexcept -> Handle& {
+            Release();
+            handle = std::exchange(rhs.handle, nullptr);
+            owner = rhs.owner;
+            return *this;
+        }
+
+        /// Destroys the current handle if it existed.
+        ~Handle() noexcept { Release(); }
+
+        /// Destroys any held object.
+        void reset() noexcept {
+            Release();
+            handle = nullptr;
+        }
+
+        /// Returns the address of the held object.
+        /// Intended for Vulkan structures that expect a pointer to an array.
+        [[nodiscard]] auto address() const noexcept -> const Type* {
+            return std::addressof(handle);
+        }
+
+        /// Returns the held Vulkan handle.
+        auto operator*() const noexcept -> Type { return handle; }
+
+        /// Returns true when there's a held object.
+        explicit operator bool() const noexcept { return handle != nullptr; }
+
+    protected:
+        Type handle = nullptr;
+        OwnerType owner = nullptr;
+
+    private:
+        /// Destroys the held object if it exists.
+        void Release() noexcept {
+            if (handle) {
+                destroy(owner, handle);
+            }
+        }
+};
+
 /// Array of a pool allocation.
 /// Analogue to std::vector
 template <typename AllocationType, typename PoolType>
@@ -96,6 +191,262 @@ class PoolAllocations {
 }  // namespace render::vulkan::wrapper
 
 namespace render::vulkan {
+
+namespace utils {
+class VulkanException final : public std::exception {
+    public:
+        /// Construct the exception with a result.
+        /// @pre result != VK_SUCCESS
+        explicit VulkanException(vk::Result result_) : result{result_} {}
+        explicit VulkanException(VkResult result_) : result{static_cast<vk::Result>(result_)} {}
+        ~VulkanException() override = default;
+
+        [[nodiscard]] auto what() const noexcept -> const char* override;
+        [[nodiscard]] auto getResult() const noexcept -> vk::Result { return result; }
+
+    private:
+        vk::Result result;
+};
+
+/// Throws a Vulkan exception if result is not success.
+inline void check(vk::Result result) {
+    if (result != vk::Result::eSuccess) {
+        throw VulkanException(result);
+    }
+}
+inline void check(VkResult result) {
+    if (result != VK_SUCCESS) {
+        throw VulkanException(static_cast<vk::Result>(result));
+    }
+}
+}  // namespace utils
 using CommandBuffers = wrapper::PoolAllocations<vk::CommandBuffer, vk::CommandPool>;
 using DescriptorSets = wrapper::PoolAllocations<vk::DescriptorSet, vk::DescriptorPool>;
+using DebugUtilsMessenger = wrapper::Handle<vk::DebugUtilsMessengerEXT, vk::Instance>;
+using DebugReportCallback = wrapper::Handle<vk::DebugReportCallbackEXT, vk::Instance>;
+using SurfaceKHR = wrapper::Handle<vk::SurfaceKHR, vk::Instance>;
+class Instance : public wrapper::Handle<vk::Instance, wrapper::NoOwner> {
+        using Handle<vk::Instance, wrapper::NoOwner>::Handle;
+
+    public:
+        /// Creates a Vulkan instance.
+        /// @throw Exception on initialization error.
+        static auto Create(u32 version, std::span<const char*> layers,
+                           std::span<const char*> extensions) -> Instance;
+
+        /// Enumerates physical devices.
+        /// @return Physical devices and an empty handle on failure.
+        /// @throw Exception on Vulkan error.
+        [[nodiscard]] auto EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevice>;
+
+        /// Creates a debug callback messenger.
+        /// @throw Exception on creation failure.
+        [[nodiscard]] auto CreateDebugUtilsMessenger(
+            const vk::DebugUtilsMessengerCreateInfoEXT& create_info) const -> DebugUtilsMessenger;
+
+        /// Creates a debug report callback.
+        /// @throw Exception on creation failure.
+        [[nodiscard]] auto CreateDebugReportCallback(
+            const vk::DebugReportCallbackCreateInfoEXT& create_info) const -> DebugReportCallback;
+};
+
+class Image {
+    public:
+        explicit Image(vk::Image handle_, vk::ImageUsageFlags usage_, vk::Device owner_,
+                       VmaAllocator allocator_, VmaAllocation allocation_) noexcept
+            : handle{handle_},
+              usage{usage_},
+              owner{owner_},
+              allocator{allocator_},
+              allocation{allocation_} {}
+        Image() = default;
+
+        CLASS_NON_COPYABLE(Image);
+
+        Image(Image&& rhs) noexcept
+            : handle{std::exchange(rhs.handle, nullptr)},
+              usage{rhs.usage},
+              owner{rhs.owner},
+              allocator{rhs.allocator},
+              allocation{rhs.allocation} {}
+
+        auto operator=(Image&& rhs) noexcept -> Image& {
+            Release();
+            handle = std::exchange(rhs.handle, nullptr);
+            usage = rhs.usage;
+            owner = rhs.owner;
+            allocator = rhs.allocator;
+            allocation = rhs.allocation;
+            return *this;
+        }
+
+        ~Image() noexcept { Release(); }
+
+        auto operator*() const noexcept -> vk::Image { return handle; }
+
+        void reset() noexcept {
+            Release();
+            handle = nullptr;
+        }
+
+        explicit operator bool() const noexcept { return handle != nullptr; }
+
+        void SetObjectNameEXT(const char* name) const;
+
+        [[nodiscard]] auto usageFlags() const noexcept -> vk::ImageUsageFlags { return usage; }
+
+    private:
+        void Release() const noexcept;
+
+        vk::Image handle = nullptr;
+        vk::ImageUsageFlags usage;
+        vk::Device owner = nullptr;
+        VmaAllocator allocator = nullptr;
+        VmaAllocation allocation = nullptr;
+};
+class DeviceMemory : public wrapper::Handle<vk::DeviceMemory, vk::Device> {
+        using Handle<vk::DeviceMemory, vk::Device>::Handle;
+
+    public:
+        [[nodiscard]] auto getMemoryFdKHR() const -> int;
+
+#ifdef _WIN32
+        [[nodiscard]] auto getMemoryWin32HandleKHR() const -> HANDLE;
+#endif
+
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+
+        [[nodiscard]] auto map(vk::DeviceSize offset, vk::DeviceSize size) const -> u8* {
+            void* data = owner.mapMemory(handle, offset, size);
+            return static_cast<u8*>(data);
+        }
+
+        void unmap() const noexcept { owner.unmapMemory(handle); }
+};
+
+class Buffer {
+    public:
+        explicit Buffer(vk::Buffer handle_, vk::Device owner_, VmaAllocator allocator_,
+                        VmaAllocation allocation_, std::span<u8> mapped_,
+                        bool is_coherent_) noexcept
+            : handle{handle_},
+              owner{owner_},
+              allocator{allocator_},
+              allocation{allocation_},
+              mapped{mapped_},
+              is_coherent{is_coherent_} {}
+        Buffer() = default;
+
+        CLASS_NON_COPYABLE(Buffer);
+
+        Buffer(Buffer&& rhs) noexcept
+            : handle{std::exchange(rhs.handle, nullptr)},
+              owner{rhs.owner},
+              allocator{rhs.allocator},
+              allocation{rhs.allocation},
+              mapped{rhs.mapped},
+              is_coherent{rhs.is_coherent} {}
+
+        auto operator=(Buffer&& rhs) noexcept -> Buffer& {
+            Release();
+            handle = std::exchange(rhs.handle, nullptr);
+            owner = rhs.owner;
+            allocator = rhs.allocator;
+            allocation = rhs.allocation;
+            mapped = rhs.mapped;
+            is_coherent = rhs.is_coherent;
+            return *this;
+        }
+
+        ~Buffer() noexcept { Release(); }
+
+        auto operator*() const noexcept -> vk::Buffer { return handle; }
+
+        void reset() noexcept {
+            Release();
+            handle = nullptr;
+        }
+
+        explicit operator bool() const noexcept { return handle != nullptr; }
+
+        /// Returns the host mapped memory, an empty span otherwise.
+        auto Mapped() noexcept -> std::span<u8> { return mapped; }
+
+        [[nodiscard]] auto Mapped() const noexcept -> std::span<const u8> { return mapped; }
+
+        /// Returns true if the buffer is mapped to the host.
+        [[nodiscard]] auto IsHostVisible() const noexcept -> bool { return !mapped.empty(); }
+
+        void Flush() const;
+
+        void Invalidate() const;
+
+        void SetObjectNameEXT(const char* name) const;
+
+    private:
+        void Release() const noexcept;
+
+        VkBuffer handle = nullptr;
+        VkDevice owner = nullptr;
+        VmaAllocator allocator = nullptr;
+        VmaAllocation allocation = nullptr;
+        std::span<u8> mapped;
+        bool is_coherent = false;
+};
+
+class Queue {
+    public:
+        /// Construct an empty queue handle.
+        constexpr Queue() noexcept = default;
+
+        /// Construct a queue handle.
+        constexpr explicit Queue(vk::Queue queue_) noexcept : queue{queue_} {}
+
+        void Submit(std::span<vk::SubmitInfo> submit_infos,
+                    vk::Fence fence = VK_NULL_HANDLE) const {
+            queue.submit(submit_infos, fence);
+        }
+
+        [[nodiscard]] auto Present(const vk::PresentInfoKHR& present_info) const noexcept
+            -> vk::Result {
+            return queue.presentKHR(present_info);
+        }
+
+    private:
+        vk::Queue queue = nullptr;
+};
+
+class BufferView : public wrapper::Handle<vk::BufferView, vk::Device> {
+        using Handle<vk::BufferView, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+};
+class ImageView : public wrapper::Handle<vk::ImageView, vk::Device> {
+        using Handle<vk::ImageView, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+};
+
+class Fence : public wrapper::Handle<vk::Fence, vk::Device> {
+        using Handle<vk::Fence, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+
+        [[nodiscard]] auto Wait(u64 timeout = std::numeric_limits<u64>::max()) const noexcept
+            -> vk::Result {
+            return owner.waitForFences(handle, true, timeout);
+        }
+
+        vk::Result GetStatus() const noexcept { return owner.getFenceStatus(handle); }
+
+        void Reset() const { owner.resetFences(handle); }
+};
+
 }  // namespace render::vulkan
