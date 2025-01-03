@@ -18,12 +18,12 @@ class Scheduler;
 struct Frame {
         uint32_t width;
         uint32_t height;
-        vk::Image image;
-        vk::ImageView image_view;
-        vk::Framebuffer framebuffer;
+        Image image;
+        ImageView image_view;
+        Framebuffer framebuffer;
         vk::CommandBuffer cmdbuf;
         vk::Semaphore render_ready;
-        vk::Fence present_done;
+        Fence present_done;
 };
 
 class PresentManager {

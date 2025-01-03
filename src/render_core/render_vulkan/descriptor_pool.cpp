@@ -2,7 +2,7 @@
 #include "render_vulkan/scheduler.hpp"
 #include "vulkan_common/device.hpp"
 #include <algorithm>
-#include <ranges>
+#include "vulkan_common/vulkan_wrapper.hpp"
 #include <cstdlib>
 namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
@@ -10,7 +10,7 @@ constexpr size_t SETS_GROW_RATE = 16;
 constexpr std::int32_t SCORE_THRESHOLD = 3;
 struct DescriptorBank {
         DescriptorBankInfo info;
-        std::vector<vk::DescriptorPool> pools;
+        std::vector<VulkanDescriptorPool> pools;
 };
 auto DescriptorBankInfo::isSuperset(const DescriptorBankInfo& subset) const noexcept -> bool {
     return uniform_buffers_ >= subset.uniform_buffers_ &&
@@ -58,12 +58,12 @@ static void allocatePool(const Device& device, DescriptorBank& bank) {
     add(vk::DescriptorType::eStorageImage, info.images_);
     vk::DescriptorPoolCreateInfo ci{};
     ci.setPoolSizes(pool_sizes);
-    bank.pools.push_back(device.getLogical().createDescriptorPool(ci));
+    bank.pools.push_back(device.createDescriptorPool(ci));
 }
 
 DescriptorAllocator::DescriptorAllocator(const Device& device,
                                          semaphore::MasterSemaphore& master_semaphore,
-                                         DescriptorBank& bank, VkDescriptorSetLayout layout)
+                                         DescriptorBank& bank, vk::DescriptorSetLayout layout)
     : ResourcePool(&master_semaphore, SETS_GROW_RATE),
       device_(&device),
       bank_(&bank),
@@ -81,10 +81,9 @@ void DescriptorAllocator::allocate(size_t begin, size_t end) {
 auto DescriptorAllocator::allocateDescriptors(size_t count) -> DescriptorSets {
     const std::vector<vk::DescriptorSetLayout> layouts(count, layout_);
     vk::DescriptorSetAllocateInfo allocate_info{};
-    allocate_info.setDescriptorPool(bank_->pools.back()).setSetLayouts(layouts);
-    auto sets = device_->getLogical().allocateDescriptorSets(allocate_info);
+    allocate_info.setDescriptorPool(*bank_->pools.back()).setSetLayouts(layouts);
 
-    return DescriptorSets{sets, device_->getLogical(), bank_->pools.back()};
+    return bank_->pools.back().Allocate(allocate_info);
 }
 
 DescriptorPool::DescriptorPool(const Device& device, scheduler::Scheduler& scheduler)

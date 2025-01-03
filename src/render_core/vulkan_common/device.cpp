@@ -295,22 +295,14 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         misc_features_.dynamic_state3_enables = false;
     }
 
-    vk::DeviceCreateInfo ci{};
     auto device_extends = utils::extensionListForVulkan(loaded_extensions_);
-    ci.setQueueCreateInfos(queue_cis)
-        .setPEnabledExtensionNames(device_extends)
-        .setPNext(first_next);
 
-    if (enable_validation) {
-        const ::std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-        ci.setPEnabledLayerNames(validationLayers);
-    }
+    logical_ =
+        LogicDevice::Create(physical_, queue_cis, device_extends, first_next, enable_validation);
 
-    logical_ = physical_.createDevice(ci);
-
-    graphics_queue_ = logical_.getQueue(graphics_family_, 0);
-    present_queue_ = logical_.getQueue(present_family_, 0);
-    compute_queue_ = logical_.getQueue(compute_family_, 0);
+    graphics_queue_ = (*logical_).getQueue(graphics_family_, 0);
+    present_queue_ = (*logical_).getQueue(present_family_, 0);
+    compute_queue_ = (*logical_).getQueue(compute_family_, 0);
 
     VmaVulkanFunctions functions{};
     functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
@@ -318,7 +310,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     const VmaAllocatorCreateInfo allocator_info = {
         .flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT,
         .physicalDevice = physical,
-        .device = logical_,
+        .device = *logical_,
         .preferredLargeHeapBlockSize = 0,
         .pAllocationCallbacks = nullptr,
         .pDeviceMemoryCallbacks = nullptr,
@@ -873,10 +865,15 @@ auto Device::hasTimelineSemaphore() const -> bool {
     return static_cast<bool>(features_.timeline_semaphore.timelineSemaphore);
 }
 
-DeviceMemory Device::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept {
+auto Device::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept -> DeviceMemory {
     VkDeviceMemory memory;
     memory = getLogical().allocateMemory(ai);
     return DeviceMemory(memory, getLogical());
+}
+
+auto Device::createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
+    -> VulkanDescriptorPool {
+    return VulkanDescriptorPool(getLogical().createDescriptorPool(ci), getLogical());
 }
 
 }  // namespace render::vulkan

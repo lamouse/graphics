@@ -18,12 +18,37 @@ VK_DEFINE_HANDLE(VmaAllocator)
 VK_DEFINE_HANDLE(VmaAllocation)
 namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
-struct NoOwner {};
+struct NoOwner {
+        NoOwner() = default;
+        NoOwner(std::nullptr_t) {}
+        auto operator=(std::nullptr_t) -> NoOwner { return {}; }
+        auto operator=(NoOwner) -> NoOwner { return {}; }
+        operator bool() const { return false; }
+};
 inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::Image handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::DeviceMemory val) noexcept { owner.free(val); }
+inline void destroy(vk::Device owner, vk::DeviceMemory handle) noexcept { owner.free(handle); }
+inline void destroy(vk::Device owner, vk::CommandPool handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::ImageView handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::BufferView handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::Framebuffer handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::Event handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::SwapchainKHR handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::ShaderModule handle) noexcept { owner.destroy(handle); }
+inline void destroy(NoOwner /*unused*/, vk::Device handle) noexcept { handle.destroy(); }
+inline void destroy(vk::Device owner, vk::Pipeline handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::PipelineLayout handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::PipelineCache handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::RenderPass handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::Sampler handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::QueryPool handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::DescriptorPool handle) noexcept { owner.destroy(handle); }
+inline void destroy(vk::Device owner, vk::DescriptorSetLayout handle) noexcept {
+    owner.destroy(handle);
+}
+inline void destroy(vk::Device owner, vk::DescriptorUpdateTemplate handle) noexcept {
+    owner.destroy(handle);
+}
 
 inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.destroy(val); }
 inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
@@ -159,13 +184,6 @@ class PoolAllocations {
             return *this;
         }
 
-        /// Destructor to clean up resources.
-        ~PoolAllocations() {
-            if (device_ && pool_) {
-                // Add code to clean up resources if necessary
-            }
-        }
-
         /// Returns the number of allocations.
         [[nodiscard]] auto size() const noexcept -> std::size_t { return num_; }
 
@@ -222,9 +240,17 @@ inline void check(VkResult result) {
 }  // namespace utils
 using CommandBuffers = wrapper::PoolAllocations<vk::CommandBuffer, vk::CommandPool>;
 using DescriptorSets = wrapper::PoolAllocations<vk::DescriptorSet, vk::DescriptorPool>;
+
 using DebugUtilsMessenger = wrapper::Handle<vk::DebugUtilsMessengerEXT, vk::Instance>;
 using DebugReportCallback = wrapper::Handle<vk::DebugReportCallbackEXT, vk::Instance>;
 using SurfaceKHR = wrapper::Handle<vk::SurfaceKHR, vk::Instance>;
+using DescriptorSetLayout = wrapper::Handle<vk::DescriptorSetLayout, vk::Device>;
+using DescriptorUpdateTemplate = wrapper::Handle<vk::DescriptorUpdateTemplate, vk::Device>;
+using Pipeline = wrapper::Handle<vk::Pipeline, vk::Device>;
+using PipelineLayout = wrapper::Handle<vk::PipelineLayout, vk::Device>;
+using QueryPool = wrapper::Handle<vk::QueryPool, vk::Device>;
+using RenderPass = wrapper::Handle<vk::RenderPass, vk::Device>;
+using Sampler = wrapper::Handle<vk::Sampler, vk::Device>;
 class Instance : public wrapper::Handle<vk::Instance, wrapper::NoOwner> {
         using Handle<vk::Instance, wrapper::NoOwner>::Handle;
 
@@ -447,6 +473,118 @@ class Fence : public wrapper::Handle<vk::Fence, vk::Device> {
         vk::Result GetStatus() const noexcept { return owner.getFenceStatus(handle); }
 
         void Reset() const { owner.resetFences(handle); }
+};
+
+class Framebuffer : public wrapper::Handle<vk::Framebuffer, vk::Device> {
+        using Handle<vk::Framebuffer, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+};
+
+class VulkanDescriptorPool : public wrapper::Handle<vk::DescriptorPool, vk::Device> {
+        using Handle<vk::DescriptorPool, vk::Device>::Handle;
+
+    public:
+        [[nodiscard]] auto Allocate(const vk::DescriptorSetAllocateInfo& ai) const
+            -> DescriptorSets;
+
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+};
+
+class CommandPool : public wrapper::Handle<vk::CommandPool, vk::Device> {
+        using Handle<vk::CommandPool, vk::Device>::Handle;
+
+    public:
+        CommandBuffers Allocate(
+            std::size_t num_buffers,
+            vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) const;
+
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+};
+
+class SwapchainKHR : public wrapper::Handle<vk::SwapchainKHR, vk::Device> {
+        using Handle<vk::SwapchainKHR, vk::Device>::Handle;
+
+    public:
+        [[nodiscard]] auto GetImages() const -> std::vector<vk::Image>;
+};
+
+class Event : public wrapper::Handle<vk::Event, vk::Device> {
+        using Handle<vk::Event, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+
+        auto GetStatus() const noexcept -> vk::Result { return owner.getEventStatus(handle); }
+};
+
+class ShaderModule : public wrapper::Handle<vk::ShaderModule, vk::Device> {
+        using Handle<vk::ShaderModule, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+};
+
+class PipelineCache : public wrapper::Handle<vk::PipelineCache, vk::Device> {
+        using Handle<vk::PipelineCache, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+
+        vk::Result Read(size_t* size, void* data) const noexcept {
+            return owner.getPipelineCacheData(handle, size, data);
+        }
+};
+
+class Semaphore : public wrapper::Handle<vk::Semaphore, vk::Device> {
+        using Handle<vk::Semaphore, vk::Device>::Handle;
+
+    public:
+        /// Set object name.
+        void SetObjectNameEXT(const char* name) const;
+
+        [[nodiscard]] u64 GetCounter() const { return owner.getSemaphoreCounterValue(handle); }
+
+        /**
+         * Waits for a timeline semaphore on the host.
+         *
+         * @param value   Value to wait
+         * @param timeout Time in nanoseconds to timeout
+         * @return        True on successful wait, false on timeout
+         */
+        bool Wait(u64 value, u64 timeout = std::numeric_limits<u64>::max()) const {
+            const vk::SemaphoreWaitInfo wait_info{
+                {},
+                1,
+                &handle,
+                &value,
+            };
+            switch (auto result = owner.waitSemaphores(wait_info, timeout)) {
+                case vk::Result::eSuccess:
+                    return true;
+                case vk::Result::eTimeout:
+                    return false;
+                default:
+                    throw utils::VulkanException(result);
+            }
+        }
+};
+
+class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
+        using Handle<vk::Device, wrapper::NoOwner>::Handle;
+
+    public:
+        static LogicDevice Create(vk::PhysicalDevice physical_device,
+                                  const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
+                                  const std::vector<const char*>& enabled_extensions,
+                                  const void* next, bool enable_validation = false);
 };
 
 }  // namespace render::vulkan

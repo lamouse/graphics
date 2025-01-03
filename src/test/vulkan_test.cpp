@@ -31,7 +31,6 @@ TEST(VulkanDriver, CreateDriver) {
     for (auto &pyh : phys) {
         render::vulkan::Device d(instance, pyh, nullptr);
         ASSERT_TRUE(d.getLogical());
-        d.getLogical().destroy();
     }
 
     instance.destroy();

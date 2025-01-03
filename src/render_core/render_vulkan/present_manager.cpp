@@ -125,7 +125,7 @@ PresentManager::PresentManager(const vk::Instance& instance,
         frame.render_ready = dld.createSemaphore(semaphore_info);
         vk::FenceCreateInfo fence_info;
         fence_info.setFlags(vk::FenceCreateFlagBits::eSignaled);
-        frame.present_done = dld.createFence(fence_info);
+        frame.present_done = Fence(dld.createFence(fence_info), dld);
         free_queue_.push(&frame);
     }
 
@@ -245,7 +245,7 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
             vk::ImageLayout::eTransferSrcOptimal,
             VK_QUEUE_FAMILY_IGNORED,
             VK_QUEUE_FAMILY_IGNORED,
-            frame->image,
+            *frame->image,
             vk::ImageSubresourceRange{
                 vk::ImageAspectFlagBits::eColor,
                 0,
@@ -281,7 +281,7 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
             vk::ImageLayout::eGeneral,
             VK_QUEUE_FAMILY_IGNORED,
             VK_QUEUE_FAMILY_IGNORED,
-            frame->image,
+            *frame->image,
             vk::ImageSubresourceRange{
                 vk::ImageAspectFlagBits::eColor,
                 0,
@@ -297,12 +297,12 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
                            vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, pre_barriers);
 
     if (blit_supported_) {
-        cmdbuf.blitImage(frame->image, vk::ImageLayout::eTransferSrcOptimal, image,
+        cmdbuf.blitImage(*frame->image, vk::ImageLayout::eTransferSrcOptimal, image,
                          vk::ImageLayout::eTransferDstOptimal,
                          makeImageBlit(frame->width, frame->height, extent.width, extent.height),
                          vk::Filter::eLinear);
     } else {
-        cmdbuf.copyImage(frame->image, vk::ImageLayout::eTransferSrcOptimal, image,
+        cmdbuf.copyImage(*frame->image, vk::ImageLayout::eTransferSrcOptimal, image,
                          vk::ImageLayout::eTransferDstOptimal,
                          MakeImageCopy(frame->width, frame->height, extent.width, extent.height));
     }
@@ -330,7 +330,7 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
     // Submit the image copy/blit to the swapchain
     std::scoped_lock submit_lock{scheduler_.submit_mutex_};
     try {
-        device_.getGraphicsQueue().submit(submit_info, frame->present_done);
+        device_.getGraphicsQueue().submit(submit_info, *frame->present_done);
 
     } catch (const std::exception& e) {
         spdlog::error("Failed to submit image copy/blit to swapchain: {}", e.what());
@@ -352,12 +352,12 @@ auto PresentManager::getRenderFrame() -> Frame* {
     free_queue_.pop();
 
     // Wait for the presentation to be finished so all frame resources are free
-    auto result = device_.getLogical().waitForFences(frame->present_done, true, UINT64_MAX);
+    auto result = frame->present_done.Wait();
     if (result != vk::Result::eSuccess) {
         spdlog::error("Failed to wait for present done fence: {}", vk::to_string(result));
         throw utils::VulkanException(result);
     }
-    device_.getLogical().resetFences(frame->present_done);
+    frame->present_done.Reset();
 
     return frame;
 }

@@ -21,7 +21,7 @@ class Device {
         ~Device();
         [[nodiscard]] auto getSetsPerPool() const -> uint32_t { return sets_per_pool_; }
         /// Returns the logical device.
-        [[nodiscard]] auto getLogical() const -> const vk::Device& { return logical_; }
+        [[nodiscard]] auto getLogical() const -> const vk::Device { return *logical_; }
 
         /// Returns the physical device.
         [[nodiscard]] auto getPhysical() const -> vk::PhysicalDevice { return physical_; }
@@ -60,12 +60,15 @@ class Device {
             return misc_features_.has_renderdoc || misc_features_.has_nsight_graphics ||
                    misc_features_.has_radeon_gpu_profiler;
         }
-        DeviceMemory tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept;
+        [[nodiscard]] auto tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept
+            -> DeviceMemory;
+        [[nodiscard]] auto createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
+            -> VulkanDescriptorPool;
 
     private:
         vk::Instance instance_;
         vk::PhysicalDevice physical_;
-        vk::Device logical_;
+        LogicDevice logical_;
         vk::Queue graphics_queue_;
         vk::Queue present_queue_;
         vk::Queue compute_queue_;

@@ -45,7 +45,7 @@ class DescriptorAllocator final : public ResourcePool {
     private:
         explicit DescriptorAllocator(const Device& device,
                                      semaphore::MasterSemaphore& master_semaphore,
-                                     DescriptorBank& bank, VkDescriptorSetLayout layout);
+                                     DescriptorBank& bank, vk::DescriptorSetLayout layout);
 
         void allocate(size_t begin, size_t end) override;
 
@@ -53,7 +53,7 @@ class DescriptorAllocator final : public ResourcePool {
 
         const Device* device_{};
         DescriptorBank* bank_{};
-        vk::DescriptorSetLayout layout_{};
+        vk::DescriptorSetLayout layout_;
 
         std::vector<DescriptorSets> sets_;
 };

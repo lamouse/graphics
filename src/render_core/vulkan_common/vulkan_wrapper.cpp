@@ -56,12 +56,18 @@ void SortPhysicalDevices(std::vector<vk::PhysicalDevice>& devices) {
 
 template <typename T>
 void SetObjectName(vk::Device device, T handle, vk::ObjectType type, const char* name) {
-    const vk::DebugUtilsObjectNameInfoEXT name_info{
-        type,
-        reinterpret_cast<u64>(&handle),
-        name,
+    const VkDebugUtilsObjectNameInfoEXT name_info{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .pNext = nullptr,
+        .objectType = static_cast<VkObjectType>(type),
+        .objectHandle = reinterpret_cast<u64>(&handle),
+        .pObjectName = name,
     };
-    utils::check(device.setDebugUtilsObjectNameEXT(&name_info));
+    auto fun = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(
+        device, "vkSetDebugUtilsObjectNameEXT");
+    if (fun) {
+        utils::check(fun(device, &name_info));
+    }
 }
 }  // namespace
 void Image::SetObjectNameEXT(const char* name) const {
@@ -75,14 +81,21 @@ void Image::Release() const noexcept {
 }
 
 auto DeviceMemory::getMemoryFdKHR() const -> int {
-    const vk::MemoryGetFdInfoKHR get_fd_info{handle};
+    auto fun = (PFN_vkGetMemoryFdKHR)vkGetDeviceProcAddr(owner, "vkGetMemoryFdKHR");
+    const VkMemoryGetFdInfoKHR get_fd_info{
+        .memory = handle, .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR};
     int fd;
-    utils::check(owner.getMemoryFdKHR(&get_fd_info, &fd));
+    if (!fun) {
+        throw utils::VulkanException(VK_ERROR_EXTENSION_NOT_PRESENT);
+    }
+    utils::check(fun(owner, &get_fd_info, &fd));
     return fd;
 }
 
 #ifdef _WIN32
 auto DeviceMemory::getMemoryWin32HandleKHR() const -> HANDLE {
+    auto fun =
+        (PFN_vkGetMemoryWin32HandleKHR)vkGetDeviceProcAddr(owner, "vkGetMemoryWin32HandleKHR");
     const VkMemoryGetWin32HandleInfoKHR get_win32_handle_info{
         .sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
         .pNext = nullptr,
@@ -90,8 +103,7 @@ auto DeviceMemory::getMemoryWin32HandleKHR() const -> HANDLE {
         .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR,
     };
     HANDLE win32_handle;
-    utils::check(static_cast<vk::Result>(
-        vkGetMemoryWin32HandleKHR(owner, &get_win32_handle_info, &win32_handle)));
+    utils::check(static_cast<vk::Result>(fun(owner, &get_win32_handle_info, &win32_handle)));
     return win32_handle;
 }
 #endif
@@ -170,6 +182,78 @@ void BufferView::SetObjectNameEXT(const char* name) const {
 
 void ImageView::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eImageView, name);
+}
+void Framebuffer::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::eFramebuffer, name);
+}
+
+DescriptorSets VulkanDescriptorPool::Allocate(const vk::DescriptorSetAllocateInfo& ai) const {
+    const std::size_t num = ai.descriptorSetCount;
+    std::vector<::vk::DescriptorSet> sets(num);
+    switch (auto result = owner.allocateDescriptorSets(&ai, sets.data())) {
+        case vk::Result::eSuccess:
+            return DescriptorSets(std::move(sets), owner, handle);
+        case vk::Result::eErrorOutOfPoolMemory:
+            return {};
+        default:
+            throw utils::VulkanException(result);
+    }
+}
+
+void VulkanDescriptorPool::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::eDescriptorPool, name);
+}
+
+CommandBuffers CommandPool::Allocate(std::size_t num_buffers, vk::CommandBufferLevel level) const {
+    const vk::CommandBufferAllocateInfo ai{handle, level, static_cast<u32>(num_buffers)};
+
+    std::vector<vk::CommandBuffer> command_buffers(num_buffers);
+    switch (const vk::Result result = owner.allocateCommandBuffers(&ai, command_buffers.data())) {
+        case vk::Result::eSuccess:
+            return CommandBuffers(std::move(command_buffers), owner, handle);
+        case vk::Result::eErrorOutOfPoolMemory:
+            return {};
+        default:
+            throw utils::VulkanException(result);
+    }
+}
+
+void CommandPool::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::eCommandPool, name);
+}
+
+std::vector<vk::Image> SwapchainKHR::GetImages() const {
+    return owner.getSwapchainImagesKHR(handle);
+}
+
+void Event::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::eEvent, name);
+}
+
+void ShaderModule::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::eShaderModule, name);
+}
+
+void PipelineCache::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::ePipelineCache, name);
+}
+void Semaphore::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle, vk::ObjectType::eSemaphore, name);
+}
+
+LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
+                                const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
+                                const std::vector<const char*>& enabled_extensions,
+                                const void* next, bool enable_validation) {
+    vk::DeviceCreateInfo ci{};
+    ci.setQueueCreateInfos(queues_ci).setPEnabledExtensionNames(enabled_extensions).setPNext(next);
+
+    if (enable_validation) {
+        const ::std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+        ci.setPEnabledLayerNames(validationLayers);
+    }
+
+    return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});
 }
 
 }  // namespace render::vulkan
