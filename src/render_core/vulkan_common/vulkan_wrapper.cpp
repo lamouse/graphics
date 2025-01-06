@@ -244,16 +244,15 @@ void Semaphore::SetObjectNameEXT(const char* name) const {
 LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
                                 const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
                                 const std::vector<const char*>& enabled_extensions,
-                                const void* next, bool enable_validation) {
+                                const void* next) {
     vk::DeviceCreateInfo ci{};
     ci.setQueueCreateInfos(queues_ci).setPEnabledExtensionNames(enabled_extensions).setPNext(next);
-
-    if (enable_validation) {
-        const ::std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-        ci.setPEnabledLayerNames(validationLayers);
-    }
-
     return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});
+}
+
+auto LogicDevice::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) -> PipelineLayout {
+    auto layout = handle.createPipelineLayout(ci);
+    return PipelineLayout{layout, handle};
 }
 
 }  // namespace render::vulkan

@@ -218,9 +218,6 @@ void createLogicalDevice(const ::std::vector<const char*>& deviceExtensions) {
     createInfo.setQueueCreateInfos(queueInfos)
         .setPEnabledExtensionNames(deviceExtensions)
         .setPEnabledFeatures(&deviceFeatures);
-    if (enableValidationLayers_) {
-        createInfo.setPEnabledLayerNames(validationLayers);
-    }
     constexpr ::vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature{VK_TRUE};
     // createInfo.pNext = &dynamic_rendering_feature;
 

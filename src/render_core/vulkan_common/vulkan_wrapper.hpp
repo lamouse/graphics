@@ -191,7 +191,7 @@ class PoolAllocations {
         [[nodiscard]] auto size() const noexcept -> std::size_t { return num_; }
 
         /// Returns a pointer to the array of allocations.
-        auto data() const noexcept -> AllocationType const* { return allocations_.get(); }
+        auto data() const noexcept -> AllocationType const* { return allocations_.data(); }
 
         /// Returns the allocation in the specified index.
         /// @pre index < size()
@@ -240,6 +240,68 @@ inline void check(VkResult result) {
         throw VulkanException(static_cast<vk::Result>(result));
     }
 }
+template <typename T>
+class Span {
+    public:
+        using value_type = T;
+        using size_type = u32;
+        using difference_type = std::ptrdiff_t;
+        using reference = const T&;
+        using const_reference = const T&;
+        using pointer = const T*;
+        using const_pointer = const T*;
+        using iterator = const T*;
+        using const_iterator = const T*;
+
+        /// Construct an empty span.
+        constexpr Span() noexcept = default;
+
+        /// Construct an empty span
+        constexpr Span(std::nullptr_t) noexcept {}
+
+        /// Construct a span from a single element.
+        constexpr Span(const T& value) noexcept : ptr{&value}, num{1} {}
+
+        /// Construct a span from a range.
+        template <typename Range>
+        // requires std::data(const Range&)
+        // requires std::size(const Range&)
+        constexpr Span(const Range& range) : ptr{std::data(range)}, num{std::size(range)} {}
+
+        /// Construct a span from a pointer and a size.
+        /// This is intended for subranges.
+        constexpr Span(const T* ptr_, std::size_t num_) noexcept : ptr{ptr_}, num{num_} {}
+
+        /// Returns the data pointer by the span.
+        constexpr const T* data() const noexcept { return ptr; }
+
+        /// Returns the number of elements in the span.
+        /// @note Returns a 32 bits integer because most Vulkan functions expect this type.
+        constexpr u32 size() const noexcept { return static_cast<u32>(num); }
+
+        /// Returns true when the span is empty.
+        constexpr bool empty() const noexcept { return num == 0; }
+
+        /// Returns a reference to the element in the passed index.
+        /// @pre: index < size()
+        constexpr const T& operator[](std::size_t index) const noexcept { return ptr[index]; }
+
+        /// Returns an iterator to the beginning of the span.
+        constexpr const T* begin() const noexcept { return ptr; }
+
+        /// Returns an iterator to the end of the span.
+        constexpr const T* end() const noexcept { return ptr + num; }
+
+        /// Returns an iterator to the beginning of the span.
+        constexpr const T* cbegin() const noexcept { return ptr; }
+
+        /// Returns an iterator to the end of the span.
+        constexpr const T* cend() const noexcept { return ptr + num; }
+
+    private:
+        const T* ptr = nullptr;
+        std::size_t num = 0;
+};
 }  // namespace utils
 using CommandBuffers = wrapper::PoolAllocations<vk::CommandBuffer, vk::CommandPool>;
 using DescriptorSets = wrapper::PoolAllocations<vk::DescriptorSet, vk::DescriptorPool>;
@@ -584,10 +646,11 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
         using Handle<vk::Device, wrapper::NoOwner>::Handle;
 
     public:
-        static LogicDevice Create(vk::PhysicalDevice physical_device,
-                                  const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
-                                  const std::vector<const char*>& enabled_extensions,
-                                  const void* next, bool enable_validation = false);
+        static auto Create(vk::PhysicalDevice physical_device,
+                           const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
+                           const std::vector<const char*>& enabled_extensions, const void* next)
+            -> LogicDevice;
+        auto createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) -> PipelineLayout;
 };
 
 }  // namespace render::vulkan

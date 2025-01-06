@@ -3,9 +3,10 @@
 #include "command_pool.hpp"
 #include "common/polyfill_thread.hpp"
 #include "common/microprofile.hpp"
+#include "vulkan_common/device.hpp"
+MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 
 namespace render::vulkan::scheduler {
-MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
     auto command = first;
@@ -129,6 +130,108 @@ void Scheduler::dispatchWork() {
     }
     event_cv_.notify_all();
     acquireNewChunk();
+}
+
+void Scheduler::endPendingOperations() {
+#if ANDROID
+    if (Settings::IsGPULevelHigh()) {
+        // This is problematic on Android, disable on GPU Normal.
+        // query_cache->DisableStreams();
+    }
+#else
+    // query_cache->DisableStreams();
+#endif
+    endRenderPass();
+}
+
+void Scheduler::endRenderPass() {
+    if (!state_.render_pass_) {
+        return;
+    }
+    record([num_images = num_render_pass_images_, images = render_pass_images_,
+            ranges = render_pass_image_ranges_](vk::CommandBuffer cmdbuf) {
+        std::array<vk::ImageMemoryBarrier, 9> barriers;
+        for (size_t i = 0; i < num_images; ++i) {
+            barriers[i] = vk::ImageMemoryBarrier{
+                vk::AccessFlagBits::eColorAttachmentWrite |
+                    vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite |
+                    vk::AccessFlagBits::eColorAttachmentRead |
+                    vk::AccessFlagBits::eColorAttachmentWrite |
+                    vk::AccessFlagBits::eDepthStencilAttachmentRead |
+                    vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                vk::ImageLayout::eGeneral,
+                vk::ImageLayout::eGeneral,
+
+                VK_QUEUE_FAMILY_IGNORED,
+                VK_QUEUE_FAMILY_IGNORED,
+                images[i],
+                ranges[i],
+            };
+        }
+        cmdbuf.endRenderPass();
+        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eEarlyFragmentTests |
+                                   vk::PipelineStageFlagBits::eLateFragmentTests |
+                                   vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                               vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, barriers);
+    });
+    state_.render_pass_ = nullptr;
+    num_render_pass_images_ = 0;
+}
+
+void Scheduler::invalidateState() {
+    state_.graphics_pipeline_ = nullptr;
+    state_.rescaling_defined_ = false;
+}
+#undef MemoryBarrier
+u64 Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) {
+    endPendingOperations();
+    invalidateState();
+
+    const u64 signal_value = master_semaphore_->nextTick();
+    recordWithUploadBuffer([signal_semaphore, wait_semaphore, signal_value, this](
+                               vk::CommandBuffer cmdbuf, vk::CommandBuffer upload_cmdbuf) {
+        static constexpr vk::MemoryBarrier WRITE_BARRIER{
+            vk::AccessFlagBits::eTransferWrite,
+            vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead};
+        upload_cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
+                                      vk::PipelineStageFlagBits::eAllCommands, {}, WRITE_BARRIER,
+                                      {}, {});
+        upload_cmdbuf.end();
+        cmdbuf.end();
+
+        if (on_submit_) {
+            on_submit_();
+        }
+
+        std::scoped_lock lock{submit_mutex_};
+        switch (const auto result = master_semaphore_->submitQueue(
+                    cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore, signal_value)) {
+            case vk::Result::eSuccess:
+                break;
+            case vk::Result::eErrorDeviceLost:
+                device_.reportLoss();
+                [[fallthrough]];
+            default:
+                utils::check(result);
+                break;
+        }
+    });
+    chunk_->markSubmit();
+    dispatchWork();
+    return signal_value;
+}
+
+auto Scheduler::flush(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) -> u64 {
+    // When flushing, we only send data to the worker thread; no waiting is necessary.
+    const u64 signal_value = submitExecution(signal_semaphore, wait_semaphore);
+    return signal_value;
+}
+void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphore) {
+    // When finishing, we need to wait for the submission to have executed on the device.
+    const u64 presubmit_tick = currentTick();
+    submitExecution(signal_semaphore, wait_semaphore);
+    wait(presubmit_tick);
 }
 
 }  // namespace render::vulkan::scheduler

@@ -40,11 +40,11 @@ void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath,
     createInfo.setCodeSize(vertCode.size());
     createInfo.setPCode((uint32_t*)vertCode.data());
     render::vulkan::present::WindowAdaptPass windowAdaptPass;
-    vertexModule = windowAdaptPass.create_vertex_shader(device_);
+    vertexModule = device_.createShaderModule(createInfo);
 
     createInfo.setCodeSize(fragCode.size());
     createInfo.setPCode((uint32_t*)fragCode.data());
-    fragmentModule = windowAdaptPass.create_fragment_shader(device_);
+    fragmentModule = device_.createShaderModule(createInfo);
 }
 
 auto GraphicsShader::getShaderStages() -> ::std::vector<::vk::PipelineShaderStageCreateInfo> {

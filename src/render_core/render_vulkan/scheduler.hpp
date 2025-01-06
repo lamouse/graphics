@@ -29,9 +29,31 @@ class Scheduler {
         [[nodiscard]] auto getMasterSemaphore() const noexcept -> semaphore::MasterSemaphore& {
             return *master_semaphore_;
         }
+        auto flush(vk::Semaphore signal_semaphore = nullptr, vk::Semaphore wait_semaphore = nullptr)
+            -> u64;
 
+        /// Sends the current execution context to the GPU and waits for it to complete.
+        void finish(vk::Semaphore signal_semaphore = nullptr, VkSemaphore wait_semaphore = nullptr);
         void waitWorker();
         void dispatchWork();
+        void invalidateState();
+        /// Returns true when a tick has been triggered by the GPU.
+        [[nodiscard]] auto isFree(u64 tick) const noexcept -> bool {
+            return master_semaphore_->isFree(tick);
+        }
+
+        /// Waits for the given tick to trigger on the GPU.
+        void wait(u64 tick) {
+            if (tick >= master_semaphore_->currentTick()) {
+                // Make sure we are not waiting for the current tick without signalling
+                flush();
+            }
+            master_semaphore_->wait(tick);
+        }
+        /// Returns the current command buffer tick.
+        [[nodiscard]] auto currentTick() const noexcept -> u64 {
+            return master_semaphore_->currentTick();
+        }
         /// Send work to a separate thread.
         template <typename T>
             requires std::is_invocable_v<T, vk::CommandBuffer, vk::CommandBuffer>
@@ -50,6 +72,8 @@ class Scheduler {
                     command(cmdbuf);
                 });
         }
+
+        void requestOutsideRenderPassOperationContext() { endRenderPass(); }
 
     private:
         class Command {
@@ -134,8 +158,8 @@ class Scheduler {
         };
 
         struct State {
-                vk::RenderPass render_pass_ = nullptr;
-                vk::Framebuffer framebuffer_ = nullptr;
+                RenderPass render_pass_ = nullptr;
+                Framebuffer framebuffer_ = nullptr;
                 vk::Extent2D render_area_ = {0, 0};
                 GraphicsPipeline* graphics_pipeline_ = nullptr;
                 bool is_rescaling_ = false;
@@ -148,7 +172,9 @@ class Scheduler {
         void workerThread(std::stop_token stop_token);
         void allocateWorkerCommandBuffer();
         void acquireNewChunk();
-
+        void endPendingOperations();
+        auto submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) -> u64;
+        void endRenderPass();
         std::unique_ptr<semaphore::MasterSemaphore> master_semaphore_;
         std::unique_ptr<resource::CommandPool> command_pool_;
 

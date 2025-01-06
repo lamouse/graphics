@@ -190,12 +190,8 @@ struct MiscFeatures {
         bool supports_conditional_barriers{};  ///< Allows barriers in conditional control flow.
 };
 /// Format usage descriptor.
-enum class FormatType { Linear, Optimal, Buffer };
 auto getNvidiaArchitecture(vk::PhysicalDevice physical,
                            const std::set<std::string, std::less<>>& exts) -> NvidiaArchitecture;
-
-auto getFormatFeatures(vk::FormatProperties properties, FormatType format_type)
-    -> vk::FormatFeatureFlags;
 
 [[nodiscard]] auto checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) -> bool;
 

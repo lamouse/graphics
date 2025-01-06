@@ -198,20 +198,6 @@ auto getNvidiaArchitecture(vk::PhysicalDevice physical,
     return NvidiaArchitecture::Arch_KeplerOrOlder;
 }
 
-auto getFormatFeatures(vk::FormatProperties properties, FormatType format_type)
-    -> vk::FormatFeatureFlags {
-    switch (format_type) {
-        case FormatType::Linear:
-            return properties.linearTilingFeatures;
-        case FormatType::Optimal:
-            return properties.optimalTilingFeatures;
-        case FormatType::Buffer:
-            return properties.bufferFeatures;
-        default:
-            return {};
-    }
-}
-
 auto checkBrokenCompute(vk::DriverId driver_id, uint32_t driver_version) -> bool {
     if (driver_id == vk::DriverId::eIntelProprietaryWindows) {
         const uint32_t major = VK_API_VERSION_MAJOR(driver_version);

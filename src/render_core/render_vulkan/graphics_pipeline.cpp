@@ -177,7 +177,7 @@
 ////ConfigureFuncPtr ConfigureFunc(const std::array<ShaderModule, NUM_STAGES>& modules,
 ////                               const std::array<shader::Info, NUM_STAGES>& infos) {
 ////    return FindSpec<SimpleVertexSpec, SimpleVertexFragmentSpec, SimpleStorageSpec,
-///SimpleImageSpec, /                    DefaultSpec>(modules, infos);
+/// SimpleImageSpec, /                    DefaultSpec>(modules, infos);
 ////}
 //}  // namespace
 //
@@ -205,8 +205,8 @@
 ////        stage_infos[stage] = *info;
 ////        enabled_uniform_buffer_masks[stage] = info->constant_buffer_mask;
 ////        std::ranges::copy(info->constant_buffer_used_sizes,
-///uniform_buffer_sizes[stage].begin()); /        num_textures +=
-///NumDescriptors(info->texture_descriptors); /    }
+/// uniform_buffer_sizes[stage].begin()); /        num_textures +=
+/// NumDescriptors(info->texture_descriptors); /    }
 ////
 ////    auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool, pipeline_statistics] {
 ////        pipeline::DescriptorLayoutBuilder builder{MakeBuilder(device_, stage_infos)};
@@ -214,10 +214,10 @@
 ////        descriptor_set_layout = builder.CreateDescriptorSetLayout(uses_push_descriptor);
 ////        if (!uses_push_descriptor) {
 ////            descriptor_allocator = descriptor_pool.allocator(*descriptor_set_layout,
-///stage_infos); /        } /        const vk::DescriptorSetLayout
-///set_layout{*descriptor_set_layout}; /        pipeline_layout =
-///builder.CreatePipelineLayout(set_layout); /        descriptor_update_template = /
-///builder.CreateTemplate(set_layout, *pipeline_layout, uses_push_descriptor);
+/// stage_infos); /        } /        const vk::DescriptorSetLayout
+/// set_layout{*descriptor_set_layout}; /        pipeline_layout =
+/// builder.CreatePipelineLayout(set_layout); /        descriptor_update_template = /
+/// builder.CreateTemplate(set_layout, *pipeline_layout, uses_push_descriptor);
 ////
 ////        const vk::RenderPass render_pass{render_pass_cache.get(MakeRenderPassKey())};
 ////        validate();

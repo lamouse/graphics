@@ -5,19 +5,26 @@
 #include <set>
 #include "vma.hpp"
 #include "vulkan_wrapper.hpp"
+#include "render_core/surface.hpp"
 /**
  * @brief vulkan device
  *
  */
 VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {
+struct FormatInfo {
+        vk::Format format;
+        bool attachable;
+        bool storage;
+};
+/// Format usage descriptor.
+enum class FormatType { Linear, Optimal, Buffer };
 
 /// Subgroup size of the guest emulated hardware (Nvidia has 32 threads per subgroup).
 const uint32_t GUEST_WARP_SIZE = 32;
 class Device {
     public:
-        explicit Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface,
-                        bool enable_validation = false);
+        explicit Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface);
         ~Device();
         [[nodiscard]] auto getSetsPerPool() const -> uint32_t { return sets_per_pool_; }
         /// Returns the logical device.
@@ -75,6 +82,48 @@ class Device {
         auto GetMaxVertexInputAttributes() const -> u32 {
             return properties_.properties_.limits.maxVertexInputAttributes;
         }
+        /// Returns true if the device supports VK_EXT_transform_feedback.
+        [[nodiscard]] auto isExtTransformFeedbackSupported() const -> bool {
+            return extensions_.transform_feedback;
+        }
+        /// Returns true if the device supports VK_EXT_subgroup_size_control.
+        [[nodiscard]] auto isExtSubgroupSizeControlSupported() const -> bool {
+            return extensions_.subgroup_size_control;
+        }  /// Returns true if the device supports binding multisample images as storage images.
+        [[nodiscard]] auto isStorageImageMultisampleSupported() const -> bool {
+            return features_.features.shaderStorageImageMultisample;
+        }
+        /// Returns true if the device supports VK_KHR_image_format_list.
+        [[nodiscard]] auto isKhrImageFormatListSupported() const -> bool {
+            return extensions_.image_format_list || instance_version_ >= VK_API_VERSION_1_2;
+        }
+        /// Returns true if ASTC is natively supported.
+        [[nodiscard]] auto isOptimalAstcSupported() const -> bool {
+            return features_.features.textureCompressionASTC_LDR;
+        }
+
+        /// Returns true if BCn is natively supported.
+        [[nodiscard]] auto isOptimalBcnSupported() const -> bool {
+            return features_.features.textureCompressionBC;
+        }
+
+        /// Reports a device loss.
+        void reportLoss() const;
+
+        [[nodiscard]] auto createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo&) const
+            -> DescriptorSetLayout;
+        [[nodiscard]] auto createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
+            -> PipelineLayout;
+        /// Returns true if the device supports VK_EXT_shader_stencil_export.
+        [[nodiscard]] auto isExtShaderStencilExportSupported() const -> bool {
+            return extensions_.shader_stencil_export;
+        }
+        auto surfaceFormat(FormatType format_type, bool with_srgb,
+                           surface::PixelFormat pixel_format) const -> FormatInfo;
+
+        [[nodiscard]] auto getSupportedFormat(vk::Format wanted_format,
+                                              vk::FormatFeatureFlags wanted_usage,
+                                              FormatType format_type) const -> vk::Format;
 
     private:
         vk::Instance instance_;
@@ -126,7 +175,7 @@ class Device {
             -> std::vector<vk::DeviceQueueCreateInfo>;
         [[nodiscard]] auto isFormatSupported(vk::Format wanted_format,
                                              vk::FormatFeatureFlags wanted_usage,
-                                             utils::FormatType format_type) const -> bool;
+                                             FormatType format_type) const -> bool;
         void collectPhysicalMemoryInfo();
         void collectToolingInfo();
         struct Extensions {

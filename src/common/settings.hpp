@@ -19,6 +19,15 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         static auto get() { return RenderVulkan{}; }
 };
 
+class Graphics : public common::settings::BaseSetting<Graphics> {
+        friend common::settings::BaseSetting<Graphics>;
+        auto getImpl() -> Graphics { return *this; }
+
+    public:
+        enums::AstcRecompression astc_recompression;
+        static auto get() { return Graphics{}; }
+};
+
 struct ResolutionScalingInfo {
         uint32_t up_scale{1};
         uint32_t down_shift{0};

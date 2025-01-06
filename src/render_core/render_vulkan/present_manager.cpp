@@ -5,7 +5,7 @@
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
 #include "common/thread.hpp"
-#include "vulkan_common/surface.hpp"
+#include "vulkan_common/vk_surface.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "common/microprofile.hpp"
 #if defined min

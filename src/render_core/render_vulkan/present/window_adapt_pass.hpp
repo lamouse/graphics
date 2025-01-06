@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
 namespace present {
 class WindowAdaptPass final {
@@ -15,8 +16,8 @@ class WindowAdaptPass final {
 
         // auto GetDescriptorSetLayout() -> vk::DescriptorSetLayout;
         // auto getRenderPass() -> vk::RenderPass;
-        auto create_vertex_shader(vk::Device device) -> vk::ShaderModule;
-        auto create_fragment_shader(vk::Device device) -> vk::ShaderModule;
+        auto create_vertex_shader(vk::Device device) -> ShaderModule;
+        auto create_fragment_shader(vk::Device device) -> ShaderModule;
 
     private:
         // void CreateDescriptorSetLayout();

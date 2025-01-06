@@ -11,7 +11,6 @@
 // imgui begin
 #include "g_imgui.hpp"
 #include "resource/image_texture.hpp"
-#include "render_core/vulkan_common/surface.hpp"
 // imgui end
 #include <spdlog/spdlog.h>
 

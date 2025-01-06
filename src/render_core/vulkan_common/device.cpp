@@ -10,9 +10,234 @@ void SetNext(void**& next, T& data) {
     *next = &data;
     next = &data.pNext;
 }
+constexpr u32 Attachable = 1 << 0;
+constexpr u32 Storage = 1 << 1;
+struct FormatTuple {
+        VkFormat format;  ///< Vulkan format
+        int usage = 0;    ///< Describes image format usage
+} constexpr tex_format_tuples[] = {
+    {VK_FORMAT_A8B8G8R8_UNORM_PACK32, Attachable | Storage},     // A8B8G8R8_UNORM
+    {VK_FORMAT_A8B8G8R8_SNORM_PACK32, Attachable | Storage},     // A8B8G8R8_SNORM
+    {VK_FORMAT_A8B8G8R8_SINT_PACK32, Attachable | Storage},      // A8B8G8R8_SINT
+    {VK_FORMAT_A8B8G8R8_UINT_PACK32, Attachable | Storage},      // A8B8G8R8_UINT
+    {VK_FORMAT_R5G6B5_UNORM_PACK16, Attachable},                 // R5G6B5_UNORM
+    {VK_FORMAT_B5G6R5_UNORM_PACK16},                             // B5G6R5_UNORM
+    {VK_FORMAT_A1R5G5B5_UNORM_PACK16, Attachable},               // A1R5G5B5_UNORM
+    {VK_FORMAT_A2B10G10R10_UNORM_PACK32, Attachable | Storage},  // A2B10G10R10_UNORM
+    {VK_FORMAT_A2B10G10R10_UINT_PACK32, Attachable | Storage},   // A2B10G10R10_UINT
+    {VK_FORMAT_A2R10G10B10_UNORM_PACK32, Attachable},            // A2R10G10B10_UNORM
+    {VK_FORMAT_A1R5G5B5_UNORM_PACK16, Attachable},          // A1B5G5R5_UNORM (flipped with swizzle)
+    {VK_FORMAT_R5G5B5A1_UNORM_PACK16},                      // A5B5G5R1_UNORM (specially swizzled)
+    {VK_FORMAT_R8_UNORM, Attachable | Storage},             // R8_UNORM
+    {VK_FORMAT_R8_SNORM, Attachable | Storage},             // R8_SNORM
+    {VK_FORMAT_R8_SINT, Attachable | Storage},              // R8_SINT
+    {VK_FORMAT_R8_UINT, Attachable | Storage},              // R8_UINT
+    {VK_FORMAT_R16G16B16A16_SFLOAT, Attachable | Storage},  // R16G16B16A16_FLOAT
+    {VK_FORMAT_R16G16B16A16_UNORM, Attachable | Storage},   // R16G16B16A16_UNORM
+    {VK_FORMAT_R16G16B16A16_SNORM, Attachable | Storage},   // R16G16B16A16_SNORM
+    {VK_FORMAT_R16G16B16A16_SINT, Attachable | Storage},    // R16G16B16A16_SINT
+    {VK_FORMAT_R16G16B16A16_UINT, Attachable | Storage},    // R16G16B16A16_UINT
+    {VK_FORMAT_B10G11R11_UFLOAT_PACK32, Attachable | Storage},  // B10G11R11_FLOAT
+    {VK_FORMAT_R32G32B32A32_UINT, Attachable | Storage},        // R32G32B32A32_UINT
+    {VK_FORMAT_BC1_RGBA_UNORM_BLOCK},                           // BC1_RGBA_UNORM
+    {VK_FORMAT_BC2_UNORM_BLOCK},                                // BC2_UNORM
+    {VK_FORMAT_BC3_UNORM_BLOCK},                                // BC3_UNORM
+    {VK_FORMAT_BC4_UNORM_BLOCK},                                // BC4_UNORM
+    {VK_FORMAT_BC4_SNORM_BLOCK},                                // BC4_SNORM
+    {VK_FORMAT_BC5_UNORM_BLOCK},                                // BC5_UNORM
+    {VK_FORMAT_BC5_SNORM_BLOCK},                                // BC5_SNORM
+    {VK_FORMAT_BC7_UNORM_BLOCK},                                // BC7_UNORM
+    {VK_FORMAT_BC6H_UFLOAT_BLOCK},                              // BC6H_UFLOAT
+    {VK_FORMAT_BC6H_SFLOAT_BLOCK},                              // BC6H_SFLOAT
+    {VK_FORMAT_ASTC_4x4_UNORM_BLOCK},                           // ASTC_2D_4X4_UNORM
+    {VK_FORMAT_B8G8R8A8_UNORM, Attachable | Storage},           // B8G8R8A8_UNORM
+    {VK_FORMAT_R32G32B32A32_SFLOAT, Attachable | Storage},      // R32G32B32A32_FLOAT
+    {VK_FORMAT_R32G32B32A32_SINT, Attachable | Storage},        // R32G32B32A32_SINT
+    {VK_FORMAT_R32G32_SFLOAT, Attachable | Storage},            // R32G32_FLOAT
+    {VK_FORMAT_R32G32_SINT, Attachable | Storage},              // R32G32_SINT
+    {VK_FORMAT_R32_SFLOAT, Attachable | Storage},               // R32_FLOAT
+    {VK_FORMAT_R16_SFLOAT, Attachable | Storage},               // R16_FLOAT
+    {VK_FORMAT_R16_UNORM, Attachable | Storage},                // R16_UNORM
+    {VK_FORMAT_R16_SNORM, Attachable | Storage},                // R16_SNORM
+    {VK_FORMAT_R16_UINT, Attachable | Storage},                 // R16_UINT
+    {VK_FORMAT_R16_SINT, Attachable | Storage},                 // R16_SINT
+    {VK_FORMAT_R16G16_UNORM, Attachable | Storage},             // R16G16_UNORM
+    {VK_FORMAT_R16G16_SFLOAT, Attachable | Storage},            // R16G16_FLOAT
+    {VK_FORMAT_R16G16_UINT, Attachable | Storage},              // R16G16_UINT
+    {VK_FORMAT_R16G16_SINT, Attachable | Storage},              // R16G16_SINT
+    {VK_FORMAT_R16G16_SNORM, Attachable | Storage},             // R16G16_SNORM
+    {VK_FORMAT_R32G32B32_SFLOAT},                               // R32G32B32_FLOAT
+    {VK_FORMAT_A8B8G8R8_SRGB_PACK32, Attachable},               // A8B8G8R8_SRGB
+    {VK_FORMAT_R8G8_UNORM, Attachable | Storage},               // R8G8_UNORM
+    {VK_FORMAT_R8G8_SNORM, Attachable | Storage},               // R8G8_SNORM
+    {VK_FORMAT_R8G8_SINT, Attachable | Storage},                // R8G8_SINT
+    {VK_FORMAT_R8G8_UINT, Attachable | Storage},                // R8G8_UINT
+    {VK_FORMAT_R32G32_UINT, Attachable | Storage},              // R32G32_UINT
+    {VK_FORMAT_R16G16B16A16_SFLOAT, Attachable | Storage},      // R16G16B16X16_FLOAT
+    {VK_FORMAT_R32_UINT, Attachable | Storage},                 // R32_UINT
+    {VK_FORMAT_R32_SINT, Attachable | Storage},                 // R32_SINT
+    {VK_FORMAT_ASTC_8x8_UNORM_BLOCK},                           // ASTC_2D_8X8_UNORM
+    {VK_FORMAT_ASTC_8x5_UNORM_BLOCK},                           // ASTC_2D_8X5_UNORM
+    {VK_FORMAT_ASTC_5x4_UNORM_BLOCK},                           // ASTC_2D_5X4_UNORM
+    {VK_FORMAT_B8G8R8A8_SRGB, Attachable},                      // B8G8R8A8_SRGB
+    {VK_FORMAT_BC1_RGBA_SRGB_BLOCK},                            // BC1_RGBA_SRGB
+    {VK_FORMAT_BC2_SRGB_BLOCK},                                 // BC2_SRGB
+    {VK_FORMAT_BC3_SRGB_BLOCK},                                 // BC3_SRGB
+    {VK_FORMAT_BC7_SRGB_BLOCK},                                 // BC7_SRGB
+    {VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT},                      // A4B4G4R4_UNORM
+    {VK_FORMAT_R4G4_UNORM_PACK8},                               // G4R4_UNORM
+    {VK_FORMAT_ASTC_4x4_SRGB_BLOCK},                            // ASTC_2D_4X4_SRGB
+    {VK_FORMAT_ASTC_8x8_SRGB_BLOCK},                            // ASTC_2D_8X8_SRGB
+    {VK_FORMAT_ASTC_8x5_SRGB_BLOCK},                            // ASTC_2D_8X5_SRGB
+    {VK_FORMAT_ASTC_5x4_SRGB_BLOCK},                            // ASTC_2D_5X4_SRGB
+    {VK_FORMAT_ASTC_5x5_UNORM_BLOCK},                           // ASTC_2D_5X5_UNORM
+    {VK_FORMAT_ASTC_5x5_SRGB_BLOCK},                            // ASTC_2D_5X5_SRGB
+    {VK_FORMAT_ASTC_10x8_UNORM_BLOCK},                          // ASTC_2D_10X8_UNORM
+    {VK_FORMAT_ASTC_10x8_SRGB_BLOCK},                           // ASTC_2D_10X8_SRGB
+    {VK_FORMAT_ASTC_6x6_UNORM_BLOCK},                           // ASTC_2D_6X6_UNORM
+    {VK_FORMAT_ASTC_6x6_SRGB_BLOCK},                            // ASTC_2D_6X6_SRGB
+    {VK_FORMAT_ASTC_10x6_UNORM_BLOCK},                          // ASTC_2D_10X6_UNORM
+    {VK_FORMAT_ASTC_10x6_SRGB_BLOCK},                           // ASTC_2D_10X6_SRGB
+    {VK_FORMAT_ASTC_10x5_UNORM_BLOCK},                          // ASTC_2D_10X5_UNORM
+    {VK_FORMAT_ASTC_10x5_SRGB_BLOCK},                           // ASTC_2D_10X5_SRGB
+    {VK_FORMAT_ASTC_10x10_UNORM_BLOCK},                         // ASTC_2D_10X10_UNORM
+    {VK_FORMAT_ASTC_10x10_SRGB_BLOCK},                          // ASTC_2D_10X10_SRGB
+    {VK_FORMAT_ASTC_12x10_UNORM_BLOCK},                         // ASTC_2D_12X10_UNORM
+    {VK_FORMAT_ASTC_12x10_SRGB_BLOCK},                          // ASTC_2D_12X10_SRGB
+    {VK_FORMAT_ASTC_12x12_UNORM_BLOCK},                         // ASTC_2D_12X12_UNORM
+    {VK_FORMAT_ASTC_12x12_SRGB_BLOCK},                          // ASTC_2D_12X12_SRGB
+    {VK_FORMAT_ASTC_8x6_UNORM_BLOCK},                           // ASTC_2D_8X6_UNORM
+    {VK_FORMAT_ASTC_8x6_SRGB_BLOCK},                            // ASTC_2D_8X6_SRGB
+    {VK_FORMAT_ASTC_6x5_UNORM_BLOCK},                           // ASTC_2D_6X5_UNORM
+    {VK_FORMAT_ASTC_6x5_SRGB_BLOCK},                            // ASTC_2D_6X5_SRGB
+    {VK_FORMAT_E5B9G9R9_UFLOAT_PACK32},                         // E5B9G9R9_FLOAT
+
+    // Depth formats
+    {VK_FORMAT_D32_SFLOAT, Attachable},           // D32_FLOAT
+    {VK_FORMAT_D16_UNORM, Attachable},            // D16_UNORM
+    {VK_FORMAT_X8_D24_UNORM_PACK32, Attachable},  // X8_D24_UNORM
+
+    // Stencil formats
+    {VK_FORMAT_S8_UINT, Attachable},  // S8_UINT
+
+    // DepthStencil formats
+    {VK_FORMAT_D24_UNORM_S8_UINT, Attachable},   // D24_UNORM_S8_UINT
+    {VK_FORMAT_D24_UNORM_S8_UINT, Attachable},   // S8_UINT_D24_UNORM (emulated)
+    {VK_FORMAT_D32_SFLOAT_S8_UINT, Attachable},  // D32_FLOAT_S8_UINT
+};
+static_assert(std::size(tex_format_tuples) == surface::MaxPixelFormat);
+
+constexpr auto isZetaFormat(surface::PixelFormat pixel_format) -> bool {
+    return pixel_format >= surface::PixelFormat::MaxColorFormat &&
+           pixel_format < surface::PixelFormat::MaxDepthStencilFormat;
+}
+auto GetFormatFeatures(vk::FormatProperties properties, FormatType format_type)
+    -> vk::FormatFeatureFlags {
+    switch (format_type) {
+        case FormatType::Linear:
+            return properties.linearTilingFeatures;
+        case FormatType::Optimal:
+            return properties.optimalTilingFeatures;
+        case FormatType::Buffer:
+            return properties.bufferFeatures;
+        default:
+            return {};
+    }
+}
+
+namespace Alternatives {
+constexpr std::array STENCIL8_UINT{
+    VK_FORMAT_D16_UNORM_S8_UINT,
+    VK_FORMAT_D24_UNORM_S8_UINT,
+    VK_FORMAT_D32_SFLOAT_S8_UINT,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array DEPTH24_UNORM_STENCIL8_UINT{
+    VK_FORMAT_D32_SFLOAT_S8_UINT,
+    VK_FORMAT_D16_UNORM_S8_UINT,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array DEPTH24_UNORM_DONTCARE8{
+    VK_FORMAT_D32_SFLOAT,
+    VK_FORMAT_D16_UNORM,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array DEPTH16_UNORM_STENCIL8_UINT{
+    VK_FORMAT_D24_UNORM_S8_UINT,
+    VK_FORMAT_D32_SFLOAT_S8_UINT,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array B5G6R5_UNORM_PACK16{
+    VK_FORMAT_R5G6B5_UNORM_PACK16,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array R4G4_UNORM_PACK8{
+    VK_FORMAT_R8_UNORM,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array R16G16B16_SFLOAT{
+    VK_FORMAT_R16G16B16A16_SFLOAT,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array R16G16B16_SSCALED{
+    VK_FORMAT_R16G16B16A16_SSCALED,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array R8G8B8_SSCALED{
+    VK_FORMAT_R8G8B8A8_SSCALED,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array VK_FORMAT_R32G32B32_SFLOAT{
+    VK_FORMAT_R32G32B32A32_SFLOAT,
+    VK_FORMAT_UNDEFINED,
+};
+
+constexpr std::array VK_FORMAT_A4B4G4R4_UNORM_PACK16{
+    VK_FORMAT_R4G4B4A4_UNORM_PACK16,
+    VK_FORMAT_UNDEFINED,
+};
+}  // namespace Alternatives
+
+constexpr auto GetFormatAlternatives(VkFormat format) -> const VkFormat* {
+    switch (format) {
+        case VK_FORMAT_S8_UINT:
+            return Alternatives::STENCIL8_UINT.data();
+        case VK_FORMAT_D24_UNORM_S8_UINT:
+            return Alternatives::DEPTH24_UNORM_STENCIL8_UINT.data();
+        case VK_FORMAT_X8_D24_UNORM_PACK32:
+            return Alternatives::DEPTH24_UNORM_DONTCARE8.data();
+        case VK_FORMAT_D16_UNORM_S8_UINT:
+            return Alternatives::DEPTH16_UNORM_STENCIL8_UINT.data();
+        case VK_FORMAT_B5G6R5_UNORM_PACK16:
+            return Alternatives::B5G6R5_UNORM_PACK16.data();
+        case VK_FORMAT_R4G4_UNORM_PACK8:
+            return Alternatives::R4G4_UNORM_PACK8.data();
+        case VK_FORMAT_R16G16B16_SFLOAT:
+            return Alternatives::R16G16B16_SFLOAT.data();
+        case VK_FORMAT_R16G16B16_SSCALED:
+            return Alternatives::R16G16B16_SSCALED.data();
+        case VK_FORMAT_R8G8B8_SSCALED:
+            return Alternatives::R8G8B8_SSCALED.data();
+        case VK_FORMAT_R32G32B32_SFLOAT:
+            return Alternatives::VK_FORMAT_R32G32B32_SFLOAT.data();
+        case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+            return Alternatives::VK_FORMAT_A4B4G4R4_UNORM_PACK16.data();
+        default:
+            return nullptr;
+    }
+}
+
 }  // namespace
-Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface,
-               bool enable_validation)
+Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKHR surface)
     : instance_(instance), physical_(physical) {
     format_properties_ = utils::GetFormatProperties(physical_);
     const bool is_suitable = getSuitability(surface != nullptr);
@@ -63,10 +288,10 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         properties.deviceType == vk::PhysicalDeviceType::eOther ||
         properties.deviceType == vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
 
-    misc_features_.supports_d24_depth = isFormatSupported(
-        vk::Format::eD24UnormS8Uint,  // VK_FORMAT_D24_UNORM_S8_UINT,
-        vk::FormatFeatureFlagBits::eDepthStencilAttachment,
-        utils::FormatType::Optimal);  // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    misc_features_.supports_d24_depth =
+        isFormatSupported(vk::Format::eD24UnormS8Uint,  // VK_FORMAT_D24_UNORM_S8_UINT,
+                          vk::FormatFeatureFlagBits::eDepthStencilAttachment,
+                          FormatType::Optimal);  // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 
     misc_features_.supports_conditional_barriers = !(is_intel_anv || is_intel_windows);
     collectPhysicalMemoryInfo();
@@ -297,8 +522,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 
     auto device_extends = utils::extensionListForVulkan(loaded_extensions_);
 
-    logical_ =
-        LogicDevice::Create(physical_, queue_cis, device_extends, first_next, enable_validation);
+    logical_ = LogicDevice::Create(physical_, queue_cis, device_extends, first_next);
 
     graphics_queue_ = (*logical_).getQueue(graphics_family_, 0);
     present_queue_ = (*logical_).getQueue(present_family_, 0);
@@ -771,13 +995,13 @@ auto Device::computeIsOptimalAstcSupported() const -> bool {
 }
 
 auto Device::isFormatSupported(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
-                               utils::FormatType format_type) const -> bool {
+                               FormatType format_type) const -> bool {
     const auto it = format_properties_.find(wanted_format);
     if (it == format_properties_.end()) {
         SPDLOG_ERROR("Unimplemented format");
         return true;
     }
-    const auto supported_usage = getFormatFeatures(it->second, format_type);
+    const auto supported_usage = GetFormatFeatures(it->second, format_type);
     return (supported_usage & wanted_usage) == wanted_usage;
 }
 
@@ -876,4 +1100,132 @@ auto Device::createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
     return VulkanDescriptorPool(getLogical().createDescriptorPool(ci), getLogical());
 }
 
+void Device::reportLoss() const {
+    SPDLOG_CRITICAL("Device loss occurred!");
+
+    // Wait for the log to flush and for Nsight Aftermath to dump the results
+    std::this_thread::sleep_for(std::chrono::seconds{15});
+}
+
+auto Device::createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& ci) const
+    -> DescriptorSetLayout {
+    vk::DescriptorSetLayout layout = getLogical().createDescriptorSetLayout(ci, nullptr);
+    return DescriptorSetLayout{layout, getLogical()};
+}
+
+[[nodiscard]] auto Device::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
+    -> PipelineLayout {
+    auto layout = getLogical().createPipelineLayout(ci);
+    return PipelineLayout{layout, getLogical()};
+}
+
+auto Device::surfaceFormat(FormatType format_type, bool with_srgb,
+                           surface::PixelFormat pixel_format) const -> FormatInfo {
+    assert(static_cast<size_t>(pixel_format) < std::size(tex_format_tuples));
+    FormatTuple tuple = tex_format_tuples[static_cast<size_t>(pixel_format)];
+    // Transcode on hardware that doesn't support ASTC natively
+    if (!isOptimalAstcSupported() && surface::IsPixelFormatASTC(pixel_format)) {
+        const bool is_srgb = with_srgb && surface::IsPixelFormatSRGB(pixel_format);
+        auto astc = common::settings::get<settings::Graphics>().astc_recompression;
+        switch (astc) {
+            case settings::enums::AstcRecompression::Uncompressed:
+                if (is_srgb) {
+                    tuple.format = VK_FORMAT_A8B8G8R8_SRGB_PACK32;
+                } else {
+                    tuple.format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+                    tuple.usage |= Storage;
+                }
+                break;
+            case settings::enums::AstcRecompression::Bc1:
+                tuple.format =
+                    is_srgb ? VK_FORMAT_BC1_RGBA_SRGB_BLOCK : VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+                break;
+            case settings::enums::AstcRecompression::Bc3:
+                tuple.format = is_srgb ? VK_FORMAT_BC3_SRGB_BLOCK : VK_FORMAT_BC3_UNORM_BLOCK;
+                break;
+        }
+    }
+    // Transcode on hardware that doesn't support BCn natively
+    if (isOptimalBcnSupported() && surface::IsPixelFormatBCn(pixel_format)) {
+        const bool is_srgb = with_srgb && surface::IsPixelFormatSRGB(pixel_format);
+        if (pixel_format == surface::PixelFormat::BC4_SNORM) {
+            tuple.format = VK_FORMAT_R8_SNORM;
+        } else if (pixel_format == surface::PixelFormat::BC4_UNORM) {
+            tuple.format = VK_FORMAT_R8_UNORM;
+        } else if (pixel_format == surface::PixelFormat::BC5_SNORM) {
+            tuple.format = VK_FORMAT_R8G8_SNORM;
+        } else if (pixel_format == surface::PixelFormat::BC5_UNORM) {
+            tuple.format = VK_FORMAT_R8G8_UNORM;
+        } else if (pixel_format == surface::PixelFormat::BC6H_SFLOAT ||
+                   pixel_format == surface::PixelFormat::BC6H_UFLOAT) {
+            tuple.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        } else if (is_srgb) {
+            tuple.format = VK_FORMAT_A8B8G8R8_SRGB_PACK32;
+        } else {
+            tuple.format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+        }
+    }
+    const bool attachable = (tuple.usage & Attachable) != 0;
+    const bool storage = (tuple.usage & Storage) != 0;
+
+    vk::FormatFeatureFlags usage{};
+    switch (format_type) {
+        case FormatType::Buffer:
+            usage = vk::FormatFeatureFlagBits::eStorageTexelBuffer |
+                    vk::FormatFeatureFlagBits::eUniformTexelBuffer;
+            break;
+        case FormatType::Linear:
+        case FormatType::Optimal:
+            usage = vk::FormatFeatureFlagBits::eSampledImage |
+                    vk::FormatFeatureFlagBits::eTransferDst |
+                    vk::FormatFeatureFlagBits::eTransferSrc;
+            if (attachable) {
+                usage |= isZetaFormat(pixel_format)
+                             ? vk::FormatFeatureFlagBits::eDepthStencilAttachment
+                             : vk::FormatFeatureFlagBits::eColorAttachment;
+            }
+            if (storage) {
+                usage |= vk::FormatFeatureFlagBits::eStorageImage;
+            }
+            break;
+    }
+    return {getSupportedFormat(static_cast<vk::Format>(tuple.format), usage, format_type),
+            attachable, storage};
+}
+
+auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
+                                FormatType format_type) const -> vk::Format {
+    if (isFormatSupported(wanted_format, wanted_usage, format_type)) {
+        return wanted_format;
+    }
+    // The wanted format is not supported by hardware, search for alternatives
+    const VkFormat* alternatives = GetFormatAlternatives(static_cast<VkFormat>(wanted_format));
+    if (alternatives == nullptr) {
+        SPDLOG_ERROR(
+            "Format={} with usage={} and type={} has no defined alternatives and host "
+            "hardware does not support it",
+            vk::to_string(wanted_format), vk::to_string(wanted_usage),
+            static_cast<int>(format_type));
+        return wanted_format;
+    }
+
+    std::size_t i = 0;
+    for (VkFormat alternative = *alternatives; alternative; alternative = alternatives[++i]) {
+        if (!isFormatSupported(static_cast<vk::Format>(alternative), wanted_usage, format_type)) {
+            continue;
+        }
+        SPDLOG_ERROR("Emulating format={} with alternative format={} with usage={} and type={}",
+                     vk::to_string(wanted_format),
+                     vk::to_string(static_cast<vk::Format>(alternative)),
+                     vk::to_string(wanted_usage), static_cast<int>(format_type));
+        return static_cast<vk::Format>(alternative);
+    }
+
+    // No alternatives found, panic
+    SPDLOG_ERROR(
+        "Format={} with usage={} and type={} is not supported by the host hardware and "
+        "doesn't support any of the alternatives",
+        vk::to_string(wanted_format), vk::to_string(wanted_usage), static_cast<int>(format_type));
+    return wanted_format;
+}
 }  // namespace render::vulkan

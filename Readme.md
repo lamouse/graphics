@@ -84,3 +84,7 @@ log:  #{type:struct}
       y: 2.0
 
 ```
+
+## 学习vulkan的一些记录
+
+ 1. 有些教学还在设置逻辑设备的验证层，其实不需要了[说明](https://www.lunarg.com/wp-content/uploads/2019/04/UberLayer_V3.pdf)

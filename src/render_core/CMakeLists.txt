@@ -3,17 +3,18 @@ aux_source_directory(./vulkan_common VULKAN_COMMON_SRC)
 aux_source_directory(./render_vulkan RENDER_VULKAN_SRC)
 aux_source_directory(./buffer_cache BUFFER_CACHE_SRC)
 aux_source_directory(./render_vulkan/present PRESENT_SRC)
+aux_source_directory(./texture TEXTURE_SRC)
 add_library(render-core STATIC ${RENDER_CORE_SRC} ${RENDER_VULKAN_SRC}
-    ${VULKAN_COMMON_SRC} ${BUFFER_CACHE_SRC} ${PRESENT_SRC})
+    ${VULKAN_COMMON_SRC} ${BUFFER_CACHE_SRC} ${PRESENT_SRC} ${TEXTURE_SRC})
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)
     target_compile_options(render-core PRIVATE
-        /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
-        /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
-        /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
-        /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
-        /we4800 # Implicit conversion from 'type' to bool. Possible information loss
+        # /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
+        # /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
+        # /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
+        # /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
+        # /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
 else()
     target_compile_options(render-core PRIVATE
