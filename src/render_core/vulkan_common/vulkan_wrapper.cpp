@@ -250,9 +250,17 @@ LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
     return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});
 }
 
-auto LogicDevice::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) -> PipelineLayout {
+auto LogicDevice::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
+    -> PipelineLayout {
     auto layout = handle.createPipelineLayout(ci);
     return PipelineLayout{layout, handle};
+}
+
+auto LogicDevice::createPipeline(const vk::GraphicsPipelineCreateInfo& ci,
+                                 const vk::PipelineCache& cache) const -> Pipeline {
+    auto result = handle.createGraphicsPipeline(cache, ci);
+    utils::check(result.result);
+    return Pipeline{result.value, handle};
 }
 
 }  // namespace render::vulkan

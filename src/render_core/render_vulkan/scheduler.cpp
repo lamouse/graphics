@@ -4,6 +4,7 @@
 #include "common/polyfill_thread.hpp"
 #include "common/microprofile.hpp"
 #include "vulkan_common/device.hpp"
+#include "texture_cache.hpp"
 MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 
 namespace render::vulkan::scheduler {
@@ -22,9 +23,8 @@ void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
     last = nullptr;
 }
 
-Scheduler::Scheduler(const Device& device, StateTracker& state_tracker)
+Scheduler::Scheduler(const Device& device)
     : device_{device},
-      state_tracker_{state_tracker},
       master_semaphore_{std::make_unique<semaphore::MasterSemaphore>(device)},
       command_pool_{std::make_unique<resource::CommandPool>(master_semaphore_.get(), device)} {
     acquireNewChunk();
@@ -232,6 +232,41 @@ void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphor
     const u64 presubmit_tick = currentTick();
     submitExecution(signal_semaphore, wait_semaphore);
     wait(presubmit_tick);
+}
+
+void Scheduler::requestRenderpass(const TextureFramebuffer* framebuffer) {
+    const vk::RenderPass renderpass = framebuffer->RenderPass();
+    const vk::Framebuffer framebuffer_handle = framebuffer->Handle();
+    const VkExtent2D render_area = framebuffer->RenderArea();
+    if (renderpass == state_.render_pass_ && framebuffer_handle == state_.framebuffer_ &&
+        render_area.width == state_.render_area_.width &&
+        render_area.height == state_.render_area_.height) {
+        return;
+    }
+    endRenderPass();
+    state_.render_pass_ = renderpass;
+    state_.framebuffer_ = framebuffer_handle;
+    state_.render_area_ = render_area;
+
+    record([renderpass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
+        const VkRenderPassBeginInfo renderpass_bi{
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .pNext = nullptr,
+            .renderPass = renderpass,
+            .framebuffer = framebuffer_handle,
+            .renderArea =
+                {
+                    .offset = {.x = 0, .y = 0},
+                    .extent = render_area,
+                },
+            .clearValueCount = 0,
+            .pClearValues = nullptr,
+        };
+        cmdbuf.beginRenderPass(renderpass_bi, vk::SubpassContents::eInline);
+    });
+    num_render_pass_images_ = framebuffer->NumImages();
+    render_pass_images_ = framebuffer->Images();
+    render_pass_image_ranges_ = framebuffer->ImageRanges();
 }
 
 }  // namespace render::vulkan::scheduler

@@ -128,4 +128,18 @@ struct SwizzleParameters {
         s32 level;
 };
 
+enum class MsaaMode : u32 {
+    Msaa1x1 = 0,
+    Msaa2x1 = 1,
+    Msaa2x2 = 2,
+    Msaa4x2 = 3,
+    Msaa4x2_D3D = 4,
+    Msaa2x1_D3D = 5,
+    Msaa4x4 = 6,
+    Msaa2x2_VC4 = 8,
+    Msaa2x2_VC12 = 9,
+    Msaa4x2_VC8 = 10,
+    Msaa4x2_VC24 = 11,
+};
+
 }  // namespace render::texture

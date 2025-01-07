@@ -3,6 +3,8 @@
 #include "framebufferConfig.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
+#include "rasterizer_interface.hpp"
+
 namespace render {
 class RenderBase {
     public:
@@ -10,9 +12,8 @@ class RenderBase {
         CLASS_NON_MOVEABLE(RenderBase);
         explicit RenderBase(core::frontend::BaseWindow*);
         virtual ~RenderBase() = default;
-        virtual void draw(const frame::FramebufferConfig& config) = 0;
         [[nodiscard]] virtual auto GetDeviceVendor() const -> std::string = 0;
-
+        virtual auto readRasterizer() -> RasterizerInterface* = 0;
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }

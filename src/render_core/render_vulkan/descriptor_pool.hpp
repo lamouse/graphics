@@ -16,8 +16,6 @@ namespace scheduler {
 class Scheduler;
 }
 namespace resource {
-struct DescriptorBank;
-
 struct DescriptorBankInfo {
         [[nodiscard]] auto isSuperset(const DescriptorBankInfo& subset) const noexcept -> bool;
 
@@ -28,6 +26,11 @@ struct DescriptorBankInfo {
         uint32_t textures_{};         ///< Number of texture descriptors
         uint32_t images_{};           ///< Number of image descriptors
         std::int32_t score_{};        ///< Number of descriptors in total
+};
+
+struct DescriptorBank {
+        DescriptorBankInfo info;
+        std::vector<VulkanDescriptorPool> pools;
 };
 class DescriptorAllocator final : public ResourcePool {
         friend class DescriptorPool;

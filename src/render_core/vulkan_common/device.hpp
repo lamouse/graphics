@@ -29,7 +29,7 @@ class Device {
         [[nodiscard]] auto getSetsPerPool() const -> uint32_t { return sets_per_pool_; }
         /// Returns the logical device.
         [[nodiscard]] auto getLogical() const -> const vk::Device { return *logical_; }
-
+        [[nodiscard]] auto logical() const -> const LogicDevice& { return logical_; }
         /// Returns the physical device.
         [[nodiscard]] auto getPhysical() const -> vk::PhysicalDevice { return physical_; }
 
@@ -106,7 +106,17 @@ class Device {
         [[nodiscard]] auto isOptimalBcnSupported() const -> bool {
             return features_.features.textureCompressionBC;
         }
+        /// Returns true when blitting from and to D24S8 images is supported.
+        [[nodiscard]] auto isBlitDepth24Stencil8Supported() const -> bool {
+            return misc_features_.is_blit_depth24_stencil8_supported;
+        }
 
+        /// Returns true when blitting from and to D32S8 images is supported.
+        auto isBlitDepth32Stencil8Supported() const -> bool {
+            return misc_features_.is_blit_depth32_stencil8_supported;
+        }
+
+        [[nodiscard]] auto getDriverName() const -> std::string;
         /// Reports a device loss.
         void reportLoss() const;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
+#include "common/slot_vector.hpp"
 #include "surface.hpp"
 #include "texture/image_base.hpp"
 #include "texture/image_info.hpp"
@@ -10,8 +11,11 @@
 #include "render_pass.hpp"
 #include "update_descriptor.hpp"
 #include "compute_pass.hpp"
+#include "texture/image_view_base.hpp"
+#include "texture/render_targets.h"
 
 namespace render::vulkan {
+class BlitImageHelper;
 class Device;
 class StagingBufferPool;
 class StagingBufferRef;
@@ -29,7 +33,8 @@ class TextureCacheRuntime {
                                      StagingBufferPool& staging_buffer_pool_,
                                      RenderPassCache& render_pass_cache_,
                                      resource::DescriptorPool& descriptor_pool,
-                                     ComputePassDescriptorQueue& compute_pass_descriptor_queue);
+                                     ComputePassDescriptorQueue& compute_pass_descriptor_queue,
+                                     BlitImageHelper& blit_image_helper_);
 
         void Finish();
 
@@ -47,8 +52,8 @@ class TextureCacheRuntime {
 
         bool CanReportMemoryUsage() const;
 
-        void BlitImage(Framebuffer* dst_framebuffer, ImageView& dst, ImageView& src,
-                       const render::texture::Region2D& dst_region,
+        void BlitImage(TextureFramebuffer* dst_framebuffer, TextureImageView& dst,
+                       TextureImageView& src, const render::texture::Region2D& dst_region,
                        const render::texture::Region2D& src_region);
 
         void CopyImage(TextureImage& dst, TextureImage& src,
@@ -62,7 +67,8 @@ class TextureCacheRuntime {
         void ReinterpretImage(TextureImage& dst, TextureImage& src,
                               std::span<const render::texture::ImageCopy> copies);
 
-        void ConvertImage(Framebuffer* dst, TextureImageView& dst_view, TextureImageView& src_view);
+        void ConvertImage(TextureFramebuffer* dst, TextureImageView& dst_view,
+                          TextureImageView& src_view);
 
         bool CanAccelerateImageUpload(TextureImage&) const noexcept { return false; }
 
@@ -95,7 +101,7 @@ class TextureCacheRuntime {
         }
 
         void BarrierFeedbackLoop();
-
+        BlitImageHelper& blit_image_helper;
         const Device& device;
         scheduler::Scheduler& scheduler;
         MemoryAllocator& memory_allocator;
@@ -181,6 +187,168 @@ class TextureImage : public render::texture::ImageBase {
 
         std::unique_ptr<TextureFramebuffer> normal_framebuffer;
         std::unique_ptr<TextureImageView> normal_view;
+};
+
+class TextureImageView : public render::texture::ImageViewBase {
+    public:
+        explicit TextureImageView(TextureCacheRuntime&, const texture::ImageViewInfo&,
+                                  texture::ImageId, Image&);
+        explicit TextureImageView(TextureCacheRuntime&, const texture::ImageViewInfo&,
+                                  texture::ImageId, Image&,
+                                  const common::SlotVector<TextureImage>&);
+        explicit TextureImageView(TextureCacheRuntime&, const texture::ImageInfo&,
+                                  const texture::ImageViewInfo&, GPUVAddr);
+        explicit TextureImageView(TextureCacheRuntime&, const texture::NullImageViewParams&);
+
+        ~TextureImageView();
+        CLASS_NON_COPYABLE(TextureImageView);
+        CLASS_DEFAULT_MOVEABLE(TextureImageView);
+
+        [[nodiscard]] auto DepthView() -> vk::ImageView;
+
+        [[nodiscard]] auto StencilView() -> vk::ImageView;
+
+        [[nodiscard]] auto ColorView() -> vk::ImageView;
+
+        [[nodiscard]] auto StorageView(shader::TextureType texture_type,
+                                       shader::ImageFormat image_format) -> vk::ImageView;
+
+        [[nodiscard]] bool IsRescaled() const noexcept;
+
+        [[nodiscard]] vk::ImageView Handle(shader::TextureType texture_type) const noexcept {
+            return *image_views[static_cast<size_t>(texture_type)];
+        }
+
+        [[nodiscard]] vk::Image ImageHandle() const noexcept { return image_handle; }
+
+        [[nodiscard]] vk::ImageView RenderTarget() const noexcept { return render_target; }
+
+        [[nodiscard]] auto Samples() const noexcept -> VkSampleCountFlagBits { return samples; }
+
+        [[nodiscard]] GPUVAddr GpuAddr() const noexcept { return gpu_addr; }
+
+        [[nodiscard]] u32 BufferSize() const noexcept { return buffer_size; }
+
+    private:
+        struct StorageViews {
+                std::array<ImageView, shader::NUM_TEXTURE_TYPES> signeds;
+                std::array<ImageView, shader::NUM_TEXTURE_TYPES> unsigneds;
+        };
+
+        [[nodiscard]] vk::ImageView MakeView(VkFormat vk_format, VkImageAspectFlags aspect_mask);
+
+        const Device* device = nullptr;
+        const common::SlotVector<Image>* slot_images = nullptr;
+
+        std::array<ImageView, shader::NUM_TEXTURE_TYPES> image_views;
+        std::unique_ptr<StorageViews> storage_views;
+        ImageView depth_view;
+        ImageView stencil_view;
+        ImageView color_view;
+        Image null_image;
+        vk::Image image_handle = VK_NULL_HANDLE;
+        vk::ImageView render_target = VK_NULL_HANDLE;
+        VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+        u32 buffer_size = 0;
+};
+
+class TextureImageAlloc : public texture::ImageAllocBase {};
+
+class TextureSampler {
+    public:
+        explicit TextureSampler(TextureCacheRuntime&);
+
+        [[nodiscard]] vk::Sampler Handle() const noexcept { return *sampler; }
+
+        [[nodiscard]] vk::Sampler HandleWithDefaultAnisotropy() const noexcept {
+            return *sampler_default_anisotropy;
+        }
+
+        [[nodiscard]] auto HasAddedAnisotropy() const noexcept -> bool {
+            return static_cast<bool>(sampler_default_anisotropy);
+        }
+
+    private:
+        Sampler sampler;
+        Sampler sampler_default_anisotropy;
+};
+
+class TextureFramebuffer {
+    public:
+        explicit TextureFramebuffer(TextureCacheRuntime& runtime,
+                                    std::span<TextureImageView*, texture::NUM_RT> color_buffers,
+                                    ImageView* depth_buffer, const texture::RenderTargets& key);
+
+        explicit TextureFramebuffer(TextureCacheRuntime& runtime, ImageView* color_buffer,
+                                    ImageView* depth_buffer, VkExtent2D extent, bool is_rescaled);
+
+        ~TextureFramebuffer();
+
+        CLASS_NON_COPYABLE(TextureFramebuffer);
+
+        void CreateFramebuffer(TextureCacheRuntime& runtime,
+                               std::span<TextureImageView*, texture::NUM_RT> color_buffers,
+                               ImageView* depth_buffer, bool is_rescaled = false);
+
+        [[nodiscard]] vk::Framebuffer Handle() const noexcept { return *framebuffer; }
+
+        [[nodiscard]] vk::RenderPass RenderPass() const noexcept { return renderpass; }
+
+        [[nodiscard]] vk::Extent2D RenderArea() const noexcept { return render_area; }
+
+        [[nodiscard]] VkSampleCountFlagBits Samples() const noexcept { return samples; }
+
+        [[nodiscard]] u32 NumColorBuffers() const noexcept { return num_color_buffers; }
+
+        [[nodiscard]] u32 NumImages() const noexcept { return num_images; }
+
+        [[nodiscard]] const std::array<vk::Image, 9>& Images() const noexcept { return images; }
+
+        [[nodiscard]] const std::array<vk::ImageSubresourceRange, 9>& ImageRanges() const noexcept {
+            return image_ranges;
+        }
+
+        [[nodiscard]] auto HasAspectColorBit(size_t index) const noexcept -> bool {
+            return (image_ranges.at(rt_map[index]).aspectMask & vk::ImageAspectFlagBits::eColor) ==
+                   vk::ImageAspectFlagBits::eColor;
+        }
+
+        [[nodiscard]] bool HasAspectDepthBit() const noexcept { return has_depth; }
+
+        [[nodiscard]] bool HasAspectStencilBit() const noexcept { return has_stencil; }
+
+        [[nodiscard]] bool IsRescaled() const noexcept { return is_rescaled; }
+
+    private:
+        Framebuffer framebuffer;
+        vk::RenderPass renderpass{};
+        vk::Extent2D render_area{};
+        VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+        u32 num_color_buffers = 0;
+        u32 num_images = 0;
+        std::array<vk::Image, 9> images{};
+        std::array<vk::ImageSubresourceRange, 9> image_ranges{};
+        std::array<size_t, texture::NUM_RT> rt_map{};
+        bool has_depth{};
+        bool has_stencil{};
+        bool is_rescaled{};
+};
+
+struct TextureCacheParams {
+        static constexpr bool ENABLE_VALIDATION = true;
+        static constexpr bool FRAMEBUFFER_BLITS = false;
+        static constexpr bool HAS_EMULATED_COPIES = false;
+        static constexpr bool HAS_DEVICE_MEMORY_INFO = true;
+        static constexpr bool IMPLEMENTS_ASYNC_DOWNLOADS = true;
+
+        using Runtime = render::vulkan::TextureCacheRuntime;
+        using Image = render::vulkan::TextureImage;
+        using ImageAlloc = render::vulkan::TextureImageAlloc;
+        using ImageView = render::vulkan::TextureImageView;
+        using Sampler = render::vulkan::TextureSampler;
+        using Framebuffer = render::vulkan::TextureFramebuffer;
+        using AsyncBuffer = render::vulkan::StagingBufferRef;
+        using BufferType = vk::Buffer;
 };
 
 }  // namespace render::vulkan

@@ -10,9 +10,9 @@
 #include <vector>
 #include <gsl/gsl>
 namespace render::vulkan {
+class TextureFramebuffer;
 class GraphicsPipeline;
 class Device;
-class StateTracker;
 namespace resource {
 class CommandPool;
 }
@@ -22,7 +22,7 @@ namespace render::vulkan::scheduler {
 
 class Scheduler {
     public:
-        explicit Scheduler(const Device& device, StateTracker& state_tracker);
+        explicit Scheduler(const Device& device);
         ~Scheduler();
         std::mutex submit_mutex_;
         /// Returns the master timeline semaphore.
@@ -74,6 +74,8 @@ class Scheduler {
         }
 
         void requestOutsideRenderPassOperationContext() { endRenderPass(); }
+
+        void requestRenderpass(const TextureFramebuffer* framebuffer);
 
     private:
         class Command {
@@ -158,8 +160,8 @@ class Scheduler {
         };
 
         struct State {
-                RenderPass render_pass_ = nullptr;
-                Framebuffer framebuffer_ = nullptr;
+                vk::RenderPass render_pass_ = nullptr;
+                vk::Framebuffer framebuffer_ = nullptr;
                 vk::Extent2D render_area_ = {0, 0};
                 GraphicsPipeline* graphics_pipeline_ = nullptr;
                 bool is_rescaling_ = false;
@@ -167,7 +169,6 @@ class Scheduler {
         };
 
         const Device& device_;
-        StateTracker& state_tracker_;
         State state_;
         void workerThread(std::stop_token stop_token);
         void allocateWorkerCommandBuffer();

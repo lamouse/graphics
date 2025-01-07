@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 #include <bit>
 #include <numeric>

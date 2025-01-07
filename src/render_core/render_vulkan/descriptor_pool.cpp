@@ -8,10 +8,7 @@ namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
 constexpr size_t SETS_GROW_RATE = 16;
 constexpr std::int32_t SCORE_THRESHOLD = 3;
-struct DescriptorBank {
-        DescriptorBankInfo info;
-        std::vector<VulkanDescriptorPool> pools;
-};
+
 auto DescriptorBankInfo::isSuperset(const DescriptorBankInfo& subset) const noexcept -> bool {
     return uniform_buffers_ >= subset.uniform_buffers_ &&
            storage_buffers_ >= subset.storage_buffers_ &&

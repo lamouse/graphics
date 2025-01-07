@@ -1228,4 +1228,58 @@ auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags
         vk::to_string(wanted_format), vk::to_string(wanted_usage), static_cast<int>(format_type));
     return wanted_format;
 }
+
+auto Device::getDriverName() const -> std::string {
+    switch (properties_.driver_.driverID) {
+        case VK_DRIVER_ID_AMD_PROPRIETARY:
+            return "AMD";
+        case VK_DRIVER_ID_AMD_OPEN_SOURCE:
+            return "AMDVLK";
+        case VK_DRIVER_ID_MESA_RADV:
+            return "RADV";
+        case VK_DRIVER_ID_NVIDIA_PROPRIETARY:
+            return "NVIDIA";
+        case VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS:
+            return "Intel";
+        case VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA:
+            return "ANV";
+        case VK_DRIVER_ID_IMAGINATION_PROPRIETARY:
+            return "PowerVR";
+        case VK_DRIVER_ID_QUALCOMM_PROPRIETARY:
+            return "Qualcomm";
+        case VK_DRIVER_ID_ARM_PROPRIETARY:
+            return "Mali";
+        case VK_DRIVER_ID_SAMSUNG_PROPRIETARY:
+            return "Xclipse";
+        case VK_DRIVER_ID_GOOGLE_SWIFTSHADER:
+            return "SwiftShader";
+        case VK_DRIVER_ID_BROADCOM_PROPRIETARY:
+            return "Broadcom";
+        case VK_DRIVER_ID_MESA_LLVMPIPE:
+            return "Lavapipe";
+        case VK_DRIVER_ID_MOLTENVK:
+            return "MoltenVK";
+        case VK_DRIVER_ID_VERISILICON_PROPRIETARY:
+            return "Vivante";
+        case VK_DRIVER_ID_MESA_TURNIP:
+            return "Turnip";
+        case VK_DRIVER_ID_MESA_V3DV:
+            return "V3DV";
+        case VK_DRIVER_ID_MESA_PANVK:
+            return "PanVK";
+        case VK_DRIVER_ID_MESA_VENUS:
+            return "Venus";
+        case VK_DRIVER_ID_MESA_DOZEN:
+            return "Dozen";
+        case VK_DRIVER_ID_MESA_NVK:
+            return "NVK";
+        case VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA:
+            return "PVR";
+        // case VK_DRIVER_ID_MESA_AGXV:
+        //     return "Asahi";
+        default:
+            return "unknow";
+    }
+}
+
 }  // namespace render::vulkan
