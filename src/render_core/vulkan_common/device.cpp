@@ -1107,18 +1107,6 @@ void Device::reportLoss() const {
     std::this_thread::sleep_for(std::chrono::seconds{15});
 }
 
-auto Device::createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& ci) const
-    -> DescriptorSetLayout {
-    vk::DescriptorSetLayout layout = getLogical().createDescriptorSetLayout(ci, nullptr);
-    return DescriptorSetLayout{layout, getLogical()};
-}
-
-[[nodiscard]] auto Device::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
-    -> PipelineLayout {
-    auto layout = getLogical().createPipelineLayout(ci);
-    return PipelineLayout{layout, getLogical()};
-}
-
 auto Device::surfaceFormat(FormatType format_type, bool with_srgb,
                            surface::PixelFormat pixel_format) const -> FormatInfo {
     assert(static_cast<size_t>(pixel_format) < std::size(tex_format_tuples));

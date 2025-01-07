@@ -396,9 +396,8 @@ void BlitImageHelper::BlitColor(const TextureFramebuffer* dst_framebuffer, VkIma
                                 const Region2D& dst_region, const Region2D& src_region,
                                 Operation operation) {
     const bool is_linear = false;
-    const BlitImagePipelineKey key{ .operation = operation,
-        .renderpass = dst_framebuffer->RenderPass()
-                                   };
+    const BlitImagePipelineKey key{.operation = operation,
+                                   .renderpass = dst_framebuffer->RenderPass()};
     const VkPipelineLayout layout = *one_texture_pipeline_layout;
     const VkSampler sampler = is_linear ? *linear_sampler : *nearest_sampler;
     const VkPipeline pipeline = FindOrEmplaceColorPipeline(key);
@@ -421,9 +420,10 @@ void BlitImageHelper::BlitColor(const TextureFramebuffer* dst_framebuffer,
                                 VkImageView src_image_view, VkImage src_image,
                                 VkSampler src_sampler, const Region2D& dst_region,
                                 const Region2D& src_region, const Extent3D& src_size) {
-    const BlitImagePipelineKey key{ .operation = Operation::SrcCopy,
+    const BlitImagePipelineKey key{
+        .operation = Operation::SrcCopy,
         .renderpass = dst_framebuffer->RenderPass(),
-                                   };
+    };
     const VkPipelineLayout layout = *one_texture_pipeline_layout;
     const VkPipeline pipeline = FindOrEmplaceColorPipeline(key);
     scheduler.requestOutsideRenderPassOperationContext();

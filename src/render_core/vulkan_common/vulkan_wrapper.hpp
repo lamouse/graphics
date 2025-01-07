@@ -650,10 +650,22 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
                            const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
                            const std::vector<const char*>& enabled_extensions, const void* next)
             -> LogicDevice;
-        auto createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const -> PipelineLayout;
+        [[nodiscard]] auto createPipelineLayout(this auto&& self,
+                                                const vk::PipelineLayoutCreateInfo& ci)
+            -> PipelineLayout;
 
-        auto createPipeline(const vk::GraphicsPipelineCreateInfo& ci,
-                            const vk::PipelineCache& cache = {}) const -> Pipeline;
+        [[nodiscard]] auto createPipeline(this auto&& self,
+                                          const vk::GraphicsPipelineCreateInfo& ci,
+                                          const vk::PipelineCache& cache = {}) -> Pipeline;
+
+        [[nodiscard]] auto createPipeline(this auto&& self, const vk::ComputePipelineCreateInfo& ci,
+                                          const vk::PipelineCache& cache = {}) -> Pipeline;
+        [[nodiscard]] auto createFence(const vk::FenceCreateInfo& ci) const -> Fence;
+
+        [[nodiscard]] auto createSemaphore(const vk::SemaphoreCreateInfo& ci) const -> Semaphore;
+
+        [[nodiscard]] auto createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo&) const
+            -> DescriptorSetLayout;
 };
 
 }  // namespace render::vulkan

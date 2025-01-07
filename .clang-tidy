@@ -1,5 +1,6 @@
 Checks: '
  modernize*,
+ -modernize-return-braced-init-list,
 performance*,
 cert-*,
 misc-confusable-identifiers,

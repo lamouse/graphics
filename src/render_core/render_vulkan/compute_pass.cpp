@@ -148,10 +148,10 @@ ComputePass::ComputePass(const Device& device, resource::DescriptorPool& descrip
                          utils::Span<vk::PushConstantRange> push_constants,
                          std::span<const u32> code, std::optional<u32> optional_subgroup_size)
     : device_(device) {
-    descriptor_set_layout =
-        device_.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo{{}, bindings});
+    descriptor_set_layout = device_.logical().createDescriptorSetLayout(
+        vk::DescriptorSetLayoutCreateInfo{{}, bindings});
 
-    layout = device_.createPipelineLayout(
+    layout = device_.logical().createPipelineLayout(
         vk::PipelineLayoutCreateInfo{{},
                                      1,
                                      descriptor_set_layout.address(),

@@ -250,17 +250,40 @@ LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
     return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});
 }
 
-auto LogicDevice::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
+auto LogicDevice::createPipelineLayout(this auto&& self, const vk::PipelineLayoutCreateInfo& ci)
     -> PipelineLayout {
-    auto layout = handle.createPipelineLayout(ci);
-    return PipelineLayout{layout, handle};
+    auto layout = self.handle.createPipelineLayout(ci);
+    return PipelineLayout{layout, self.handle};
 }
 
-auto LogicDevice::createPipeline(const vk::GraphicsPipelineCreateInfo& ci,
-                                 const vk::PipelineCache& cache) const -> Pipeline {
-    auto result = handle.createGraphicsPipeline(cache, ci);
+auto LogicDevice::createPipeline(this auto&& self, const vk::GraphicsPipelineCreateInfo& ci,
+                                 const vk::PipelineCache& cache) -> Pipeline {
+    auto result = self.handle.createGraphicsPipeline(cache, ci);
     utils::check(result.result);
-    return Pipeline{result.value, handle};
+    return Pipeline{result.value, self.handle};
+}
+
+auto LogicDevice::createPipeline(this auto&& self, const vk::ComputePipelineCreateInfo& ci,
+                                 const vk::PipelineCache& cache) -> Pipeline {
+    auto result = self.handle.createComputePipelines(cache, ci);
+    utils::check(result.result);
+    return Pipeline{result.value, self.handle};
+}
+
+auto LogicDevice::createFence(const vk::FenceCreateInfo& ci) const -> Fence {
+    auto fence = handle.createFence(ci);
+    return Fence{fence, handle};
+}
+
+auto LogicDevice::createSemaphore(const vk::SemaphoreCreateInfo& ci) const -> Semaphore {
+    auto semaphore = handle.createSemaphore(ci);
+    return Semaphore(semaphore, handle);
+}
+
+auto LogicDevice::createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& ci) const
+    -> DescriptorSetLayout {
+    vk::DescriptorSetLayout layout = handle.createDescriptorSetLayout(ci, nullptr);
+    return DescriptorSetLayout{layout, handle};
 }
 
 }  // namespace render::vulkan

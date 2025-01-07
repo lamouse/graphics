@@ -119,17 +119,12 @@ class Device {
         [[nodiscard]] auto getDriverName() const -> std::string;
         /// Reports a device loss.
         void reportLoss() const;
-
-        [[nodiscard]] auto createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo&) const
-            -> DescriptorSetLayout;
-        [[nodiscard]] auto createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
-            -> PipelineLayout;
         /// Returns true if the device supports VK_EXT_shader_stencil_export.
         [[nodiscard]] auto isExtShaderStencilExportSupported() const -> bool {
             return extensions_.shader_stencil_export;
         }
-        auto surfaceFormat(FormatType format_type, bool with_srgb,
-                           surface::PixelFormat pixel_format) const -> FormatInfo;
+        [[nodiscard]] auto surfaceFormat(FormatType format_type, bool with_srgb,
+                                         surface::PixelFormat pixel_format) const -> FormatInfo;
 
         [[nodiscard]] auto getSupportedFormat(vk::Format wanted_format,
                                               vk::FormatFeatureFlags wanted_usage,
