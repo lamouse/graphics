@@ -666,6 +666,16 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
 
         [[nodiscard]] auto createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo&) const
             -> DescriptorSetLayout;
+
+        [[nodiscard]] auto createShaderModel(const vk::ShaderModuleCreateInfo&) const
+            -> ShaderModule;
+        [[nodiscard]] auto createDescriptorUpdateTemplate(
+            const vk::DescriptorUpdateTemplateCreateInfo&) const -> DescriptorUpdateTemplate;
+        [[nodiscard]] auto createDescriptorPool(const vk::DescriptorPoolCreateInfo&) const
+            -> VulkanDescriptorPool;
+
+        [[nodiscard]] auto tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept
+            -> DeviceMemory;
 };
 
 }  // namespace render::vulkan

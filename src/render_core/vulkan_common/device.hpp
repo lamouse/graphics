@@ -71,10 +71,6 @@ class Device {
             return misc_features_.has_renderdoc || misc_features_.has_nsight_graphics ||
                    misc_features_.has_radeon_gpu_profiler;
         }
-        [[nodiscard]] auto tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept
-            -> DeviceMemory;
-        [[nodiscard]] auto createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
-            -> VulkanDescriptorPool;
         /// Returns the maximum number of push descriptors.
         [[nodiscard]] auto maxPushDescriptors() const -> u32 {
             return properties_.push_descriptor_.maxPushDescriptors;

@@ -1089,17 +1089,6 @@ auto Device::hasTimelineSemaphore() const -> bool {
     return static_cast<bool>(features_.timeline_semaphore.timelineSemaphore);
 }
 
-auto Device::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept -> DeviceMemory {
-    VkDeviceMemory memory;
-    memory = getLogical().allocateMemory(ai);
-    return DeviceMemory(memory, getLogical());
-}
-
-auto Device::createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
-    -> VulkanDescriptorPool {
-    return VulkanDescriptorPool(getLogical().createDescriptorPool(ci), getLogical());
-}
-
 void Device::reportLoss() const {
     SPDLOG_CRITICAL("Device loss occurred!");
 

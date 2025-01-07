@@ -159,24 +159,20 @@ ComputePass::ComputePass(const Device& device, resource::DescriptorPool& descrip
                                      push_constants.data()});
 
     if (!templates.empty()) {
-        descriptor_template =
-            DescriptorUpdateTemplate{device_.getLogical().createDescriptorUpdateTemplate(
-                                         vk::DescriptorUpdateTemplateCreateInfo{
-                                             {},
-                                             templates,
-                                             vk::DescriptorUpdateTemplateType::eDescriptorSet,
-                                             *descriptor_set_layout,
-                                             vk::PipelineBindPoint::eGraphics,
-                                             *layout}),
-                                     device_.getLogical()};
+        descriptor_template = device_.logical().createDescriptorUpdateTemplate(
+            vk::DescriptorUpdateTemplateCreateInfo{{},
+                                                   templates,
+                                                   vk::DescriptorUpdateTemplateType::eDescriptorSet,
+                                                   *descriptor_set_layout,
+                                                   vk::PipelineBindPoint::eGraphics,
+                                                   *layout});
     }
     descriptor_allocator = descriptor_pool.allocator(*descriptor_set_layout, bank_info);
     if (code.empty()) {
         return;
     }
-    module = ShaderModule{device_.getLogical().createShaderModule(
-                              vk::ShaderModuleCreateInfo{{}, code.size_bytes(), code.data()}),
-                          device_.getLogical()};
+    module = device_.logical().createShaderModel(
+        vk::ShaderModuleCreateInfo{{}, code.size_bytes(), code.data()});
 
     // device.SaveShader(code);
 
@@ -184,23 +180,17 @@ ComputePass::ComputePass(const Device& device, resource::DescriptorPool& descrip
         optional_subgroup_size ? *optional_subgroup_size : 32U};
 
     bool use_setup_size = device_.isExtSubgroupSizeControlSupported() && optional_subgroup_size;
-    pipeline = Pipeline{
-        device_.getLogical()
-            .createComputePipeline(
-                vk::PipelineCache{},
-                vk::ComputePipelineCreateInfo{
-                    {},
-                    vk::PipelineShaderStageCreateInfo{{},
-                                                      vk::ShaderStageFlagBits::eCompute,
-                                                      *module,
-                                                      "main",
-                                                      nullptr,
-                                                      use_setup_size ? &subgroup_size_ci : nullptr},
-                    *layout,
-                    nullptr,
-                    0})
-            .value,
-        device_.getLogical()};
+    pipeline = device_.logical().createPipeline(vk::ComputePipelineCreateInfo{
+        {},
+        vk::PipelineShaderStageCreateInfo{{},
+                                          vk::ShaderStageFlagBits::eCompute,
+                                          *module,
+                                          "main",
+                                          nullptr,
+                                          use_setup_size ? &subgroup_size_ci : nullptr},
+        *layout,
+        nullptr,
+        0});
 }
 ComputePass::~ComputePass() = default;
 
@@ -215,30 +205,22 @@ MSAACopyPass::MSAACopyPass(const Device& device_, scheduler::Scheduler& schedule
       staging_buffer_pool{staging_buffer_pool_},
       compute_pass_descriptor_queue{compute_pass_descriptor_queue_} {
     const auto make_msaa_pipeline = [this, &device_](size_t i, std::span<const u32> code) {
-        modules[i] =
-            ShaderModule{device_.getLogical().createShaderModule(vk::ShaderModuleCreateInfo{
+        modules[i] = device_.logical().createShaderModel(vk::ShaderModuleCreateInfo{
 
-                             {},
-                             static_cast<u32>(code.size_bytes()),
-                             code.data(),
-                         }),
-                         device_.getLogical()};
+            {},
+            static_cast<u32>(code.size_bytes()),
+            code.data(),
+        });
 
-        pipelines[i] = Pipeline{
-            device_.getLogical()
-                .createComputePipeline(
-                    vk::PipelineCache{},
-                    vk::ComputePipelineCreateInfo{
+        pipelines[i] = device_.logical().createPipeline(vk::ComputePipelineCreateInfo{
 
-                        {},
-                        vk::PipelineShaderStageCreateInfo{
-                            {}, vk::ShaderStageFlagBits::eCompute, *modules[i], "main", nullptr},
-                        *layout,
-                        nullptr,
-                        0,
-                    })
-                .value,
-            device_.getLogical()};
+            {},
+            vk::PipelineShaderStageCreateInfo{
+                {}, vk::ShaderStageFlagBits::eCompute, *modules[i], "main", nullptr},
+            *layout,
+            nullptr,
+            0,
+        });
     };
     make_msaa_pipeline(0, CONVERT_NON_MSAA_TO_MSAA_COMP_SPV);
     make_msaa_pipeline(1, CONVERT_MSAA_TO_NON_MSAA_COMP_SPV);

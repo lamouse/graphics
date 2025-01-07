@@ -295,7 +295,7 @@ auto MemoryAllocator::commit(const vk::MemoryRequirements& requirements, MemoryU
 auto MemoryAllocator::tryAllocMemory(vk::MemoryPropertyFlags flags, u32 type_mask, u64 size)
     -> bool {
     const u32 type = findType(flags, type_mask).value();
-    DeviceMemory memory = device.tryAllocateMemory({
+    DeviceMemory memory = device.logical().tryAllocateMemory({
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .pNext = nullptr,
         .allocationSize = size,

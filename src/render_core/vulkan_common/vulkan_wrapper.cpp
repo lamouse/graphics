@@ -286,4 +286,27 @@ auto LogicDevice::createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateI
     return DescriptorSetLayout{layout, handle};
 }
 
+auto LogicDevice::createShaderModel(const vk::ShaderModuleCreateInfo& ci) const -> ShaderModule {
+    auto shader = handle.createShaderModule(ci);
+    return ShaderModule(shader, handle);
+}
+
+auto LogicDevice::createDescriptorUpdateTemplate(
+    const vk::DescriptorUpdateTemplateCreateInfo& ci) const -> DescriptorUpdateTemplate {
+    auto template_ = handle.createDescriptorUpdateTemplate(ci);
+    return DescriptorUpdateTemplate{template_, handle};
+}
+
+auto LogicDevice::createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) const
+    -> VulkanDescriptorPool {
+    auto pool = handle.createDescriptorPool(ci);
+    return VulkanDescriptorPool{pool, handle};
+}
+
+auto LogicDevice::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept -> DeviceMemory {
+    VkDeviceMemory memory;
+    memory = handle.allocateMemory(ai);
+    return DeviceMemory(memory, handle);
+}
+
 }  // namespace render::vulkan

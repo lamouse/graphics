@@ -55,7 +55,7 @@ static void allocatePool(const Device& device, DescriptorBank& bank) {
     add(vk::DescriptorType::eStorageImage, info.images_);
     vk::DescriptorPoolCreateInfo ci{};
     ci.setPoolSizes(pool_sizes);
-    bank.pools.push_back(device.createDescriptorPool(ci));
+    bank.pools.push_back(device.logical().createDescriptorPool(ci));
 }
 
 DescriptorAllocator::DescriptorAllocator(const Device& device,
