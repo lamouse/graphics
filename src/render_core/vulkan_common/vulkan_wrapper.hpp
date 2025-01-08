@@ -6,6 +6,7 @@
 #include "vk_mem_alloc.h"
 #include "common/common_types.hpp"
 #include <span>
+#include <utility>
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -563,9 +564,9 @@ class CommandPool : public wrapper::Handle<vk::CommandPool, vk::Device> {
         using Handle<vk::CommandPool, vk::Device>::Handle;
 
     public:
-        CommandBuffers Allocate(
-            std::size_t num_buffers,
-            vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) const;
+        [[nodiscard]] auto Allocate(std::size_t num_buffers,
+                                    vk::CommandBufferLevel level =
+                                        vk::CommandBufferLevel::ePrimary) const -> CommandBuffers;
 
         /// Set object name.
         void SetObjectNameEXT(const char* name) const;
@@ -662,7 +663,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
                                           const vk::PipelineCache& cache = {}) -> Pipeline;
         [[nodiscard]] auto createFence(const vk::FenceCreateInfo& ci) const -> Fence;
 
-        [[nodiscard]] auto createSemaphore(const vk::SemaphoreCreateInfo& ci) const -> Semaphore;
+        [[nodiscard]] auto createSemaphore() const -> Semaphore;
+        Semaphore CreateSemaphore(const vk::SemaphoreCreateInfo& ci) const;
 
         [[nodiscard]] auto createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo&) const
             -> DescriptorSetLayout;
@@ -676,6 +678,19 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
 
         [[nodiscard]] auto tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept
             -> DeviceMemory;
+
+        [[nodiscard]] auto createCommandPool(const vk::CommandPoolCreateInfo& ci) const
+            -> CommandPool;
+
+        [[nodiscard]] auto createRenderPass(const vk::RenderPassCreateInfo&) const -> RenderPass;
+
+        [[nodiscard]] auto CreateBufferView(const vk::BufferViewCreateInfo& ci) const -> BufferView;
+
+        [[nodiscard]] auto CreateImageView(const vk::ImageViewCreateInfo& ci) const -> ImageView;
+        [[nodiscard]] auto CreateSampler(const vk::SamplerCreateInfo& ci) const -> Sampler;
+
+        [[nodiscard]] auto createFramerBuffer(const vk::FramebufferCreateInfo& ci) const
+            -> Framebuffer;
 };
 
 }  // namespace render::vulkan

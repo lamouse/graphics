@@ -482,7 +482,7 @@ constexpr u32 BitsPerBlock(PixelFormat format) {
 }
 
 /// Returns the sizer in bytes of the specified pixel format
-constexpr u32 BytesPerBlock(PixelFormat pixel_format) {
+constexpr auto BytesPerBlock(PixelFormat pixel_format) -> u32 {
     return BitsPerBlock(pixel_format) / CHAR_BIT;
 }
 

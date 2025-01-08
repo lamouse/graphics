@@ -54,6 +54,28 @@ class Device {
         [[nodiscard]] auto isKhrSwapchainMutableFormatEnabled() const -> bool {
             return extensions_.swapchain_mutable_format;
         }
+        /// Returns true if the device supports VK_EXT_sampler_filter_minmax.
+        [[nodiscard]] auto isExtSamplerFilterMinmaxSupported() const -> bool {
+            return extensions_.sampler_filter_minmax;
+        }
+
+        /// Returns true if the device supports VK_EXT_4444_formats.
+        [[nodiscard]] auto isExt4444FormatsSupported() const -> bool {
+            return features_.format_a4b4g4r4.formatA4B4G4R4;
+        }
+
+        [[nodiscard]] auto mustEmulateBGR565() const -> bool {
+            return misc_features_.must_emulate_bgr565;
+        }
+        [[nodiscard]] auto hasNullDescriptor() const -> bool {
+            return features_.robustness2.nullDescriptor;
+        }
+
+        [[nodiscard]] auto getMaxAnisotropy() const -> float {
+            return properties_.properties_.limits.maxSamplerAnisotropy;
+        }
+
+        [[nodiscard]] auto cantBlitMSAA() const -> bool { return misc_features_.cant_blit_msaa; }
 
         /// Returns true if the device supports VK_KHR_push_descriptor.
         [[nodiscard]] auto isKhrPushDescriptorSupported() const -> bool {
@@ -106,25 +128,57 @@ class Device {
         [[nodiscard]] auto isBlitDepth24Stencil8Supported() const -> bool {
             return misc_features_.is_blit_depth24_stencil8_supported;
         }
+        /// Returns true if the device supports VK_EXT_custom_border_color.
 
         /// Returns true when blitting from and to D32S8 images is supported.
-        auto isBlitDepth32Stencil8Supported() const -> bool {
+        [[nodiscard]] auto isBlitDepth32Stencil8Supported() const -> bool {
             return misc_features_.is_blit_depth32_stencil8_supported;
         }
 
+        /// Returns true if the device supports VK_EXT_custom_border_color.
+        [[nodiscard]] auto isExtCustomBorderColorSupported() const -> bool {
+            return extensions_.custom_border_color;
+        }
+
+        [[nodiscard]] auto getDeviceLocalMemory() const -> u64 { return device_access_memory_; }
+
+        [[nodiscard]] auto getDeviceMemoryUsage() const -> u64;
         [[nodiscard]] auto getDriverName() const -> std::string;
+        [[nodiscard]] auto canReportMemoryUsage() const -> bool {
+            return extensions_.memory_budget;
+        }
+
+        /// Checks if we are running MolvenVK.
+        [[nodiscard]] auto isMoltenVK() const noexcept -> bool {
+            return properties_.driver_.driverID == VK_DRIVER_ID_MOLTENVK;
+        }
+
         /// Reports a device loss.
         void reportLoss() const;
         /// Returns true if the device supports VK_EXT_shader_stencil_export.
         [[nodiscard]] auto isExtShaderStencilExportSupported() const -> bool {
             return extensions_.shader_stencil_export;
         }
+
+        /// Returns true when the device does not properly support cube compatibility.
+        [[nodiscard]] auto hasBrokenCubeImageCompatibility() const -> bool {
+            return misc_features_.has_broken_cube_compatibility;
+        }
+
+        [[nodiscard]] auto getMaxVertexInputBindings() const -> u32 {
+            return properties_.properties_.limits.maxVertexInputBindings;
+        }
+
         [[nodiscard]] auto surfaceFormat(FormatType format_type, bool with_srgb,
                                          surface::PixelFormat pixel_format) const -> FormatInfo;
 
         [[nodiscard]] auto getSupportedFormat(vk::Format wanted_format,
                                               vk::FormatFeatureFlags wanted_usage,
                                               FormatType format_type) const -> vk::Format;
+
+        [[nodiscard]] auto isFormatSupported(vk::Format wanted_format,
+                                             vk::FormatFeatureFlags wanted_usage,
+                                             FormatType format_type) const -> bool;
 
     private:
         vk::Instance instance_;
@@ -174,9 +228,7 @@ class Device {
         [[nodiscard]] auto testDepthStencilBlits(vk::Format format) const -> bool;
         [[nodiscard]] auto getDeviceQueueCreateInfos() const
             -> std::vector<vk::DeviceQueueCreateInfo>;
-        [[nodiscard]] auto isFormatSupported(vk::Format wanted_format,
-                                             vk::FormatFeatureFlags wanted_usage,
-                                             FormatType format_type) const -> bool;
+
         void collectPhysicalMemoryInfo();
         void collectToolingInfo();
         struct Extensions {

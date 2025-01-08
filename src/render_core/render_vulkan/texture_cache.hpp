@@ -13,6 +13,7 @@
 #include "compute_pass.hpp"
 #include "texture/image_view_base.hpp"
 #include "texture/render_targets.h"
+#include "common/settings.hpp"
 
 namespace render::vulkan {
 class BlitImageHelper;
@@ -99,7 +100,7 @@ class TextureCacheRuntime {
         std::span<const vk::Format> ViewFormats(surface::PixelFormat format) {
             return view_formats[static_cast<std::size_t>(format)];
         }
-
+        const settings::ResolutionScalingInfo resolution;
         void BarrierFeedbackLoop();
         BlitImageHelper& blit_image_helper;
         const Device& device;
@@ -107,17 +108,17 @@ class TextureCacheRuntime {
         MemoryAllocator& memory_allocator;
         StagingBufferPool& staging_buffer_pool;
         RenderPassCache& render_pass_cache;
+        std::optional<ASTCDecoderPass> astc_decoder_pass;
         std::unique_ptr<MSAACopyPass> msaa_copy_pass;
         std::array<std::vector<vk::Format>, surface::MaxPixelFormat> view_formats;
-
         static constexpr size_t indexing_slots = 8 * sizeof(size_t);
         std::array<Buffer, indexing_slots> buffers{};
 };
 
 class TextureImage : public render::texture::ImageBase {
     public:
-        explicit TextureImage(const render::texture::ImageInfo& info, GPUVAddr gpu_addr,
-                              VAddr cpu_addr);
+        explicit TextureImage(TextureCacheRuntime& runtime_, const render::texture::ImageInfo& info,
+                              GPUVAddr gpu_addr, VAddr cpu_addr);
         explicit TextureImage(const render::texture::NullImageParams&);
 
         ~TextureImage();
@@ -132,23 +133,23 @@ class TextureImage : public render::texture::ImageBase {
         void UploadMemory(const StagingBufferRef& map,
                           std::span<const render::texture::BufferImageCopy> copies);
 
-        void DownloadMemory(VkBuffer buffer, size_t offset,
+        void DownloadMemory(vk::Buffer buffer, size_t offset,
                             std::span<const render::texture::BufferImageCopy> copies);
 
-        void DownloadMemory(std::span<VkBuffer> buffers, std::span<size_t> offsets,
+        void DownloadMemory(std::span<vk::Buffer> buffers, std::span<size_t> offsets,
                             std::span<const render::texture::BufferImageCopy> copies);
 
         void DownloadMemory(const StagingBufferRef& map,
                             std::span<const render::texture::BufferImageCopy> copies);
 
-        [[nodiscard]] vk::Image Handle() const noexcept { return *(*current_image); }
+        [[nodiscard]] auto Handle() const noexcept -> vk::Image { return *(this->*current_image); }
 
         [[nodiscard]] auto AspectMask() const noexcept -> vk::ImageAspectFlags {
             return aspect_mask;
         }
 
         [[nodiscard]] auto UsageFlags() const noexcept -> vk::ImageUsageFlags {
-            return current_image->usageFlags();
+            return (this->*current_image).usageFlags();
         }
 
         /// Returns true when the image is already initialized and mark it as initialized
@@ -170,13 +171,13 @@ class TextureImage : public render::texture::ImageBase {
         [[nodiscard]] auto NeedsScaleHelper() const -> bool;
 
         scheduler::Scheduler* scheduler{};
-
+        TextureCacheRuntime* runtime{};
         Image original_image;
         Image scaled_image;
 
         // Use a pointer to field because it is relative, so that the object can be
         // moved without breaking the reference.
-        Image* current_image{};
+        Image TextureImage::* current_image{};
 
         std::vector<ImageView> storage_image_views;
         vk::ImageAspectFlags aspect_mask;
@@ -192,9 +193,9 @@ class TextureImage : public render::texture::ImageBase {
 class TextureImageView : public render::texture::ImageViewBase {
     public:
         explicit TextureImageView(TextureCacheRuntime&, const texture::ImageViewInfo&,
-                                  texture::ImageId, Image&);
+                                  texture::ImageId, TextureImage&);
         explicit TextureImageView(TextureCacheRuntime&, const texture::ImageViewInfo&,
-                                  texture::ImageId, Image&,
+                                  texture::ImageId, TextureImage&,
                                   const common::SlotVector<TextureImage>&);
         explicit TextureImageView(TextureCacheRuntime&, const texture::ImageInfo&,
                                   const texture::ImageViewInfo&, GPUVAddr);
@@ -223,7 +224,7 @@ class TextureImageView : public render::texture::ImageViewBase {
 
         [[nodiscard]] vk::ImageView RenderTarget() const noexcept { return render_target; }
 
-        [[nodiscard]] auto Samples() const noexcept -> VkSampleCountFlagBits { return samples; }
+        [[nodiscard]] auto Samples() const noexcept -> vk::SampleCountFlagBits { return samples; }
 
         [[nodiscard]] GPUVAddr GpuAddr() const noexcept { return gpu_addr; }
 
@@ -235,10 +236,10 @@ class TextureImageView : public render::texture::ImageViewBase {
                 std::array<ImageView, shader::NUM_TEXTURE_TYPES> unsigneds;
         };
 
-        [[nodiscard]] vk::ImageView MakeView(VkFormat vk_format, VkImageAspectFlags aspect_mask);
+        [[nodiscard]] ImageView MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask);
 
         const Device* device = nullptr;
-        const common::SlotVector<Image>* slot_images = nullptr;
+        const common::SlotVector<TextureImage>* slot_images = nullptr;
 
         std::array<ImageView, shader::NUM_TEXTURE_TYPES> image_views;
         std::unique_ptr<StorageViews> storage_views;
@@ -248,7 +249,7 @@ class TextureImageView : public render::texture::ImageViewBase {
         Image null_image;
         vk::Image image_handle = VK_NULL_HANDLE;
         vk::ImageView render_target = VK_NULL_HANDLE;
-        VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+        vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
         u32 buffer_size = 0;
 };
 
@@ -256,7 +257,8 @@ class TextureImageAlloc : public texture::ImageAllocBase {};
 
 class TextureSampler {
     public:
-        explicit TextureSampler(TextureCacheRuntime&);
+        explicit TextureSampler(TextureCacheRuntime&, SamplerReduction reduction,
+                                float imageMipLevels);
 
         [[nodiscard]] vk::Sampler Handle() const noexcept { return *sampler; }
 
@@ -277,10 +279,12 @@ class TextureFramebuffer {
     public:
         explicit TextureFramebuffer(TextureCacheRuntime& runtime,
                                     std::span<TextureImageView*, texture::NUM_RT> color_buffers,
-                                    ImageView* depth_buffer, const texture::RenderTargets& key);
+                                    TextureImageView* depth_buffer,
+                                    const texture::RenderTargets& key);
 
-        explicit TextureFramebuffer(TextureCacheRuntime& runtime, ImageView* color_buffer,
-                                    ImageView* depth_buffer, VkExtent2D extent, bool is_rescaled);
+        explicit TextureFramebuffer(TextureCacheRuntime& runtime, TextureImageView* color_buffer,
+                                    TextureImageView* depth_buffer, vk::Extent2D extent,
+                                    bool is_rescaled);
 
         ~TextureFramebuffer();
 
@@ -288,7 +292,7 @@ class TextureFramebuffer {
 
         void CreateFramebuffer(TextureCacheRuntime& runtime,
                                std::span<TextureImageView*, texture::NUM_RT> color_buffers,
-                               ImageView* depth_buffer, bool is_rescaled = false);
+                               TextureImageView* depth_buffer, bool is_rescaled = false);
 
         [[nodiscard]] vk::Framebuffer Handle() const noexcept { return *framebuffer; }
 
@@ -296,7 +300,7 @@ class TextureFramebuffer {
 
         [[nodiscard]] vk::Extent2D RenderArea() const noexcept { return render_area; }
 
-        [[nodiscard]] VkSampleCountFlagBits Samples() const noexcept { return samples; }
+        [[nodiscard]] vk::SampleCountFlagBits Samples() const noexcept { return samples; }
 
         [[nodiscard]] u32 NumColorBuffers() const noexcept { return num_color_buffers; }
 
@@ -323,7 +327,7 @@ class TextureFramebuffer {
         Framebuffer framebuffer;
         vk::RenderPass renderpass{};
         vk::Extent2D render_area{};
-        VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+        vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
         u32 num_color_buffers = 0;
         u32 num_images = 0;
         std::array<vk::Image, 9> images{};

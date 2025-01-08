@@ -4,7 +4,6 @@
 
 #include <fstream>
 #include <stdexcept>
-#include "render_core/render_vulkan/present/window_adapt_pass.hpp"
 
 namespace resource::shader {
 
@@ -39,7 +38,6 @@ void GraphicsShader::createGraphicsShader(const ::std::string& vertFilePath,
     ::vk::ShaderModuleCreateInfo createInfo;
     createInfo.setCodeSize(vertCode.size());
     createInfo.setPCode((uint32_t*)vertCode.data());
-    render::vulkan::present::WindowAdaptPass windowAdaptPass;
     vertexModule = device_.createShaderModule(createInfo);
 
     createInfo.setCodeSize(fragCode.size());

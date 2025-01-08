@@ -444,11 +444,13 @@ void BlitImageHelper::BlitColor(const TextureFramebuffer* dst_framebuffer,
 
 void BlitImageHelper::BlitDepthStencil(const TextureFramebuffer* dst_framebuffer,
                                        VkImageView src_depth_view, VkImageView src_stencil_view,
-                                       const Region2D& dst_region, const Region2D& src_region) {
+                                       const Region2D& dst_region, const Region2D& src_region,
+                                       Operation operation) {
     if (!device.isExtShaderStencilExportSupported()) {
         return;
     }
     const BlitImagePipelineKey key{
+        .operation = operation,
         .renderpass = dst_framebuffer->RenderPass(),
     };
     const VkPipelineLayout layout = *two_textures_pipeline_layout;

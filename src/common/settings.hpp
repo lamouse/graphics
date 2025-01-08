@@ -25,6 +25,7 @@ class Graphics : public common::settings::BaseSetting<Graphics> {
 
     public:
         enums::AstcRecompression astc_recompression;
+        enums::AstcDecodeMode astc_decodeMode = enums::AstcDecodeMode::Gpu;
         static auto get() { return Graphics{}; }
 };
 

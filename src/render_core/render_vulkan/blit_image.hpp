@@ -60,7 +60,7 @@ class BlitImageHelper {
 
         void BlitDepthStencil(const TextureFramebuffer* dst_framebuffer, VkImageView src_depth_view,
                               VkImageView src_stencil_view, const Region2D& dst_region,
-                              const Region2D& src_region);
+                              const Region2D& src_region, Operation operation);
 
         void ConvertD32ToR32(const TextureFramebuffer* dst_framebuffer,
                              const TextureImageView& src_image_view);

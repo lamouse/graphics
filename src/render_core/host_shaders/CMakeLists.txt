@@ -12,6 +12,7 @@ set(GLSL_INCLUDES
 )
 
 set(SHADER_FILES
+    astc_decoder.comp
     vulkan_present.frag
     vulkan_present.vert
     vulkan_compute.comp

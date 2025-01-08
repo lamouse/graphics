@@ -275,8 +275,8 @@ auto LogicDevice::createFence(const vk::FenceCreateInfo& ci) const -> Fence {
     return Fence{fence, handle};
 }
 
-auto LogicDevice::createSemaphore(const vk::SemaphoreCreateInfo& ci) const -> Semaphore {
-    auto semaphore = handle.createSemaphore(ci);
+auto LogicDevice::createSemaphore() const -> Semaphore {
+    auto semaphore = handle.createSemaphore(vk::SemaphoreCreateInfo{});
     return Semaphore(semaphore, handle);
 }
 
@@ -304,9 +304,43 @@ auto LogicDevice::createDescriptorPool(const vk::DescriptorPoolCreateInfo& ci) c
 }
 
 auto LogicDevice::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexcept -> DeviceMemory {
-    VkDeviceMemory memory;
-    memory = handle.allocateMemory(ai);
+    VkDeviceMemory memory = handle.allocateMemory(ai);
     return DeviceMemory(memory, handle);
+}
+
+[[nodiscard]] auto LogicDevice::createCommandPool(const vk::CommandPoolCreateInfo& ci) const
+    -> CommandPool {
+    return CommandPool{handle.createCommandPool(ci), handle};
+}
+[[nodiscard]] auto LogicDevice::createRenderPass(const vk::RenderPassCreateInfo& ci) const
+    -> RenderPass {
+    auto render_pass = handle.createRenderPass(ci);
+    return RenderPass{render_pass, handle};
+}
+
+auto LogicDevice::CreateBufferView(const vk::BufferViewCreateInfo& ci) const -> BufferView {
+    vk::BufferView object = handle.createBufferView(ci);
+    return BufferView(object, handle);
+}
+
+auto LogicDevice::CreateImageView(const vk::ImageViewCreateInfo& ci) const -> ImageView {
+    VkImageView object = handle.createImageView(ci);
+    return ImageView(object, handle);
+}
+
+Semaphore LogicDevice::CreateSemaphore(const vk::SemaphoreCreateInfo& ci) const {
+    VkSemaphore object = handle.createSemaphore(ci);
+    return Semaphore(object, handle);
+}
+
+Sampler LogicDevice::CreateSampler(const vk::SamplerCreateInfo& ci) const {
+    vk::Sampler object = handle.createSampler(ci);
+    return Sampler(object, handle);
+}
+
+auto LogicDevice::createFramerBuffer(const vk::FramebufferCreateInfo& ci) const -> Framebuffer {
+    auto frame_buffer = handle.createFramebuffer(ci);
+    return Framebuffer{frame_buffer, handle};
 }
 
 }  // namespace render::vulkan

@@ -17,29 +17,29 @@ class RenderPassCache;
 namespace scheduler {
 class Scheduler;
 }  // namespace scheduler
-namespace pipeline {
+
 struct GraphicsPipelineCacheKey {
         std::array<u64, 6> unique_hashes;
 
-        size_t Hash() const noexcept;
+        [[nodiscard]] auto Hash() const noexcept -> size_t;
 
-        bool operator==(const GraphicsPipelineCacheKey& rhs) const noexcept;
+        auto operator==(const GraphicsPipelineCacheKey& rhs) const noexcept -> bool;
 
-        bool operator!=(const GraphicsPipelineCacheKey& rhs) const noexcept {
+        auto operator!=(const GraphicsPipelineCacheKey& rhs) const noexcept -> bool {
             return !operator==(rhs);
         }
 
-        size_t Size() const noexcept { return sizeof(unique_hashes); }
+        [[nodiscard]] auto Size() const noexcept -> size_t { return sizeof(unique_hashes); }
 };
 static_assert(std::has_unique_object_representations_v<GraphicsPipelineCacheKey>);
 static_assert(std::is_trivially_copyable_v<GraphicsPipelineCacheKey>);
 static_assert(std::is_trivially_constructible_v<GraphicsPipelineCacheKey>);
-}  // namespace pipeline
+
 }  // namespace render::vulkan
 namespace std {
 template <>
-struct hash<render::vulkan::pipeline::GraphicsPipelineCacheKey> {
-        auto operator()(const render::vulkan::pipeline::GraphicsPipelineCacheKey& k) const noexcept
+struct hash<render::vulkan::GraphicsPipelineCacheKey> {
+        auto operator()(const render::vulkan::GraphicsPipelineCacheKey& k) const noexcept
             -> size_t {
             return k.Hash();
         }
@@ -75,7 +75,7 @@ class GraphicsPipeline {
                                   common::ThreadWorker* worker_thread,
                                   pipeline::PipelineStatistics* pipeline_statistics,
                                   RenderPassCache& render_pass_cache,
-                                  const pipeline::GraphicsPipelineCacheKey& key,
+                                  const GraphicsPipelineCacheKey& key,
                                   std::array<ShaderModule, NUM_STAGES> stages,
                                   const std::array<const shader::Info*, NUM_STAGES>& infos);
 
@@ -84,7 +84,7 @@ class GraphicsPipeline {
         void AddTransition(GraphicsPipeline* transition);
         void Configure(bool is_indexed) { configure_func(this, is_indexed); }
 
-        [[nodiscard]] auto Next(const pipeline::GraphicsPipelineCacheKey& current_key) noexcept
+        [[nodiscard]] auto Next(const GraphicsPipelineCacheKey& current_key) noexcept
             -> GraphicsPipeline* {
             if (key_ == current_key) {
                 return this;
@@ -112,7 +112,7 @@ class GraphicsPipeline {
                            const pipeline::RenderAreaPushConstant& render_are);
         void validate();
 
-        const pipeline::GraphicsPipelineCacheKey key_;
+        const GraphicsPipelineCacheKey key_;
         const Device& device_;
         PipelineCache& pipeline_cache;
         scheduler::Scheduler& scheduler_;
@@ -120,7 +120,7 @@ class GraphicsPipeline {
 
         void (*configure_func)(GraphicsPipeline*, bool){};
 
-        std::vector<pipeline::GraphicsPipelineCacheKey> transition_keys;
+        std::vector<GraphicsPipelineCacheKey> transition_keys;
         std::vector<GraphicsPipeline*> transitions;
 
         std::array<ShaderModule, NUM_STAGES> spv_modules_;
@@ -135,7 +135,7 @@ class GraphicsPipeline {
         PipelineLayout pipeline_layout;
         DescriptorUpdateTemplate descriptor_update_template;
         Pipeline pipeline;
-
+        //  TextureCache& texture_cache;
         std::condition_variable build_condvar;
         std::mutex build_mutex;
         std::atomic_bool is_built{false};

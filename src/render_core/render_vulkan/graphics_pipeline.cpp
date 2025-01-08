@@ -82,12 +82,12 @@ bool IsLine(vk::PrimitiveTopology topology) {
 * @param swizzle
 * @return vk::ViewportSwizzleNV
 */
-vk::ViewportSwizzleNV UnpackViewportSwizzle(u16 swizzle) { return vk::ViewportSwizzleNV{}; }
+auto UnpackViewportSwizzle(u16 swizzle) -> vk::ViewportSwizzleNV { return vk::ViewportSwizzleNV{}; }
 
-RenderPassKey MakeRenderPassKey() {
+auto MakeRenderPassKey() -> RenderPassKey {
     RenderPassKey key;
-    key.color_formats[0] = vk::Format::eB8G8R8A8Unorm;
-    key.depth_format = vk::Format::eD32Sfloat;
+    key.color_formats[0] = surface::PixelFormat::B8G8R8A8_UNORM;
+    key.depth_format = surface::PixelFormat::D32_FLOAT;
     return key;
 }
 
@@ -181,12 +181,16 @@ ConfigureFuncPtr ConfigureFunc(const std::array<ShaderModule, NUM_STAGES>& modul
 }
 }  // namespace
 
+bool GraphicsPipelineCacheKey::operator==(const GraphicsPipelineCacheKey& rhs) const noexcept {
+    return std::memcmp(&rhs, this, Size()) == 0;
+}
+
 GraphicsPipeline::GraphicsPipeline(
     scheduler::Scheduler& scheduler, PipelineCache& pipeline_cache_, ShaderNotify* shader_notify,
     const Device& device, resource::DescriptorPool& descriptor_pool,
     GuestDescriptorQueue& guest_descriptor_queue_, common::ThreadWorker* worker_thread,
     pipeline::PipelineStatistics* pipeline_statistics, RenderPassCache& render_pass_cache,
-    const pipeline::GraphicsPipelineCacheKey& key, std::array<ShaderModule, NUM_STAGES> stages,
+    const GraphicsPipelineCacheKey& key, std::array<ShaderModule, NUM_STAGES> stages,
     const std::array<const shader::Info*, NUM_STAGES>& infos)
     : key_{key},
       device_{device},
@@ -220,9 +224,9 @@ GraphicsPipeline::GraphicsPipeline(
         descriptor_update_template =
             builder.CreateTemplate(set_layout, *pipeline_layout, uses_push_descriptor);
 
-        // const VkRenderPass render_pass{render_pass_cache.Get(MakeRenderPassKey(key.state))};
-        // Validate();
-        // MakePipeline(render_pass);
+        // const vk::RenderPass render_pass = render_pass_cache.get(MakeRenderPassKey(key.state));
+        // validate();
+        // makePipeline(render_pass);
         // if (pipeline_statistics) {
         //     pipeline_statistics->Collect(*pipeline);
         // }
@@ -252,7 +256,7 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {}
 
 void GraphicsPipeline::ConfigureDraw(const pipeline::RescalingPushConstant& rescaling,
                                      const pipeline::RenderAreaPushConstant& render_area) {
-    // scheduler.RequestRenderpass(texture_cache.GetFramebuffer());
+    // scheduler_.requestRenderpass(texture_cache.GetFramebuffer());
 
     // if (!is_built.load(std::memory_order::relaxed)) {
     //     // Wait for the pipeline to be built
@@ -304,6 +308,17 @@ void GraphicsPipeline::ConfigureDraw(const pipeline::RescalingPushConstant& resc
     //                                   descriptor_set, nullptr);
     //     }
     // });
+}
+
+void GraphicsPipeline::validate() {
+    size_t num_images{};
+    for (const auto& info : stage_infos) {
+        num_images += shader::NumDescriptors(info.texture_buffer_descriptors);
+        num_images += shader::NumDescriptors(info.image_buffer_descriptors);
+        num_images += shader::NumDescriptors(info.texture_descriptors);
+        num_images += shader::NumDescriptors(info.image_descriptors);
+    }
+    assert(num_images <= MAX_IMAGE_ELEMENTS);
 }
 
 }  // namespace render::vulkan

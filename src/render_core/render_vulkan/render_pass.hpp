@@ -2,14 +2,15 @@
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
 #include <mutex>
+#include "surface.hpp"
 namespace render::vulkan {
 class Device;
 
 struct RenderPassKey {
         auto operator==(const RenderPassKey& rhs) const noexcept -> bool = default;
 
-        std::array<vk::Format, 8> color_formats;
-        vk::Format depth_format;
+        std::array<surface::PixelFormat, 8> color_formats;
+        surface::PixelFormat depth_format;
         vk::SampleCountFlagBits samples;
         bool need_resolvet;
         bool save_depth;

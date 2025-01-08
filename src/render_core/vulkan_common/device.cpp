@@ -1259,4 +1259,16 @@ auto Device::getDriverName() const -> std::string {
     }
 }
 
+auto Device::getDeviceMemoryUsage() const -> u64 {
+    VkPhysicalDeviceMemoryBudgetPropertiesEXT budget;
+    VkPhysicalDeviceMemoryProperties2 propertie;
+    propertie.pNext = &budget;
+    vkGetPhysicalDeviceMemoryProperties2(physical_, &propertie);
+    u64 result{};
+    for (const size_t heap : valid_heap_memory_) {
+        result += budget.heapUsage[heap];
+    }
+    return result;
+}
+
 }  // namespace render::vulkan

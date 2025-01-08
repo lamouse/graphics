@@ -51,17 +51,16 @@ class DescriptorLayoutBuilder {
             const vk::DescriptorUpdateTemplateType type =
                 use_push_descriptor ? vk::DescriptorUpdateTemplateType::ePushDescriptorsKHR
                                     : vk::DescriptorUpdateTemplateType::eDescriptorSet;
-            return DescriptorUpdateTemplate{device->getLogical().createDescriptorUpdateTemplate(
-                                                vk::DescriptorUpdateTemplateCreateInfo{
-                                                    {},
-                                                    entries,
-                                                    type,
-                                                    descriptor_set_layout,
-                                                    vk::PipelineBindPoint::eGraphics,
-                                                    pipeline_layout,
-                                                    0,
-                                                }),
-                                            device->getLogical()};
+            return device->logical().createDescriptorUpdateTemplate(
+                vk::DescriptorUpdateTemplateCreateInfo{
+                    {},
+                    entries,
+                    type,
+                    descriptor_set_layout,
+                    vk::PipelineBindPoint::eGraphics,
+                    pipeline_layout,
+                    0,
+                });
         }
 
         [[nodiscard]] auto CreatePipelineLayout(vk::DescriptorSetLayout descriptor_set_layout) const
@@ -76,15 +75,13 @@ class DescriptorLayoutBuilder {
                     static_cast<u32>(sizeof(RenderAreaLayout)),
             };
 
-            return PipelineLayout{
-                device->getLogical().createPipelineLayout(vk::PipelineLayoutCreateInfo{
-                    {},
-                    descriptor_set_layout ? 1u : 0u,
-                    bindings.empty() ? nullptr : &descriptor_set_layout,
-                    1,
-                    &range,
-                }),
-                device->getLogical()};
+            return device->logical().createPipelineLayout(vk::PipelineLayoutCreateInfo{
+                {},
+                descriptor_set_layout ? 1u : 0u,
+                bindings.empty() ? nullptr : &descriptor_set_layout,
+                1,
+                &range,
+            });
         }
         void Add(const shader::Info& info, vk::ShaderStageFlags stage) {
             is_compute |=

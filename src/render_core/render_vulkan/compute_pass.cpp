@@ -8,6 +8,9 @@
 #include "common/vector_math.h"
 #include "render_core/host_shaders/convert_msaa_to_non_msaa_comp_spv.h"
 #include "render_core/host_shaders/convert_non_msaa_to_msaa_comp_spv.h"
+#include "render_core/host_shaders/astc_decoder_comp_spv.h"
+#include "texture/accelerated_swizzle.h"
+#include "staging_buffer_pool.hpp"
 namespace render::vulkan {
 namespace {
 constexpr u32 ASTC_BINDING_INPUT_BUFFER = 0;
@@ -279,5 +282,116 @@ void MSAACopyPass::CopyImage(TextureImage& dst_image, TextureImage& src_image,
         });
     }
 }
+
+ASTCDecoderPass::ASTCDecoderPass(const Device& device_, scheduler::Scheduler& scheduler_,
+                                 resource::DescriptorPool& descriptor_pool_,
+                                 StagingBufferPool& staging_buffer_pool_,
+                                 ComputePassDescriptorQueue& compute_pass_descriptor_queue_,
+                                 MemoryAllocator& memory_allocator_)
+    : ComputePass(device_, descriptor_pool_, ASTC_DESCRIPTOR_SET_BINDINGS,
+                  ASTC_PASS_DESCRIPTOR_UPDATE_TEMPLATE_ENTRY, ASTC_BANK_INFO,
+                  COMPUTE_PUSH_CONSTANT_RANGE<sizeof(AstcPushConstants)>, ASTC_DECODER_COMP_SPV),
+      scheduler{scheduler_},
+      staging_buffer_pool{staging_buffer_pool_},
+      compute_pass_descriptor_queue{compute_pass_descriptor_queue_},
+      memory_allocator{memory_allocator_} {}
+
+void ASTCDecoderPass::Assemble(TextureImage& image, const StagingBufferRef& map,
+                               std::span<const texture::SwizzleParameters> swizzles) {
+    using namespace texture::Accelerated;
+    const std::array<u32, 2> block_dims{
+        surface::DefaultBlockWidth(image.info.format),
+        surface::DefaultBlockHeight(image.info.format),
+    };
+    scheduler.requestOutsideRenderPassOperationContext();
+    const vk::Pipeline vk_pipeline = *pipeline;
+    const vk::ImageAspectFlags aspect_mask = image.AspectMask();
+    const vk::Image vk_image = image.Handle();
+    const bool is_initialized = image.ExchangeInitialization();
+    scheduler.record(
+        [vk_pipeline, vk_image, aspect_mask, is_initialized](vk::CommandBuffer cmdbuf) {
+            const vk::ImageMemoryBarrier image_barrier{
+                static_cast<vk::AccessFlags>(is_initialized ? VK_ACCESS_SHADER_WRITE_BIT
+                                                            : VK_ACCESS_NONE),
+                vk::AccessFlagBits::eShaderWrite | vk::AccessFlagBits::eShaderRead,
+                is_initialized ? vk::ImageLayout::eGeneral : vk::ImageLayout::eUndefined,
+                vk::ImageLayout::eGeneral,
+                VK_QUEUE_FAMILY_IGNORED,
+                VK_QUEUE_FAMILY_IGNORED,
+                vk_image,
+                vk::ImageSubresourceRange{
+                    aspect_mask,
+                    0,
+                    VK_REMAINING_MIP_LEVELS,
+                    0,
+                    VK_REMAINING_ARRAY_LAYERS,
+                },
+            };
+            cmdbuf.pipelineBarrier(is_initialized ? vk::PipelineStageFlagBits::eAllCommands
+                                                  : vk::PipelineStageFlagBits::eTopOfPipe,
+                                   vk::PipelineStageFlagBits::eComputeShader, {}, {}, {},
+                                   image_barrier);
+            cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute, vk_pipeline);
+        });
+    for (const texture::SwizzleParameters& swizzle : swizzles) {
+        const size_t input_offset = swizzle.buffer_offset + map.offset;
+        const u32 num_dispatches_x = common::DivCeil(swizzle.num_tiles.width, 8U);
+        const u32 num_dispatches_y = common::DivCeil(swizzle.num_tiles.height, 8U);
+        const u32 num_dispatches_z = image.info.resources.layers;
+
+        compute_pass_descriptor_queue.Acquire();
+        compute_pass_descriptor_queue.AddBuffer(map.buffer, input_offset,
+                                                image.guest_size_bytes - swizzle.buffer_offset);
+        compute_pass_descriptor_queue.AddImage(image.StorageImageView(swizzle.level));
+        const void* const descriptor_data{compute_pass_descriptor_queue.UpdateData()};
+
+        // To unswizzle the ASTC data
+        const auto params = MakeBlockLinearSwizzle2DParams(swizzle, image.info);
+        assert(params.origin == (std::array<u32, 3>{0, 0, 0}));
+        assert(params.destination == (std::array<s32, 3>{0, 0, 0}));
+        assert(params.bytes_per_block_log2 == 4);
+        scheduler.record([this, num_dispatches_x, num_dispatches_y, num_dispatches_z, block_dims,
+                          params, descriptor_data](vk::CommandBuffer cmdbuf) {
+            const AstcPushConstants uniforms{
+                .blocks_dims = block_dims,
+                .layer_stride = params.layer_stride,
+                .block_size = params.block_size,
+                .x_shift = params.x_shift,
+                .block_height = params.block_height,
+                .block_height_mask = params.block_height_mask,
+            };
+            const vk::DescriptorSet set = descriptor_allocator.commit();
+            device_.getLogical().updateDescriptorSetWithTemplate(set, *descriptor_template,
+                                                                 descriptor_data);
+            cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *layout, 0, set, {});
+            cmdbuf.pushConstants(*layout, vk::ShaderStageFlagBits::eCompute, 0, sizeof(uniforms),
+                                 &uniforms);
+            cmdbuf.dispatch(num_dispatches_x, num_dispatches_y, num_dispatches_z);
+        });
+    }
+    scheduler.record([vk_image, aspect_mask](vk::CommandBuffer cmdbuf) {
+        const vk::ImageMemoryBarrier image_barrier{
+            vk::AccessFlagBits::eShaderWrite,
+            vk::AccessFlagBits::eShaderWrite | vk::AccessFlagBits::eShaderRead,
+            vk::ImageLayout::eGeneral,
+            vk::ImageLayout::eGeneral,
+            VK_QUEUE_FAMILY_IGNORED,
+            VK_QUEUE_FAMILY_IGNORED,
+            vk_image,
+            vk::ImageSubresourceRange{
+                aspect_mask,
+                0,
+                VK_REMAINING_MIP_LEVELS,
+                0,
+                VK_REMAINING_ARRAY_LAYERS,
+            },
+        };
+        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                               vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, image_barrier);
+    });
+    scheduler.finish();
+}
+
+ASTCDecoderPass::~ASTCDecoderPass() = default;
 
 }  // namespace render::vulkan

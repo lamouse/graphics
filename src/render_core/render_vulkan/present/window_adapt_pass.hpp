@@ -3,41 +3,46 @@
 #include <vulkan/vulkan.hpp>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
+class Device;
+struct Frame;
+
+namespace scheduler {
+class Scheduler;
+}
 namespace present {
 class WindowAdaptPass final {
     public:
-        // explicit WindowAdaptPass(vk::Device device, VkFormat frame_format, vk::Sampler&& sampler,
-        //                          vk::ShaderModule&& fragment_shader);
-        // ~WindowAdaptPass();
+        explicit WindowAdaptPass(const Device& device, vk::Format frame_format, Sampler&& sampler,
+                                 ShaderModule&& fragment_shader);
+        ~WindowAdaptPass();
 
-        // void Draw(RasterizerVulkan& rasterizer, Scheduler& scheduler, size_t image_index,
-        //           std::list<Layer>& layers, std::span<const Tegra::FramebufferConfig> configs,
+        // void Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& scheduler, size_t
+        // image_index,
+        //           std::list<Layer>& layers,
         //           const Layout::FramebufferLayout& layout, Frame* dst);
 
-        // auto GetDescriptorSetLayout() -> vk::DescriptorSetLayout;
-        // auto getRenderPass() -> vk::RenderPass;
-        auto create_vertex_shader(vk::Device device) -> ShaderModule;
-        auto create_fragment_shader(vk::Device device) -> ShaderModule;
+        auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
+        auto getRenderPass() -> vk::RenderPass;
 
     private:
-        // void CreateDescriptorSetLayout();
-        // void CreatePipelineLayout();
-        // void CreateVertexShader();
-        // void CreateRenderPass(VkFormat frame_format);
-        // void CreatePipelines();
+        void CreateDescriptorSetLayout();
+        void CreatePipelineLayout();
+        void CreateVertexShader();
+        void CreateRenderPass(vk::Format frame_format);
+        void CreatePipelines();
 
-    private:
-        // const Device& device;
-        vk::DescriptorSetLayout descriptor_set_layout;
-        vk::PipelineLayout pipeline_layout;
-        vk::Sampler sampler;
-        vk::ShaderModule vertex_shader;
-        vk::ShaderModule fragment_shader;
-        vk::RenderPass render_pass;
-        vk::Pipeline opaque_pipeline;
-        vk::Pipeline premultiplied_pipeline;
-        vk::Pipeline coverage_pipeline;
+        const Device& device;
+        DescriptorSetLayout descriptor_set_layout;
+        PipelineLayout pipeline_layout;
+        Sampler sampler;
+        ShaderModule vertex_shader;
+        ShaderModule fragment_shader;
+        RenderPass render_pass;
+        Pipeline opaque_pipeline;
+        Pipeline premultiplied_pipeline;
+        Pipeline coverage_pipeline;
 };
+
 }  // namespace present
 
 }  // namespace render::vulkan

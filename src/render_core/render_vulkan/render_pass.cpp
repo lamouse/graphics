@@ -1,5 +1,6 @@
 #include "render_pass.hpp"
 #include "vulkan_common/device.hpp"
+#include <boost/container/static_vector.hpp>
 namespace render::vulkan {
 namespace {
 
@@ -66,6 +67,22 @@ auto createResolveAttachmentDescription(auto& formats, bool need_store)
 
     return attachments;
 }
+
+vk::AttachmentDescription AttachmentDescription(const Device& device, surface::PixelFormat format,
+                                                vk::SampleCountFlagBits samples) {
+    return vk::AttachmentDescription{{},
+                                     device.surfaceFormat(FormatType::Optimal, true, format).format,
+                                     samples,
+                                     vk::AttachmentLoadOp::eLoad,
+                                     vk::AttachmentStoreOp::eStore,
+                                     vk::AttachmentLoadOp::eLoad,
+                                     vk::AttachmentStoreOp::eStore,
+                                     vk::ImageLayout::eGeneral,
+                                     vk::ImageLayout::eGeneral
+
+    };
+}
+
 }  // namespace
 RenderPassCache::RenderPassCache(const Device& device_) : device{&device_} {}
 auto RenderPassCache::get(const RenderPassKey& key) -> vk::RenderPass {
@@ -74,51 +91,54 @@ auto RenderPassCache::get(const RenderPassKey& key) -> vk::RenderPass {
     if (!is_new) {
         return pair->second;
     }
-    std::vector<vk::AttachmentDescription> attachments;
-    auto color_attachments = createColorAttachmentDescription(key.color_formats, key.samples,
-                                                              key.need_resolvet, key.need_store);
-    ::vk::SubpassDescription subpass;
-    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics);
-
-    attachments.insert(attachments.end(), color_attachments.begin(), color_attachments.end());
-    uint32_t attachment = 0;
-    ::vk::AttachmentReference colorAttachmentRef(attachment,
-                                                 ::vk::ImageLayout::eColorAttachmentOptimal);
-    subpass.setColorAttachments(colorAttachmentRef);
-    if (key.depth_format != vk::Format::eUndefined) {
-        attachment++;
-        auto depth_attachment =
-            createDepthAttachmentDescription(key.depth_format, key.samples, key.save_depth);
-        attachments.push_back(depth_attachment);
-        ::vk::AttachmentReference depthAttachmentRef(
-            attachment, ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
-        subpass.setPDepthStencilAttachment(&depthAttachmentRef);
+    boost::container::static_vector<vk::AttachmentDescription, 9> descriptions;
+    std::array<vk::AttachmentReference, 8> references{};
+    u32 num_attachments{};
+    u32 num_colors{};
+    for (size_t index = 0; index < key.color_formats.size(); ++index) {
+        const surface::PixelFormat format{key.color_formats[index]};
+        const bool is_valid{format != surface::PixelFormat::Invalid};
+        references[index] = vk::AttachmentReference{
+            is_valid ? num_colors : VK_ATTACHMENT_UNUSED,
+            vk::ImageLayout::eGeneral,
+        };
+        if (is_valid) {
+            descriptions.push_back(AttachmentDescription(*device, format, key.samples));
+            num_attachments = static_cast<u32>(index + 1);
+            ++num_colors;
+        }
     }
-    if (key.need_resolvet) {
-        attachment++;
-        auto resolve_attachment =
-            createResolveAttachmentDescription(key.color_formats, key.need_store);
-        attachments.insert(attachments.end(), resolve_attachment.begin(), resolve_attachment.end());
-        ::vk::AttachmentReference colorAttachmentResolveRef(
-            attachment, ::vk::ImageLayout::eColorAttachmentOptimal);
-        subpass.setPResolveAttachments(&colorAttachmentResolveRef);
+    const bool has_depth{key.depth_format != surface::PixelFormat::Invalid};
+    vk::AttachmentReference depth_reference{};
+    if (key.depth_format != surface::PixelFormat::Invalid) {
+        depth_reference = vk::AttachmentReference{
+            num_colors,
+            vk::ImageLayout::eGeneral,
+        };
+        descriptions.push_back(AttachmentDescription(*device, key.depth_format, key.samples));
     }
+    const vk::SubpassDescription subpass{
+        {},
+        vk::PipelineBindPoint::eGraphics,
+        0,
+        nullptr,
+        num_attachments,
+        references.data(),
+        nullptr,
+        has_depth ? &depth_reference : nullptr,
+        0,
+        nullptr,
+    };
+    pair->second = device->getLogical().createRenderPass(vk::RenderPassCreateInfo{
 
-    ::vk::SubpassDependency subpassDependency;
-    subpassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-        .setDstSubpass(0)
-        .setSrcAccessMask(::vk::AccessFlagBits::eNone)
-        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
-                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
-        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite |
-                          ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
-        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
-                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
-
-    ::vk::RenderPassCreateInfo createInfo;
-    createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subpassDependency);
-    auto renderPass = device->getLogical().createRenderPass(createInfo);
-    cache[key] = renderPass;
-    return renderPass;
+        {},
+        static_cast<u32>(descriptions.size()),
+        descriptions.empty() ? nullptr : descriptions.data(),
+        1,
+        &subpass,
+        0,
+        nullptr,
+    });
+    return pair->second;
 }
 }  // namespace render::vulkan
