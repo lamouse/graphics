@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
+#include "vulkan_wrapper.hpp"
 namespace render::vulkan {
-[[nodiscard]] auto createDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMessengerEXT;
+[[nodiscard]] auto createDebugMessenger(::vk::Instance instance) -> DebugUtilsMessenger;
 }

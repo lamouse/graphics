@@ -17,6 +17,7 @@ class RenderBase {
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }
+        virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
         [[nodiscard]] auto getCurrentFPS() const -> float;
         [[nodiscard]] auto getCurrentFrame() const -> int;
 

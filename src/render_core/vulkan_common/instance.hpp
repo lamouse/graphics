@@ -1,10 +1,11 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
+#include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/window.hpp"
+
 namespace render::vulkan {
-[[nodiscard]] auto CreateInstance(
+[[nodiscard]] auto createInstance(
     uint32_t required_version,
     core::frontend::WindowSystemType wst = core::frontend::WindowSystemType::Headless,
-    bool enable_validation = false) -> vk::Instance;
+    bool enable_validation = false) -> Instance;
 
 }

@@ -2,10 +2,13 @@
 
 #include <vulkan/vulkan.hpp>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "framebufferConfig.hpp"
+#include <list>
 namespace render::vulkan {
 class Device;
 struct Frame;
-
+class RasterizerVulkan;
+class Layer;
 namespace scheduler {
 class Scheduler;
 }
@@ -16,13 +19,11 @@ class WindowAdaptPass final {
                                  ShaderModule&& fragment_shader);
         ~WindowAdaptPass();
 
-        // void Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& scheduler, size_t
-        // image_index,
-        //           std::list<Layer>& layers,
-        //           const Layout::FramebufferLayout& layout, Frame* dst);
-
         auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
         auto getRenderPass() -> vk::RenderPass;
+        void Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
+                  std::list<Layer>& layers, std::span<const frame::FramebufferConfig> configs,
+                  Frame* dst);
 
     private:
         void CreateDescriptorSetLayout();

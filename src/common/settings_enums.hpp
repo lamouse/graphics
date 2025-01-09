@@ -77,6 +77,7 @@ ENUM(VSyncMode, Immediate, Mailbox, Fifo, FifoRelaxed);
 ENUM(AnisotropyMode, Automatic, Default, X2, X4, X8, X16);
 ENUM(AstcDecodeMode, Cpu, Gpu, CpuAsynchronous);
 ENUM(AstcRecompression, Uncompressed, Bc1, Bc3);
+ENUM(ScalingFilter, NearestNeighbor, Bilinear, Bicubic, Gaussian, ScaleForce, Fsr, MaxEnum);
 ENUM(VramUsageMode, Conservative, Aggressive);
 ENUM(ShaderBackend, Glsl, Glasm, SpirV);
 template <typename Type>

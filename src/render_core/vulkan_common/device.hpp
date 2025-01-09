@@ -74,6 +74,7 @@ class Device {
         [[nodiscard]] auto getMaxAnisotropy() const -> float {
             return properties_.properties_.limits.maxSamplerAnisotropy;
         }
+        bool shouldBoostClocks() const;
 
         [[nodiscard]] auto cantBlitMSAA() const -> bool { return misc_features_.cant_blit_msaa; }
 
@@ -179,6 +180,11 @@ class Device {
         [[nodiscard]] auto isFormatSupported(vk::Format wanted_format,
                                              vk::FormatFeatureFlags wanted_usage,
                                              FormatType format_type) const -> bool;
+
+        /// Returns true if the device supports float16 natively.
+        [[nodiscard]] auto isFloat16Supported() const -> bool {
+            return features_.shader_float16_int8.shaderFloat16;
+        }
 
     private:
         vk::Instance instance_;

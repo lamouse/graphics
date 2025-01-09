@@ -58,6 +58,7 @@ class EXPORT BaseWindow {
         [[nodiscard]] virtual auto IsMinimized() const -> bool = 0;
         [[nodiscard]] virtual auto shouldClose() const -> bool = 0;
         [[nodiscard]] virtual auto getActiveConfig() const -> WindowConfig = 0;
+        virtual void OnFrameDisplayed() = 0;
 
     protected:
         WindowSystemInfo window_info;

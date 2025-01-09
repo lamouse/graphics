@@ -93,7 +93,7 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
 }  // namespace
 }  // namespace instance
 auto CreateInstance(uint32_t required_version, core::frontend::WindowSystemType wst,
-                    bool enable_validation) -> vk::Instance {
+                    bool enable_validation) -> Instance {
     auto layers = instance::layers(enable_validation);
     instance::removeUnavailableLayers(layers);
     auto extensions = instance::requiredExtensions(wst, enable_validation);
@@ -117,6 +117,6 @@ auto CreateInstance(uint32_t required_version, core::frontend::WindowSystemType 
 #endif
         .setPEnabledLayerNames(layers)
         .setPEnabledExtensionNames(extensions);
-    return vk::createInstance(createInfo);
+    return Instance::Create(version, layers, extensions);
 }
 }  // namespace render::vulkan

@@ -199,4 +199,201 @@ auto CreateWrappedCoverageBlendingPipeline(const Device& device, RenderPass& ren
                                      color_blend_attachment_coverage);
 }
 
+auto CreateWrappedImage(MemoryAllocator& allocator, vk::Extent2D dimensions, vk::Format format)
+    -> Image {
+    const VkImageCreateInfo image_ci{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = static_cast<VkFormat>(format),
+        .extent = {.width = dimensions.width, .height = dimensions.height, .depth = 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
+                 VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+    };
+    return allocator.createImage(image_ci);
+}
+
+auto CreateWrappedImageView(const Device& device, Image& image, vk::Format format) -> ImageView {
+    return device.logical().CreateImageView(vk::ImageViewCreateInfo{
+        {},
+        *image,
+        vk::ImageViewType::e2D,
+        format,
+        {},
+        vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
+}
+
+auto CreateWrappedFramebuffer(const Device& device, RenderPass& render_pass, ImageView& dest_image,
+                              vk::Extent2D extent) -> Framebuffer {
+    return device.logical().createFramerBuffer(vk::FramebufferCreateInfo{
+
+        {},
+        *render_pass,
+        1,
+        dest_image.address(),
+        extent.width,
+        extent.height,
+        1,
+    });
+}
+
+auto CreateBilinearSampler(const Device& device) -> Sampler {
+    const VkSamplerCreateInfo ci{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_LINEAR,
+        .minFilter = VK_FILTER_LINEAR,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = VK_FALSE,
+        .maxAnisotropy = 0.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_NEVER,
+        .minLod = 0.0f,
+        .maxLod = 0.0f,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+
+    return device.logical().CreateSampler(ci);
+}
+
+auto CreateWrappedDescriptorPool(const Device& device, size_t max_descriptors, size_t max_sets,
+                                 std::initializer_list<vk::DescriptorType> types)
+    -> VulkanDescriptorPool {
+    std::vector<vk::DescriptorPoolSize> pool_sizes(types.size());
+    for (u32 i = 0; i < types.size(); i++) {
+        pool_sizes[i] = vk::DescriptorPoolSize{
+            std::data(types)[i],
+            static_cast<u32>(max_descriptors),
+        };
+    }
+
+    return device.logical().createDescriptorPool(vk::DescriptorPoolCreateInfo{
+        {}, static_cast<u32>(max_sets), pool_sizes
+
+    });
+}
+
+auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
+                                 render::vulkan::utils::Span<vk::DescriptorSetLayout> layouts)
+    -> DescriptorSets {
+    return pool.Allocate(vk::DescriptorSetAllocateInfo{
+        *pool,
+        layouts.size(),
+    });
+}
+
+auto CreateWriteDescriptorSet(std::vector<vk::DescriptorImageInfo>& images, vk::Sampler sampler,
+                              vk::ImageView view, vk::DescriptorSet set, u32 binding)
+    -> vk::WriteDescriptorSet {
+    assert(images.capacity() > images.size());
+    auto& image_info = images.emplace_back(sampler, view, vk::ImageLayout::eGeneral);
+
+    return vk::WriteDescriptorSet{
+        set,         binding, 0,       1, vk::DescriptorType::eCombinedImageSampler,
+        &image_info, nullptr, nullptr,
+    };
+}
+
+void ClearColorImage(vk::CommandBuffer& cmdbuf, vk::Image image) {
+    static constexpr std::array<vk::ImageSubresourceRange, 1> subresources{{{
+        vk::ImageAspectFlagBits::eColor,
+        0,
+        1,
+        0,
+        1,
+    }}};
+    TransitionImageLayout(cmdbuf, image, vk::ImageLayout::eGeneral, vk::ImageLayout::eUndefined);
+    cmdbuf.clearColorImage(image, vk::ImageLayout::eGeneral, {}, subresources);
+}
+
+void TransitionImageLayout(vk::CommandBuffer& cmdbuf, vk::Image image,
+                           vk::ImageLayout target_layout, vk::ImageLayout source_layout) {
+    constexpr vk::AccessFlags flags{vk::AccessFlagBits::eColorAttachmentRead |
+                                    vk::AccessFlagBits::eColorAttachmentWrite |
+                                    vk::AccessFlagBits::eShaderRead};
+    const vk::ImageMemoryBarrier barrier{
+
+        flags,
+        flags,
+        source_layout,
+        target_layout,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        image,
+        vk::ImageSubresourceRange{
+            vk::ImageAspectFlagBits::eColor,
+            0,
+            1,
+            0,
+            1,
+        },
+    };
+    cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+                           vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, barrier);
+}
+
+void BeginRenderPass(vk::CommandBuffer& cmdbuf, vk::RenderPass render_pass,
+                     vk::Framebuffer framebuffer, vk::Extent2D extent) {
+    const vk::RenderPassBeginInfo render_pass_bi{
+        render_pass,
+        framebuffer,
+        {
+            {},
+            extent,
+        },
+        0,
+        nullptr,
+    };
+    cmdbuf.beginRenderPass(render_pass_bi, vk::SubpassContents::eInline);
+
+    const vk::Viewport viewport{
+        0.0f, 0.0f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.0f, 1.0f,
+    };
+    const vk::Rect2D scissor{
+        {0, 0},
+        extent,
+    };
+    cmdbuf.setViewport(0, viewport);
+    cmdbuf.setScissor(0, scissor);
+}
+
+auto CreateNearestNeighborSampler(const Device& device) -> Sampler {
+    const VkSamplerCreateInfo ci_nn{
+        .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .magFilter = VK_FILTER_NEAREST,
+        .minFilter = VK_FILTER_NEAREST,
+        .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+        .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+        .mipLodBias = 0.0f,
+        .anisotropyEnable = VK_FALSE,
+        .maxAnisotropy = 0.0f,
+        .compareEnable = VK_FALSE,
+        .compareOp = VK_COMPARE_OP_NEVER,
+        .minLod = 0.0f,
+        .maxLod = 0.0f,
+        .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+        .unnormalizedCoordinates = VK_FALSE,
+    };
+
+    return device.logical().CreateSampler(ci_nn);
+}
 }  // namespace render::vulkan::present::utils

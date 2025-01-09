@@ -15,6 +15,8 @@ set(SHADER_FILES
     astc_decoder.comp
     vulkan_present.frag
     vulkan_present.vert
+    vulkan_present_scaleforce_fp16.frag
+    vulkan_present_scaleforce_fp32.frag
     vulkan_compute.comp
     vulkan_turbo_mode.comp
     convert_msaa_to_non_msaa.comp
@@ -39,6 +41,14 @@ set(SHADER_FILES
     vulkan_fidelityfx_fsr_rcas_fp32.frag
     vulkan_quad_indexed.comp
     vulkan_uint8.comp
+    vulkan_fidelityfx_fsr.vert
+    vulkan_fidelityfx_fsr_easu_fp16.frag
+    vulkan_fidelityfx_fsr_easu_fp32.frag
+    vulkan_fidelityfx_fsr_rcas_fp16.frag
+    vulkan_fidelityfx_fsr_rcas_fp32.frag
+    present_bicubic.frag
+    present_gaussian.frag
+    opengl_present_scaleforce.frag
 )
 
 find_program(GLSLANGVALIDATOR "glslangValidator")

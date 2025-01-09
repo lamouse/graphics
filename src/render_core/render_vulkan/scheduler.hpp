@@ -77,6 +77,9 @@ class Scheduler {
 
         void requestRenderpass(const TextureFramebuffer* framebuffer);
 
+        // Registers a callback to perform on queue submission.
+        void registerOnSubmit(std::function<void()>&& func) { on_submit_ = std::move(func); }
+
     private:
         class Command {
             public:

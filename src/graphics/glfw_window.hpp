@@ -26,6 +26,7 @@ class Window : public core::frontend::BaseWindow {
         [[nodiscard]] auto IsShown() const -> bool override;
         [[nodiscard]] auto IsMinimized() const -> bool override;
         [[nodiscard]] auto shouldClose() const -> bool override;
+        void OnFrameDisplayed() override {};
         [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
             return getWindowConfig();
         }

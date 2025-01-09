@@ -37,10 +37,12 @@ inline void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEX
     createInfo.pfnUserCallback = debugCallback;
 }
 }  // namespace
-auto createDebugMessenger(::vk::Instance& instance) -> ::vk::DebugUtilsMessengerEXT {
+auto createDebugMessenger(::vk::Instance instance) -> DebugUtilsMessenger {
     ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
-    return instance.createDebugUtilsMessengerEXT(
-        createInfo, nullptr, vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr});
+    return DebugUtilsMessenger{
+        instance.createDebugUtilsMessengerEXT(
+            createInfo, nullptr, vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr}),
+        instance};
 }
 }  // namespace render::vulkan
