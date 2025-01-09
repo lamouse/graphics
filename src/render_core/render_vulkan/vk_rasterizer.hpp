@@ -1,15 +1,15 @@
 #pragma once
-#include "rasterizer_interface.hpp"
+#include "render_core/rasterizer_interface.hpp"
 #include "core/frontend/window.hpp"
-#include "vulkan_common/device.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
-#include "vulkan_common/memory_allocator.hpp"
-#include "scheduler.hpp"
-#include "texture_cache.hpp"
-#include "descriptor_pool.hpp"
-#include "staging_buffer_pool.hpp"
-#include "texture/types.hpp"
-#include "blit_image.hpp"
+#include "render_core/vulkan_common/device.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/memory_allocator.hpp"
+#include "render_core/render_vulkan/scheduler.hpp"
+#include "render_core/render_vulkan/texture_cache.hpp"
+#include "render_core/render_vulkan/descriptor_pool.hpp"
+#include "render_core/render_vulkan/staging_buffer_pool.hpp"
+#include "render_core/texture/types.hpp"
+#include "render_core/render_vulkan/blit_image.hpp"
 namespace render::vulkan {
 
 class RasterizerVulkan final : public render::RasterizerInterface {

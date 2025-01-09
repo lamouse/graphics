@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
-#include "framebufferConfig.hpp"
+#include "render_core/framebufferConfig.hpp"
 #include <list>
 #include "core/frontend/framebuffer_layout.hpp"
 
@@ -40,7 +40,7 @@ class BlitScreen {
 
         void DrawToFrame(RasterizerVulkan& rasterizer, Frame* frame,
                          const layout::FrameBufferLayout& layout,
-                         std::span<frame::FramebufferConfig> framebuffers,
+                         std::span<const frame::FramebufferConfig> framebuffers,
                          size_t current_swapchain_image_count,
                          vk::Format current_swapchain_view_format);
 

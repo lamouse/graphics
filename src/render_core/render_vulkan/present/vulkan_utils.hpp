@@ -61,4 +61,9 @@ void BeginRenderPass(vk::CommandBuffer& cmdbuf, vk::RenderPass render_pass,
 
 auto CreateNearestNeighborSampler(const Device& device) -> Sampler;
 
+auto CreateWrappedBuffer(MemoryAllocator& allocator, vk::DeviceSize size, MemoryUsage usage)
+    -> Buffer;
+void DownloadColorImage(vk::CommandBuffer& cmdbuf, vk::Image image, vk::Buffer buffer,
+                        vk::Extent3D extent);
+
 }  // namespace render::vulkan::present::utils

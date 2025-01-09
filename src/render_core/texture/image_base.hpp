@@ -7,9 +7,9 @@
 
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
-#include "image_info.hpp"
-#include "image_view_info.hpp"
-#include "types.hpp"
+#include "render_core/texture/image_info.hpp"
+#include "render_core/texture/image_view_info.hpp"
+#include "render_core/texture/types.hpp"
 
 namespace render::texture {
 enum class ImageFlagBits : u32 {

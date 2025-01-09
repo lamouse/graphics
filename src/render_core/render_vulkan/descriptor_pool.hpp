@@ -1,8 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include "resource_pool.hpp"
+#include "render_core/render_vulkan/resource_pool.hpp"
 #include "common/common_funcs.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include <shared_mutex>
 #include "shader_tools/shader_info.h"
 #include <memory>

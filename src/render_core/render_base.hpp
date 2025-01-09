@@ -20,6 +20,7 @@ class RenderBase {
         virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
         [[nodiscard]] auto getCurrentFPS() const -> float;
         [[nodiscard]] auto getCurrentFrame() const -> int;
+        virtual auto getAppletCaptureBuffer() -> std::vector<u8> = 0;
 
     protected:
         core::frontend::BaseWindow* window_;

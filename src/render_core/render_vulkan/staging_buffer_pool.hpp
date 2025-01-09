@@ -1,8 +1,8 @@
 #pragma once
 #include <climits>
 #include <vector>
-#include "vulkan_common/vulkan_wrapper.hpp"
-#include "vulkan_common/memory_allocator.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/memory_allocator.hpp"
 
 namespace render::vulkan {
 class Device;

@@ -1,6 +1,6 @@
 #pragma once
 #include <array>
-#include "vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 
 namespace render::vulkan {
 class Device;

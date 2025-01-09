@@ -1,9 +1,9 @@
 #pragma once
 
 #include <type_traits>
-#include "surface.hpp"
-#include "types.hpp"
-#include "texture.hpp"
+#include "render_core/surface.hpp"
+#include "render_core/texture/types.hpp"
+#include "render_core/texture.hpp"
 
 namespace render::texture {
 

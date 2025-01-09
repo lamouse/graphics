@@ -77,7 +77,7 @@ auto BlitScreen::CreateFramebuffer(const vk::ImageView& image_view, vk::Extent2D
 
 void BlitScreen::DrawToFrame(RasterizerVulkan& rasterizer, Frame* frame,
                              const layout::FrameBufferLayout& layout,
-                             std::span<frame::FramebufferConfig> framebuffers,
+                             std::span<const frame::FramebufferConfig> framebuffers,
                              size_t current_swapchain_image_count,
                              vk::Format current_swapchain_view_format) {
     bool resource_update_required = false;

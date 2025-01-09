@@ -396,4 +396,79 @@ auto CreateNearestNeighborSampler(const Device& device) -> Sampler {
 
     return device.logical().CreateSampler(ci_nn);
 }
+
+auto CreateWrappedBuffer(MemoryAllocator& allocator, vk::DeviceSize size, MemoryUsage usage)
+    -> Buffer {
+    const VkBufferCreateInfo dst_buffer_info{
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .size = size,
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 0,
+        .pQueueFamilyIndices = nullptr,
+    };
+    return allocator.createBuffer(dst_buffer_info, usage);
+}
+
+void DownloadColorImage(vk::CommandBuffer& cmdbuf, vk::Image image, vk::Buffer buffer,
+                        vk::Extent3D extent) {
+    const vk::ImageMemoryBarrier read_barrier{
+        vk::AccessFlagBits::eMemoryWrite,
+        vk::AccessFlagBits::eTransferRead,
+        vk::ImageLayout::eGeneral,
+        vk::ImageLayout::eTransferSrcOptimal,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        image,
+        vk::ImageSubresourceRange{
+            vk::ImageAspectFlagBits::eColor,
+            0,
+            VK_REMAINING_MIP_LEVELS,
+            0,
+            VK_REMAINING_ARRAY_LAYERS,
+        },
+    };
+    const vk::ImageMemoryBarrier image_write_barrier{
+        {},
+        vk::AccessFlagBits::eMemoryWrite,
+        vk::ImageLayout::eTransferSrcOptimal,
+        vk::ImageLayout::eGeneral,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        image,
+        vk::ImageSubresourceRange{
+            vk::ImageAspectFlagBits::eColor,
+            0,
+            VK_REMAINING_MIP_LEVELS,
+            0,
+            VK_REMAINING_ARRAY_LAYERS,
+        },
+    };
+#undef MemoryBarrier
+    static constexpr vk::MemoryBarrier memory_write_barrier{
+        vk::AccessFlagBits::eMemoryWrite,
+        vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite,
+    };
+    const vk::BufferImageCopy copy{
+        0,
+        0,
+        0,
+        vk::ImageSubresourceLayers{
+            vk::ImageAspectFlagBits::eColor,
+            0,
+            0,
+            1,
+        },
+        {0, 0, 0},
+        extent,
+    };
+    cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+                           vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, read_barrier);
+    cmdbuf.copyImageToBuffer(image, vk::ImageLayout::eTransferSrcOptimal, buffer, copy);
+    cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
+                           vk::PipelineStageFlagBits::eAllCommands, {}, memory_write_barrier,
+                           nullptr, image_write_barrier);
+}
 }  // namespace render::vulkan::present::utils

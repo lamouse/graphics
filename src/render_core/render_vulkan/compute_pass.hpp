@@ -1,10 +1,10 @@
 #pragma once
-#include "vulkan_common/vulkan_wrapper.hpp"
-#include "descriptor_pool.hpp"
-#include "update_descriptor.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/render_vulkan/descriptor_pool.hpp"
+#include "render_core/render_vulkan/update_descriptor.hpp"
 #include <optional>
-#include "texture/types.hpp"
-#include "vulkan_common/memory_allocator.hpp"
+#include "render_core/texture/types.hpp"
+#include "render_core/vulkan_common/memory_allocator.hpp"
 
 namespace render::vulkan {
 class Device;

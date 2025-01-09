@@ -8,8 +8,8 @@
 
 #include <condition_variable>
 
-#include "vulkan_common/device.hpp"
-#include "vulkan_common/memory_allocator.hpp"
+#include "render_core/vulkan_common/device.hpp"
+#include "render_core/vulkan_common/memory_allocator.hpp"
 
 namespace render::vulkan {
 

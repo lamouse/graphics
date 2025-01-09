@@ -4,8 +4,8 @@
 #pragma once
 
 #include "descriptor_pool.hpp"
-#include "texture/types.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/texture/types.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 
 namespace render::vulkan {
 

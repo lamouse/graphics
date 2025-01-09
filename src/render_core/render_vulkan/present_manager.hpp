@@ -5,8 +5,8 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-#include "vulkan_common/vulkan_wrapper.hpp"
-#include "vulkan_common/memory_allocator.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/memory_allocator.hpp"
 namespace core::frontend {
 class BaseWindow;
 }

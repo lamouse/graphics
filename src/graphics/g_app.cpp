@@ -13,7 +13,7 @@
 #include "resource/image_texture.hpp"
 // imgui end
 #include <spdlog/spdlog.h>
-
+#include "render_core/render_vulkan/render_vulkan.hpp"
 #include <chrono>
 #include <thread>
 
@@ -121,13 +121,14 @@ App::App(const Config& config) {
         Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
     auto deviceExtensions = config::getDeviceExtensions();
 
-    core::Device::init(
-        requiredInstanceExtends, deviceExtensions,
-        [this](VkInstance instance) -> VkSurfaceKHR {
-            return dynamic_cast<Window*>(window.get())->getSurface(instance);
-            // return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
-        },
-        vulkan_config.validation_layers);
+    render::vulkan::RendererVulkan r{*window};
+    // core::Device::init(
+    //     requiredInstanceExtends, deviceExtensions,
+    //     [this](VkInstance instance) -> VkSurfaceKHR {
+    //         return dynamic_cast<Window*>(window.get())->getSurface(instance);
+    //         // return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
+    //     },
+    //     vulkan_config.validation_layers);
 }
 
 App::~App() { core::Device::destroy(); };

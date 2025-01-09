@@ -4,10 +4,10 @@
 #include <span>
 #include <vector>
 #include "common/common_types.hpp"
-#include "vulkan_common/device.hpp"
+#include "render_core/vulkan_common/device.hpp"
 #include "common/common_funcs.hpp"
 #include <vulkan/vulkan.h>
-#include "vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 
 VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {

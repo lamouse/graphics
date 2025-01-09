@@ -5,7 +5,7 @@
 #include <condition_variable>
 #include <queue>
 #include "common/common_funcs.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
 class Device;
 namespace semaphore {

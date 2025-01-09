@@ -1,12 +1,12 @@
 #include "render_core/render_base.hpp"
-#include "vulkan_common/device.hpp"
-#include "vulkan_common/memory_allocator.hpp"
-#include "present_manager.hpp"
-#include "swapchain.hpp"
-#include "scheduler.hpp"
-#include "vk_turbo_mode.hpp"
-#include "vk_rasterizer.hpp"
-#include "blit_screen.hpp"
+#include "render_core/vulkan_common/device.hpp"
+#include "render_core/vulkan_common/memory_allocator.hpp"
+#include "render_core/render_vulkan/present_manager.hpp"
+#include "render_core/render_vulkan/swapchain.hpp"
+#include "render_core/render_vulkan/scheduler.hpp"
+#include "render_core/render_vulkan/vk_turbo_mode.hpp"
+#include "render_core/render_vulkan/vk_rasterizer.hpp"
+#include "render_core/render_vulkan/blit_screen.hpp"
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
@@ -22,10 +22,14 @@ class RendererVulkan final : public render::RenderBase {
             return device.getDriverName();
         }
         void composite(std::span<frame::FramebufferConfig> frame_buffers) override;
+        auto getAppletCaptureBuffer() -> std::vector<u8> override;
 
     private:
         void RenderAppletCaptureLayer(std::span<const frame::FramebufferConfig> framebuffers);
         void RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers);
+        auto RenderToBuffer(std::span<const frame::FramebufferConfig> framebuffers,
+                            const layout::FrameBufferLayout& layout, vk::Format format,
+                            vk::DeviceSize buffer_size) -> Buffer;
         Instance instance;
         DebugUtilsMessenger debug_messenger;
         SurfaceKHR surface;
@@ -39,6 +43,7 @@ class RendererVulkan final : public render::RenderBase {
         // BlitScreen blit_capture;
         // BlitScreen blit_applet;
         BlitScreen blit_swapchain;
+        BlitScreen blit_capture;
         RasterizerVulkan rasterizer;
         std::optional<TurboMode> turbo_mode;
 

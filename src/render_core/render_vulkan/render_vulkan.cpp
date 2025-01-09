@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 #include "vulkan_common/debug_callback.hpp"
 #include "vulkan_common/vk_surface.hpp"
+#include "present/vulkan_utils.hpp"
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
@@ -27,6 +28,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow& window) try
                 window.getFramebufferLayout().height),
       present_manager(*instance, window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
+      blit_capture(device, memory_allocator, present_manager, scheduler),
       rasterizer(window, device, memory_allocator, scheduler),
       applet_frame() {
     if (common::settings::get<settings::RenderVulkan>().renderer_force_max_clock &&
@@ -64,6 +66,62 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
 
 void RendererVulkan::RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers) {
     // TODO 没有实现
+}
+
+auto RendererVulkan::RenderToBuffer(std::span<const frame::FramebufferConfig> framebuffers,
+                                    const layout::FrameBufferLayout& layout, vk::Format format,
+                                    vk::DeviceSize buffer_size) -> Buffer {
+    auto frame = [&]() {
+        Frame f{};
+        f.image = present::utils::CreateWrappedImage(
+            memory_allocator, vk::Extent2D{layout.width, layout.height}, format);
+        f.image_view = present::utils::CreateWrappedImageView(device, f.image, format);
+        f.framebuffer = blit_capture.CreateFramebuffer(*f.image_view, layout, format);
+        return f;
+    }();
+
+    auto dst_buffer =
+        present::utils::CreateWrappedBuffer(memory_allocator, buffer_size, MemoryUsage::Download);
+    blit_capture.DrawToFrame(rasterizer, &frame, layout, framebuffers, 1, format);
+
+    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.record([&](vk::CommandBuffer cmdbuf) {
+        present::utils::DownloadColorImage(cmdbuf, *frame.image, *dst_buffer,
+                                           vk::Extent3D{layout.width, layout.height, 1});
+    });
+
+    // Ensure the copy is fully completed before saving the capture
+    scheduler.finish();
+
+    // Copy backing image data to the capture buffer
+    dst_buffer.Invalidate();
+    return dst_buffer;
+}
+
+auto RendererVulkan::getAppletCaptureBuffer() -> std::vector<u8> {
+    std::vector<u8> out(1920 * 1080);
+
+    if (!applet_frame.image) {
+        return out;
+    }
+
+    const auto dst_buffer =
+        present::utils::CreateWrappedBuffer(memory_allocator, 1920 * 1080, MemoryUsage::Download);
+
+    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.record([&](vk::CommandBuffer cmdbuf) {
+        present::utils::DownloadColorImage(cmdbuf, *applet_frame.image, *dst_buffer,
+                                           {1920, 1080, 1});
+    });
+
+    // Ensure the copy is fully completed before writing the capture
+    scheduler.finish();
+
+    // Swizzle image data to the capture buffer
+    dst_buffer.Invalidate();
+    // TODO 未完成
+
+    return out;
 }
 
 }  // namespace render::vulkan

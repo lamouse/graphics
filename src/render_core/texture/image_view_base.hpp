@@ -1,6 +1,6 @@
 #pragma once
-#include "surface.hpp"
-#include "types.hpp"
+#include "render_core/surface.hpp"
+#include "render_core/texture/types.hpp"
 #include "common/common_funcs.hpp"
 namespace render::texture {
 struct ImageViewInfo;
