@@ -57,8 +57,8 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
     scheduler.flush(*frame->render_ready);
-    blit_swapchain.DrawToFrame(rasterizer, frame, frame_buffers, swapchain.getImageCount(),
-                               swapchain.getImageViewFormat());
+    blit_swapchain.DrawToFrame(rasterizer, frame, window_->getFramebufferLayout(), frame_buffers,
+                               swapchain.getImageCount(), swapchain.getImageViewFormat());
     rasterizer.TickFrame();
 }
 

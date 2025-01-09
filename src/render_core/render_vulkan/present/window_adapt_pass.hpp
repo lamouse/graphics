@@ -4,6 +4,7 @@
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "framebufferConfig.hpp"
 #include <list>
+#include "core/frontend/framebuffer_layout.hpp"
 namespace render::vulkan {
 class Device;
 struct Frame;
@@ -23,7 +24,7 @@ class WindowAdaptPass final {
         auto getRenderPass() -> vk::RenderPass;
         void Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
                   std::list<Layer>& layers, std::span<const frame::FramebufferConfig> configs,
-                  Frame* dst);
+                  const layout::FrameBufferLayout& layout, Frame* dst);
 
     private:
         void CreateDescriptorSetLayout();

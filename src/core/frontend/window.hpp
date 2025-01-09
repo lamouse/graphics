@@ -43,7 +43,10 @@ class EXPORT BaseWindow {
                 // Scale of the render surface. For hidpi systems, this will be >1.
                 float render_surface_scale = 1.0f;
         };
-        void setWindowConfig(const WindowConfig& conf) { this->config = conf; }
+        void setWindowConfig(const WindowConfig& conf) {
+            this->config = conf;
+            UpdateCurrentFramebufferLayout(conf.extent.width, conf.extent.height);
+        }
         [[nodiscard]] auto getWindowSystemInfo() const -> WindowSystemInfo { return window_info; }
         /**
          * Gets the framebuffer layout (width, height, and screen regions)
@@ -59,6 +62,9 @@ class EXPORT BaseWindow {
         [[nodiscard]] virtual auto shouldClose() const -> bool = 0;
         [[nodiscard]] virtual auto getActiveConfig() const -> WindowConfig = 0;
         virtual void OnFrameDisplayed() = 0;
+        void UpdateCurrentFramebufferLayout(u32 width, u32 height) {
+            notifyFramebufferLayoutChanged(layout::DefaultFrameLayout(width, height));
+        }
 
     protected:
         WindowSystemInfo window_info;

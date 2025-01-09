@@ -1,5 +1,6 @@
 aux_source_directory(. CORE_SRC)
-add_library(core SHARED ${CORE_SRC})
+aux_source_directory(./frontend FRONTEND_SRC)
+add_library(core STATIC ${CORE_SRC} ${FRONTEND_SRC})
 #add_library(core STATIC ${CORE_SRC})
 if (MSVC)
     target_compile_options(core PRIVATE

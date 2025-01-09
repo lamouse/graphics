@@ -5,6 +5,7 @@
 #include "common/settings_enums.hpp"
 #include "framebufferConfig.hpp"
 #include <list>
+#include "core/frontend/framebuffer_layout.hpp"
 
 namespace render::vulkan {
 class Device;
@@ -38,11 +39,13 @@ class BlitScreen {
         ~BlitScreen();
 
         void DrawToFrame(RasterizerVulkan& rasterizer, Frame* frame,
+                         const layout::FrameBufferLayout& layout,
                          std::span<frame::FramebufferConfig> framebuffers,
                          size_t current_swapchain_image_count,
                          vk::Format current_swapchain_view_format);
 
         [[nodiscard]] auto CreateFramebuffer(vk::ImageView image_view,
+                                             const layout::FrameBufferLayout& layout,
                                              vk::Format current_view_format) -> Framebuffer;
 
     private:
