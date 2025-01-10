@@ -204,7 +204,8 @@ void VulkanDescriptorPool::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eDescriptorPool, name);
 }
 
-CommandBuffers CommandPool::Allocate(std::size_t num_buffers, vk::CommandBufferLevel level) const {
+CommandBuffers VulkanCommandPool::Allocate(std::size_t num_buffers,
+                                           vk::CommandBufferLevel level) const {
     const vk::CommandBufferAllocateInfo ai{handle, level, static_cast<u32>(num_buffers)};
 
     std::vector<vk::CommandBuffer> command_buffers(num_buffers);
@@ -218,7 +219,7 @@ CommandBuffers CommandPool::Allocate(std::size_t num_buffers, vk::CommandBufferL
     }
 }
 
-void CommandPool::SetObjectNameEXT(const char* name) const {
+void VulkanCommandPool::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eCommandPool, name);
 }
 
@@ -250,24 +251,24 @@ LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
     return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});
 }
 
-auto LogicDevice::createPipelineLayout(this auto&& self, const vk::PipelineLayoutCreateInfo& ci)
+auto LogicDevice::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
     -> PipelineLayout {
-    auto layout = self.handle.createPipelineLayout(ci);
-    return PipelineLayout{layout, self.handle};
+    auto layout = handle.createPipelineLayout(ci);
+    return PipelineLayout{layout, handle};
 }
 
-auto LogicDevice::createPipeline(this auto&& self, const vk::GraphicsPipelineCreateInfo& ci,
-                                 const vk::PipelineCache& cache) -> Pipeline {
-    auto result = self.handle.createGraphicsPipeline(cache, ci);
+auto LogicDevice::createPipeline(const vk::GraphicsPipelineCreateInfo& ci,
+                                 const vk::PipelineCache& cache) const -> Pipeline {
+    auto result = handle.createGraphicsPipeline(cache, ci);
     utils::check(result.result);
-    return Pipeline{result.value, self.handle};
+    return Pipeline{result.value, handle};
 }
 
-auto LogicDevice::createPipeline(this auto&& self, const vk::ComputePipelineCreateInfo& ci,
-                                 const vk::PipelineCache& cache) -> Pipeline {
-    auto result = self.handle.createComputePipelines(cache, ci);
+auto LogicDevice::createPipeline(const vk::ComputePipelineCreateInfo& ci,
+                                 const vk::PipelineCache& cache) const -> Pipeline {
+    auto result = handle.createComputePipeline(cache, ci);
     utils::check(result.result);
-    return Pipeline{result.value, self.handle};
+    return Pipeline{result.value, handle};
 }
 
 auto LogicDevice::createFence(const vk::FenceCreateInfo& ci) const -> Fence {
@@ -309,8 +310,8 @@ auto LogicDevice::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexce
 }
 
 [[nodiscard]] auto LogicDevice::createCommandPool(const vk::CommandPoolCreateInfo& ci) const
-    -> CommandPool {
-    return CommandPool{handle.createCommandPool(ci), handle};
+    -> VulkanCommandPool {
+    return VulkanCommandPool{handle.createCommandPool(ci), handle};
 }
 [[nodiscard]] auto LogicDevice::createRenderPass(const vk::RenderPassCreateInfo& ci) const
     -> RenderPass {
@@ -341,6 +342,17 @@ Sampler LogicDevice::CreateSampler(const vk::SamplerCreateInfo& ci) const {
 auto LogicDevice::createFramerBuffer(const vk::FramebufferCreateInfo& ci) const -> Framebuffer {
     auto frame_buffer = handle.createFramebuffer(ci);
     return Framebuffer{frame_buffer, handle};
+}
+
+auto LogicDevice::createEvent(const vk::EventCreateInfo& ci) const -> Event {
+    auto event = handle.createEvent(ci);
+    return Event{event, handle};
+}
+
+[[nodiscard]] auto LogicDevice::createSwapchainKHR(const vk::SwapchainCreateInfoKHR& ci) const
+    -> SwapchainKHR {
+    auto swapchain = handle.createSwapchainKHR(ci);
+    return SwapchainKHR(swapchain, handle);
 }
 
 }  // namespace render::vulkan

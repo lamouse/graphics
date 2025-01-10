@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/window.hpp"
 
 namespace render::vulkan {

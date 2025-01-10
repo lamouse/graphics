@@ -44,9 +44,9 @@ class MasterSemaphore {
         void wait(uint64_t tick);
 
         /// Submits the device graphics queue, updating the tick as necessary
-        auto submitQueue(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
+        void submitQueue(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
                          vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
-                         uint64_t host_tick) -> vk::Result;
+                         uint64_t host_tick);
 
     private:
         void submitQueueTimeline(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
@@ -61,7 +61,7 @@ class MasterSemaphore {
         auto getFreeFence() -> Fence;
 
         const Device& device_;                   ///< Device.
-        vk::Semaphore semaphore_;                ///< Timeline semaphore.
+        Semaphore semaphore_;                    ///< Timeline semaphore.
         std::atomic<uint64_t> gpu_tick_{0};      ///< Current known GPU tick.
         std::atomic<uint64_t> current_tick_{1};  ///< Current logical tick.
         std::mutex wait_mutex_;

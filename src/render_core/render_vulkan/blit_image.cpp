@@ -705,7 +705,8 @@ VkPipeline BlitImageHelper::FindOrEmplaceColorPipeline(const BlitImagePipelineKe
     return *blit_color_pipelines.back();
 }
 
-VkPipeline BlitImageHelper::FindOrEmplaceDepthStencilPipeline(const BlitImagePipelineKey& key) {
+auto BlitImageHelper::FindOrEmplaceDepthStencilPipeline(const BlitImagePipelineKey& key)
+    -> VkPipeline {
     const auto it = std::ranges::find(blit_depth_stencil_keys, key);
     if (it != blit_depth_stencil_keys.end()) {
         return *blit_depth_stencil_pipelines[std::distance(blit_depth_stencil_keys.begin(), it)];
@@ -732,7 +733,8 @@ VkPipeline BlitImageHelper::FindOrEmplaceDepthStencilPipeline(const BlitImagePip
     return *blit_depth_stencil_pipelines.back();
 }
 
-VkPipeline BlitImageHelper::FindOrEmplaceClearColorPipeline(const BlitImagePipelineKey& key) {
+auto BlitImageHelper::FindOrEmplaceClearColorPipeline(const BlitImagePipelineKey& key)
+    -> VkPipeline {
     const auto it = std::ranges::find(clear_color_keys, key);
     if (it != clear_color_keys.end()) {
         return *clear_color_pipelines[std::distance(clear_color_keys.begin(), it)];

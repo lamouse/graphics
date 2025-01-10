@@ -19,7 +19,7 @@ namespace render::vulkan {
 class BlitImageHelper;
 class Device;
 class StagingBufferPool;
-class StagingBufferRef;
+struct StagingBufferRef;
 class TextureImageView;
 class TextureFramebuffer;
 class TextureImage;
@@ -294,17 +294,17 @@ class TextureFramebuffer {
                                std::span<TextureImageView*, texture::NUM_RT> color_buffers,
                                TextureImageView* depth_buffer, bool is_rescaled = false);
 
-        [[nodiscard]] vk::Framebuffer Handle() const noexcept { return *framebuffer; }
+        [[nodiscard]] auto Handle() const noexcept -> vk::Framebuffer { return *framebuffer; }
 
-        [[nodiscard]] vk::RenderPass RenderPass() const noexcept { return renderpass; }
+        [[nodiscard]] auto RenderPass() const noexcept -> vk::RenderPass { return renderpass; }
 
-        [[nodiscard]] vk::Extent2D RenderArea() const noexcept { return render_area; }
+        [[nodiscard]] auto RenderArea() const noexcept -> vk::Extent2D { return render_area; }
 
         [[nodiscard]] vk::SampleCountFlagBits Samples() const noexcept { return samples; }
 
-        [[nodiscard]] u32 NumColorBuffers() const noexcept { return num_color_buffers; }
+        [[nodiscard]] auto NumColorBuffers() const noexcept -> u32 { return num_color_buffers; }
 
-        [[nodiscard]] u32 NumImages() const noexcept { return num_images; }
+        [[nodiscard]] auto NumImages() const noexcept -> u32 { return num_images; }
 
         [[nodiscard]] const std::array<vk::Image, 9>& Images() const noexcept { return images; }
 
@@ -317,7 +317,7 @@ class TextureFramebuffer {
                    vk::ImageAspectFlagBits::eColor;
         }
 
-        [[nodiscard]] bool HasAspectDepthBit() const noexcept { return has_depth; }
+        [[nodiscard]] auto HasAspectDepthBit() const noexcept -> bool { return has_depth; }
 
         [[nodiscard]] bool HasAspectStencilBit() const noexcept { return has_stencil; }
 

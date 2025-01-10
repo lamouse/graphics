@@ -1348,6 +1348,16 @@ void TextureImage::DownloadMemory(vk::Buffer buffer, size_t offset,
     };
     DownloadMemory(buffer_handles, buffer_offsets, copies);
 }
+vk::ImageView TextureImage::StorageImageView(s32 level) noexcept {
+    auto& view = storage_image_views[level];
+    if (!view) {
+        const auto format_info =
+            runtime->device.surfaceFormat(FormatType::Optimal, true, info.format);
+        view = MakeStorageView(runtime->device.logical(), level, *(this->*current_image),
+                               format_info.format);
+    }
+    return *view;
+}
 
 void TextureImage::DownloadMemory(std::span<vk::Buffer> buffers_span,
                                   std::span<size_t> offsets_span,
@@ -1502,7 +1512,7 @@ auto TextureImage::BlitScaleHelper(bool scale_up) -> bool {
     static constexpr auto BLIT_OPERATION = Operation::SrcCopy;
     const bool is_color{aspect_mask == vk::ImageAspectFlagBits::eColor};
     const bool is_bilinear{is_color && !IsPixelFormatInteger(info.format)};
-    const auto operation = is_bilinear ? vk::Filter::eLinear : vk::Filter::eNearest;
+    // const auto operation = is_bilinear ? vk::Filter::eLinear : vk::Filter::eNearest;
 
     const bool is_2d = (info.type == ImageType::e2D);
     const auto& resolution = runtime->resolution;

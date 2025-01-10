@@ -144,7 +144,8 @@ auto CreateWrappedRenderPass(const Device& device, vk::Format format,
         vk::RenderPassCreateInfo{{}, attachment, subpass_description, dependency});
 }
 
-PipelineLayout CreateWrappedPipelineLayout(const Device& device, DescriptorSetLayout& layout) {
+auto CreateWrappedPipelineLayout(const Device& device, DescriptorSetLayout& layout)
+    -> PipelineLayout {
     return device.logical().createPipelineLayout(vk::PipelineLayoutCreateInfo{
         {},
         1,

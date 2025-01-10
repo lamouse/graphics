@@ -23,7 +23,7 @@ namespace render::vulkan::scheduler {
 class Scheduler {
     public:
         explicit Scheduler(const Device& device);
-        ~Scheduler();
+        ~Scheduler() = default;
         std::mutex submit_mutex_;
         /// Returns the master timeline semaphore.
         [[nodiscard]] auto getMasterSemaphore() const noexcept -> semaphore::MasterSemaphore& {

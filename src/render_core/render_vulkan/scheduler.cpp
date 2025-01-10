@@ -5,9 +5,10 @@
 #include "common/microprofile.hpp"
 #include "vulkan_common/device.hpp"
 #include "texture_cache.hpp"
-MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 
 namespace render::vulkan::scheduler {
+// MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
+
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
     auto command = first;
@@ -107,7 +108,7 @@ void Scheduler::acquireNewChunk() {
 }
 
 void Scheduler::waitWorker() {
-    MICROPROFILE_SCOPE(Vulkan_WaitForWorker);
+    // MICROPROFILE_SCOPE(Vulkan_WaitForWorker);
     dispatchWork();
 
     // Ensure the queue is drained.
@@ -205,17 +206,8 @@ u64 Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wai
         }
 
         std::scoped_lock lock{submit_mutex_};
-        switch (const auto result = master_semaphore_->submitQueue(
-                    cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore, signal_value)) {
-            case vk::Result::eSuccess:
-                break;
-            case vk::Result::eErrorDeviceLost:
-                device_.reportLoss();
-                [[fallthrough]];
-            default:
-                utils::check(result);
-                break;
-        }
+        master_semaphore_->submitQueue(cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore,
+                                       signal_value);
     });
     chunk_->markSubmit();
     dispatchWork();

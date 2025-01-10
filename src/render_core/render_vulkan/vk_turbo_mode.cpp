@@ -133,14 +133,15 @@ void TurboMode::Run(std::stop_token stop_token) {
                        dld};
 
     // Create a command pool to allocate a command buffer from.
-    auto command_pool = CommandPool{dld.createCommandPool(VkCommandPoolCreateInfo{
-                                        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                                        .pNext = nullptr,
-                                        .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
-                                                 VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-                                        .queueFamilyIndex = m_device.getGraphicsFamily(),
-                                    }),
-                                    dld};
+    auto command_pool =
+        VulkanCommandPool{dld.createCommandPool(VkCommandPoolCreateInfo{
+                              .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                              .pNext = nullptr,
+                              .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
+                                       VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+                              .queueFamilyIndex = m_device.getGraphicsFamily(),
+                          }),
+                          dld};
 
     // Create a single command buffer.
     auto cmdbufs = command_pool.Allocate(1);

@@ -48,6 +48,9 @@ auto loadGameObjects() -> GameObject::Map {
 void App::run() {
     core::Device device_;
     auto gameObjects = loadGameObjects();
+
+    auto rasterizer = render_base->readRasterizer();
+
     ::std::unique_ptr<DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
     auto setLayout = DescriptorSetLayout::Builder()
                          .addBinding(0, ::vk::DescriptorType::eUniformBuffer,
@@ -120,8 +123,7 @@ App::App(const Config& config) {
     auto requiredInstanceExtends =
         Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
     auto deviceExtensions = config::getDeviceExtensions();
-
-    render::vulkan::RendererVulkan r{*window};
+    render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
     // core::Device::init(
     //     requiredInstanceExtends, deviceExtensions,
     //     [this](VkInstance instance) -> VkSurfaceKHR {

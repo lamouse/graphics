@@ -9,7 +9,7 @@ namespace {
 constexpr size_t COMMAND_BUFFER_POOL_SIZE = 4;
 }
 struct CommandPool::Pool {
-        vk::CommandPool handle_;
+        VulkanCommandPool handle_;
         CommandBuffers cmdbufs_;
 };
 
@@ -26,11 +26,8 @@ void CommandPool::allocate(size_t begin, size_t end) {
     createInfo.setQueueFamilyIndex(device_.getGraphicsFamily())
         .setFlags(::vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
                   ::vk::CommandPoolCreateFlagBits::eTransient);
-    pool.handle_ = device_.getLogical().createCommandPool(createInfo);
-    const ::vk::CommandBufferAllocateInfo allocInfo(
-        pool.handle_, ::vk::CommandBufferLevel::ePrimary, COMMAND_BUFFER_POOL_SIZE);
-    pool.cmdbufs_ = CommandBuffers{device_.getLogical().allocateCommandBuffers(allocInfo),
-                                   device_.getLogical(), pool.handle_};
+    pool.handle_ = device_.logical().createCommandPool(createInfo);
+    pool.cmdbufs_ = pool.handle_.Allocate(COMMAND_BUFFER_POOL_SIZE);
 }
 
 auto CommandPool::commit() -> vk::CommandBuffer {

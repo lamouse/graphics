@@ -4,6 +4,7 @@
 #include <utility>
 #include "common/polyfill_thread.hpp"
 #include <spdlog/spdlog.h>
+#include "common/settings.hpp"
 #undef max
 #undef min
 namespace render::vulkan::semaphore {
@@ -19,6 +20,31 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
             std::jthread([this](std::stop_token token) { waitThread(std::move(token)); });
         return;
     }
+
+    static constexpr vk::SemaphoreTypeCreateInfo semaphore_type_ci{
+        vk::SemaphoreType::eTimeline,
+        0,
+    };
+    static constexpr vk::SemaphoreCreateInfo semaphore_ci{
+        {},
+        &semaphore_type_ci,
+    };
+    semaphore_ = device.logical().CreateSemaphore(semaphore_ci);
+
+    if (not common::settings::get<settings::RenderVulkan>().render_debug) {
+        return;
+    }
+    // Validation layers have a bug where they fail to track resource usage when using timeline
+    // semaphores and synchronizing with GetSemaphoreCounterValue. To workaround this issue, have
+    // a separate thread waiting for each timeline semaphore value.
+    debug_thread_ = std::jthread([this](std::stop_token stop_token) {
+        u64 counter = 0;
+        while (!stop_token.stop_requested()) {
+            if (semaphore_.Wait(counter, 10'000'000)) {
+                ++counter;
+            }
+        }
+    });
 }
 void MasterSemaphore::waitThread(std::stop_token token) {
     while (!token.stop_requested()) {
@@ -100,7 +126,7 @@ void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf,
                                           vk::CommandBuffer& upload_cmdbuf,
                                           vk::Semaphore signal_semaphore,
                                           vk::Semaphore wait_semaphore, uint64_t host_tick) {
-    const vk::Semaphore timeline_semaphore = semaphore_;
+    const vk::Semaphore timeline_semaphore = *semaphore_;
 
     const std::array signal_values{host_tick, uint64_t(0)};
     const std::array signal_semaphores{timeline_semaphore, signal_semaphore};
@@ -136,12 +162,50 @@ void MasterSemaphore::refresh() {
     uint64_t counter{};
     do {
         this_tick = gpu_tick_.load(std::memory_order_acquire);
-        counter = device_.getLogical().getSemaphoreCounterValue(semaphore_);
+        counter = semaphore_.GetCounter();
         if (counter < this_tick) {
             return;
         }
     } while (!gpu_tick_.compare_exchange_weak(this_tick, counter, std::memory_order_release,
                                               std::memory_order_relaxed));
+}
+
+void MasterSemaphore::wait(u64 tick) {
+    if (!semaphore_) {
+        // If we don't support timeline semaphores, wait for the value normally
+        std::unique_lock lk{free_mutex_};
+        free_cv_.wait(lk, [&] { return gpu_tick_.load(std::memory_order_relaxed) >= tick; });
+        return;
+    }
+
+    // No need to wait if the GPU is ahead of the tick
+    if (isFree(tick)) {
+        return;
+    }
+
+    // Update the GPU tick and try again
+    refresh();
+
+    if (isFree(tick)) {
+        return;
+    }
+
+    // If none of the above is hit, fallback to a regular wait
+    while (!semaphore_.Wait(tick)) {
+    }
+
+    refresh();
+}
+
+void MasterSemaphore::submitQueue(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
+                                  vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
+                                  u64 host_tick) {
+    if (semaphore_) {
+        return submitQueueTimeline(cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore,
+                                   host_tick);
+    } else {
+        return submitQueueFence(cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore, host_tick);
+    }
 }
 
 }  // namespace render::vulkan::semaphore

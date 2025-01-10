@@ -20,10 +20,17 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(Stb REQUIRED)
-aux_source_directory(. MICROPROFILE_SRC)
+set(MICROPROFILE_SRC
+microprofile.h
+microprofile.cpp
+microprofile_html.h
+)
 add_library(microprofile STATIC ${MICROPROFILE_SRC})
 target_include_directories(microprofile PRIVATE ${Stb_INCLUDE_DIR})
 
+if (WIN32)
+    target_link_libraries(microprofile ws2_32)
+endif()
 if(MSVC)
     target_compile_options(microprofile PRIVATE
         /MP

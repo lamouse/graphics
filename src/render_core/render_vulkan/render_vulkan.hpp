@@ -13,7 +13,7 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
 
 class RendererVulkan final : public render::RenderBase {
     public:
-        explicit RendererVulkan(core::frontend::BaseWindow& window);
+        explicit RendererVulkan(core::frontend::BaseWindow* window);
         ~RendererVulkan() override;
 
         auto readRasterizer() -> RasterizerInterface* override { return &rasterizer; }
@@ -39,9 +39,9 @@ class RendererVulkan final : public render::RenderBase {
         scheduler::Scheduler scheduler;
         Swapchain swapchain;
         PresentManager present_manager;
-        // BlitScreen blit_swapchain;
-        // BlitScreen blit_capture;
-        // BlitScreen blit_applet;
+        // // BlitScreen blit_swapchain;
+        // // BlitScreen blit_capture;
+        // // BlitScreen blit_applet;
         BlitScreen blit_swapchain;
         BlitScreen blit_capture;
         RasterizerVulkan rasterizer;

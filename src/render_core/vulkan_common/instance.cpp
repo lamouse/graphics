@@ -92,7 +92,7 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
 }
 }  // namespace
 }  // namespace instance
-auto CreateInstance(uint32_t required_version, core::frontend::WindowSystemType wst,
+auto createInstance(uint32_t required_version, core::frontend::WindowSystemType wst,
                     bool enable_validation) -> Instance {
     auto layers = instance::layers(enable_validation);
     instance::removeUnavailableLayers(layers);

@@ -6,6 +6,7 @@
 #include "vulkan_common/debug_callback.hpp"
 #include "vulkan_common/vk_surface.hpp"
 #include "present/vulkan_utils.hpp"
+#include "render_core/render_vulkan/command_pool.hpp"
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
@@ -13,24 +14,23 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
     return Device(*instance, physical[0], surface);
 }
 
-RendererVulkan::RendererVulkan(core::frontend::BaseWindow& window) try
-    : RenderBase(&window),
-      instance(createInstance(VK_API_VERSION_1_3, window.getWindowSystemInfo().type,
+RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
+    : RenderBase(window),
+      instance(createInstance(VK_API_VERSION_1_3, window->getWindowSystemInfo().type,
                               common::settings::get<settings::RenderVulkan>().render_debug)),
       debug_messenger(common::settings::get<settings::RenderVulkan>().render_debug
                           ? createDebugMessenger(*instance)
                           : DebugUtilsMessenger{}),
-      surface(createSurface(*instance, window.getWindowSystemInfo())),
+      surface(createSurface(*instance, window->getWindowSystemInfo())),
       device(createDevice(instance, *surface)),
       memory_allocator(device),
       scheduler(device),
-      swapchain(*surface, device, scheduler, window.getFramebufferLayout().width,
-                window.getFramebufferLayout().height),
-      present_manager(*instance, window, device, memory_allocator, scheduler, swapchain, surface),
+      swapchain(*surface, device, scheduler, window->getFramebufferLayout().width,
+                window->getFramebufferLayout().height),
+      present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       blit_capture(device, memory_allocator, present_manager, scheduler),
-      rasterizer(window, device, memory_allocator, scheduler),
-      applet_frame() {
+      rasterizer(device, memory_allocator, scheduler) {
     if (common::settings::get<settings::RenderVulkan>().renderer_force_max_clock &&
         device.shouldBoostClocks()) {
         turbo_mode.emplace(instance);
@@ -122,6 +122,22 @@ auto RendererVulkan::getAppletCaptureBuffer() -> std::vector<u8> {
     // TODO 未完成
 
     return out;
+}
+
+void RendererVulkan::RenderAppletCaptureLayer(
+    std::span<const frame::FramebufferConfig> framebuffers) {
+    // if (!applet_frame.image) {
+    //     applet_frame.image = CreateWrappedImage(memory_allocator, CaptureImageSize,
+    //     CaptureFormat); applet_frame.image_view = CreateWrappedImageView(device,
+    //     applet_frame.image, CaptureFormat); applet_frame.framebuffer =
+    //     blit_applet.CreateFramebuffer(
+    //         VideoCore::Capture::Layout, *applet_frame.image_view, CaptureFormat);
+    // }
+
+    // blit_applet.DrawToFrame(rasterizer, &applet_frame, framebuffers,
+    // VideoCore::Capture::Layout,
+    // 1,
+    //                         CaptureFormat);
 }
 
 }  // namespace render::vulkan

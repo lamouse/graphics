@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
 class Device;
 namespace scheduler {
@@ -40,11 +41,11 @@ class Swapchain {
 
         [[nodiscard]] auto getImageViewFormat() const -> vk::Format { return image_view_format_; }
         [[nodiscard]] auto currentPresentSemaphore() const -> vk::Semaphore {
-            return present_semaphores_[frame_index_];
+            return *present_semaphores_[frame_index_];
         }
 
         [[nodiscard]] auto currentRenderSemaphore() const -> vk::Semaphore {
-            return render_semaphores_[frame_index_];
+            return *render_semaphores_[frame_index_];
         }
 
         [[nodiscard]] auto getWidth() const { return width_; }
@@ -62,13 +63,13 @@ class Swapchain {
         vk::SurfaceKHR surface_;
         const Device& device_;
         scheduler::Scheduler& scheduler_;
-        vk::SwapchainKHR swapchain_;
+        SwapchainKHR swapchain_;
 
         std::size_t image_count_{};
         std::vector<vk::Image> images_;
         std::vector<uint64_t> resource_ticks_;
-        std::vector<vk::Semaphore> present_semaphores_;
-        std::vector<vk::Semaphore> render_semaphores_;
+        std::vector<Semaphore> present_semaphores_;
+        std::vector<Semaphore> render_semaphores_;
 
         uint32_t width_;
         uint32_t height_;

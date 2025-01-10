@@ -1,6 +1,5 @@
 #pragma once
 #include "render_core/rasterizer_interface.hpp"
-#include "core/frontend/window.hpp"
 #include "render_core/vulkan_common/device.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
@@ -10,14 +9,15 @@
 #include "render_core/render_vulkan/staging_buffer_pool.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/render_vulkan/blit_image.hpp"
+#include "render_core/framebufferConfig.hpp"
 namespace render::vulkan {
 
+struct FramebufferTextureInfo;
 class RasterizerVulkan final : public render::RasterizerInterface {
     public:
-        explicit RasterizerVulkan(core::frontend::BaseWindow& emu_window_, const Device& device_,
-                                  MemoryAllocator& memory_allocator_,
+        explicit RasterizerVulkan(const Device& device_, MemoryAllocator& memory_allocator_,
                                   scheduler::Scheduler& scheduler_);
-        ~RasterizerVulkan() override;
+        ~RasterizerVulkan() override = default;
 
         void Draw(bool is_indexed, u32 instance_count) override;
         void DrawIndirect() override;
@@ -58,6 +58,9 @@ class RasterizerVulkan final : public render::RasterizerInterface {
 
         void ReleaseChannel(s32 channel_id) override;
 
+        auto AccelerateDisplay(const frame::FramebufferConfig& config, VAddr framebuffer_addr,
+                               u32 pixel_stride) -> std::optional<FramebufferTextureInfo>;
+
     private:
         static constexpr size_t MAX_TEXTURES = 192;
         static constexpr size_t MAX_IMAGES = 48;
@@ -76,11 +79,13 @@ class RasterizerVulkan final : public render::RasterizerInterface {
 
         const Device& device;
         MemoryAllocator& memory_allocator;
-        scheduler::Scheduler& scheduler;
-        BlitImageHelper blit_image;
 
+        scheduler::Scheduler& scheduler;
         StagingBufferPool staging_pool;
         resource::DescriptorPool descriptor_pool;
+
+        BlitImageHelper blit_image;
+
         GuestDescriptorQueue guest_descriptor_queue;
         ComputePassDescriptorQueue compute_pass_descriptor_queue;
         RenderPassCache render_pass_cache;
@@ -88,7 +93,7 @@ class RasterizerVulkan final : public render::RasterizerInterface {
         TextureCacheRuntime texture_cache_runtime;
         PipelineCache pipeline_cache;
 
-        vk::Event wfi_event;
+        Event wfi_event;
 
         boost::container::static_vector<u32, MAX_IMAGE_VIEWS> image_view_indices;
         std::array<render::texture::ImageViewId, MAX_IMAGE_VIEWS> image_view_ids;

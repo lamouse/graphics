@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 
 namespace render::vulkan {
@@ -38,7 +37,9 @@ class UpdateDescriptorQueue final {
 
         void Acquire();
 
-        const DescriptorUpdateEntry* UpdateData() const noexcept { return upload_start; }
+        [[nodiscard]] auto UpdateData() const noexcept -> const DescriptorUpdateEntry* {
+            return upload_start;
+        }
 
         void AddSampledImage(vk::ImageView image_view, vk::Sampler sampler) {
             *(payload_cursor++) =
@@ -64,7 +65,7 @@ class UpdateDescriptorQueue final {
         DescriptorUpdateEntry* payload_cursor = nullptr;
         DescriptorUpdateEntry* payload_start = nullptr;
         const DescriptorUpdateEntry* upload_start = nullptr;
-        std::array<DescriptorUpdateEntry, PAYLOAD_SIZE> payload;
+        std::vector<DescriptorUpdateEntry> payload{PAYLOAD_SIZE};  // 原来是array也可以成功
 };
 
 // TODO: should these be separate classes instead?

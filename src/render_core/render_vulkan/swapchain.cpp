@@ -131,7 +131,7 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
 
 auto Swapchain::acquireNextImage() -> bool {
     const ::vk::ResultValue<uint32_t> result = device_.getLogical().acquireNextImageKHR(
-        swapchain_, std::numeric_limits<uint64_t>::max(), present_semaphores_[frame_index_]);
+        *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_]);
     switch (result.result) {
         case vk::Result::eSuccess:
             frame_index_ = result.value;
@@ -206,11 +206,11 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
     const auto updated_capabilities = physical_device.getSurfaceCapabilitiesKHR(surface_);
     createInfo.imageExtent = chooseSwapExtent(updated_capabilities, width_, height_);
     // Don't add code within this and the swapchain creation.
-    swapchain_ = device_.getLogical().createSwapchainKHR(createInfo);
+    swapchain_ = device_.logical().createSwapchainKHR(createInfo);
 
     extent_ = createInfo.imageExtent;
 
-    images_ = device_.getLogical().getSwapchainImagesKHR(swapchain_);
+    images_ = device_.getLogical().getSwapchainImagesKHR(*swapchain_);
     image_count_ = static_cast<uint32_t>(images_.size());
     image_view_format_ = DEFAULT_COLOR_FORMAT;
 }
@@ -228,31 +228,24 @@ void Swapchain::init_sync_mode() {
 
 void Swapchain::destroy() {
     frame_index_ = 0;
-    std::ranges::for_each(present_semaphores_,
-                          [&](auto& semaphore) { device_.getLogical().destroy(semaphore); });
     present_semaphores_.clear();
-    if (swapchain_) {
-        device_.getLogical().destroy(swapchain_);
-    }
+    swapchain_.reset();
 }
 void Swapchain::createSemaphores() {
     present_semaphores_.resize(image_count_);
-    std::ranges::generate(present_semaphores_, [this] {
-        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        return device_.getLogical().createSemaphore(semaphoreCreateInfo);
-    });
+    std::ranges::generate(present_semaphores_,
+                          [this] { return device_.logical().createSemaphore(); });
     render_semaphores_.resize(image_count_);
-    std::ranges::generate(render_semaphores_, [this] {
-        ::vk::SemaphoreCreateInfo semaphoreCreateInfo;
-        return device_.getLogical().createSemaphore(semaphoreCreateInfo);
-    });
+    std::ranges::generate(render_semaphores_,
+                          [this] { return device_.logical().createSemaphore(); });
 }
 
 void Swapchain::present(vk::Semaphore render_semaphore) {
     const auto present_queue = device_.getPresentQueue();
     vk::PresentInfoKHR present_info{};
     present_info.setWaitSemaphores(render_semaphore)
-        .setSwapchains(swapchain_)
+        .setSwapchainCount(1)
+        .setPSwapchains(swapchain_.address())
         .setImageIndices(image_index_);
 
     std::scoped_lock lock{scheduler_.submit_mutex_};

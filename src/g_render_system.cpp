@@ -61,7 +61,7 @@ void RenderSystem::createPipeline(::vk::RenderPass renderPass) {
     defaultConfig.shaderStages = shader.getShaderStages();
     defaultConfig.attributeDescriptions = Model::Vertex::getAttributeDescription();
     defaultConfig.bindingDescriptions = Model::Vertex::getBindingDescription();
-    defaultConfig.multisampleInfo.setRasterizationSamples(device_.getMaxMsaaSamples());
+    defaultConfig.multisampleInfo.setRasterizationSamples(core::Device::getMaxMsaaSamples());
     pipeline = GraphicsPipeLine(defaultConfig);
 }
 

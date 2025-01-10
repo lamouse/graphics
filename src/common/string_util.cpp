@@ -18,7 +18,7 @@
 #include <common/fs/fs_android.h>
 #endif
 
-namespace Common {
+namespace common {
 
 /// Make a string lowercase
 std::string ToLower(std::string str) {
@@ -211,4 +211,4 @@ std::u16string UTF16StringFromFixedZeroTerminatedBuffer(std::u16string_view buff
     return std::u16string(buffer.begin(), buffer.begin() + len);
 }
 
-}  // namespace Common
+}  // namespace common
