@@ -363,8 +363,6 @@ BlitImageHelper::BlitImageHelper(const Device& device_, scheduler::Scheduler& sc
           device_.getLogical()}),
       full_screen_vert(utils::buildShader(device.getLogical(), FULL_SCREEN_TRIANGLE_VERT_SPV)),
       blit_color_to_color_frag(utils::buildShader(device.getLogical(), BLIT_COLOR_FLOAT_FRAG_SPV)),
-      blit_depth_stencil_frag(
-          utils::buildShader(device.getLogical(), VULKAN_BLIT_DEPTH_STENCIL_FRAG_SPV)),
       clear_color_vert(utils::buildShader(device.getLogical(), VULKAN_COLOR_CLEAR_VERT_SPV)),
       clear_color_frag(utils::buildShader(device.getLogical(), VULKAN_COLOR_CLEAR_FRAG_SPV)),
       clear_stencil_frag(
@@ -373,8 +371,7 @@ BlitImageHelper::BlitImageHelper(const Device& device_, scheduler::Scheduler& sc
           utils::buildShader(device.getLogical(), CONVERT_DEPTH_TO_FLOAT_FRAG_SPV)),
       convert_float_to_depth_frag(
           utils::buildShader(device.getLogical(), CONVERT_FLOAT_TO_DEPTH_FRAG_SPV)),
-      convert_abgr8_to_d24s8_frag(
-          utils::buildShader(device.getLogical(), CONVERT_ABGR8_TO_D24S8_FRAG_SPV)),
+
       convert_abgr8_to_d32f_frag(
           utils::buildShader(device.getLogical(), CONVERT_ABGR8_TO_D32F_FRAG_SPV)),
       convert_d32f_to_abgr8_frag(
@@ -388,7 +385,15 @@ BlitImageHelper::BlitImageHelper(const Device& device_, scheduler::Scheduler& sc
                   device_.getLogical()}),
       nearest_sampler(
           Sampler{device.getLogical().createSampler(SAMPLER_CREATE_INFO<VK_FILTER_NEAREST>),
-                  device_.getLogical()}) {}
+                  device_.getLogical()}) {
+    if (device.isExtShaderStencilExportSupported()) {
+        blit_depth_stencil_frag =
+            utils::buildShader(device.getLogical(), VULKAN_BLIT_DEPTH_STENCIL_FRAG_SPV);
+
+        convert_abgr8_to_d24s8_frag =
+            utils::buildShader(device.getLogical(), CONVERT_ABGR8_TO_D24S8_FRAG_SPV);
+    }
+}
 
 BlitImageHelper::~BlitImageHelper() = default;
 

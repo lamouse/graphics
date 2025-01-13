@@ -29,6 +29,7 @@ struct FramebufferConfig {
         uint32_t height{};
         uint32_t stride{};
 };
+
 using UniformBufferSizes = std::array<std::array<u32, NUM_GRAPHICS_UNIFORM_BUFFERS>, NUM_STAGES>;
 using ComputeUniformBufferSizes = std::array<u32, NUM_COMPUTE_UNIFORM_BUFFERS>;
 }  // namespace render::frame

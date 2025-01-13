@@ -5,6 +5,7 @@
 #include "common/settings_enums.hpp"
 #include "render_core/framebufferConfig.hpp"
 #include <list>
+#include <memory>
 #include "core/frontend/framebuffer_layout.hpp"
 
 namespace render::vulkan {

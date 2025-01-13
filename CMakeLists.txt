@@ -92,6 +92,10 @@ find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
+find_package(spirv_cross_core CONFIG REQUIRED)
+find_package(spirv_cross_glsl CONFIG REQUIRED)
+find_package(spirv_cross_cpp CONFIG REQUIRED)
+
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 

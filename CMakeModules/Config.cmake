@@ -6,11 +6,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(LOG_LEVEL "debug")
     set(LGO_CONSOLE_ENABLE "true")
     set(LGO_FILE_ENABLE "false")
+    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+
 else()
     set(VULKAN_VALIDATION "false")
     set(LGO_CONSOLE_ENABLE "false")
     set(LGO_FILE_ENABLE "true")
     set(LOG_LEVEL "warn")
+    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
+
 endif()
 
 set(WINDOW_TITLE "${PROJECT_NAME}")

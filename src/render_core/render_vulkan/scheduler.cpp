@@ -1,4 +1,5 @@
 #include "scheduler.hpp"
+#include <spdlog/spdlog.h>
 #include "master_semaphore.hpp"
 #include "command_pool.hpp"
 #include "common/polyfill_thread.hpp"
@@ -11,7 +12,8 @@ namespace render::vulkan::scheduler {
 
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
-    auto command = first;
+    spdlog::debug("Scheduler 开始执行全部的command记录: ...");
+    auto* command = first;
     while (command != nullptr) {
         auto* next = gsl::owner<Command*>(command->getNext());
         command->execute(cmdbuf, upload_cmdbuf);
@@ -22,6 +24,7 @@ void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
     command_offset = 0;
     first = nullptr;
     last = nullptr;
+    spdlog::debug("Scheduler 完成执行全部的command记录: ...");
 }
 
 Scheduler::Scheduler(const Device& device)
@@ -46,6 +49,7 @@ void Scheduler::workerThread(std::stop_token stop_token) {
     }};
 
     while (!stop_token.stop_requested()) {
+        spdlog::debug("Scheduler 开始工作 workerThread...");
         std::unique_ptr<CommandChunk> work;
 
         {
@@ -185,7 +189,22 @@ void Scheduler::invalidateState() {
     state_.rescaling_defined_ = false;
 }
 #undef MemoryBarrier
-u64 Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) {
+
+/**
+ * @brief 提交一个执行任务到调度器。
+ *
+ * 该函数提交一个执行任务到调度器，并返回信号量的值。它首先结束所有挂起的操作，
+ * 然后使当前状态无效。接着，它获取下一个信号量的值，并使用上传缓冲区记录命令。
+ * 最后，它提交命令队列并调度工作。
+ *
+ * @param signal_semaphore 用于信号的 Vulkan 信号量。
+ * @param wait_semaphore 用于等待的 Vulkan 信号量。
+ * @return u64 返回信号量的值。
+ */
+auto Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore)
+    -> u64 {
+    spdlog::debug("Scheduler 提交Execution signal_semaphore: {}, wait_semaphore: {}",
+                  bool(signal_semaphore), bool(wait_semaphore));
     endPendingOperations();
     invalidateState();
 
@@ -216,11 +235,13 @@ u64 Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wai
 
 auto Scheduler::flush(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) -> u64 {
     // When flushing, we only send data to the worker thread; no waiting is necessary.
+    spdlog::debug("Scheduler执行flush操作");
     const u64 signal_value = submitExecution(signal_semaphore, wait_semaphore);
     return signal_value;
 }
 void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphore) {
     // When finishing, we need to wait for the submission to have executed on the device.
+    spdlog::debug("Scheduler执行finish操作");
     const u64 presubmit_tick = currentTick();
     submitExecution(signal_semaphore, wait_semaphore);
     wait(presubmit_tick);

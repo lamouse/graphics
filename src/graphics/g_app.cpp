@@ -16,6 +16,7 @@
 #include "render_core/render_vulkan/render_vulkan.hpp"
 #include <chrono>
 #include <thread>
+#include "render_core/framebufferConfig.hpp"
 
 namespace g {
 namespace {
@@ -46,68 +47,72 @@ auto loadGameObjects() -> GameObject::Map {
 }  // namespace
 
 void App::run() {
-    core::Device device_;
-    auto gameObjects = loadGameObjects();
-
     auto rasterizer = render_base->readRasterizer();
 
-    ::std::unique_ptr<DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
-    auto setLayout = DescriptorSetLayout::Builder()
-                         .addBinding(0, ::vk::DescriptorType::eUniformBuffer,
-                                     ::vk::ShaderStageFlagBits::eAllGraphics)
-                         .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler,
-                                     ::vk::ShaderStageFlagBits::eAllGraphics)
-                         .build();
+    render::frame::FramebufferConfig frames{};
+    render_base->composite(std::span{&frames, 1});
 
-    ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
-    for (auto& uboBuffer : uboBuffers) {
-        uboBuffer = ::std::make_unique<core::Buffer>(device_.createBuffer(
-            sizeof(UniformBufferObject), 1, ::vk::BufferUsageFlagBits::eUniformBuffer,
-            ::vk::MemoryPropertyFlagBits::eHostVisible |
-                ::vk::MemoryPropertyFlagBits::eHostCoherent));
-        uboBuffer->map();
-    }
-    ::std::string s(image_path + "viking_room.png");
-    resource::image::Image img(s);
-    resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
+    // core::Device device_;
+    // auto gameObjects = loadGameObjects();
+    // ::std::unique_ptr<DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
+    // auto setLayout = DescriptorSetLayout::Builder()
+    //                      .addBinding(0, ::vk::DescriptorType::eUniformBuffer,
+    //                                  ::vk::ShaderStageFlagBits::eAllGraphics)
+    //                      .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler,
+    //                                  ::vk::ShaderStageFlagBits::eAllGraphics)
+    //                      .build();
 
-    ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
-    for (int i = 0; auto& descriptorSet : descriptorSets) {
-        auto bufferInfo = uboBuffers[i++]->descriptorInfo();
-        descriptorSet = DescriptorWriter()
-                            .writeBuffer((*setLayout)(0), bufferInfo)
-                            .writeImage((*setLayout)(1), imageTexture.descriptorImageInfo())
-                            .build(*descriptorPool_, (*setLayout)());
-    }
+    // ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
+    // for (auto& uboBuffer : uboBuffers) {
+    //     uboBuffer = ::std::make_unique<core::Buffer>(device_.createBuffer(
+    //         sizeof(UniformBufferObject), 1, ::vk::BufferUsageFlagBits::eUniformBuffer,
+    //         ::vk::MemoryPropertyFlagBits::eHostVisible |
+    //             ::vk::MemoryPropertyFlagBits::eHostCoherent));
+    //     uboBuffer->map();
+    // }
+    // ::std::string s(image_path + "viking_room.png");
+    // resource::image::Image img(s);
+    // resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
 
-    RenderProcessor render([this]() { return dynamic_cast<Window*>(window.get())->getExtent(); });
-    RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    Imgui imgui((*dynamic_cast<Window*>(window.get()))(), descriptorPool_->getDescriptorPool(),
-                static_cast<::vk::RenderPass>(render),
-                window->getWindowSystemInfo().render_surface_scale);
+    // ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
+    // for (int i = 0; auto& descriptorSet : descriptorSets) {
+    //     auto bufferInfo = uboBuffers[i++]->descriptorInfo();
+    //     descriptorSet = DescriptorWriter()
+    //                         .writeBuffer((*setLayout)(0), bufferInfo)
+    //                         .writeImage((*setLayout)(1), imageTexture.descriptorImageInfo())
+    //                         .build(*descriptorPool_, (*setLayout)());
+    // }
+
+    // RenderProcessor render([this]() { return dynamic_cast<Window*>(window.get())->getExtent();
+    // }); RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render),
+    // (*setLayout)()); Imgui imgui((*dynamic_cast<Window*>(window.get()))(),
+    // descriptorPool_->getDescriptorPool(),
+    //             static_cast<::vk::RenderPass>(render),
+    //             window->getWindowSystemInfo().render_surface_scale);
     while (!window->shouldClose()) {
         glfwPollEvents();
-        if (window->IsMinimized()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            continue;
-        }
-        UniformBufferObject ubo = imgui.get_uniform_buffer(render.extentAspectRation());
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        // if (window->IsMinimized()) {
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //     continue;
+        // }
+        // UniformBufferObject ubo = imgui.get_uniform_buffer(render.extentAspectRation());
 
-        if (render.beginFrame()) {
-            uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
-            uboBuffers[render.getCurrentFrameIndex()]->flush();
+        // if (render.beginFrame()) {
+        //     uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
+        //     uboBuffers[render.getCurrentFrameIndex()]->flush();
 
-            FrameInfo frameInfo{.frameIndex = render.getCurrentFrameIndex(),
-                                .commandBuffer = render.getCurrentCommandBuffer(),
-                                .descriptorSet = descriptorSets[render.getCurrentFrameIndex()],
-                                .gameObjects = gameObjects};
+        //     FrameInfo frameInfo{.frameIndex = render.getCurrentFrameIndex(),
+        //                         .commandBuffer = render.getCurrentCommandBuffer(),
+        //                         .descriptorSet = descriptorSets[render.getCurrentFrameIndex()],
+        //                         .gameObjects = gameObjects};
 
-            render.beginSwapchainRenderPass();
-            renderSystem.render(frameInfo);
-            imgui.draw(render.getCurrentCommandBuffer());
-            render.endSwapchainRenderPass();
-            render.endFrame();
-        }
+        //     render.beginSwapchainRenderPass();
+        //     renderSystem.render(frameInfo);
+        //     imgui.draw(render.getCurrentCommandBuffer());
+        //     render.endSwapchainRenderPass();
+        //     render.endFrame();
+        // }
     }
 
     core::Device::waitIdle();

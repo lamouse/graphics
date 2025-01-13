@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
-#include "framebufferConfig.hpp"
+#include "render_core/framebufferConfig.hpp"
 #include <list>
 #include "core/frontend/framebuffer_layout.hpp"
 namespace render::vulkan {

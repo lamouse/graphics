@@ -24,7 +24,6 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
 }
 
 void init(const Config& config) {
-    // ::spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v");
     auto logConfig = config.getConfig<config::log::Log>();
     auto level = utils::get_log_level_from_string(logConfig.level);
 
@@ -51,6 +50,7 @@ void init(const Config& config) {
     spdlog::set_pattern(logConfig.pattern);
     spdlog::set_level(level);
 
+    SPDLOG_DEBUG("init logging");
     // 刷新日志器
     spdlog::flush_on(level);
 }

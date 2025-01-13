@@ -334,7 +334,7 @@ Semaphore LogicDevice::CreateSemaphore(const vk::SemaphoreCreateInfo& ci) const 
     return Semaphore(object, handle);
 }
 
-Sampler LogicDevice::CreateSampler(const vk::SamplerCreateInfo& ci) const {
+auto LogicDevice::CreateSampler(const vk::SamplerCreateInfo& ci) const -> Sampler {
     vk::Sampler object = handle.createSampler(ci);
     return Sampler(object, handle);
 }

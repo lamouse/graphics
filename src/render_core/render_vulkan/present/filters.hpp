@@ -1,7 +1,7 @@
 #pragma once
 
 #include "window_adapt_pass.hpp"
-
+#include <memory>
 namespace render::vulkan {
 
 class MemoryAllocator;

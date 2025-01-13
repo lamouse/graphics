@@ -4,6 +4,7 @@
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebufferConfig.hpp"
+#include "memory"
 namespace render::vulkan {
 class Device;
 class FSR;

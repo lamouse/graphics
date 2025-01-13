@@ -199,6 +199,7 @@ void PresentManager::copyToSwapchain(Frame* frame) {
 }
 
 void PresentManager::copyToSwapchainImpl(Frame* frame) {
+    SPDLOG_DEBUG("PresentManager::copyToSwapchainImpl");
     MICROPROFILE_SCOPE(Vulkan_CopyToSwapchain);
 
     // If the size of the incoming frames has changed, recreate the swapchain
@@ -364,6 +365,7 @@ auto PresentManager::getRenderFrame() -> Frame* {
 }
 
 void PresentManager::present(Frame* frame) {
+    SPDLOG_DEBUG("PresentManager::present");
     if (!use_present_thread_) {
         scheduler_.waitWorker();
         copyToSwapchain(frame);

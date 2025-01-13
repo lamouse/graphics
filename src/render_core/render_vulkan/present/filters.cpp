@@ -10,7 +10,7 @@
 #include "render_vulkan/vk_shader_util.hpp"
 #include "vulkan_utils.hpp"
 namespace render::vulkan {
-ShaderModule SelectScaleForceShader(const Device& device) {
+auto SelectScaleForceShader(const Device& device) -> ShaderModule {
     if (device.isFloat16Supported()) {
         return utils::buildShader(device.getLogical(), VULKAN_PRESENT_SCALEFORCE_FP16_FRAG_SPV);
     }
@@ -18,8 +18,8 @@ ShaderModule SelectScaleForceShader(const Device& device) {
 
 }  // anonymous namespace
 
-std::unique_ptr<present::WindowAdaptPass> MakeNearestNeighbor(const Device& device,
-                                                              vk::Format frame_format) {
+auto MakeNearestNeighbor(const Device& device, vk::Format frame_format)
+    -> std::unique_ptr<present::WindowAdaptPass> {
     return std::make_unique<present::WindowAdaptPass>(
         device, frame_format, present::utils::CreateNearestNeighborSampler(device),
         utils::buildShader(device.getLogical(), VULKAN_PRESENT_FRAG_SPV));

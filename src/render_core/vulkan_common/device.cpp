@@ -1191,10 +1191,10 @@ auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags
         if (!isFormatSupported(static_cast<vk::Format>(alternative), wanted_usage, format_type)) {
             continue;
         }
-        SPDLOG_ERROR("Emulating format={} with alternative format={} with usage={} and type={}",
-                     vk::to_string(wanted_format),
-                     vk::to_string(static_cast<vk::Format>(alternative)),
-                     vk::to_string(wanted_usage), static_cast<int>(format_type));
+        spdlog::debug("Emulating format={} with alternative format={} with usage={} and type={}",
+                      vk::to_string(wanted_format),
+                      vk::to_string(static_cast<vk::Format>(alternative)),
+                      vk::to_string(wanted_usage), static_cast<int>(format_type));
         return static_cast<vk::Format>(alternative);
     }
 

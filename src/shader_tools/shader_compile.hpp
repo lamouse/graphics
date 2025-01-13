@@ -2,8 +2,12 @@
 
 #include <string_view>
 #include "common/common_funcs.hpp"
+#include <span>
 
 namespace shader::compile {
+
+void printShaderAttributes(std::span<const uint32_t> spirv);
+
 class ShaderCompile {
     public:
         CLASS_NON_COPYABLE(ShaderCompile);

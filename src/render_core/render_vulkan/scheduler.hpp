@@ -9,6 +9,7 @@
 #include <mutex>
 #include <vector>
 #include <gsl/gsl>
+#include <spdlog/spdlog.h>
 namespace render::vulkan {
 class TextureFramebuffer;
 class GraphicsPipeline;
@@ -58,6 +59,7 @@ class Scheduler {
         template <typename T>
             requires std::is_invocable_v<T, vk::CommandBuffer, vk::CommandBuffer>
         void recordWithUploadBuffer(T&& command) {
+            spdlog::debug("Scheduler 记录: command...");
             if (chunk_->record(command)) {
                 return;
             }
@@ -177,6 +179,17 @@ class Scheduler {
         void allocateWorkerCommandBuffer();
         void acquireNewChunk();
         void endPendingOperations();
+        /**
+         * @brief 提交一个执行任务到调度器。
+         *
+         * 该函数提交一个执行任务到调度器，并返回信号量的值。它首先结束所有挂起的操作，
+         * 然后使当前状态无效。接着，它获取下一个信号量的值，并使用上传缓冲区记录命令。
+         * 最后，它提交命令队列并调度工作。
+         *
+         * @param signal_semaphore 用于信号的 Vulkan 信号量。
+         * @param wait_semaphore 用于等待的 Vulkan 信号量。
+         * @return u64 返回信号量的值。
+         */
         auto submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) -> u64;
         void endRenderPass();
         std::unique_ptr<semaphore::MasterSemaphore> master_semaphore_;

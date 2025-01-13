@@ -6,6 +6,7 @@
 #include "vulkan_utils.hpp"
 #include "layer.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
+#include "shader_tools/shader_compile.hpp"
 namespace render::vulkan::present {
 
 WindowAdaptPass::WindowAdaptPass(const Device& device_, vk::Format frame_format, Sampler&& sampler_,
@@ -26,13 +27,14 @@ auto WindowAdaptPass::getDescriptorSetLayout() -> vk::DescriptorSetLayout {
 
 auto WindowAdaptPass::getRenderPass() -> vk::RenderPass { return *render_pass; }
 void WindowAdaptPass::CreateVertexShader() {
+    shader::compile::printShaderAttributes(VULKAN_PRESENT_VERT_SPV);
     vertex_shader =
         ::render::vulkan::utils::buildShader(device.getLogical(), VULKAN_PRESENT_VERT_SPV);
 }
 
 void WindowAdaptPass::CreateDescriptorSetLayout() {
     descriptor_set_layout = utils::CreateWrappedDescriptorSetLayout(
-        device, {vk::DescriptorType::eCombinedImageSampler});
+        device, {::vk::DescriptorType::eUniformBuffer, vk::DescriptorType::eCombinedImageSampler});
 }
 
 void WindowAdaptPass::CreatePipelineLayout() {
@@ -52,6 +54,7 @@ void WindowAdaptPass::CreateRenderPass(vk::Format frame_format) {
 }
 
 void WindowAdaptPass::CreatePipelines() {
+    spdlog::debug("WindowAdaptPass 创建pipeline");
     opaque_pipeline = utils::CreateWrappedPipeline(device, render_pass, pipeline_layout,
                                                    std::tie(vertex_shader, fragment_shader));
     premultiplied_pipeline = utils::CreateWrappedPremultipliedBlendingPipeline(
@@ -64,6 +67,7 @@ void WindowAdaptPass::Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& s
                            size_t image_index, std::list<Layer>& layers,
                            std::span<const frame::FramebufferConfig> configs,
                            const layout::FrameBufferLayout& layout, Frame* dst) {
+    spdlog::debug("WindowAdaptPass 执行Draw image index: {}", image_index);
     const vk::Framebuffer host_framebuffer{*dst->framebuffer};
     const vk::RenderPass renderpass{*render_pass};
     const vk::PipelineLayout graphics_pipeline_layout{*pipeline_layout};

@@ -1,4 +1,5 @@
 #include "blit_screen.hpp"
+#include <spdlog/spdlog.h>
 #include "present/filters.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/device.hpp"
@@ -80,6 +81,7 @@ void BlitScreen::DrawToFrame(RasterizerVulkan& rasterizer, Frame* frame,
                              std::span<const frame::FramebufferConfig> framebuffers,
                              size_t current_swapchain_image_count,
                              vk::Format current_swapchain_view_format) {
+    spdlog::debug("BlitScreen 执行 DrawToFrame");
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
@@ -107,6 +109,7 @@ void BlitScreen::DrawToFrame(RasterizerVulkan& rasterizer, Frame* frame,
 
     // If we have a pending resource update, perform it
     if (resource_update_required) {
+        spdlog::debug("BlitScreen 执行 DrawToFrame 更新resource");
         // Wait for idle to ensure no resources are in use
         WaitIdle();
 
@@ -115,6 +118,7 @@ void BlitScreen::DrawToFrame(RasterizerVulkan& rasterizer, Frame* frame,
 
         // Update frame format if needed
         if (presentation_recreate_required) {
+            spdlog::debug("BlitScreen 执行 DrawToFrame recreateFrame");
             present_manager.recreateFrame(frame, layout.width, layout.height, swapchain_view_format,
                                           window_adapt->getRenderPass());
         }

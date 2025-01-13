@@ -164,6 +164,8 @@ else()
     endif()
 endif()
 
+add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
+
 add_subdirectory(common)
 add_subdirectory(core)
 add_subdirectory(shader_tools)
