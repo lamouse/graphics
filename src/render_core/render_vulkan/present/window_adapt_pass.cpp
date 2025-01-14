@@ -7,11 +7,45 @@
 #include "layer.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "shader_tools/shader_compile.hpp"
+#include "render_core/uniforms.hpp"
 namespace render::vulkan::present {
+
+namespace {
+
+auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription> {
+    ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions(1);
+    bindingDescriptions[0].setBinding(0);
+    bindingDescriptions[0].setStride(sizeof(Vertex));
+
+    return bindingDescriptions;
+}
+
+auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription> {
+    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
+    attributeDescriptions[0].setBinding(0);
+    attributeDescriptions[0].setLocation(0);
+    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
+    attributeDescriptions[0].setOffset(offsetof(Vertex, position));
+
+    attributeDescriptions[1].setBinding(0);
+    attributeDescriptions[1].setLocation(1);
+    attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
+    attributeDescriptions[1].setOffset(offsetof(Vertex, color));
+
+    attributeDescriptions[2].setBinding(0);
+    attributeDescriptions[2].setLocation(2);
+    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+    return attributeDescriptions;
+}
+
+}  // namespace
 
 WindowAdaptPass::WindowAdaptPass(const Device& device_, vk::Format frame_format, Sampler&& sampler_,
                                  ShaderModule&& fragment_shader_)
     : device(device_), sampler(std::move(sampler_)), fragment_shader(std::move(fragment_shader_)) {
+    spdlog::debug("初始化window adapt pass");
     CreateDescriptorSetLayout();
     CreatePipelineLayout();
     CreateVertexShader();
@@ -34,7 +68,7 @@ void WindowAdaptPass::CreateVertexShader() {
 
 void WindowAdaptPass::CreateDescriptorSetLayout() {
     descriptor_set_layout = utils::CreateWrappedDescriptorSetLayout(
-        device, {::vk::DescriptorType::eUniformBuffer, vk::DescriptorType::eCombinedImageSampler});
+        device, {vk::DescriptorType::eCombinedImageSampler});
 }
 
 void WindowAdaptPass::CreatePipelineLayout() {
@@ -63,8 +97,8 @@ void WindowAdaptPass::CreatePipelines() {
         device, render_pass, pipeline_layout, std::tie(vertex_shader, fragment_shader));
 }
 
-void WindowAdaptPass::Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& scheduler,
-                           size_t image_index, std::list<Layer>& layers,
+void WindowAdaptPass::Draw(scheduler::Scheduler& scheduler, size_t image_index,
+                           std::list<Layer>& layers,
                            std::span<const frame::FramebufferConfig> configs,
                            const layout::FrameBufferLayout& layout, Frame* dst) {
     spdlog::debug("WindowAdaptPass 执行Draw image index: {}", image_index);
@@ -97,8 +131,8 @@ void WindowAdaptPass::Draw(RasterizerVulkan& rasterizer, scheduler::Scheduler& s
         }  //(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,  image_index,
            // configs[i], layout)
 
-        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,
-                                image_index, configs[i], layout);
+        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], *sampler, image_index,
+                                configs[i], layout);
         layer_it++;
     }
 

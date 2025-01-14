@@ -294,7 +294,7 @@ auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
     -> DescriptorSets {
     return pool.Allocate(vk::DescriptorSetAllocateInfo{
         *pool,
-        layouts.size(),
+        layouts,
     });
 }
 

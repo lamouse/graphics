@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
+#include <span>
+#include <vector>
 #include "framebufferConfig.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
-#include "rasterizer_interface.hpp"
 
 namespace render {
 class RenderBase {
@@ -13,7 +14,6 @@ class RenderBase {
         explicit RenderBase(core::frontend::BaseWindow*);
         virtual ~RenderBase() = default;
         [[nodiscard]] virtual auto GetDeviceVendor() const -> std::string = 0;
-        virtual auto readRasterizer() -> RasterizerInterface* = 0;
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }

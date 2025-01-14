@@ -539,13 +539,13 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         .pAllocationCallbacks = nullptr,
         .pDeviceMemoryCallbacks = nullptr,
         .pHeapSizeLimit = nullptr,
-        .pVulkanFunctions = &functions,
+        //.pVulkanFunctions = &functions,
         .instance = instance,
         .vulkanApiVersion = VK_API_VERSION_1_1,
         .pTypeExternalMemoryHandleTypes = nullptr,
     };
 
-    vmaCreateAllocator(&allocator_info, &allocator_);
+    utils::check(vmaCreateAllocator(&allocator_info, &allocator_));
 }
 Device::~Device() { vmaDestroyAllocator(allocator_); }
 auto Device::getSuitability(bool requires_swapchain) -> bool {

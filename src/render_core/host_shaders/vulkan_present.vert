@@ -1,22 +1,37 @@
-//
+// SPDX-FileCopyrightText: Copyright 2019 yuzu Emulator Project
+// SPDX-License-Identifier: GPL-2.0-or-later
 
-#version 460
+#version 460 core
 
-layout(binding = 0) uniform UniformBufferObject {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} ubo;
+layout (location = 0) out vec2 frag_tex_coord;
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
-layout(location = 2) in vec2 inTexCoord;
+struct ScreenRectVertex {
+    vec2 position;
+    vec2 tex_coord;
+};
 
-layout(location = 0) out vec3 fragColor;
-layout(location = 1) out vec2 fragTexCoord;
+layout (push_constant) uniform PushConstants {
+    mat4 modelview_matrix;
+    ScreenRectVertex vertices[4];
+};
+
+// Vulkan spec 15.8.1:
+//   Any member of a push constant block that is declared as an
+//   array must only be accessed with dynamically uniform indices.
+ScreenRectVertex GetVertex(int index) {
+    if (index < 1) {
+        return vertices[0];
+    } else if (index < 2) {
+        return vertices[1];
+    } else if (index < 3) {
+        return vertices[2];
+    } else {
+        return vertices[3];
+    }
+}
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    fragColor = inColor;
-    fragTexCoord = inTexCoord;
+    ScreenRectVertex vertex = GetVertex(gl_VertexIndex);
+    gl_Position = modelview_matrix * vec4(vertex.position, 0.0, 1.0);
+    frag_tex_coord = vertex.tex_coord;
 }

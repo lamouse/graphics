@@ -3,7 +3,6 @@
 #include "fsr.hpp"
 #include "anti_alias_pass.h"
 #include "present_push_constants.h"
-#include "render_vulkan/vk_rasterizer.hpp"
 #include "vulkan_common/device.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
@@ -20,16 +19,15 @@ namespace {
 constexpr u32 GOB_SIZE_X_SHIFT = 6;
 constexpr u32 GOB_SIZE_Y_SHIFT = 3;
 constexpr u32 GOB_SIZE_Z_SHIFT = 0;
-std::size_t CalculateSize(bool tiled, u32 bytes_per_pixel, u32 width, u32 height, u32 depth,
-                          u32 block_height, u32 block_depth) {
+auto CalculateSize(bool tiled, u32 bytes_per_pixel, u32 width, u32 height, u32 depth,
+                   u32 block_height, u32 block_depth) -> std::size_t {
     if (tiled) {
         const u32 aligned_width = common::AlignUpLog2(width * bytes_per_pixel, GOB_SIZE_X_SHIFT);
         const u32 aligned_height = common::AlignUpLog2(height, GOB_SIZE_Y_SHIFT + block_height);
         const u32 aligned_depth = common::AlignUpLog2(depth, GOB_SIZE_Z_SHIFT + block_depth);
         return aligned_width * aligned_height * aligned_depth;
-    } else {
-        return width * height * depth * bytes_per_pixel;
     }
+    return width * height * depth * bytes_per_pixel;
 }
 
 auto GetBytesPerPixel() -> u32 {
@@ -37,7 +35,7 @@ auto GetBytesPerPixel() -> u32 {
     return BytesPerBlock(PixelFormat::A8B8G8R8_UNORM);
 }
 auto GetSizeInBytes(const frame::FramebufferConfig& framebuffer) -> std::size_t {
-    return static_cast<std::size_t>(framebuffer.stride) *
+    return static_cast<std::size_t>(common::AlignUpLog2(framebuffer.width, framebuffer.stride)) *
            static_cast<std::size_t>(framebuffer.height) * GetBytesPerPixel();
 }
 
@@ -49,6 +47,7 @@ Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
       image_count(image_count_) {
+    spdlog::debug("Layer构造函数");
     CreateDescriptorPool();
     CreateDescriptorSets(layout);
     if (common::settings::get<settings::Graphics>().scaling_filter ==
@@ -88,6 +87,7 @@ auto Layer::CalculateBufferSize(const frame::FramebufferConfig& framebuffer) con
 }
 
 void Layer::CreateRawImages(const frame::FramebufferConfig& framebuffer) {
+    spdlog::debug("layer CreateRawImages");
     const auto format = vk::Format::eA8B8G8R8UnormPack32;  // TODO 有时间处理
     resource_ticks.resize(image_count);
     raw_images.resize(image_count);
@@ -220,6 +220,7 @@ void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t i
 
     };
     scheduler.record([this, copy, index = image_index](vk::CommandBuffer cmdbuf) {
+        spdlog::debug("调度器执行 Layer::UpdateRawImage");
         const vk::Image image = *raw_images[index];
         const vk::ImageMemoryBarrier base_barrier{
             {},
@@ -259,9 +260,8 @@ void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t i
 }
 
 void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
-                          vk::DescriptorSet* out_descriptor_set, RasterizerVulkan& rasterizer,
-                          vk::Sampler sampler, size_t image_index,
-                          const frame::FramebufferConfig& framebuffer,
+                          vk::DescriptorSet* out_descriptor_set, vk::Sampler sampler,
+                          size_t image_index, const frame::FramebufferConfig& framebuffer,
                           const layout::FrameBufferLayout& layout) {
     const u32 texture_width = framebuffer.width;
     const u32 texture_height = framebuffer.height;

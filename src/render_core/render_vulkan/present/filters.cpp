@@ -25,29 +25,29 @@ auto MakeNearestNeighbor(const Device& device, vk::Format frame_format)
         utils::buildShader(device.getLogical(), VULKAN_PRESENT_FRAG_SPV));
 }
 
-std::unique_ptr<present::WindowAdaptPass> MakeBilinear(const Device& device,
-                                                       vk::Format frame_format) {
+auto MakeBilinear(const Device& device, vk::Format frame_format)
+    -> std::unique_ptr<present::WindowAdaptPass> {
     return std::make_unique<present::WindowAdaptPass>(
         device, frame_format, present::utils::CreateBilinearSampler(device),
         utils::buildShader(device.getLogical(), VULKAN_PRESENT_FRAG_SPV));
 }
 
-std::unique_ptr<present::WindowAdaptPass> MakeBicubic(const Device& device,
-                                                      vk::Format frame_format) {
+auto MakeBicubic(const Device& device, vk::Format frame_format)
+    -> std::unique_ptr<present::WindowAdaptPass> {
     return std::make_unique<present::WindowAdaptPass>(
         device, frame_format, present::utils::CreateBilinearSampler(device),
         utils::buildShader(device.getLogical(), PRESENT_BICUBIC_FRAG_SPV));
 }
 
-std::unique_ptr<present::WindowAdaptPass> MakeGaussian(const Device& device,
-                                                       vk::Format frame_format) {
+auto MakeGaussian(const Device& device, vk::Format frame_format)
+    -> std::unique_ptr<present::WindowAdaptPass> {
     return std::make_unique<present::WindowAdaptPass>(
         device, frame_format, present::utils::CreateBilinearSampler(device),
         utils::buildShader(device.getLogical(), PRESENT_GAUSSIAN_FRAG_SPV));
 }
 
-std::unique_ptr<present::WindowAdaptPass> MakeScaleForce(const Device& device,
-                                                         vk::Format frame_format) {
+auto MakeScaleForce(const Device& device, vk::Format frame_format)
+    -> std::unique_ptr<present::WindowAdaptPass> {
     return std::make_unique<present::WindowAdaptPass>(device, frame_format,
                                                       present::utils::CreateBilinearSampler(device),
                                                       SelectScaleForceShader(device));

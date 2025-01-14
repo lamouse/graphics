@@ -47,9 +47,9 @@ auto loadGameObjects() -> GameObject::Map {
 }  // namespace
 
 void App::run() {
-    auto rasterizer = render_base->readRasterizer();
-
-    render::frame::FramebufferConfig frames{};
+    auto layout = window->getFramebufferLayout();
+    render::frame::FramebufferConfig frames{
+        .width = layout.width, .height = layout.height, .stride = 1};
     render_base->composite(std::span{&frames, 1});
 
     // core::Device device_;

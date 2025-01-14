@@ -5,7 +5,6 @@
 #include "render_core/render_vulkan/swapchain.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "render_core/render_vulkan/vk_turbo_mode.hpp"
-#include "render_core/render_vulkan/vk_rasterizer.hpp"
 #include "render_core/render_vulkan/blit_screen.hpp"
 
 namespace render::vulkan {
@@ -15,8 +14,6 @@ class RendererVulkan final : public render::RenderBase {
     public:
         explicit RendererVulkan(core::frontend::BaseWindow* window);
         ~RendererVulkan() override;
-
-        auto readRasterizer() -> RasterizerInterface* override { return &rasterizer; }
 
         [[nodiscard]] auto GetDeviceVendor() const -> std::string override {
             return device.getDriverName();
@@ -44,7 +41,6 @@ class RendererVulkan final : public render::RenderBase {
         // // BlitScreen blit_applet;
         BlitScreen blit_swapchain;
         BlitScreen blit_capture;
-        RasterizerVulkan rasterizer;
         std::optional<TurboMode> turbo_mode;
 
         Frame applet_frame;

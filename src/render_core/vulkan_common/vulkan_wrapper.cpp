@@ -187,17 +187,10 @@ void Framebuffer::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eFramebuffer, name);
 }
 
-DescriptorSets VulkanDescriptorPool::Allocate(const vk::DescriptorSetAllocateInfo& ai) const {
-    const std::size_t num = ai.descriptorSetCount;
-    std::vector<::vk::DescriptorSet> sets(num);
-    switch (auto result = owner.allocateDescriptorSets(&ai, sets.data())) {
-        case vk::Result::eSuccess:
-            return DescriptorSets(std::move(sets), owner, handle);
-        case vk::Result::eErrorOutOfPoolMemory:
-            return {};
-        default:
-            throw utils::VulkanException(result);
-    }
+auto VulkanDescriptorPool::Allocate(const vk::DescriptorSetAllocateInfo& ai) const
+    -> DescriptorSets {
+    std::vector<::vk::DescriptorSet> sets = owner.allocateDescriptorSets(ai);
+    return DescriptorSets(std::move(sets), owner, handle);
 }
 
 void VulkanDescriptorPool::SetObjectNameEXT(const char* name) const {

@@ -136,6 +136,7 @@ void FSR::UploadImages(scheduler::Scheduler& scheduler) {
     }
 
     scheduler.record([&](vk::CommandBuffer cmdbuf) {
+        spdlog::debug("执行FSR::UploadImages 记录");
         for (auto& image : m_dynamic_images) {
             present::utils::ClearColorImage(cmdbuf, *image.images[Easu]);
             present::utils::ClearColorImage(cmdbuf, *image.images[Rcas]);
@@ -149,6 +150,7 @@ void FSR::UploadImages(scheduler::Scheduler& scheduler) {
 auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image source_image,
                vk::ImageView source_image_view, vk::Extent2D input_image_extent,
                const common::Rectangle<f32>& crop_rect) -> vk::ImageView {
+    spdlog::debug("FSR draw");
     Images& images = m_dynamic_images[image_index];
 
     vk::Image easu_image = *images.images[Easu];

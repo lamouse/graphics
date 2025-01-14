@@ -29,8 +29,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
                 window->getFramebufferLayout().height),
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
-      blit_capture(device, memory_allocator, present_manager, scheduler),
-      rasterizer(device, memory_allocator, scheduler) {
+      blit_capture(device, memory_allocator, present_manager, scheduler) {
     if (common::settings::get<settings::RenderVulkan>().renderer_force_max_clock &&
         device.shouldBoostClocks()) {
         turbo_mode.emplace(instance);
@@ -59,9 +58,8 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
     scheduler.flush(*frame->render_ready);
-    blit_swapchain.DrawToFrame(rasterizer, frame, window_->getFramebufferLayout(), frame_buffers,
+    blit_swapchain.DrawToFrame(frame, window_->getFramebufferLayout(), frame_buffers,
                                swapchain.getImageCount(), swapchain.getImageViewFormat());
-    rasterizer.TickFrame();
 }
 
 void RendererVulkan::RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers) {
@@ -82,7 +80,7 @@ auto RendererVulkan::RenderToBuffer(std::span<const frame::FramebufferConfig> fr
 
     auto dst_buffer =
         present::utils::CreateWrappedBuffer(memory_allocator, buffer_size, MemoryUsage::Download);
-    blit_capture.DrawToFrame(rasterizer, &frame, layout, framebuffers, 1, format);
+    blit_capture.DrawToFrame(&frame, layout, framebuffers, 1, format);
 
     scheduler.requestOutsideRenderPassOperationContext();
     scheduler.record([&](vk::CommandBuffer cmdbuf) {
