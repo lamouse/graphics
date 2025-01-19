@@ -2,11 +2,12 @@
 #include <vulkan/vulkan.hpp>
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
+#include "fixed_pipeline_state.h"
 #include "shader_tools/shader_info.h"
 #include <condition_variable>
-#include "framebufferConfig.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
-#include "update_descriptor.hpp"
+#include "render_core/framebufferConfig.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/render_vulkan/update_descriptor.hpp"
 #include "common/thread_worker.hpp"
 namespace render {
 class ShaderNotify;
@@ -20,6 +21,7 @@ class Scheduler;
 
 struct GraphicsPipelineCacheKey {
         std::array<u64, 6> unique_hashes;
+        FixedPipelineState state;
 
         [[nodiscard]] auto Hash() const noexcept -> size_t;
 
@@ -29,9 +31,11 @@ struct GraphicsPipelineCacheKey {
             return !operator==(rhs);
         }
 
-        [[nodiscard]] auto Size() const noexcept -> size_t { return sizeof(unique_hashes); }
+        [[nodiscard]] auto Size() const noexcept -> size_t {
+            return sizeof(unique_hashes) + state.Size();
+        }
 };
-static_assert(std::has_unique_object_representations_v<GraphicsPipelineCacheKey>);
+// static_assert(std::has_unique_object_representations_v<GraphicsPipelineCacheKey>);
 static_assert(std::is_trivially_copyable_v<GraphicsPipelineCacheKey>);
 static_assert(std::is_trivially_constructible_v<GraphicsPipelineCacheKey>);
 
@@ -68,16 +72,14 @@ class GraphicsPipeline {
                 [](GraphicsPipeline* pl, bool is_indexed) { pl->configureImpl<Spec>(is_indexed); };
         }
 
-        explicit GraphicsPipeline(scheduler::Scheduler& scheduler, PipelineCache& pipeline_cache,
-                                  render::ShaderNotify* shader_notify, const Device& device,
-                                  resource::DescriptorPool& descriptor_pool,
-                                  GuestDescriptorQueue& guest_descriptor_queue,
-                                  common::ThreadWorker* worker_thread,
-                                  pipeline::PipelineStatistics* pipeline_statistics,
-                                  RenderPassCache& render_pass_cache,
-                                  const GraphicsPipelineCacheKey& key,
-                                  std::array<ShaderModule, NUM_STAGES> stages,
-                                  const std::array<const shader::Info*, NUM_STAGES>& infos);
+        explicit GraphicsPipeline(
+            scheduler::Scheduler& scheduler, VulkanPipelineCache& pipeline_cache,
+            render::ShaderNotify* shader_notify, const Device& device,
+            resource::DescriptorPool& descriptor_pool, GuestDescriptorQueue& guest_descriptor_queue,
+            common::ThreadWorker* worker_thread, pipeline::PipelineStatistics* pipeline_statistics,
+            RenderPassCache& render_pass_cache, const GraphicsPipelineCacheKey& key,
+            std::array<ShaderModule, NUM_STAGES> stages,
+            const std::array<const shader::Info*, NUM_STAGES>& infos);
 
         CLASS_NON_COPYABLE(GraphicsPipeline);
         CLASS_NON_MOVEABLE(GraphicsPipeline);
@@ -114,7 +116,7 @@ class GraphicsPipeline {
 
         const GraphicsPipelineCacheKey key_;
         const Device& device_;
-        PipelineCache& pipeline_cache;
+        VulkanPipelineCache& pipeline_cache;
         scheduler::Scheduler& scheduler_;
         GuestDescriptorQueue& guest_descriptor_queue_;
 

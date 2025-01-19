@@ -13,7 +13,7 @@
 #include <mutex>
 #include <span>
 
-namespace render {
+namespace render::buffer {
 
 using BufferId = common::SlotId;
 using namespace common::literals;
@@ -165,7 +165,6 @@ class BufferCache : public BufferCacheInfo {
         using Runtime = typename P::Runtime;
         using Buffer = typename P::Buffer;
         using Async_Buffer = typename P::Async_Buffer;
-        using MemoryTracker = typename P::MemoryTracker;
 
         struct OverlapResult {
                 boost::container::small_vector<BufferId, 16> ids;
@@ -177,112 +176,7 @@ class BufferCache : public BufferCacheInfo {
     public:
         explicit BufferCache(Runtime& runtime_);
 
-        ~BufferCache();
-
-        void TickFrame();
-
-        void WriteMemory(DAddr device_addr, u64 size);
-
-        void CachedWriteMemory(DAddr device_addr, u64 size);
-
-        bool OnCPUWrite(DAddr device_addr, u64 size);
-
-        void DownloadMemory(DAddr device_addr, u64 size);
-
-        bool InlineMemory(DAddr dest_address, size_t copy_size, std::span<const u8> inlined_buffer);
-
-        void BindGraphicsUniformBuffer(size_t stage, u32 index, GPUVAddr gpu_addr, u32 size);
-
-        void DisableGraphicsUniformBuffer(size_t stage, u32 index);
-
-        void UpdateGraphicsBuffers(bool is_indexed);
-
-        void UpdateComputeBuffers();
-
-        void BindHostGeometryBuffers(bool is_indexed);
-
-        void BindHostStageBuffers(size_t stage);
-
-        void BindHostComputeBuffers();
-
-        void SetUniformBuffersState(const std::array<u32, NUM_STAGES>& mask,
-                                    const UniformBufferSizes* sizes);
-
-        void SetComputeUniformBufferState(u32 mask, const ComputeUniformBufferSizes* sizes);
-
-        void UnbindGraphicsStorageBuffers(size_t stage);
-
-        void BindGraphicsStorageBuffer(size_t stage, size_t ssbo_index, u32 cbuf_index,
-                                       u32 cbuf_offset, bool is_written);
-
-        void UnbindGraphicsTextureBuffers(size_t stage);
-
-        void BindGraphicsTextureBuffer(size_t stage, size_t tbo_index, GPUVAddr gpu_addr, u32 size,
-                                       PixelFormat format, bool is_written, bool is_image);
-
-        void UnbindComputeStorageBuffers();
-
-        void BindComputeStorageBuffer(size_t ssbo_index, u32 cbuf_index, u32 cbuf_offset,
-                                      bool is_written);
-
-        void UnbindComputeTextureBuffers();
-
-        void BindComputeTextureBuffer(size_t tbo_index, GPUVAddr gpu_addr, u32 size,
-                                      PixelFormat format, bool is_written, bool is_image);
-
-        [[nodiscard]] std::pair<Buffer*, u32> ObtainBuffer(GPUVAddr gpu_addr, u32 size,
-                                                           ObtainBufferSynchronize sync_info,
-                                                           ObtainBufferOperation post_op);
-
-        [[nodiscard]] std::pair<Buffer*, u32> ObtainCPUBuffer(DAddr gpu_addr, u32 size,
-                                                              ObtainBufferSynchronize sync_info,
-                                                              ObtainBufferOperation post_op);
-        void FlushCachedWrites();
-
-        /// Return true when there are uncommitted buffers to be downloaded
-        [[nodiscard]] bool HasUncommittedFlushes() const noexcept;
-
-        void AccumulateFlushes();
-
-        /// Return true when the caller should wait for async downloads
-        [[nodiscard]] bool ShouldWaitAsyncFlushes() const noexcept;
-
-        /// Commit asynchronous downloads
-        void CommitAsyncFlushes();
-        void CommitAsyncFlushesHigh();
-
-        /// Pop asynchronous downloads
-        void PopAsyncFlushes();
-        void PopAsyncBuffers();
-
-        bool DMACopy(GPUVAddr src_address, GPUVAddr dest_address, u64 amount);
-
-        bool DMAClear(GPUVAddr src_address, u64 amount, u32 value);
-
-        /// Return true when a CPU region is modified from the GPU
-        [[nodiscard]] bool IsRegionGpuModified(DAddr addr, size_t size);
-
-        /// Return true when a region is registered on the cache
-        [[nodiscard]] bool IsRegionRegistered(DAddr addr, size_t size);
-
-        /// Return true when a CPU region is modified from the CPU
-        [[nodiscard]] bool IsRegionCpuModified(DAddr addr, size_t size);
-
-        // TODO 修改
-        void SetDrawIndirect(IndirectParams* draw_indirect) {
-            current_draw_indirect = draw_indirect;
-        }
-
-        [[nodiscard]] std::pair<Buffer*, u32> GetDrawIndirectCount();
-
-        [[nodiscard]] std::pair<Buffer*, u32> GetDrawIndirectBuffer();
-
-        template <typename Func>
-        void BufferOperations(Func&& func) {
-            do {
-                func();
-            } while (0);
-        }
+        ~BufferCache() = default;
 
         std::recursive_mutex mutex;
         Runtime& runtime;
@@ -315,123 +209,12 @@ class BufferCache : public BufferCacheInfo {
             }
         }
 
-        static bool IsRangeGranular(DAddr device_addr, size_t size) { return true; }
-
-        void RunGarbageCollector();
-
-        void BindHostIndexBuffer();
-
-        void BindHostVertexBuffers();
-
-        void BindHostDrawIndirectBuffers();
-
-        void BindHostGraphicsUniformBuffers(size_t stage);
-
-        void BindHostGraphicsUniformBuffer(size_t stage, u32 index, u32 binding_index,
-                                           bool needs_bind);
-
-        void BindHostGraphicsStorageBuffers(size_t stage);
-
-        void BindHostGraphicsTextureBuffers(size_t stage);
-
-        void BindHostTransformFeedbackBuffers();
-
-        void BindHostComputeUniformBuffers();
-
-        void BindHostComputeStorageBuffers();
-
-        void BindHostComputeTextureBuffers();
-
-        void DoUpdateGraphicsBuffers(bool is_indexed);
-
-        void DoUpdateComputeBuffers();
-
-        void UpdateIndexBuffer();
-
-        void UpdateVertexBuffers();
-
-        void UpdateVertexBuffer(u32 index);
-
-        void UpdateDrawIndirect();
-
-        void UpdateUniformBuffers(size_t stage);
-
-        void UpdateStorageBuffers(size_t stage);
-
-        void UpdateTextureBuffers(size_t stage);
-
-        void UpdateTransformFeedbackBuffers();
-
-        void UpdateTransformFeedbackBuffer(u32 index);
-
-        void UpdateComputeUniformBuffers();
-
-        void UpdateComputeStorageBuffers();
-
-        void UpdateComputeTextureBuffers();
-
-        void MarkWrittenBuffer(BufferId buffer_id, DAddr device_addr, u32 size);
-
-        [[nodiscard]] BufferId FindBuffer(DAddr device_addr, u32 size);
-
-        [[nodiscard]] OverlapResult ResolveOverlaps(DAddr device_addr, u32 wanted_size);
-
-        void JoinOverlap(BufferId new_buffer_id, BufferId overlap_id, bool accumulate_stream_score);
-
-        [[nodiscard]] BufferId CreateBuffer(DAddr device_addr, u32 wanted_size);
-
-        void Register(BufferId buffer_id);
-
-        void Unregister(BufferId buffer_id);
-
-        template <bool insert>
-        void ChangeRegister(BufferId buffer_id);
-
-        void TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept;
-
-        bool SynchronizeBuffer(Buffer& buffer, DAddr device_addr, u32 size);
-
-        void UploadMemory(Buffer& buffer, u64 total_size_bytes, u64 largest_copy,
-                          std::span<texture::BufferCopy> copies);
-
-        void ImmediateUploadMemory(Buffer& buffer, u64 largest_copy,
-                                   std::span<const texture::BufferCopy> copies);
-
-        void MappedUploadMemory(Buffer& buffer, u64 total_size_bytes,
-                                std::span<texture::BufferCopy> copies);
-
-        void DownloadBufferMemory(Buffer& buffer_id);
-
-        void DownloadBufferMemory(Buffer& buffer_id, DAddr device_addr, u64 size);
-
-        void DeleteBuffer(BufferId buffer_id, bool do_not_mark = false);
-
-        [[nodiscard]] Binding StorageBufferBinding(GPUVAddr ssbo_addr, u32 cbuf_index,
-                                                   bool is_written) const;
-
-        [[nodiscard]] TextureBufferBinding GetTextureBufferBinding(GPUVAddr gpu_addr, u32 size,
-                                                                   PixelFormat format);
-
-        [[nodiscard]] std::span<const u8> ImmediateBufferWithData(DAddr device_addr, size_t size);
-
-        [[nodiscard]] std::span<u8> ImmediateBuffer(size_t wanted_capacity);
-
-        [[nodiscard]] bool HasFastUniformBufferBound(size_t stage,
-                                                     u32 binding_index) const noexcept;
-
-        void ClearDownload(DAddr base_addr, u64 size);
-
-        void InlineMemoryImplementation(DAddr dest_address, size_t copy_size,
-                                        std::span<const u8> inlined_buffer);
-
         common::SlotVector<Buffer> slot_buffers;
         DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
 
         IndirectParams* current_draw_indirect{};
 
         u32 last_index_count = 0;
-
-        MemoryTracker memory_tracker;
 
         // Async Buffers
         std::deque<boost::container::small_vector<texture::BufferCopy, 4>> pending_downloads;
@@ -453,4 +236,4 @@ class BufferCache : public BufferCacheInfo {
         std::array<BufferId, ((1ULL << 34) >> CACHING_PAGEBITS)> page_table;
 };
 
-}  // namespace render
+}  // namespace render::buffer

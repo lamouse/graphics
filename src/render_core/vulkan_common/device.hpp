@@ -59,6 +59,11 @@ class Device {
             return extensions_.sampler_filter_minmax;
         }
 
+        /// Returns true if the device supports VK_EXT_subgroup_size_control.
+        [[nodiscard]] auto IsExtSubgroupSizeControlSupported() const -> bool {
+            return extensions_.subgroup_size_control;
+        }
+
         /// Returns true if the device supports VK_EXT_4444_formats.
         [[nodiscard]] auto isExt4444FormatsSupported() const -> bool {
             return features_.format_a4b4g4r4.formatA4B4G4R4;
@@ -116,6 +121,12 @@ class Device {
         [[nodiscard]] auto isKhrImageFormatListSupported() const -> bool {
             return extensions_.image_format_list || instance_version_ >= VK_API_VERSION_1_2;
         }
+
+        /// Returns true if VK_KHR_shader_float_controls is enabled.
+        [[nodiscard]] auto IsKhrShaderFloatControlsSupported() const -> bool {
+            return extensions_.shader_float_controls;
+        }
+
         /// Returns true if ASTC is natively supported.
         [[nodiscard]] auto isOptimalAstcSupported() const -> bool {
             return features_.features.textureCompressionASTC_LDR;
@@ -139,6 +150,52 @@ class Device {
         /// Returns true if the device supports VK_EXT_custom_border_color.
         [[nodiscard]] auto isExtCustomBorderColorSupported() const -> bool {
             return extensions_.custom_border_color;
+        }
+
+        /// Returns true if parallel shader compiling has issues with the current driver.
+        [[nodiscard]] auto hasBrokenParallelShaderCompiling() const -> bool {
+            return misc_features_.has_broken_parallel_compiling;
+        }
+
+        /// Returns the minimum supported version of SPIR-V.
+        [[nodiscard]] auto SupportedSpirvVersion() const -> u32 {
+            if (instance_version_ >= VK_API_VERSION_1_3) {
+                return 0x00010600U;
+            }
+            if (extensions_.spirv_1_4) {
+                return 0x00010400U;
+            }
+            return 0x00010300U;
+        }
+
+        /// Returns true if descriptor aliasing is natively supported.
+        [[nodiscard]] auto IsDescriptorAliasingSupported() const -> bool {
+            return getDriverID() != vk::DriverId::eQualcommProprietary;
+        }
+
+        /// Returns true if the device supports float64 natively.
+        [[nodiscard]] auto IsFloat64Supported() const -> bool {
+            return features_.features.shaderFloat64;
+        }
+
+        /// Returns true if the device supports float16 natively.
+        [[nodiscard]] auto IsFloat16Supported() const -> bool {
+            return features_.shader_float16_int8.shaderFloat16;
+        }
+
+        /// Returns true if the device supports int8 natively.
+        [[nodiscard]] auto IsInt8Supported() const -> bool {
+            return features_.shader_float16_int8.shaderInt8;
+        }
+
+        /// Returns true if shader int64 is supported.
+        [[nodiscard]] auto IsShaderInt64Supported() const -> bool {
+            return features_.features.shaderInt64;
+        }
+
+        /// Returns true if shader int16 is supported.
+        [[nodiscard]] auto IsShaderInt16Supported() const -> bool {
+            return features_.features.shaderInt16;
         }
 
         [[nodiscard]] auto getDeviceLocalMemory() const -> u64 { return device_access_memory_; }
@@ -165,9 +222,139 @@ class Device {
         [[nodiscard]] auto hasBrokenCubeImageCompatibility() const -> bool {
             return misc_features_.has_broken_cube_compatibility;
         }
+        /// Returns float control properties of the device.
+        [[nodiscard]] auto FloatControlProperties() const
+            -> const VkPhysicalDeviceFloatControlsPropertiesKHR& {
+            return properties_.float_controls_;
+        }
+
+        /// Returns true if the device supports VK_KHR_workgroup_memory_explicit_layout.
+        [[nodiscard]] auto IsKhrWorkgroupMemoryExplicitLayoutSupported() const -> bool {
+            return extensions_.workgroup_memory_explicit_layout;
+        }
+        /// Returns true if the device supports the provided subgroup feature.
+        [[nodiscard]] auto IsSubgroupFeatureSupported(VkSubgroupFeatureFlagBits feature) const
+            -> bool {
+            return properties_.subgroup_properties_.supportedOperations & feature;
+        }
+
+        /// Returns true if the device supports VK_EXT_shader_viewport_index_layer.
+        [[nodiscard]] auto IsExtShaderViewportIndexLayerSupported() const -> bool {
+            return extensions_.shader_viewport_index_layer;
+        }
+        /// Returns true if the device supports VK_NV_viewport_array2.
+        [[nodiscard]] auto IsNvViewportArray2Supported() const -> bool {
+            return extensions_.viewport_array2;
+        }
+        /// Returns true if formatless image load is supported.
+        [[nodiscard]] auto IsFormatlessImageLoadSupported() const -> bool {
+            return features_.features.shaderStorageImageReadWithoutFormat;
+        }
+
+        /// Returns true if the device supports VK_EXT_shader_demote_to_helper_invocation
+        [[nodiscard]] auto IsExtShaderDemoteToHelperInvocationSupported() const -> bool {
+            return extensions_.shader_demote_to_helper_invocation;
+        }
+
+        /// Returns true if the device supports VK_KHR_shader_atomic_int64.
+        [[nodiscard]] auto IsExtShaderAtomicInt64Supported() const -> bool {
+            return extensions_.shader_atomic_int64;
+        }
+        /// Returns true if the device supports VK_NV_geometry_shader_passthrough.
+        [[nodiscard]] auto IsNvGeometryShaderPassthroughSupported() const -> bool {
+            return extensions_.geometry_shader_passthrough;
+        }
+        /// Returns true if the device supports VK_EXT_depth_clip_control.
+        [[nodiscard]] auto IsExtDepthClipControlSupported() const -> bool {
+            return extensions_.depth_clip_control;
+        }
+        /// Returns true if the device supports VK_EXT_transform_feedback properly.
+        [[nodiscard]] auto AreTransformFeedbackGeometryStreamsSupported() const -> bool {
+            return features_.transform_feedback.geometryStreams;
+        }
+
+        /// Returns true if the device warp size can potentially be bigger than guest's warp size.
+        [[nodiscard]] auto IsWarpSizePotentiallyBiggerThanGuest() const -> bool {
+            return misc_features_.is_warp_potentially_bigger;
+        }
+
+        /// Returns storage alignment requirement.
+        [[nodiscard]] auto GetStorageBufferAlignment() const -> VkDeviceSize {
+            return properties_.properties_.limits.minStorageBufferOffsetAlignment;
+        }
+
+        /// Returns true if VK_KHR_pipeline_executable_properties is enabled.
+        [[nodiscard]] auto IsKhrPipelineExecutablePropertiesEnabled() const -> bool {
+            return extensions_.pipeline_executable_properties;
+        }
+
+        /// Returns true if the device supports VK_EXT_index_type_uint8.
+        [[nodiscard]] auto IsExtIndexTypeUint8Supported() const -> bool {
+            return extensions_.index_type_uint8;
+        }
+        /// Returns true if the device supports VK_EXT_extended_dynamic_state.
+        [[nodiscard]] auto IsExtExtendedDynamicStateSupported() const -> bool {
+            return extensions_.extended_dynamic_state;
+        }
+        [[nodiscard]] auto GetMaxUserClipDistances() const -> u32 {
+            return properties_.properties_.limits.maxClipDistances;
+        }
+        /// Returns true if the device supports VK_EXT_transform_feedback.
+        [[nodiscard]] auto IsExtTransformFeedbackSupported() const -> bool {
+            return extensions_.transform_feedback;
+        }
+        /// Returns true if the device supports VK_EXT_extended_dynamic_state2.
+        auto IsExtExtendedDynamicState2Supported() const -> bool {
+            return extensions_.extended_dynamic_state2;
+        }
+
+        [[nodiscard]] auto IsExtExtendedDynamicState2ExtrasSupported() const -> bool {
+            return features_.extended_dynamic_state2.extendedDynamicState2LogicOp;
+        }
+
+        /// Returns true if the device supports VK_EXT_extended_dynamic_state3.
+        [[nodiscard]] auto IsExtExtendedDynamicState3Supported() const -> bool {
+            return extensions_.extended_dynamic_state3;
+        }
+
+        /// Returns true if the device supports VK_EXT_extended_dynamic_state3.
+        [[nodiscard]] auto IsExtExtendedDynamicState3BlendingSupported() const -> bool {
+            return misc_features_.dynamic_state3_blending;
+        }
+
+        /// Returns true if the device supports VK_EXT_extended_dynamic_state3.
+        [[nodiscard]] auto IsExtExtendedDynamicState3EnablesSupported() const -> bool {
+            return misc_features_.dynamic_state3_enables;
+        }
+
+        /// Returns true if the device supports VK_EXT_vertex_input_dynamic_state.
+        [[nodiscard]] auto IsExtVertexInputDynamicStateSupported() const -> bool {
+            return extensions_.vertex_input_dynamic_state;
+        }
+        [[nodiscard]] auto IsExtConditionalRendering() const -> bool {
+            return extensions_.conditional_rendering;
+        }
 
         [[nodiscard]] auto getMaxVertexInputBindings() const -> u32 {
             return properties_.properties_.limits.maxVertexInputBindings;
+        }
+        [[nodiscard]] auto MustEmulateScaledFormats() const -> bool {
+            return misc_features_.must_emulate_scaled_formats;
+        }
+
+        [[nodiscard]] auto SupportsMultiViewport() const -> bool {
+            return features2_.features.multiViewport;
+        }
+
+        [[nodiscard]] auto SupportsConditionalBarriers() const -> bool {
+            return misc_features_.supports_conditional_barriers;
+        }
+
+        [[nodiscard]] auto GetNvidiaArch() const noexcept -> utils::NvidiaArchitecture {
+            return nvidia_arch;
+        }
+        [[nodiscard]] auto IsNvidia() const noexcept -> bool {
+            return properties_.driver_.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
         }
 
         [[nodiscard]] auto surfaceFormat(FormatType format_type, bool with_srgb,
@@ -181,10 +368,15 @@ class Device {
                                              vk::FormatFeatureFlags wanted_usage,
                                              FormatType format_type) const -> bool;
 
+        [[nodiscard]] auto HasNullDescriptor() const -> bool {
+            return features_.robustness2.nullDescriptor;
+        }
+
         /// Returns true if the device supports float16 natively.
         [[nodiscard]] auto isFloat16Supported() const -> bool {
             return features_.shader_float16_int8.shaderFloat16;
         }
+        void initDispatchLoaderDynamic(vk::Instance instance);
 
     private:
         vk::Instance instance_;

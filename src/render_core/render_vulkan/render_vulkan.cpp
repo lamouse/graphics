@@ -29,7 +29,9 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
                 window->getFramebufferLayout().height),
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
-      blit_capture(device, memory_allocator, present_manager, scheduler) {
+      blit_capture(device, memory_allocator, present_manager, scheduler),
+      vulkan_graphics(window, device, memory_allocator, scheduler) {
+    device.initDispatchLoaderDynamic(*instance);
     if (common::settings::get<settings::RenderVulkan>().renderer_force_max_clock &&
         device.shouldBoostClocks()) {
         turbo_mode.emplace(instance);

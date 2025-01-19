@@ -7,40 +7,9 @@
 #include "layer.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "shader_tools/shader_compile.hpp"
-#include "render_core/uniforms.hpp"
 namespace render::vulkan::present {
 
-namespace {
-
-auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription> {
-    ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions(1);
-    bindingDescriptions[0].setBinding(0);
-    bindingDescriptions[0].setStride(sizeof(Vertex));
-
-    return bindingDescriptions;
-}
-
-auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription> {
-    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
-    attributeDescriptions[0].setBinding(0);
-    attributeDescriptions[0].setLocation(0);
-    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
-    attributeDescriptions[0].setOffset(offsetof(Vertex, position));
-
-    attributeDescriptions[1].setBinding(0);
-    attributeDescriptions[1].setLocation(1);
-    attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
-    attributeDescriptions[1].setOffset(offsetof(Vertex, color));
-
-    attributeDescriptions[2].setBinding(0);
-    attributeDescriptions[2].setLocation(2);
-    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-}
-
-}  // namespace
+namespace {}  // namespace
 
 WindowAdaptPass::WindowAdaptPass(const Device& device_, vk::Format frame_format, Sampler&& sampler_,
                                  ShaderModule&& fragment_shader_)

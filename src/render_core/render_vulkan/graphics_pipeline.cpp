@@ -1,7 +1,8 @@
 #include "graphics_pipeline.hpp"
+#include "common/cityhash.h"
+#include "uniforms.hpp"
 #include "vulkan_common/device.hpp"
 #include "descriptor_pool.hpp"
-#include "render_base.hpp"
 #include "scheduler.hpp"
 #include "shader_notify.hpp"
 #include "pipeline_statistics.hpp"
@@ -17,6 +18,35 @@
 constexpr size_t MAX_IMAGE_ELEMENTS = 64;
 namespace render::vulkan {
 namespace {
+
+auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription> {
+    ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions(1);
+    bindingDescriptions[0].setBinding(0);
+    bindingDescriptions[0].setStride(sizeof(Vertex));
+
+    return bindingDescriptions;
+}
+
+auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription> {
+    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
+    attributeDescriptions[0].setBinding(0);
+    attributeDescriptions[0].setLocation(0);
+    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
+    attributeDescriptions[0].setOffset(offsetof(Vertex, position));
+
+    attributeDescriptions[1].setBinding(0);
+    attributeDescriptions[1].setLocation(1);
+    attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
+    attributeDescriptions[1].setOffset(offsetof(Vertex, color));
+
+    attributeDescriptions[2].setBinding(0);
+    attributeDescriptions[2].setLocation(2);
+    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
+    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+    return attributeDescriptions;
+}
+
 using boost::container::small_vector;
 using boost::container::static_vector;
 auto MakeBuilder(const Device& device, std::span<const shader::Info> infos)
@@ -35,7 +65,7 @@ auto MakeBuilder(const Device& device, std::span<const shader::Info> infos)
     return builder;
 }
 template <class StencilFace>
-vk::StencilOpState GetStencilFaceState(const StencilFace& face) {
+auto GetStencilFaceState(const StencilFace& face) -> vk::StencilOpState {
     return vk::StencilOpState{vk::StencilOp::eKeep,
                               vk::StencilOp::eReplace,
                               vk::StencilOp::eKeep,
@@ -44,7 +74,7 @@ vk::StencilOpState GetStencilFaceState(const StencilFace& face) {
                               0xFF,
                               1};
 }
-bool SupportsPrimitiveRestart(vk::PrimitiveTopology topology) {
+auto SupportsPrimitiveRestart(vk::PrimitiveTopology topology) -> bool {
     static constexpr std::array unsupported_topologies{
         vk::PrimitiveTopology::ePointList,
         vk::PrimitiveTopology::eLineList,
@@ -57,9 +87,9 @@ bool SupportsPrimitiveRestart(vk::PrimitiveTopology topology) {
     return std::ranges::find(unsupported_topologies, topology) == unsupported_topologies.end();
 }
 
-bool IsLine(vk::PrimitiveTopology topology) {
+auto IsLine(vk::PrimitiveTopology topology) -> bool {
     static constexpr std::array line_topologies{
-        vk::PrimitiveTopology::eLineList, vk::PrimitiveTopology::eLineStrip,
+        vk::PrimitiveTopology::eLineList, vk::PrimitiveTopology::eLineStrip
         // VK_PRIMITIVE_TOPOLOGY_LINE_LOOP_EXT,
     };
     return std::ranges::find(line_topologies, topology) == line_topologies.end();
@@ -181,13 +211,19 @@ ConfigureFuncPtr ConfigureFunc(const std::array<ShaderModule, NUM_STAGES>& modul
 }
 }  // namespace
 
-bool GraphicsPipelineCacheKey::operator==(const GraphicsPipelineCacheKey& rhs) const noexcept {
+auto GraphicsPipelineCacheKey::operator==(const GraphicsPipelineCacheKey& rhs) const noexcept
+    -> bool {
     return std::memcmp(&rhs, this, Size()) == 0;
 }
 
+auto GraphicsPipelineCacheKey::Hash() const noexcept -> size_t {
+    const u64 hash = common::CityHash64(reinterpret_cast<const char*>(this), Size());
+    return static_cast<size_t>(hash);
+}
+
 GraphicsPipeline::GraphicsPipeline(
-    scheduler::Scheduler& scheduler, PipelineCache& pipeline_cache_, ShaderNotify* shader_notify,
-    const Device& device, resource::DescriptorPool& descriptor_pool,
+    scheduler::Scheduler& scheduler, VulkanPipelineCache& pipeline_cache_,
+    ShaderNotify* shader_notify, const Device& device, resource::DescriptorPool& descriptor_pool,
     GuestDescriptorQueue& guest_descriptor_queue_, common::ThreadWorker* worker_thread,
     pipeline::PipelineStatistics* pipeline_statistics, RenderPassCache& render_pass_cache,
     const GraphicsPipelineCacheKey& key, std::array<ShaderModule, NUM_STAGES> stages,
@@ -309,7 +345,7 @@ void GraphicsPipeline::ConfigureDraw(const pipeline::RescalingPushConstant& resc
     //     }
     // });
 }
-
+GraphicsPipeline::~GraphicsPipeline() = default;
 void GraphicsPipeline::validate() {
     size_t num_images{};
     for (const auto& info : stage_infos) {

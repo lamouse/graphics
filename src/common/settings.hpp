@@ -16,6 +16,7 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         bool async_presentation = false;
         bool render_debug = true;
         bool renderer_force_max_clock = false;
+        bool use_pipeline_cache = true;
         enums::VSyncMode vSyncMode = enums::VSyncMode::Mailbox;
         enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
         static auto get() { return RenderVulkan{}; }
@@ -30,6 +31,7 @@ class Graphics : public common::settings::BaseSetting<Graphics> {
         enums::AstcRecompression astc_recompression;
         enums::AstcDecodeMode astc_decodeMode = enums::AstcDecodeMode::Gpu;
         enums::ScalingFilter scaling_filter = enums::ScalingFilter::Fsr;
+        bool use_asynchronous_shaders = true;
         static auto get() { return Graphics{}; }
 };
 

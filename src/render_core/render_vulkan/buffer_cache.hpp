@@ -1,6 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include "buffer_cache/buffer.base.hpp"
+#include "buffer_cache/buffer_base.hpp"
 #include "surface.hpp"
 #include "buffer_cache/usage_tracker.hpp"
 namespace render_vulkan {

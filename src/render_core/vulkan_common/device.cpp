@@ -1271,7 +1271,7 @@ auto Device::getDeviceMemoryUsage() const -> u64 {
     return result;
 }
 
-bool Device::shouldBoostClocks() const {
+auto Device::shouldBoostClocks() const -> bool {
     const auto driver_id = properties_.driver_.driverID;
     const auto vendor_id = properties_.properties_.vendorID;
     const auto device_id = properties_.properties_.deviceID;
@@ -1289,6 +1289,10 @@ bool Device::shouldBoostClocks() const {
     const bool is_debugging = this->hasDebuggingToolAttached();
 
     return validated_driver && !is_steam_deck && !is_debugging;
+}
+
+void Device::initDispatchLoaderDynamic(vk::Instance instance) {
+    logical_.initDispatchLoaderDynamic(instance);
 }
 
 }  // namespace render::vulkan

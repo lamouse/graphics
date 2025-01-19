@@ -509,7 +509,7 @@ class Queue {
         vk::Queue queue = nullptr;
 };
 
-class BufferView : public wrapper::Handle<vk::BufferView, vk::Device> {
+class VulkanBufferView : public wrapper::Handle<vk::BufferView, vk::Device> {
         using Handle<vk::BufferView, vk::Device>::Handle;
 
     public:
@@ -597,14 +597,14 @@ class ShaderModule : public wrapper::Handle<vk::ShaderModule, vk::Device> {
         void SetObjectNameEXT(const char* name) const;
 };
 
-class PipelineCache : public wrapper::Handle<vk::PipelineCache, vk::Device> {
+class VulkanPipelineCache : public wrapper::Handle<vk::PipelineCache, vk::Device> {
         using Handle<vk::PipelineCache, vk::Device>::Handle;
 
     public:
         /// Set object name.
         void SetObjectNameEXT(const char* name) const;
 
-        vk::Result Read(size_t* size, void* data) const noexcept {
+        auto Read(size_t* size, void* data) const noexcept -> vk::Result {
             return owner.getPipelineCacheData(handle, size, data);
         }
 };
@@ -682,7 +682,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
 
         [[nodiscard]] auto createRenderPass(const vk::RenderPassCreateInfo&) const -> RenderPass;
 
-        [[nodiscard]] auto CreateBufferView(const vk::BufferViewCreateInfo& ci) const -> BufferView;
+        [[nodiscard]] auto CreateBufferView(const vk::BufferViewCreateInfo& ci) const
+            -> VulkanBufferView;
 
         [[nodiscard]] auto CreateImageView(const vk::ImageViewCreateInfo& ci) const -> ImageView;
         [[nodiscard]] auto CreateSampler(const vk::SamplerCreateInfo& ci) const -> Sampler;
@@ -691,9 +692,22 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
             -> Framebuffer;
 
         [[nodiscard]] auto createEvent(const vk::EventCreateInfo& ci) const -> Event;
+        [[nodiscard]] auto createEvent() const -> Event;
 
         [[nodiscard]] auto createSwapchainKHR(const vk::SwapchainCreateInfoKHR& ci) const
             -> SwapchainKHR;
+
+        void UpdateDescriptorSet(vk::DescriptorSet set,
+                                 vk::DescriptorUpdateTemplate update_template,
+                                 const void* data) const noexcept;
+        [[nodiscard]] auto getDispatchLoaderDynamic() const noexcept -> vk::DispatchLoaderDynamic {
+            return dld;
+        };
+
+        void initDispatchLoaderDynamic(vk::Instance instance) noexcept;
+
+    private:
+        vk::DispatchLoaderDynamic dld;
 };
 
 }  // namespace render::vulkan

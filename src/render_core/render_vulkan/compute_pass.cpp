@@ -8,9 +8,15 @@
 #include "common/vector_math.h"
 #include "render_core/host_shaders/convert_msaa_to_non_msaa_comp_spv.h"
 #include "render_core/host_shaders/convert_non_msaa_to_msaa_comp_spv.h"
+#include "render_core/host_shaders/vulkan_quad_indexed_comp_spv.h"
 #include "render_core/host_shaders/astc_decoder_comp_spv.h"
+#include "render_core/host_shaders/vulkan_uint8_comp_spv.h"
 #include "texture/accelerated_swizzle.h"
 #include "staging_buffer_pool.hpp"
+
+#if defined(MemoryBarrier)
+#undef MemoryBarrier
+#endif
 namespace render::vulkan {
 namespace {
 constexpr u32 ASTC_BINDING_INPUT_BUFFER = 0;
@@ -394,4 +400,101 @@ void ASTCDecoderPass::Assemble(TextureImage& image, const StagingBufferRef& map,
 
 ASTCDecoderPass::~ASTCDecoderPass() = default;
 
+QuadIndexedPass::QuadIndexedPass(const Device& device_, scheduler::Scheduler& scheduler_,
+                                 resource::DescriptorPool& descriptor_pool_,
+                                 StagingBufferPool& staging_buffer_pool_,
+                                 ComputePassDescriptorQueue& compute_pass_descriptor_queue_)
+    : ComputePass(device_, descriptor_pool_, INPUT_OUTPUT_DESCRIPTOR_SET_BINDINGS,
+                  INPUT_OUTPUT_DESCRIPTOR_UPDATE_TEMPLATE, INPUT_OUTPUT_BANK_INFO,
+                  COMPUTE_PUSH_CONSTANT_RANGE<sizeof(u32) * 3>, VULKAN_QUAD_INDEXED_COMP_SPV),
+      scheduler{scheduler_},
+      staging_buffer_pool{staging_buffer_pool_},
+      compute_pass_descriptor_queue{compute_pass_descriptor_queue_} {}
+
+QuadIndexedPass::~QuadIndexedPass() = default;
+
+auto QuadIndexedPass::Assemble(IndexFormat index_format, u32 num_vertices, u32 base_vertex,
+                               vk::Buffer src_buffer, u32 src_offset, bool is_strip)
+    -> std::pair<vk::Buffer, vk::DeviceSize> {
+    const u32 index_shift = [index_format] {
+        switch (index_format) {
+            case IndexFormat::UnsignedByte:
+                return 0;
+            case IndexFormat::UnsignedShort:
+                return 1;
+            case IndexFormat::UnsignedInt:
+                return 2;
+        }
+        assert(false);
+        return 2;
+    }();
+    const u32 input_size = num_vertices << index_shift;
+    const u32 num_tri_vertices = (is_strip ? (num_vertices - 2) / 2 : num_vertices / 4) * 6;
+
+    const std::size_t staging_size = num_tri_vertices * sizeof(u32);
+    const auto staging = staging_buffer_pool.Request(staging_size, MemoryUsage::DeviceLocal);
+
+    compute_pass_descriptor_queue.Acquire();
+    compute_pass_descriptor_queue.AddBuffer(src_buffer, src_offset, input_size);
+    compute_pass_descriptor_queue.AddBuffer(staging.buffer, staging.offset, staging_size);
+    const void* const descriptor_data{compute_pass_descriptor_queue.UpdateData()};
+
+    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.record([this, descriptor_data, num_tri_vertices, base_vertex, index_shift,
+                      is_strip](vk::CommandBuffer cmdbuf) {
+        static constexpr u32 DISPATCH_SIZE = 1024;
+
+        static constexpr vk::MemoryBarrier WRITE_BARRIER{vk::AccessFlagBits::eShaderWrite,
+                                                         vk::AccessFlagBits::eIndexRead};
+        const std::array<u32, 3> push_constants{base_vertex, index_shift, is_strip ? 1u : 0u};
+        const vk::DescriptorSet set = descriptor_allocator.commit();
+        device_.logical().UpdateDescriptorSet(set, *descriptor_template, descriptor_data);
+        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute, *pipeline);
+        cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *layout, 0, set, {});
+        cmdbuf.pushConstants(*layout, vk::ShaderStageFlagBits::eCompute, 0, sizeof(push_constants),
+                             &push_constants);
+        cmdbuf.dispatch(common::DivCeil(num_tri_vertices, DISPATCH_SIZE), 1, 1);
+        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                               vk::PipelineStageFlagBits::eVertexInput, {}, WRITE_BARRIER, {}, {});
+    });
+    return {staging.buffer, staging.offset};
+}
+
+Uint8Pass::Uint8Pass(const Device& device_, scheduler::Scheduler& scheduler_,
+                     resource::DescriptorPool& descriptor_pool,
+                     StagingBufferPool& staging_buffer_pool_,
+                     ComputePassDescriptorQueue& compute_pass_descriptor_queue_)
+    : ComputePass(device_, descriptor_pool, INPUT_OUTPUT_DESCRIPTOR_SET_BINDINGS,
+                  INPUT_OUTPUT_DESCRIPTOR_UPDATE_TEMPLATE, INPUT_OUTPUT_BANK_INFO, {},
+                  VULKAN_UINT8_COMP_SPV),
+      scheduler{scheduler_},
+      staging_buffer_pool{staging_buffer_pool_},
+      compute_pass_descriptor_queue{compute_pass_descriptor_queue_} {}
+
+Uint8Pass::~Uint8Pass() = default;
+auto Uint8Pass::Assemble(u32 num_vertices, vk::Buffer src_buffer, u32 src_offset)
+    -> std::pair<vk::Buffer, vk::DeviceSize> {
+    const u32 staging_size = static_cast<u32>(num_vertices * sizeof(u16));
+    const auto staging = staging_buffer_pool.Request(staging_size, MemoryUsage::DeviceLocal);
+
+    compute_pass_descriptor_queue.Acquire();
+    compute_pass_descriptor_queue.AddBuffer(src_buffer, src_offset, num_vertices);
+    compute_pass_descriptor_queue.AddBuffer(staging.buffer, staging.offset, staging_size);
+    const void* const descriptor_data{compute_pass_descriptor_queue.UpdateData()};
+
+    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.record([this, descriptor_data, num_vertices](vk::CommandBuffer cmdbuf) {
+        static constexpr u32 DISPATCH_SIZE = 1024;
+        static constexpr vk::MemoryBarrier WRITE_BARRIER{vk::AccessFlagBits::eShaderWrite,
+                                                         vk::AccessFlagBits::eVertexAttributeRead};
+        const vk::DescriptorSet set = descriptor_allocator.commit();
+        device_.logical().UpdateDescriptorSet(set, *descriptor_template, descriptor_data);
+        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute, *pipeline);
+        cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *layout, 0, set, {});
+        cmdbuf.dispatch(common::DivCeil(num_vertices, DISPATCH_SIZE), 1, 1);
+        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                               vk::PipelineStageFlagBits::eVertexInput, {}, WRITE_BARRIER, {}, {});
+    });
+    return {staging.buffer, staging.offset};
+}
 }  // namespace render::vulkan

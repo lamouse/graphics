@@ -14,6 +14,7 @@
 #include "render_core/texture/image_view_base.hpp"
 #include "render_core/texture/render_targets.h"
 #include "common/settings.hpp"
+#include "render_core/texture_cache/texture_cache.h"
 
 namespace render::vulkan {
 class BlitImageHelper;
@@ -47,11 +48,11 @@ class TextureCacheRuntime {
 
         void TickFrame();
 
-        u64 GetDeviceLocalMemory() const;
+        [[nodiscard]] auto GetDeviceLocalMemory() const -> u64;
 
-        u64 GetDeviceMemoryUsage() const;
+        [[nodiscard]] auto GetDeviceMemoryUsage() const -> u64;
 
-        bool CanReportMemoryUsage() const;
+        [[nodiscard]] auto CanReportMemoryUsage() const -> bool;
 
         void BlitImage(TextureFramebuffer* dst_framebuffer, TextureImageView& dst,
                        TextureImageView& src, const render::texture::Region2D& dst_region,
@@ -63,7 +64,7 @@ class TextureCacheRuntime {
         void CopyImageMSAA(TextureImage& dst, TextureImage& src,
                            std::span<const render::texture::ImageCopy> copies);
 
-        bool ShouldReinterpret(TextureImage& dst, TextureImage& src);
+        auto ShouldReinterpret(TextureImage& dst, TextureImage& src) -> bool;
 
         void ReinterpretImage(TextureImage& dst, TextureImage& src,
                               std::span<const render::texture::ImageCopy> copies);
@@ -236,7 +237,8 @@ class TextureImageView : public render::texture::ImageViewBase {
                 std::array<ImageView, shader::NUM_TEXTURE_TYPES> unsigneds;
         };
 
-        [[nodiscard]] ImageView MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask);
+        [[nodiscard]] auto MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask)
+            -> ImageView;
 
         const Device* device = nullptr;
         const common::SlotVector<TextureImage>* slot_images = nullptr;
@@ -354,5 +356,7 @@ struct TextureCacheParams {
         using AsyncBuffer = render::vulkan::StagingBufferRef;
         using BufferType = vk::Buffer;
 };
+
+using TextureCache = render::texture::TextureCache<TextureCacheParams>;
 
 }  // namespace render::vulkan

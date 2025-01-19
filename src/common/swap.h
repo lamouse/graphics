@@ -15,7 +15,7 @@
 #include <type_traits>
 #include "common_types.hpp"
 
-namespace Common {
+namespace common {
 
 #ifdef _MSC_VER
 [[nodiscard]] inline u16 swap16(u16 data) noexcept { return _byteswap_ushort(data); }
@@ -70,7 +70,7 @@ namespace Common {
     return f;
 }
 
-}  // Namespace Common
+}  // namespace common
 
 template <typename T, typename F>
 struct swap_struct_t {
@@ -416,27 +416,27 @@ bool operator==(const S& p, const swap_struct_t<T, F> v) {
 
 template <typename T>
 struct swap_64_t {
-        static T swap(T x) { return static_cast<T>(Common::swap64(x)); }
+        static T swap(T x) { return static_cast<T>(common::swap64(x)); }
 };
 
 template <typename T>
 struct swap_32_t {
-        static T swap(T x) { return static_cast<T>(Common::swap32(x)); }
+        static T swap(T x) { return static_cast<T>(common::swap32(x)); }
 };
 
 template <typename T>
 struct swap_16_t {
-        static T swap(T x) { return static_cast<T>(Common::swap16(x)); }
+        static T swap(T x) { return static_cast<T>(common::swap16(x)); }
 };
 
 template <typename T>
 struct swap_float_t {
-        static T swap(T x) { return static_cast<T>(Common::swapf(x)); }
+        static T swap(T x) { return static_cast<T>(common::swapf(x)); }
 };
 
 template <typename T>
 struct swap_double_t {
-        static T swap(T x) { return static_cast<T>(Common::swapd(x)); }
+        static T swap(T x) { return static_cast<T>(common::swapd(x)); }
 };
 
 template <typename T>

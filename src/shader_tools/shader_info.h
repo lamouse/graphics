@@ -173,7 +173,7 @@ struct Info {
         uint32_t constant_buffer_mask{};
         std::array<uint32_t, MAX_CBUFS> constant_buffer_used_sizes{};
         uint32_t nvn_buffer_base{};
-        std::bitset<16> nvn_buffer_used{};
+        std::bitset<16> nvn_buffer_used;
 
         bool requires_layer_emulation{};
         IR::Attribute emulated_layer{};

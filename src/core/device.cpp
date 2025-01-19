@@ -95,13 +95,17 @@ const ::std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validat
 class VKResource {
     private:
         void clean() const {
-            device_.destroyCommandPool(cmdPool_);
-            device_.destroy();
-            vkInstance.destroyDebugUtilsMessengerEXT(
-                debugMessenger, nullptr,
-                vk::DispatchLoaderDynamic{vkInstance, vkGetInstanceProcAddr});
-            vkInstance.destroySurfaceKHR(vkSurfaceKHR);
-            vkInstance.destroy();
+            if (device_) {
+                device_.destroyCommandPool(cmdPool_);
+                device_.destroy();
+            }
+            if (vkInstance) {
+                vkInstance.destroyDebugUtilsMessengerEXT(
+                    debugMessenger, nullptr,
+                    vk::DispatchLoaderDynamic{vkInstance, vkGetInstanceProcAddr});
+                vkInstance.destroySurfaceKHR(vkSurfaceKHR);
+                vkInstance.destroy();
+            }
         }
 
     public:

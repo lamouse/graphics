@@ -7,6 +7,11 @@
 #include "render_core/vulkan_common/memory_allocator.hpp"
 
 namespace render::vulkan {
+enum class IndexFormat : u32 {
+    UnsignedByte = 0x0,
+    UnsignedShort = 0x1,
+    UnsignedInt = 0x2,
+};
 class Device;
 class TextureImage;
 class StagingBufferPool;
@@ -75,4 +80,42 @@ class MSAACopyPass final : public ComputePass {
         std::array<ShaderModule, 2> modules;
         std::array<Pipeline, 2> pipelines;
 };
+
+class QuadIndexedPass final : public ComputePass {
+    public:
+        explicit QuadIndexedPass(const Device& device_, scheduler::Scheduler& scheduler_,
+                                 resource::DescriptorPool& descriptor_pool_,
+                                 StagingBufferPool& staging_buffer_pool_,
+                                 ComputePassDescriptorQueue& compute_pass_descriptor_queue_);
+        ~QuadIndexedPass();
+
+        auto Assemble(IndexFormat index_format, u32 num_vertices, u32 base_vertex,
+                      vk::Buffer src_buffer, u32 src_offset, bool is_strip)
+            -> std::pair<vk::Buffer, vk::DeviceSize>;
+
+    private:
+        scheduler::Scheduler& scheduler;
+        StagingBufferPool& staging_buffer_pool;
+        ComputePassDescriptorQueue& compute_pass_descriptor_queue;
+};
+
+class Uint8Pass final : public ComputePass {
+    public:
+        explicit Uint8Pass(const Device& device_, scheduler::Scheduler& scheduler_,
+                           resource::DescriptorPool& descriptor_pool_,
+                           StagingBufferPool& staging_buffer_pool_,
+                           ComputePassDescriptorQueue& compute_pass_descriptor_queue_);
+        ~Uint8Pass();
+
+        /// Assemble uint8 indices into an uint16 index buffer
+        /// Returns a pair with the staging buffer, and the offset where the assembled data is
+        auto Assemble(u32 num_vertices, vk::Buffer src_buffer, u32 src_offset)
+            -> std::pair<vk::Buffer, vk::DeviceSize>;
+
+    private:
+        scheduler::Scheduler& scheduler;
+        StagingBufferPool& staging_buffer_pool;
+        ComputePassDescriptorQueue& compute_pass_descriptor_queue;
+};
+
 }  // namespace render::vulkan

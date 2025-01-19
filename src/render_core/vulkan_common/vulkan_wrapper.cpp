@@ -22,7 +22,7 @@ void SortPhysicalDevices(std::vector<vk::PhysicalDevice>& devices, Func&& func) 
 
 void SortPhysicalDevicesPerVendor(std::vector<vk::PhysicalDevice>& devices,
                                   std::initializer_list<u32> vendor_ids) {
-    for (auto it = vendor_ids.end(); it != vendor_ids.begin();) {
+    for (const auto* it = vendor_ids.end(); it != vendor_ids.begin();) {
         --it;
         SortPhysicalDevices(devices, [id = *it](const auto& lhs, const auto& rhs) {
             return lhs.vendorID == id && rhs.vendorID != id;
@@ -176,7 +176,7 @@ DebugReportCallback Instance::CreateDebugReportCallback(
     return DebugReportCallback(object, handle);
 }
 
-void BufferView::SetObjectNameEXT(const char* name) const {
+void VulkanBufferView::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eBufferView, name);
 }
 
@@ -228,7 +228,7 @@ void ShaderModule::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eShaderModule, name);
 }
 
-void PipelineCache::SetObjectNameEXT(const char* name) const {
+void VulkanPipelineCache::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::ePipelineCache, name);
 }
 void Semaphore::SetObjectNameEXT(const char* name) const {
@@ -312,9 +312,9 @@ auto LogicDevice::tryAllocateMemory(const VkMemoryAllocateInfo& ai) const noexce
     return RenderPass{render_pass, handle};
 }
 
-auto LogicDevice::CreateBufferView(const vk::BufferViewCreateInfo& ci) const -> BufferView {
+auto LogicDevice::CreateBufferView(const vk::BufferViewCreateInfo& ci) const -> VulkanBufferView {
     vk::BufferView object = handle.createBufferView(ci);
-    return BufferView(object, handle);
+    return VulkanBufferView(object, handle);
 }
 
 auto LogicDevice::CreateImageView(const vk::ImageViewCreateInfo& ci) const -> ImageView {
@@ -346,6 +346,23 @@ auto LogicDevice::createEvent(const vk::EventCreateInfo& ci) const -> Event {
     -> SwapchainKHR {
     auto swapchain = handle.createSwapchainKHR(ci);
     return SwapchainKHR(swapchain, handle);
+}
+
+void LogicDevice::UpdateDescriptorSet(vk::DescriptorSet set,
+                                      vk::DescriptorUpdateTemplate update_template,
+                                      const void* data) const noexcept {
+    handle.updateDescriptorSetWithTemplate(set, update_template, data);
+}
+
+[[nodiscard]] auto LogicDevice::createEvent() const -> Event {
+    static constexpr vk::EventCreateInfo ci{};
+
+    auto object = handle.createEvent(ci);
+    return Event(object, handle);
+}
+
+void LogicDevice::initDispatchLoaderDynamic(vk::Instance instance) noexcept {
+    dld = vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr, handle, vkGetDeviceProcAddr};
 }
 
 }  // namespace render::vulkan

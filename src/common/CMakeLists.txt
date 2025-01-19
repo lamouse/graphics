@@ -1,5 +1,6 @@
 aux_source_directory(. RENDER_CORE_SRC)
-add_library(common STATIC ${RENDER_CORE_SRC})
+aux_source_directory(./fs FS_SRC)
+add_library(common STATIC ${RENDER_CORE_SRC} ${FS_SRC})
 #add_library(core STATIC ${CORE_SRC})
 if (MSVC)
     target_compile_options(common PRIVATE
