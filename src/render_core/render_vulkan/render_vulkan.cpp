@@ -37,6 +37,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
         turbo_mode.emplace(instance);
         scheduler.registerOnSubmit([this] { turbo_mode->QueueSubmitted(); });
     }
+
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("Vulkan initialization failed with error: {}", exception.what());
     throw std::runtime_error{fmt::format("Vulkan initialization error {}", exception.what())};

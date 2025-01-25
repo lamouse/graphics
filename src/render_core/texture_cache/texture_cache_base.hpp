@@ -8,6 +8,7 @@
 
 #include <boost/container/small_vector.hpp>
 #include "render_core/texture/types.hpp"
+#include "render_core/texture/image_info.hpp"
 
 namespace render::texture {
 using namespace common::literals;
@@ -76,8 +77,25 @@ class TextureCache : public TextureCacheInfo {
         explicit TextureCache(Runtime&);
         ~TextureCache() = default;
 
+        /// Mark images in a range as modified from the CPU
+        void WriteMemory(void* data, size_t size);
+        /// Create an image from the given parameters
+        [[nodiscard]] auto InsertImage(const ImageInfo& info, RelaxedOptions options) -> ImageId;
+
+        /// Create a new image and join perfectly matching existing images
+        /// Remove joined images from the cache
+        [[nodiscard]] auto JoinImages(const ImageInfo& info) -> ImageId;
+
     private:
         Runtime& runtime;
+
+        common::SlotVector<Image> slot_images;
+        common::SlotVector<ImageView> slot_image_views;
+        common::SlotVector<ImageAlloc> slot_image_allocs;
+        common::SlotVector<Sampler> slot_samplers;
+        // common::SlotVector<Framebuffer> slot_framebuffers;
+
+        std::unordered_map<GPUVAddr, ImageAllocId> image_allocs_table;
 };
 
 }  // namespace render::texture

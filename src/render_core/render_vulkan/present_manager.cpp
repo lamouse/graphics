@@ -443,7 +443,7 @@ void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
                   dld};
 
     const vk::ImageView image_view{*frame->image_view};
-    frame->framebuffer = Framebuffer{
+    frame->framebuffer = VulkanFramebuffer{
         dld.createFramebuffer(vk::FramebufferCreateInfo{{}, rd, image_view, width, height, 1}),
         dld};
 }

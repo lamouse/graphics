@@ -8,21 +8,21 @@
 #include "core/frontend/window.hpp"
 #include "g_defines.hpp"
 namespace g {
-class Window : public core::frontend::BaseWindow {
+class ScreenWindow : public core::frontend::BaseWindow {
     private:
         GLFWwindow *window;
         void initWindow();
         ::std::string title_;
 
     public:
-        Window(ScreenExtent extent, ::std::string title);
-        Window(const Window &) = delete;
-        auto operator=(const Window &) -> Window & = delete;
-        Window(Window &&) noexcept;
-        auto operator=(Window &&) noexcept -> Window &;
+        ScreenWindow(ScreenExtent extent, ::std::string title);
+        ScreenWindow(const ScreenWindow &) = delete;
+        auto operator=(const ScreenWindow &) -> ScreenWindow & = delete;
+        ScreenWindow(ScreenWindow &&) noexcept;
+        auto operator=(ScreenWindow &&) noexcept -> ScreenWindow &;
         auto operator()() -> GLFWwindow * { return window; }
-        Window() = default;
-        ~Window() override;
+        ScreenWindow() = default;
+        ~ScreenWindow() override;
         [[nodiscard]] auto IsShown() const -> bool override;
         [[nodiscard]] auto IsMinimized() const -> bool override;
         [[nodiscard]] auto shouldClose() const -> bool override;
@@ -30,6 +30,7 @@ class Window : public core::frontend::BaseWindow {
         [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
             return getWindowConfig();
         }
+        void pullEvents() override { glfwPollEvents(); }
         [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
         static auto getRequiredInstanceExtends(bool enableValidationLayers)
             -> ::std::vector<const char *>;

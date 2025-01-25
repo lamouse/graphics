@@ -30,7 +30,7 @@ add_subdirectory(host_shaders)
 
 add_dependencies(render-core host_shaders)
 target_include_directories(render-core PRIVATE ${HOST_SHADERS_INCLUDE})
-
+target_include_directories(render-core PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
 target_link_libraries(render-core PUBLIC core common shader)
 target_link_libraries(render-core PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
 target_link_libraries(render-core PUBLIC spdlog::spdlog)

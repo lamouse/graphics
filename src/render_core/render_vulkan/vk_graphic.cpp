@@ -28,4 +28,6 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       wfi_event(device.logical().createEvent()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;
+
+void VulkanGraphics::addTexture(const texture::ImageInfo& imageInfo) {}
 }  // namespace render::vulkan

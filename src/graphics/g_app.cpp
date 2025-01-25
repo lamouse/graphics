@@ -8,13 +8,11 @@
 #include "g_game_object.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
-// imgui begin
-#include "g_imgui.hpp"
 #include "resource/image_texture.hpp"
-// imgui end
+#include "render_core/surface.hpp"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
-#include <chrono>
+#include "glfw_window.hpp"
 #include <thread>
 #include "render_core/framebufferConfig.hpp"
 
@@ -50,7 +48,6 @@ void App::run() {
     auto layout = window->getFramebufferLayout();
     render::frame::FramebufferConfig frames{
         .width = layout.width, .height = layout.height, .stride = 1};
-    render_base->composite(std::span{&frames, 1});
 
     // core::Device device_;
     // auto gameObjects = loadGameObjects();
@@ -70,8 +67,18 @@ void App::run() {
     //             ::vk::MemoryPropertyFlagBits::eHostCoherent));
     //     uboBuffer->map();
     // }
-    // ::std::string s(image_path + "viking_room.png");
-    // resource::image::Image img(s);
+    auto* graphics = render_base->getGraphics();
+    ::std::string s(image_path + "viking_room.png");
+    resource::image::Image img(s);
+    render::texture::ImageInfo imageInfo;
+
+    imageInfo.format = render::surface::PixelFormat::B8G8R8A8_UNORM;
+    imageInfo.type = render::texture::ImageType::e2D;
+    imageInfo.size = render::texture::Extent3D{static_cast<u32>(img.getImageInfo().width),
+                                               static_cast<u32>(img.getImageInfo().height), 1};
+    imageInfo.layer_stride = 4;
+    imageInfo.num_samples = 1;
+    graphics->addTexture(imageInfo);
     // resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
 
     // ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
@@ -89,9 +96,12 @@ void App::run() {
     // descriptorPool_->getDescriptorPool(),
     //             static_cast<::vk::RenderPass>(render),
     //             window->getWindowSystemInfo().render_surface_scale);
+    render_base->composite(std::span{&frames, 1});
+
     while (!window->shouldClose()) {
-        glfwPollEvents();
+        window->pullEvents();
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
         // if (window->IsMinimized()) {
         //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
         //     continue;
@@ -120,22 +130,11 @@ void App::run() {
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    window = std::make_unique<Window>(
+    window = std::make_unique<ScreenWindow>(
         ScreenExtent{.width = window_config.width, .height = window_config.height},
         window_config.title);
 
-    auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
-    auto requiredInstanceExtends =
-        Window::getRequiredInstanceExtends(vulkan_config.validation_layers);
-    auto deviceExtensions = config::getDeviceExtensions();
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
-    // core::Device::init(
-    //     requiredInstanceExtends, deviceExtensions,
-    //     [this](VkInstance instance) -> VkSurfaceKHR {
-    //         return dynamic_cast<Window*>(window.get())->getSurface(instance);
-    //         // return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
-    //     },
-    //     vulkan_config.validation_layers);
 }
 
 App::~App() { core::Device::destroy(); };

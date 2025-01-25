@@ -183,7 +183,7 @@ void VulkanBufferView::SetObjectNameEXT(const char* name) const {
 void ImageView::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eImageView, name);
 }
-void Framebuffer::SetObjectNameEXT(const char* name) const {
+void VulkanFramebuffer::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eFramebuffer, name);
 }
 
@@ -332,9 +332,10 @@ auto LogicDevice::CreateSampler(const vk::SamplerCreateInfo& ci) const -> Sample
     return Sampler(object, handle);
 }
 
-auto LogicDevice::createFramerBuffer(const vk::FramebufferCreateInfo& ci) const -> Framebuffer {
+auto LogicDevice::createFramerBuffer(const vk::FramebufferCreateInfo& ci) const
+    -> VulkanFramebuffer {
     auto frame_buffer = handle.createFramebuffer(ci);
-    return Framebuffer{frame_buffer, handle};
+    return VulkanFramebuffer{frame_buffer, handle};
 }
 
 auto LogicDevice::createEvent(const vk::EventCreateInfo& ci) const -> Event {

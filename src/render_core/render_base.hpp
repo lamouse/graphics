@@ -5,6 +5,7 @@
 #include "framebufferConfig.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
+#include "render_core/graphic.hpp"
 
 namespace render {
 class RenderBase {
@@ -20,7 +21,9 @@ class RenderBase {
         virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
         [[nodiscard]] auto getCurrentFPS() const -> float;
         [[nodiscard]] auto getCurrentFrame() const -> int;
+
         virtual auto getAppletCaptureBuffer() -> std::vector<u8> = 0;
+        virtual auto getGraphics() -> Graphic* = 0;
 
     protected:
         core::frontend::BaseWindow* window_;

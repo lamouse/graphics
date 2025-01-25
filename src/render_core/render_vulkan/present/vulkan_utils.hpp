@@ -46,7 +46,7 @@ auto CreateWriteDescriptorSet(std::vector<vk::DescriptorImageInfo>& images, vk::
     -> vk::WriteDescriptorSet;
 
 auto CreateWrappedFramebuffer(const Device& device, RenderPass& render_pass, ImageView& dest_image,
-                              vk::Extent2D extent) -> Framebuffer;
+                              vk::Extent2D extent) -> VulkanFramebuffer;
 
 auto CreateBilinearSampler(const Device& device) -> Sampler;
 

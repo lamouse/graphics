@@ -7,10 +7,11 @@
 #include <vector>
 
 #include "glfw_common.hpp"
+#include "imgui_impl_glfw.h"
 
 namespace g {
 
-Window::Window(ScreenExtent extent, ::std::string title) : title_{std::move(title)} {
+ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{std::move(title)} {
     ::glfwInit();
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -39,18 +40,18 @@ Window::Window(ScreenExtent extent, ::std::string title) : title_{std::move(titl
     window_info.render_surface = GLFWCommon::get_windows_handles(window);
     initWindow();
 }
-void Window::initWindow() {
+void ScreenWindow::initWindow() {
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* glfw_window, int, int) {
         int w{}, h{};
         glfwGetFramebufferSize(glfw_window, &w, &h);
-        auto* base_window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+        auto* base_window = reinterpret_cast<ScreenWindow*>(glfwGetWindowUserPointer(glfw_window));
         base_window->notifyFramebufferLayoutChanged(
             {.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h)});
     });
 }
 
-auto Window::getSurface(VkInstance instance) -> VkSurfaceKHR {
+auto ScreenWindow::getSurface(VkInstance instance) -> VkSurfaceKHR {
     VkSurfaceKHR surface{};
     const auto result = ::glfwCreateWindowSurface(instance, window, nullptr, &surface);
     if (result != VK_SUCCESS) {
@@ -59,7 +60,8 @@ auto Window::getSurface(VkInstance instance) -> VkSurfaceKHR {
     return surface;
 }
 
-auto Window::getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::vector<const char*> {
+auto ScreenWindow::getRequiredInstanceExtends(bool enableValidationLayers)
+    -> ::std::vector<const char*> {
     uint32_t count{0};
     const char** glfwExtends = ::glfwGetRequiredInstanceExtensions(&count);
     std::vector<const char*> extends(count);
@@ -76,7 +78,7 @@ auto Window::getRequiredInstanceExtends(bool enableValidationLayers) -> ::std::v
     return extends;
 }
 
-auto Window::getExtent() -> ScreenExtent {
+auto ScreenWindow::getExtent() -> ScreenExtent {
     int width{}, height{};
     glfwGetFramebufferSize(window, &width, &height);
     while (width == 0 || height == 0) {
@@ -86,21 +88,24 @@ auto Window::getExtent() -> ScreenExtent {
     return {width, height};
 }
 
-Window::~Window() {
+ScreenWindow::~ScreenWindow() {
     if (window) {
+        ImGui_ImplGlfw_Shutdown();
+
         glfwDestroyWindow(window);
         glfwTerminate();
     }
 }
 
-Window::Window(Window&& w) noexcept : window(w.window), title_(std::move(w.title_)) {
+ScreenWindow::ScreenWindow(ScreenWindow&& w) noexcept
+    : window(w.window), title_(std::move(w.title_)) {
     spdlog::info("Window move constructor");
     w.window = nullptr;
     w.title_ = "";
     setWindowConfig(w.getWindowConfig());
     window_info = w.window_info;
 }
-auto Window::operator=(Window&& w) noexcept -> Window& {
+auto ScreenWindow::operator=(ScreenWindow&& w) noexcept -> ScreenWindow& {
     spdlog::info("Window move assignment");
     window = w.window;
     w.window = nullptr;
@@ -111,13 +116,13 @@ auto Window::operator=(Window&& w) noexcept -> Window& {
     return *this;
 }
 
-[[nodiscard]] auto Window::IsShown() const -> bool {
+[[nodiscard]] auto ScreenWindow::IsShown() const -> bool {
     return glfwGetWindowAttrib(window, GLFW_VISIBLE) != 0;
 }
-[[nodiscard]] auto Window::IsMinimized() const -> bool {
+[[nodiscard]] auto ScreenWindow::IsMinimized() const -> bool {
     return glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0;
 }
 
-auto Window::shouldClose() const -> bool { return glfwWindowShouldClose(window); }
+auto ScreenWindow::shouldClose() const -> bool { return glfwWindowShouldClose(window); }
 
 }  // namespace g

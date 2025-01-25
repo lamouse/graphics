@@ -21,7 +21,7 @@ struct Frame {
         uint32_t height;
         Image image;
         ImageView image_view;
-        Framebuffer framebuffer;
+        VulkanFramebuffer framebuffer;
         vk::CommandBuffer cmdbuf;
         Semaphore render_ready;
         Fence present_done;

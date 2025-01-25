@@ -2,7 +2,6 @@
 #include <memory>
 
 #include "../config.hpp"
-#include "glfw_window.hpp"
 #include "render_core/render_base.hpp"
 #include "system/system_config.hpp"
 namespace g {

@@ -7,6 +7,7 @@
 #include "render_core/render_vulkan/vk_turbo_mode.hpp"
 #include "render_core/render_vulkan/blit_screen.hpp"
 #include "render_core/render_vulkan/vk_graphic.hpp"
+#include "render_core/render_vulkan/vk_imgui.hpp"
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
@@ -23,6 +24,7 @@ class RendererVulkan final : public render::RenderBase {
         }
         void composite(std::span<frame::FramebufferConfig> frame_buffers) override;
         auto getAppletCaptureBuffer() -> std::vector<u8> override;
+        auto getGraphics() -> Graphic* override { return &vulkan_graphics; }
 
     private:
         void RenderAppletCaptureLayer(std::span<const frame::FramebufferConfig> framebuffers);
@@ -39,14 +41,11 @@ class RendererVulkan final : public render::RenderBase {
         scheduler::Scheduler scheduler;
         Swapchain swapchain;
         PresentManager present_manager;
-        // // BlitScreen blit_swapchain;
-        // // BlitScreen blit_capture;
-        // // BlitScreen blit_applet;
         BlitScreen blit_swapchain;
         BlitScreen blit_capture;
         VulkanGraphics vulkan_graphics;
         std::optional<TurboMode> turbo_mode;
-
+        std::optional<Imgui> imgui;
         Frame applet_frame;
 };
 

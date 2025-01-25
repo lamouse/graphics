@@ -234,7 +234,7 @@ auto CreateWrappedImageView(const Device& device, Image& image, vk::Format forma
 }
 
 auto CreateWrappedFramebuffer(const Device& device, RenderPass& render_pass, ImageView& dest_image,
-                              vk::Extent2D extent) -> Framebuffer {
+                              vk::Extent2D extent) -> VulkanFramebuffer {
     return device.logical().createFramerBuffer(vk::FramebufferCreateInfo{
 
         {},

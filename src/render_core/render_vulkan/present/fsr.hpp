@@ -51,7 +51,7 @@ class FSR {
                 DescriptorSets descriptor_sets;
                 std::array<Image, MaxFsrStage> images;
                 std::array<ImageView, MaxFsrStage> image_views;
-                std::array<Framebuffer, MaxFsrStage> framebuffers;
+                std::array<VulkanFramebuffer, MaxFsrStage> framebuffers;
         };
         std::vector<Images> m_dynamic_images;
         bool m_images_ready{};

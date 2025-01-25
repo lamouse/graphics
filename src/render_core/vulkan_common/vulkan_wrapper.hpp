@@ -541,7 +541,7 @@ class Fence : public wrapper::Handle<vk::Fence, vk::Device> {
         void Reset() const { owner.resetFences(handle); }
 };
 
-class Framebuffer : public wrapper::Handle<vk::Framebuffer, vk::Device> {
+class VulkanFramebuffer : public wrapper::Handle<vk::Framebuffer, vk::Device> {
         using Handle<vk::Framebuffer, vk::Device>::Handle;
 
     public:
@@ -689,7 +689,7 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
         [[nodiscard]] auto CreateSampler(const vk::SamplerCreateInfo& ci) const -> Sampler;
 
         [[nodiscard]] auto createFramerBuffer(const vk::FramebufferCreateInfo& ci) const
-            -> Framebuffer;
+            -> VulkanFramebuffer;
 
         [[nodiscard]] auto createEvent(const vk::EventCreateInfo& ci) const -> Event;
         [[nodiscard]] auto createEvent() const -> Event;

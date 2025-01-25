@@ -366,7 +366,7 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_HEIGHT_TABLE = {{
     1,   // D32_FLOAT_S8_UINT
 }};
 
-constexpr u32 DefaultBlockHeight(PixelFormat format) {
+constexpr auto DefaultBlockHeight(PixelFormat format) -> u32 {
     assert(static_cast<std::size_t>(format) < BLOCK_HEIGHT_TABLE.size());
     return BLOCK_HEIGHT_TABLE[static_cast<std::size_t>(format)];
 }
@@ -476,7 +476,7 @@ constexpr std::array<u8, MaxPixelFormat> BITS_PER_BLOCK_TABLE = {{
     64,   // D32_FLOAT_S8_UINT
 }};
 
-constexpr u32 BitsPerBlock(PixelFormat format) {
+constexpr auto BitsPerBlock(PixelFormat format) -> u32 {
     assert(static_cast<std::size_t>(format) < BITS_PER_BLOCK_TABLE.size());
     return BITS_PER_BLOCK_TABLE[static_cast<std::size_t>(format)];
 }
@@ -486,23 +486,23 @@ constexpr auto BytesPerBlock(PixelFormat pixel_format) -> u32 {
     return BitsPerBlock(pixel_format) / CHAR_BIT;
 }
 
-bool SurfaceTargetIsLayered(SurfaceTarget target);
+auto SurfaceTargetIsLayered(SurfaceTarget target) -> bool;
 
-bool SurfaceTargetIsArray(SurfaceTarget target);
+auto SurfaceTargetIsArray(SurfaceTarget target) -> bool;
 
-SurfaceType GetFormatType(PixelFormat pixel_format);
+auto GetFormatType(PixelFormat pixel_format) -> SurfaceType;
 
-bool IsPixelFormatASTC(PixelFormat format);
+auto IsPixelFormatASTC(PixelFormat format) -> bool;
 
-bool IsPixelFormatBCn(PixelFormat format);
+auto IsPixelFormatBCn(PixelFormat format) -> bool;
 
-bool IsPixelFormatSRGB(PixelFormat format);
+auto IsPixelFormatSRGB(PixelFormat format) -> bool;
 
-bool IsPixelFormatInteger(PixelFormat format);
+auto IsPixelFormatInteger(PixelFormat format) -> bool;
 
-bool IsPixelFormatSignedInteger(PixelFormat format);
+auto IsPixelFormatSignedInteger(PixelFormat format) -> bool;
 
-size_t PixelComponentSizeBitsInteger(PixelFormat format);
+auto PixelComponentSizeBitsInteger(PixelFormat format) -> size_t;
 
 std::pair<u32, u32> GetASTCBlockSize(PixelFormat format);
 

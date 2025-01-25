@@ -4,6 +4,7 @@
 #include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
 #include "render_core/framebufferConfig.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include <list>
 #include <memory>
 #include "core/frontend/framebuffer_layout.hpp"
@@ -46,13 +47,13 @@ class BlitScreen {
 
         [[nodiscard]] auto CreateFramebuffer(vk::ImageView image_view,
                                              const layout::FrameBufferLayout& layout,
-                                             vk::Format current_view_format) -> Framebuffer;
+                                             vk::Format current_view_format) -> VulkanFramebuffer;
 
     private:
         void WaitIdle();
         void SetWindowAdaptPass();
         auto CreateFramebuffer(const vk::ImageView& image_view, vk::Extent2D extent,
-                               vk::RenderPass render_pass) -> Framebuffer;
+                               vk::RenderPass render_pass) -> VulkanFramebuffer;
 
         const Device& device;
         MemoryAllocator& memory_allocator;

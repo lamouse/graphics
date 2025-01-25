@@ -65,6 +65,7 @@ class EXPORT BaseWindow {
         void UpdateCurrentFramebufferLayout(u32 width, u32 height) {
             notifyFramebufferLayoutChanged(layout::DefaultFrameLayout(width, height));
         }
+        virtual void pullEvents() = 0;
 
     protected:
         WindowSystemInfo window_info;

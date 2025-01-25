@@ -1,4 +1,5 @@
 #include "glfw_common.hpp"
+#include "imgui_impl_glfw.h"
 
 #if !defined(_WIN32) && !defined(__APPLE__)
 #include <qpa/qplatformnativeinterface.h>
@@ -87,4 +88,6 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
             return nullptr;
     }
 }
+
+void init_glfw_imgui(GLFWwindow* window) { ImGui_ImplGlfw_InitForVulkan(window, true); }
 }  // namespace GLFWCommon

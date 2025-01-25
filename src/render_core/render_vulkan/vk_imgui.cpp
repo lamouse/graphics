@@ -2,16 +2,15 @@
 // Created by ziyu on 2023/11/6:0006.
 //
 
-#include "g_imgui.hpp"
+#include "vk_imgui.hpp"
 
 #include <spdlog/spdlog.h>
 
-#include "core/device.hpp"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
-namespace g {
+namespace render::vulkan {
 
 namespace {
 
@@ -26,10 +25,9 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass,
-             float scale) {
+Imgui::Imgui(const Device& device, vk::PhysicalDevice physical, vk::Instance instance,
+             ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
     init_debug_info();
-    core::Device device;
     // 这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -61,13 +59,13 @@ Imgui::Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool, vk::Rende
     }
 
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForVulkan(window, true);
+
     ImGui_ImplVulkan_InitInfo init_info = {};
-    init_info.Instance = device.getVKInstance();
-    init_info.PhysicalDevice = device.getPhysicalDevice();
-    init_info.Device = device.logicalDevice();
-    init_info.QueueFamily = device.getQueueFamilyIndices().graphicsIndex();
-    init_info.Queue = device.getQueue(core::Device::DeviceQueue::graphics);
+    init_info.Instance = instance;
+    init_info.PhysicalDevice = physical;
+    init_info.Device = device.getLogical();
+    init_info.QueueFamily = device.getGraphicsFamily();
+    init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = descriptorPool;
     init_info.Subpass = 0;
@@ -196,4 +194,4 @@ Imgui::~Imgui() {
     ImGui::DestroyContext();
 }
 
-}  // namespace g
+}  // namespace render::vulkan

@@ -308,9 +308,12 @@ class TextureFramebuffer {
 
         [[nodiscard]] auto NumImages() const noexcept -> u32 { return num_images; }
 
-        [[nodiscard]] const std::array<vk::Image, 9>& Images() const noexcept { return images; }
+        [[nodiscard]] auto Images() const noexcept -> const std::array<vk::Image, 9>& {
+            return images;
+        }
 
-        [[nodiscard]] const std::array<vk::ImageSubresourceRange, 9>& ImageRanges() const noexcept {
+        [[nodiscard]] auto ImageRanges() const noexcept
+            -> const std::array<vk::ImageSubresourceRange, 9>& {
             return image_ranges;
         }
 
@@ -321,14 +324,14 @@ class TextureFramebuffer {
 
         [[nodiscard]] auto HasAspectDepthBit() const noexcept -> bool { return has_depth; }
 
-        [[nodiscard]] bool HasAspectStencilBit() const noexcept { return has_stencil; }
+        [[nodiscard]] auto HasAspectStencilBit() const noexcept -> bool { return has_stencil; }
 
-        [[nodiscard]] bool IsRescaled() const noexcept { return is_rescaled; }
+        [[nodiscard]] auto IsRescaled() const noexcept -> bool { return is_rescaled; }
 
     private:
-        Framebuffer framebuffer;
-        vk::RenderPass renderpass{};
-        vk::Extent2D render_area{};
+        VulkanFramebuffer framebuffer;
+        vk::RenderPass renderpass;
+        vk::Extent2D render_area;
         vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
         u32 num_color_buffers = 0;
         u32 num_images = 0;

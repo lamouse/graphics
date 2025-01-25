@@ -5,13 +5,12 @@
 #ifndef GRAPHICS_G_IMGUI_HPP
 #define GRAPHICS_G_IMGUI_HPP
 #pragma once
+#include "render_core/vulkan_common/device.hpp"
 
-#include <GLFW/glfw3.h>
-
-#include <chrono>
 #include <g_frame.hpp>
 #include <vulkan/vulkan.hpp>
-namespace g {
+#include "render_core/uniforms.hpp"
+namespace render::vulkan {
 struct ImguiDebugInfo {
         float speed;
         float look_x;
@@ -43,8 +42,9 @@ class Imgui {
         [[nodiscard]] auto get_uniform_buffer(float extentAspectRation) const
             -> UniformBufferObject;
         void draw(const vk::CommandBuffer& commandBuffer);
-        explicit Imgui(GLFWwindow* window, ::vk::DescriptorPool& descriptorPool,
-                       vk::RenderPass renderPass, float scale = 1.0f);
+        explicit Imgui(const Device& device, vk::PhysicalDevice physical, vk::Instance instance,
+                       ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass,
+                       float scale = 1.0f);
         Imgui(const Imgui&) = delete;
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;
@@ -52,6 +52,6 @@ class Imgui {
         ~Imgui();
 };
 
-}  // namespace g
+}  // namespace render::vulkan
 
 #endif  // GRAPHICS_G_IMGUI_HPP

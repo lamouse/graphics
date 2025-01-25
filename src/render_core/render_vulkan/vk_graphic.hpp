@@ -24,6 +24,8 @@ class VulkanGraphics : public render::Graphic {
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
+
+        void addTexture(const texture::ImageInfo& imageInfo) override;
         ~VulkanGraphics() override;
 
     private:
