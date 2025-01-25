@@ -222,11 +222,11 @@ auto PixelComponentSizeBitsInteger(PixelFormat format) -> size_t {
     }
 }
 
-std::pair<u32, u32> GetASTCBlockSize(PixelFormat format) {
+auto GetASTCBlockSize(PixelFormat format) -> std::pair<u32, u32> {
     return {DefaultBlockWidth(format), DefaultBlockHeight(format)};
 }
 
-u64 TranscodedAstcSize(u64 base_size, PixelFormat format) {
+auto TranscodedAstcSize(u64 base_size, PixelFormat format) -> u64 {
     constexpr u64 RGBA8_PIXEL_SIZE = 4;
     const u64 base_block_size = static_cast<u64>(DefaultBlockWidth(format)) *
                                 static_cast<u64>(DefaultBlockHeight(format)) * RGBA8_PIXEL_SIZE;

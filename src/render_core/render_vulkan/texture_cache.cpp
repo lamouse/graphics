@@ -9,6 +9,7 @@
 #include "texture/samples_helper.h"
 #include "common/settings.hpp"
 #include "texture/util.hpp"
+#include "render_core/compatible_formats.h"
 #undef min
 #undef max
 #undef MemoryBarrier
@@ -241,7 +242,7 @@ struct RangedBarrierRange {
             },
     };
 }
-[[nodiscard]] SwizzleSource SwapBlueRed(SwizzleSource value) {
+[[nodiscard]] auto SwapBlueRed(SwizzleSource value) -> SwizzleSource {
     switch (value) {
         case SwizzleSource::R:
             return SwizzleSource::B;
@@ -252,7 +253,7 @@ struct RangedBarrierRange {
     }
 }
 
-[[nodiscard]] SwizzleSource SwapGreenRed(SwizzleSource value) {
+[[nodiscard]] auto SwapGreenRed(SwizzleSource value) -> SwizzleSource {
     switch (value) {
         case SwizzleSource::R:
             return SwizzleSource::G;
@@ -263,7 +264,7 @@ struct RangedBarrierRange {
     }
 }
 
-[[nodiscard]] SwizzleSource SwapSpecial(SwizzleSource value) {
+[[nodiscard]] auto SwapSpecial(SwizzleSource value) -> SwizzleSource {
     switch (value) {
         case SwizzleSource::A:
             return SwizzleSource::R;
@@ -338,7 +339,7 @@ struct RangedBarrierRange {
     return vk::ImageViewType::e2D;
 }
 
-[[nodiscard]] vk::ImageViewType ImageViewType(texture::ImageViewType type) {
+[[nodiscard]] auto ImageViewType(texture::ImageViewType type) -> vk::ImageViewType {
     switch (type) {
         case texture::ImageViewType::e1D:
             return vk::ImageViewType::e1D;
@@ -743,7 +744,7 @@ void BlitScale(scheduler::Scheduler& scheduler, vk::Image src_image, vk::Image d
     });
 }
 
-[[nodiscard]] vk::ImageAspectFlags ImageViewAspectMask(const texture::ImageViewInfo& info) {
+[[nodiscard]] auto ImageViewAspectMask(const texture::ImageViewInfo& info) -> vk::ImageAspectFlags {
     if (info.IsRenderTarget()) {
         return ImageAspectMask(info.format);
     }
@@ -805,8 +806,11 @@ TextureCacheRuntime::TextureCacheRuntime(const Device& device_, scheduler::Sched
         }
         for (size_t index_b = 0; index_b < surface::MaxPixelFormat; index_b++) {
             const auto view_format = static_cast<surface::PixelFormat>(index_b);
-            const auto view_info = device_.surfaceFormat(FormatType::Optimal, true, view_format);
-            view_formats[index_a].push_back(view_info.format);
+            if (surface::IsViewCompatible(image_format, view_format, false, true)) {
+                const auto view_info =
+                    device_.surfaceFormat(FormatType::Optimal, true, view_format);
+                view_formats[index_a].push_back(view_info.format);
+            }
         }
     }
 }
@@ -1255,11 +1259,17 @@ void TextureCacheRuntime::CopyImageMSAA(TextureImage& dst, TextureImage& src,
     SPDLOG_WARN("Copying images with different samples is not supported.");
 }
 
-u64 TextureCacheRuntime::GetDeviceLocalMemory() const { return device.getDeviceLocalMemory(); }
+auto TextureCacheRuntime::GetDeviceLocalMemory() const -> u64 {
+    return device.getDeviceLocalMemory();
+}
 
-u64 TextureCacheRuntime::GetDeviceMemoryUsage() const { return device.getDeviceMemoryUsage(); }
+auto TextureCacheRuntime::GetDeviceMemoryUsage() const -> u64 {
+    return device.getDeviceMemoryUsage();
+}
 
-bool TextureCacheRuntime::CanReportMemoryUsage() const { return device.canReportMemoryUsage(); }
+auto TextureCacheRuntime::CanReportMemoryUsage() const -> bool {
+    return device.canReportMemoryUsage();
+}
 
 void TextureCacheRuntime::TickFrame() {}
 
@@ -1271,6 +1281,7 @@ TextureImage::TextureImage(TextureCacheRuntime& runtime_, const texture::ImageIn
       original_image(MakeImage(runtime_.device, runtime_.memory_allocator, info,
                                runtime->ViewFormats(info.format))),
       aspect_mask(ImageAspectMask(info.format)) {
+    spdlog::debug("TextureImage::TextureImage");
     if (IsPixelFormatASTC(info.format) && !runtime->device.isOptimalAstcSupported()) {
         switch (common::settings::get<settings::Graphics>().astc_decodeMode) {
             case settings::enums::AstcDecodeMode::Gpu:

@@ -173,7 +173,7 @@ void ImageBase::CheckAliasState() {
     flags &= ~ImageFlagBits::Alias;
 }
 
-bool AddImageAlias(ImageBase& lhs, ImageBase& rhs, ImageId lhs_id, ImageId rhs_id) {
+auto AddImageAlias(ImageBase& lhs, ImageBase& rhs, ImageId lhs_id, ImageId rhs_id) -> bool {
     static constexpr auto OPTIONS = RelaxedOptions::Size | RelaxedOptions::Format;
     assert(lhs.info.type == rhs.info.type);
     std::optional<SubresourceBase> base;

@@ -86,19 +86,19 @@ class TextureCacheRuntime {
 
         void TransitionImageLayout(TextureImage& image);
 
-        bool HasBrokenTextureViewFormats() const noexcept {
+        static auto HasBrokenTextureViewFormats() noexcept -> bool {
             // No known Vulkan driver has broken image views
             return false;
         }
 
-        bool HasNativeBgr() const noexcept {
+        static auto HasNativeBgr() noexcept -> bool {
             // All known Vulkan drivers can natively handle BGR textures
             return true;
         }
 
         [[nodiscard]] vk::Buffer GetTemporaryBuffer(size_t needed_size);
 
-        std::span<const vk::Format> ViewFormats(surface::PixelFormat format) {
+        auto ViewFormats(surface::PixelFormat format) -> std::span<const vk::Format> {
             return view_formats[static_cast<std::size_t>(format)];
         }
         const settings::ResolutionScalingInfo resolution;

@@ -100,7 +100,7 @@ class SlotVector {
         }
 
         template <typename... Args>
-        [[nodiscard]] SlotId insert(Args&&... args) noexcept {
+        [[nodiscard]] auto insert(Args&&... args) noexcept -> SlotId {
             const u32 index = FreeValueIndex();
             new (&values[index].object) T(std::forward<Args>(args)...);
             SetStorageBit(index);
