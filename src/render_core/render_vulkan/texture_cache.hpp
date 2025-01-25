@@ -40,9 +40,9 @@ class TextureCacheRuntime {
 
         void Finish();
 
-        StagingBufferRef UploadStagingBuffer(size_t size);
+        auto UploadStagingBuffer(size_t size) -> StagingBufferRef;
 
-        StagingBufferRef DownloadStagingBuffer(size_t size, bool deferred = false);
+        auto DownloadStagingBuffer(size_t size, bool deferred = false) -> StagingBufferRef;
 
         void FreeDeferredStagingBuffer(StagingBufferRef& ref);
 
@@ -205,7 +205,6 @@ class TextureImageView : public render::texture::ImageViewBase {
         ~TextureImageView();
         CLASS_NON_COPYABLE(TextureImageView);
         CLASS_DEFAULT_MOVEABLE(TextureImageView);
-
         [[nodiscard]] auto DepthView() -> vk::ImageView;
 
         [[nodiscard]] auto StencilView() -> vk::ImageView;
@@ -221,9 +220,9 @@ class TextureImageView : public render::texture::ImageViewBase {
             return *image_views[static_cast<size_t>(texture_type)];
         }
 
-        [[nodiscard]] vk::Image ImageHandle() const noexcept { return image_handle; }
+        [[nodiscard]] auto ImageHandle() const noexcept -> vk::Image { return image_handle; }
 
-        [[nodiscard]] vk::ImageView RenderTarget() const noexcept { return render_target; }
+        [[nodiscard]] auto RenderTarget() const noexcept -> vk::ImageView { return render_target; }
 
         [[nodiscard]] auto Samples() const noexcept -> vk::SampleCountFlagBits { return samples; }
 
@@ -289,8 +288,8 @@ class TextureFramebuffer {
                                     bool is_rescaled);
 
         ~TextureFramebuffer();
-
         CLASS_NON_COPYABLE(TextureFramebuffer);
+        CLASS_DEFAULT_MOVEABLE(TextureFramebuffer);
 
         void CreateFramebuffer(TextureCacheRuntime& runtime,
                                std::span<TextureImageView*, texture::NUM_RT> color_buffers,
@@ -302,7 +301,7 @@ class TextureFramebuffer {
 
         [[nodiscard]] auto RenderArea() const noexcept -> vk::Extent2D { return render_area; }
 
-        [[nodiscard]] vk::SampleCountFlagBits Samples() const noexcept { return samples; }
+        [[nodiscard]] auto Samples() const noexcept -> vk::SampleCountFlagBits { return samples; }
 
         [[nodiscard]] auto NumColorBuffers() const noexcept -> u32 { return num_color_buffers; }
 

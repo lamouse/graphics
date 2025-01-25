@@ -93,7 +93,7 @@ class TextureCache : public TextureCacheInfo {
         common::SlotVector<ImageView> slot_image_views;
         common::SlotVector<ImageAlloc> slot_image_allocs;
         common::SlotVector<Sampler> slot_samplers;
-        // common::SlotVector<Framebuffer> slot_framebuffers;
+        common::SlotVector<Framebuffer> slot_framebuffers;
 
         std::unordered_map<GPUVAddr, ImageAllocId> image_allocs_table;
 };
