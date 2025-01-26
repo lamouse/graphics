@@ -100,6 +100,10 @@ class TextureCache : public TextureCacheInfo {
         [[nodiscard]] auto RenderTargetFromImage(ImageId, const ImageViewInfo& view_info)
             -> std::pair<FramebufferId, ImageViewId>;
 
+        /// Find a framebuffer with the currently bound render targets
+        /// UpdateRenderTargets should be called before this
+        auto GetFramebuffer() -> Framebuffer*;
+
         /// Find or create a framebuffer with the given render target parameters
         auto GetFramebufferId(const RenderTargets& key) -> FramebufferId;
 

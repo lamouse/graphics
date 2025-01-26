@@ -71,7 +71,7 @@ void App::run() {
     ::std::string s(image_path + "viking_room.png");
     resource::image::Image img(s);
     render::texture::ImageInfo imageInfo;
-
+    imageInfo.data = img.getData();
     imageInfo.format = render::surface::PixelFormat::B8G8R8A8_UNORM;
     imageInfo.type = render::texture::ImageType::e2D;
     imageInfo.size = render::texture::Extent3D{static_cast<u32>(img.getImageInfo().width),

@@ -44,7 +44,7 @@ constexpr auto ConvertBorderColor(const std::array<float, 4>& color) -> vk::Bord
     return vk::BorderColor::eFloatTransparentBlack;
 }
 
-vk::SamplerReductionMode samplerReduction(SamplerReduction reduction) {
+auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
     switch (reduction) {
         case SamplerReduction::WeightedAverage:
             return vk::SamplerReductionMode::eWeightedAverage;

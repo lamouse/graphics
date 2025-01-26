@@ -4,6 +4,7 @@
 #include "render_core/texture_cache/utils.hpp"
 #include "render_core/texture/samples_helper.h"
 #include <algorithm>
+#include <cstring>
 namespace render::texture {
 using surface::GetFormatType;
 using surface::PixelFormat;
@@ -47,83 +48,90 @@ auto TextureCache<P>::JoinImages(const ImageInfo& info) -> ImageId {
     const ImageId new_image_id = slot_images.insert(runtime, new_info, 0, 0);
     Image& new_image = slot_images[new_image_id];
 
-    for (const ImageId overlap_id : join_ignore_textures) {
-        Image& overlap = slot_images[overlap_id];
-        if (True(overlap.flags & ImageFlagBits::GpuModified)) {
-        }
-        if (True(overlap.flags & ImageFlagBits::Tracked)) {
-        }
-    }
+    auto staging = runtime.UploadStagingBuffer(size_bytes);
 
-    std::ranges::sort(join_copies_to_do, [this](const JoinCopy& lhs, const JoinCopy& rhs) {
-        const ImageBase& lhs_image = slot_images[lhs.id];
-        const ImageBase& rhs_image = slot_images[rhs.id];
-        return lhs_image.modification_tick < rhs_image.modification_tick;
-    });
+    std::memcpy(staging.mapped_span.data(), info.data, size_bytes);
+    BufferImageCopy copys[1];
+    copys[0].image_offset = {0, 0, 0};
+    copys[0].image_extent = new_info.size;
+    copys[0].buffer_offset = 0;
+    copys[0].buffer_size = size_bytes;
+    copys[0].buffer_row_length = 0;
+    copys[0].buffer_image_height = 0;
 
-    ImageBase& new_image_base = new_image;
-    for (const ImageId aliased_id : join_right_aliased_ids) {
-        ImageBase& aliased = slot_images[aliased_id];
-        size_t alias_index = new_image_base.aliased_images.size();
-        if (!AddImageAlias(new_image_base, aliased, new_image_id, aliased_id)) {
-            continue;
-        }
-        join_alias_indices.emplace(aliased_id, alias_index);
-        new_image.flags |= ImageFlagBits::Alias;
-    }
-    for (const ImageId aliased_id : join_left_aliased_ids) {
-        ImageBase& aliased = slot_images[aliased_id];
-        size_t alias_index = new_image_base.aliased_images.size();
-        if (!AddImageAlias(aliased, new_image_base, aliased_id, new_image_id)) {
-            continue;
-        }
-        join_alias_indices.emplace(aliased_id, alias_index);
-        new_image.flags |= ImageFlagBits::Alias;
-    }
-    for (const ImageId aliased_id : join_bad_overlap_ids) {
-        ImageBase& aliased = slot_images[aliased_id];
-        aliased.overlapping_images.push_back(new_image_id);
-        new_image.overlapping_images.push_back(aliased_id);
-        if (aliased.info.resources.levels == 1 && aliased.info.block.depth == 0 &&
-            aliased.overlapping_images.size() > 1) {
-            aliased.flags |= ImageFlagBits::BadOverlap;
-        }
-        if (new_image.info.resources.levels == 1 && new_image.info.block.depth == 0 &&
-            new_image.overlapping_images.size() > 1) {
-            new_image.flags |= ImageFlagBits::BadOverlap;
-        }
-    }
+    new_image.UploadMemory(staging, copys);
 
-    for (const auto& copy_object : join_copies_to_do) {
-        Image& overlap = slot_images[copy_object.id];
-        if (copy_object.is_alias) {
-            if (!overlap.IsSafeDownload()) {
-                continue;
-            }
-            const auto alias_pointer = join_alias_indices.find(copy_object.id);
-            if (alias_pointer == join_alias_indices.end()) {
-                continue;
-            }
-            const AliasedImage& aliased = new_image.aliased_images[alias_pointer->second];
-            CopyImage(new_image_id, aliased.id, aliased.copies);
-            new_image.modification_tick = overlap.modification_tick;
-            continue;
-        }
-        if (True(overlap.flags & ImageFlagBits::GpuModified)) {
-            new_image.flags |= ImageFlagBits::GpuModified;
-            const SubresourceBase base = new_image.TryFindBase(overlap.gpu_addr).value();
+    // image.UploadMemory(staging, {});
 
-            auto copies = utils::MakeShrinkImageCopies(new_info, overlap.info, base, 1, 1);
-            if (overlap.info.num_samples != new_image.info.num_samples) {
-                runtime.CopyImageMSAA(new_image, overlap, std::move(copies));
-            } else {
-                runtime.CopyImage(new_image, overlap, std::move(copies));
-            }
-            new_image.modification_tick = overlap.modification_tick;
-        }
-        if (True(overlap.flags & ImageFlagBits::Tracked)) {
-        }
-    }
+    // std::ranges::sort(join_copies_to_do, [this](const JoinCopy& lhs, const JoinCopy& rhs) {
+    //     const ImageBase& lhs_image = slot_images[lhs.id];
+    //     const ImageBase& rhs_image = slot_images[rhs.id];
+    //     return lhs_image.modification_tick < rhs_image.modification_tick;
+    // });
+
+    // ImageBase& new_image_base = new_image;
+    // for (const ImageId aliased_id : join_right_aliased_ids) {
+    //     ImageBase& aliased = slot_images[aliased_id];
+    //     size_t alias_index = new_image_base.aliased_images.size();
+    //     if (!AddImageAlias(new_image_base, aliased, new_image_id, aliased_id)) {
+    //         continue;
+    //     }
+    //     join_alias_indices.emplace(aliased_id, alias_index);
+    //     new_image.flags |= ImageFlagBits::Alias;
+    // }
+    // for (const ImageId aliased_id : join_left_aliased_ids) {
+    //     ImageBase& aliased = slot_images[aliased_id];
+    //     size_t alias_index = new_image_base.aliased_images.size();
+    //     if (!AddImageAlias(aliased, new_image_base, aliased_id, new_image_id)) {
+    //         continue;
+    //     }
+    //     join_alias_indices.emplace(aliased_id, alias_index);
+    //     new_image.flags |= ImageFlagBits::Alias;
+    // }
+    // for (const ImageId aliased_id : join_bad_overlap_ids) {
+    //     ImageBase& aliased = slot_images[aliased_id];
+    //     aliased.overlapping_images.push_back(new_image_id);
+    //     new_image.overlapping_images.push_back(aliased_id);
+    //     if (aliased.info.resources.levels == 1 && aliased.info.block.depth == 0 &&
+    //         aliased.overlapping_images.size() > 1) {
+    //         aliased.flags |= ImageFlagBits::BadOverlap;
+    //     }
+    //     if (new_image.info.resources.levels == 1 && new_image.info.block.depth == 0 &&
+    //         new_image.overlapping_images.size() > 1) {
+    //         new_image.flags |= ImageFlagBits::BadOverlap;
+    //     }
+    // }
+
+    // for (const auto& copy_object : join_copies_to_do) {
+    //     Image& overlap = slot_images[copy_object.id];
+    //     if (copy_object.is_alias) {
+    //         if (!overlap.IsSafeDownload()) {
+    //             continue;
+    //         }
+    //         const auto alias_pointer = join_alias_indices.find(copy_object.id);
+    //         if (alias_pointer == join_alias_indices.end()) {
+    //             continue;
+    //         }
+    //         const AliasedImage& aliased = new_image.aliased_images[alias_pointer->second];
+    //         CopyImage(new_image_id, aliased.id, aliased.copies);
+    //         new_image.modification_tick = overlap.modification_tick;
+    //         continue;
+    //     }
+    //     if (True(overlap.flags & ImageFlagBits::GpuModified)) {
+    //         new_image.flags |= ImageFlagBits::GpuModified;
+    //         const SubresourceBase base = new_image.TryFindBase(overlap.gpu_addr).value();
+
+    //         auto copies = utils::MakeShrinkImageCopies(new_info, overlap.info, base, 1, 1);
+    //         if (overlap.info.num_samples != new_image.info.num_samples) {
+    //             runtime.CopyImageMSAA(new_image, overlap, std::move(copies));
+    //         } else {
+    //             runtime.CopyImage(new_image, overlap, std::move(copies));
+    //         }
+    //         new_image.modification_tick = overlap.modification_tick;
+    //     }
+    //     if (True(overlap.flags & ImageFlagBits::Tracked)) {
+    //     }
+    // }
 
     return new_image_id;
 }
@@ -132,7 +140,6 @@ template <class P>
 void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<ImageCopy> copies) {
     Image& dst = slot_images[dst_id];
     Image& src = slot_images[src_id];
-    const bool is_rescaled = True(src.flags & ImageFlagBits::Rescaled);
     const auto dst_format_type = GetFormatType(dst.info.format);
     const auto src_format_type = GetFormatType(src.info.format);
     if (src_format_type == dst_format_type) {
@@ -143,7 +150,6 @@ void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<Imag
         }
         return runtime.CopyImage(dst, src, copies);
     }
-
     if (runtime.ShouldReinterpret(dst, src)) {
         return runtime.ReinterpretImage(dst, src, copies);
     }
@@ -231,6 +237,11 @@ auto TextureCache<P>::GetFramebufferId(const RenderTargets& key) -> FramebufferI
         key.depth_buffer_id ? &slot_image_views[key.depth_buffer_id] : nullptr;
     framebuffer_id = slot_framebuffers.insert(runtime, color_buffers, depth_buffer, key);
     return framebuffer_id;
+}
+
+template <class P>
+auto TextureCache<P>::GetFramebuffer() -> typename P::Framebuffer* {
+    return &slot_framebuffers[GetFramebufferId(render_targets)];
 }
 
 }  // namespace render::texture

@@ -123,7 +123,7 @@ std::optional<SubresourceBase> ImageBase::TryFindBase(GPUVAddr other_addr) const
     }
 }
 
-ImageViewId ImageBase::FindView(const ImageViewInfo& view_info) const noexcept {
+auto ImageBase::FindView(const ImageViewInfo& view_info) const noexcept -> ImageViewId {
     const auto it = std::ranges::find(image_view_infos, view_info);
     if (it == image_view_infos.end()) {
         return ImageViewId{};
@@ -136,16 +136,7 @@ void ImageBase::InsertView(const ImageViewInfo& view_info, ImageViewId image_vie
     image_view_ids.push_back(image_view_id);
 }
 
-bool ImageBase::IsSafeDownload() const noexcept {
-    // Skip images that were not modified from the GPU
-    if (False(flags & ImageFlagBits::GpuModified)) {
-        return false;
-    }
-    // Skip images that .are. modified from the CPU
-    // We don't want to write sensitive data from the guest
-    if (True(flags & ImageFlagBits::CpuModified)) {
-        return false;
-    }
+auto ImageBase::IsSafeDownload() const noexcept -> bool {
     if (info.num_samples > 1) {
         SPDLOG_WARN("MSAA image downloads are not implemented");
         return false;
@@ -174,16 +165,12 @@ void ImageBase::CheckAliasState() {
 }
 
 auto AddImageAlias(ImageBase& lhs, ImageBase& rhs, ImageId lhs_id, ImageId rhs_id) -> bool {
-    static constexpr auto OPTIONS = RelaxedOptions::Size | RelaxedOptions::Format;
     assert(lhs.info.type == rhs.info.type);
     std::optional<SubresourceBase> base;
     if (lhs.info.type == ImageType::Linear) {
         base = SubresourceBase{.level = 0, .layer = 0};
     } else {
-        // We are passing relaxed formats as an option, having broken views/bgr or not won't matter
-        static constexpr bool broken_views = false;
-        static constexpr bool native_bgr = true;
-        base = {};
+        base = SubresourceBase{.level = 0, .layer = 0};
     }
     if (!base) {
         SPDLOG_ERROR("Image alias should have been flipped");
