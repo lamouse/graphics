@@ -3,6 +3,7 @@
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
 #include "fixed_pipeline_state.h"
+#include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "shader_tools/shader_info.h"
 #include <condition_variable>
 #include "render_core/framebufferConfig.hpp"
@@ -35,7 +36,7 @@ struct GraphicsPipelineCacheKey {
             return sizeof(unique_hashes) + state.Size();
         }
 };
-// static_assert(std::has_unique_object_representations_v<GraphicsPipelineCacheKey>);
+static_assert(std::has_unique_object_representations_v<GraphicsPipelineCacheKey>);
 static_assert(std::is_trivially_copyable_v<GraphicsPipelineCacheKey>);
 static_assert(std::is_trivially_constructible_v<GraphicsPipelineCacheKey>);
 
@@ -133,7 +134,7 @@ class GraphicsPipeline {
         u32 num_textures{};
 
         DescriptorSetLayout descriptor_set_layout;
-        // resource::DescriptorAllocator descriptor_allocator;
+        resource::DescriptorAllocator descriptor_allocator;
         PipelineLayout pipeline_layout;
         DescriptorUpdateTemplate descriptor_update_template;
         Pipeline pipeline;

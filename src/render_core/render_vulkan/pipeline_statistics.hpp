@@ -1,10 +1,12 @@
 #pragma once
 #include <mutex>
 #include <vector>
-
+#include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
-
+/**
+ * @brief 用于vulkan统计pipeline的性能
+ *
+ */
 namespace render::vulkan {
 class Device;
 namespace pipeline {

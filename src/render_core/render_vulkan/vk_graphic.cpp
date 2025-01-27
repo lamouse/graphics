@@ -30,6 +30,8 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::addTexture(const texture::ImageInfo& imageInfo) {
+    auto pipeline = pipeline_cache.currentGraphicsPipeline();
+
     auto id = texture_cache.CreateImageView(imageInfo);
     auto sampler_id = texture_cache.CreateSampler(id);
 }

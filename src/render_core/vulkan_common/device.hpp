@@ -157,6 +157,38 @@ class Device {
             return misc_features_.has_broken_parallel_compiling;
         }
 
+        /// Returns true if the device supports VK_EXT_primitive_topology_list_restart.
+        [[nodiscard]] auto IsTopologyListPrimitiveRestartSupported() const -> bool {
+            return features_.primitive_topology_list_restart.primitiveTopologyListRestart;
+        }
+
+        /// Returns true if the device supports VK_EXT_primitive_topology_list_restart.
+        [[nodiscard]] auto IsPatchListPrimitiveRestartSupported() const -> bool {
+            return features_.primitive_topology_list_restart.primitiveTopologyPatchListRestart;
+        }
+
+        /// Returns true if the device supports VK_EXT_line_rasterization.
+        [[nodiscard]] auto IsExtLineRasterizationSupported() const -> bool {
+            return extensions_.line_rasterization;
+        }
+
+        /// Returns true if the device supports VK_EXT_conservative_rasterization.
+        [[nodiscard]] auto IsExtConservativeRasterizationSupported() const -> bool {
+            return extensions_.conservative_rasterization;
+        }
+
+        /// Returns true if the device supports VK_EXT_provoking_vertex.
+        [[nodiscard]] auto IsExtProvokingVertexSupported() const -> bool {
+            return extensions_.provoking_vertex;
+        }
+        // Returns true if depth bounds is supported.
+        [[nodiscard]] auto IsDepthBoundsSupported() const -> bool {
+            return features_.features.depthBounds;
+        }
+        /// Returns true if the device supports VK_NV_viewport_swizzle.
+        [[nodiscard]] auto IsNvViewportSwizzleSupported() const -> bool {
+            return extensions_.viewport_swizzle;
+        }
         /// Returns the minimum supported version of SPIR-V.
         [[nodiscard]] auto SupportedSpirvVersion() const -> u32 {
             if (instance_version_ >= VK_API_VERSION_1_3) {

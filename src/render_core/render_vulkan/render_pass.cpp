@@ -68,8 +68,8 @@ auto createResolveAttachmentDescription(auto& formats, bool need_store)
     return attachments;
 }
 
-vk::AttachmentDescription AttachmentDescription(const Device& device, surface::PixelFormat format,
-                                                vk::SampleCountFlagBits samples) {
+auto AttachmentDescription(const Device& device, surface::PixelFormat format,
+                           vk::SampleCountFlagBits samples) -> vk::AttachmentDescription {
     return vk::AttachmentDescription{{},
                                      device.surfaceFormat(FormatType::Optimal, true, format).format,
                                      samples,

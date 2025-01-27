@@ -70,13 +70,13 @@ class PipelineCache {
         [[nodiscard]] auto currentGraphicsPipeline() -> GraphicsPipeline*;
         [[nodiscard]] auto currentComputePipeline() -> ComputePipeline*;
         void loadDiskResource(u64 title_id, std::stop_token stop_loading);
+        auto createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline>;
 
     private:
         [[nodiscard]] auto currentGraphicsPipelineSlowPath() -> GraphicsPipeline*;
         [[nodiscard]] auto builtPipeline(GraphicsPipeline* pipeline) const noexcept
             -> GraphicsPipeline*;
 
-        auto createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline>;
         auto createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
                                     pipeline::PipelineStatistics* statistics,
                                     bool build_in_parallel) -> std::unique_ptr<GraphicsPipeline>;

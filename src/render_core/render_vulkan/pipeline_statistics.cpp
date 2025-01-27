@@ -10,7 +10,7 @@
 
 namespace render::vulkan::pipeline {
 namespace {
-u64 GetUint64(const vk::PipelineExecutableStatisticKHR& statistic) {
+auto GetUint64(const vk::PipelineExecutableStatisticKHR& statistic) -> u64 {
     switch (statistic.format) {
         case vk::PipelineExecutableStatisticFormatKHR::eInt64:
             return static_cast<u64>(statistic.value.i64);
@@ -27,13 +27,14 @@ PipelineStatistics::PipelineStatistics(const Device& device_) : device{device_} 
 
 void PipelineStatistics::Collect(vk::Pipeline pipeline) {
     const auto dev = device.getLogical();
+    auto f = device.logical().getDispatchLoaderDynamic().vkGetPipelineExecutablePropertiesKHR;
     const auto properties = dev.getPipelineExecutablePropertiesKHR(
-        pipeline, vk::DispatchLoaderDynamic{nullptr, nullptr, dev, vkGetDeviceProcAddr});
+        pipeline, device.logical().getDispatchLoaderDynamic());
     const u32 num_executables{static_cast<u32>(properties.size())};
     using namespace std::literals;
     for (u32 executable = 0; executable < num_executables; ++executable) {
         const auto statistics{dev.getPipelineExecutableStatisticsKHR(
-            pipeline, vk::DispatchLoaderDynamic{nullptr, nullptr, dev, vkGetDeviceProcAddr})};
+            pipeline, device.logical().getDispatchLoaderDynamic())};
         if (statistics.empty()) {
             continue;
         }

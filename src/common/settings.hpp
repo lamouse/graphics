@@ -10,6 +10,8 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         auto getImpl() -> RenderVulkan { return *this; }
 
     public:
+        // 这里可以用来统计渲染器的性能 主要在调试的时候使用 相关文件是
+        // src\render_core\render_vulkan\pipeline_statistics.hpp
         bool renderer_shader_feedback = false;
         bool enable_compute_pipelines = true;
         bool use_present_thread = false;

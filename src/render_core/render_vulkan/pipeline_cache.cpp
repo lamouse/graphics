@@ -294,19 +294,19 @@ void PipelineCache::loadDiskResource(u64 title_id, std::stop_token stop_loading)
         GraphicsPipelineCacheKey key;
         file.read(reinterpret_cast<char*>(&key), sizeof(key));
 
-        if ((key.state.extended_dynamic_state != 0) !=
-                dynamic_features.has_extended_dynamic_state ||
-            (key.state.extended_dynamic_state_2 != 0) !=
-                dynamic_features.has_extended_dynamic_state_2 ||
-            (key.state.extended_dynamic_state_2_extra != 0) !=
-                dynamic_features.has_extended_dynamic_state_2_extra ||
-            (key.state.extended_dynamic_state_3_blend != 0) !=
-                dynamic_features.has_extended_dynamic_state_3_blend ||
-            (key.state.extended_dynamic_state_3_enables != 0) !=
-                dynamic_features.has_extended_dynamic_state_3_enables ||
-            (key.state.dynamic_vertex_input != 0) != dynamic_features.has_dynamic_vertex_input) {
-            return;
-        }
+        // if ((key.state.extended_dynamic_state != 0) !=
+        //         dynamic_features.has_extended_dynamic_state ||
+        //     (key.state.extended_dynamic_state_2 != 0) !=
+        //         dynamic_features.has_extended_dynamic_state_2 ||
+        //     (key.state.extended_dynamic_state_2_extra != 0) !=
+        //         dynamic_features.has_extended_dynamic_state_2_extra ||
+        //     (key.state.extended_dynamic_state_3_blend != 0) !=
+        //         dynamic_features.has_extended_dynamic_state_3_blend ||
+        //     (key.state.extended_dynamic_state_3_enables != 0) !=
+        //         dynamic_features.has_extended_dynamic_state_3_enables ||
+        //     (key.state.dynamic_vertex_input != 0) != dynamic_features.has_dynamic_vertex_input) {
+        //     return;
+        // }
         workers.QueueWork([this, key, &state]() mutable {
             auto pipeline{createGraphicsPipeline(key, state.statistics.get(), false)};
 
@@ -403,7 +403,14 @@ auto PipelineCache::LoadVulkanPipelineCache(const std::filesystem::path& filenam
     return {};
 }
 auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline> {
-    return nullptr;
+    GraphicsPipelineCacheKey key;
+    key.state.color_formats[0] = surface::PixelFormat::B8G8R8A8_UNORM;
+    for (int i = 1; i < key.state.color_formats.size(); i++) {
+        key.state.color_formats[i] = surface::PixelFormat::Invalid;
+    }
+    key.state.depth_format = surface::PixelFormat::D32_FLOAT;
+    key.state.msaa_mode = MsaaMode::Msaa1x1;
+    return createGraphicsPipeline(key, nullptr, false);
 }
 
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)

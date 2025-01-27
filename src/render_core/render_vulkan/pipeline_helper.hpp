@@ -5,6 +5,7 @@
 #include "vulkan_common/device.hpp"
 #include "update_descriptor.hpp"
 #include "shader_tools/shader_info.h"
+#include <spdlog/spdlog.h>
 namespace render::vulkan::pipeline {
 constexpr u32 NUM_TEXTURE_SCALING_WORDS = 4;
 constexpr u32 NUM_IMAGE_SCALING_WORDS = 2;
@@ -100,6 +101,10 @@ class DescriptorLayoutBuilder {
         void Add(vk::DescriptorType type, vk::ShaderStageFlags stage,
                  const Descriptors& descriptors) {
             const size_t num{descriptors.size()};
+            if (num > 0) {
+                spdlog::debug("Adding descriptor type={} stage={} descriptors={}",
+                              vk::to_string(type), vk::to_string(stage), descriptors.size());
+            }
             for (size_t i = 0; i < num; ++i) {
                 bindings.push_back(vk::DescriptorSetLayoutBinding{
                     binding,
