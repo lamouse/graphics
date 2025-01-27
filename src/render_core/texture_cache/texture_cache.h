@@ -219,6 +219,7 @@ auto TextureCache<P>::CreateImageView(const ImageInfo& info) -> ImageViewId {
     ImageViewBase& image_view = slot_image_views[image_view_id];
     image_view.flags |= ImageViewFlagBits::Strong;
     image.flags |= ImageFlagBits::Strong;
+    RenderTargetFromImage(image_id, view_info);
     return image_view_id;
 }
 

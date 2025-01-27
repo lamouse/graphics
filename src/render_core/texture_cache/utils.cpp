@@ -72,5 +72,5 @@ auto MakeShrinkImageCopies(const ImageInfo& dst, const ImageInfo& src, Subresour
     return copies;
 }
 
-Extent3D MipSize(Extent3D size, u32 level) { return AdjustMipSize(size, level); }
+auto MipSize(Extent3D size, u32 level) -> Extent3D { return AdjustMipSize(size, level); }
 }  // namespace render::texture::utils

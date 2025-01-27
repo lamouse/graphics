@@ -78,7 +78,7 @@ void App::run() {
                                                static_cast<u32>(img.getImageInfo().height), 1};
     imageInfo.layer_stride = 4;
     imageInfo.num_samples = 1;
-    imageInfo.resources.levels = static_cast<s32>(img.getMipLevels());
+    imageInfo.resources.levels = 1;
     graphics->addTexture(imageInfo);
     // resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
 

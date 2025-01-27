@@ -1358,7 +1358,7 @@ void TextureImage::DownloadMemory(vk::Buffer buffer, size_t offset,
     };
     DownloadMemory(buffer_handles, buffer_offsets, copies);
 }
-vk::ImageView TextureImage::StorageImageView(s32 level) noexcept {
+auto TextureImage::StorageImageView(s32 level) noexcept -> vk::ImageView {
     auto& view = storage_image_views[level];
     if (!view) {
         const auto format_info =
@@ -1451,11 +1451,11 @@ void TextureImage::DownloadMemory(const StagingBufferRef& map,
     DownloadMemory(buffers, offsets, copies);
 }
 
-bool TextureImage::IsRescaled() const noexcept {
+auto TextureImage::IsRescaled() const noexcept -> bool {
     return True(flags & texture::ImageFlagBits::Rescaled);
 }
 
-bool TextureImage::ScaleUp(bool ignore) {
+auto TextureImage::ScaleUp(bool ignore) -> bool {
     const auto& resolution = runtime->resolution;
     if (!resolution.active) {
         return false;
@@ -1752,7 +1752,7 @@ auto TextureImageView::StencilView() -> vk::ImageView {
     return *stencil_view;
 }
 
-vk::ImageView TextureImageView::ColorView() {
+auto TextureImageView::ColorView() -> vk::ImageView {
     if (!image_handle) {
         return VK_NULL_HANDLE;
     }

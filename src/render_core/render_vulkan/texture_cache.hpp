@@ -72,13 +72,6 @@ class TextureCacheRuntime {
         void ConvertImage(TextureFramebuffer* dst, TextureImageView& dst_view,
                           TextureImageView& src_view);
 
-        bool CanAccelerateImageUpload(TextureImage&) const noexcept { return false; }
-
-        bool CanUploadMSAA() const noexcept {
-            // TODO: Implement buffer to MSAA uploads
-            return false;
-        }
-
         void AccelerateImageUpload(TextureImage&, const StagingBufferRef&,
                                    std::span<const render::texture::SwizzleParameters>);
 
