@@ -11,11 +11,7 @@ using s16 = std::int16_t;  ///< 16-bit signed short
 using s32 = std::int32_t;  ///< 32-bit signed word
 using s64 = std::int64_t;  ///< 64-bit signed int
 
-using f32 = float;          ///< 32-bit floating point
-using f64 = double;         ///< 64-bit floating point
-using VAddr = uint64_t;     ///< Represents a pointer in the userspace virtual address space.
-using DAddr = uint64_t;     ///< Represents a pointer in the device specific virtual address space.
-using PAddr = uint64_t;     ///< Represents a pointer in the ARM11 physical address space.
-using GPUVAddr = uint64_t;  ///< Represents a pointer in the GPU virtual address space.
+using f32 = float;   ///< 32-bit floating point
+using f64 = double;  ///< 64-bit floating point
 using u128 = std::array<std::uint64_t, 2>;
 static_assert(sizeof(u128) == 16, "u128 must be 128 bits wide");

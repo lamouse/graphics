@@ -892,9 +892,9 @@ void TextureCacheRuntime::ReinterpretImage(TextureImage& dst, TextureImage& src,
     for (const auto& copy : copies) {
         total_size += copy.extent.width * copy.extent.height * copy.extent.depth * img_bpp;
     }
-    const VkBuffer copy_buffer = GetTemporaryBuffer(total_size);
-    const VkImage dst_image = dst.Handle();
-    const VkImage src_image = src.Handle();
+    const vk::Buffer copy_buffer = GetTemporaryBuffer(total_size);
+    const vk::Image dst_image = dst.Handle();
+    const vk::Image src_image = src.Handle();
     scheduler.requestOutsideRenderPassOperationContext();
     scheduler.record([dst_image, src_image, copy_buffer, src_aspect_mask, dst_aspect_mask,
                       vk_in_copies, vk_out_copies](vk::CommandBuffer cmdbuf) {
@@ -1273,9 +1273,8 @@ auto TextureCacheRuntime::CanReportMemoryUsage() const -> bool {
 
 void TextureCacheRuntime::TickFrame() {}
 
-TextureImage::TextureImage(TextureCacheRuntime& runtime_, const texture::ImageInfo& info_,
-                           GPUVAddr gpu_addr_, VAddr cpu_addr_)
-    : texture::ImageBase(info_, gpu_addr_, cpu_addr_),
+TextureImage::TextureImage(TextureCacheRuntime& runtime_, const texture::ImageInfo& info_)
+    : texture::ImageBase(info_),
       scheduler{&runtime_.scheduler},
       runtime{&runtime_},
       original_image(MakeImage(runtime_.device, runtime_.memory_allocator, info,
@@ -1600,7 +1599,7 @@ auto TextureImage::NeedsScaleHelper() const -> bool {
 
 TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::ImageViewInfo& info,
                                    texture::ImageId image_id_, TextureImage& image)
-    : texture::ImageViewBase{info, image.info, image_id_, image.gpu_addr},
+    : texture::ImageViewBase{info, image.info, image_id_},
       device{&runtime.device},
       image_handle{image.Handle()},
       samples(ConvertSampleCount(image.info.num_samples)) {
@@ -1641,7 +1640,7 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
         }
         ImageView handle = device->logical().CreateImageView(ci);
         if (device->hasDebuggingToolAttached()) {
-            handle.SetObjectNameEXT(texture::Name(*this, gpu_addr).c_str());
+            handle.SetObjectNameEXT(texture::Name(*this).c_str());
         }
         image_views[static_cast<size_t>(tex_type)] = std::move(handle);
     };
@@ -1682,8 +1681,8 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
 }
 
 TextureImageView::TextureImageView(TextureCacheRuntime&, const texture::ImageInfo& info,
-                                   const texture::ImageViewInfo& view_info, GPUVAddr gpu_addr_)
-    : texture::ImageViewBase{info, view_info, gpu_addr_},
+                                   const texture::ImageViewInfo& view_info)
+    : texture::ImageViewBase{info, view_info},
       buffer_size{texture::CalculateGuestSizeInBytes(info)} {}
 TextureImageView::TextureImageView(TextureCacheRuntime& runtime,
                                    const texture::NullImageViewParams& params)
@@ -1704,7 +1703,7 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime,
     }
 }
 
-bool TextureImageView::IsRescaled() const noexcept {
+auto TextureImageView::IsRescaled() const noexcept -> bool {
     if (!slot_images) {
         return false;
     }
@@ -1713,7 +1712,8 @@ bool TextureImageView::IsRescaled() const noexcept {
     return src_image.IsRescaled();
 }
 
-ImageView TextureImageView::MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask) {
+auto TextureImageView::MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask)
+    -> ImageView {
     return device->logical().CreateImageView(
         vk::ImageViewCreateInfo{{},
                                 image_handle,
@@ -1728,7 +1728,7 @@ ImageView TextureImageView::MakeView(vk::Format vk_format, vk::ImageAspectFlags 
                                 MakeSubresourceRange(aspect_mask, range)});
 }
 
-vk::ImageView TextureImageView::DepthView() {
+auto TextureImageView::DepthView() -> vk::ImageView {
     if (!image_handle) {
         return VK_NULL_HANDLE;
     }
@@ -1740,7 +1740,7 @@ vk::ImageView TextureImageView::DepthView() {
     return *depth_view;
 }
 
-vk::ImageView TextureImageView::StencilView() {
+auto TextureImageView::StencilView() -> vk::ImageView {
     if (!image_handle) {
         return VK_NULL_HANDLE;
     }
@@ -1763,8 +1763,8 @@ vk::ImageView TextureImageView::ColorView() {
     return *color_view;
 }
 
-vk::ImageView TextureImageView::StorageView(shader::TextureType texture_type,
-                                            shader::ImageFormat image_format) {
+auto TextureImageView::StorageView(shader::TextureType texture_type,
+                                   shader::ImageFormat image_format) -> vk::ImageView {
     if (!image_handle) {
         return VK_NULL_HANDLE;
     }
@@ -1789,7 +1789,7 @@ TextureImageView::~TextureImageView() = default;
 
 // TODO 这些需要修改
 TextureSampler::TextureSampler(TextureCacheRuntime& runtime, SamplerReduction reduction,
-                               float imageMipLevels) {
+                               int32_t imageMipLevels) {
     const auto& device = runtime.device;
     const bool arbitrary_borders = runtime.device.isExtCustomBorderColorSupported();
     auto border_color = std::array<float, 4>{0, 0, 0, 0};

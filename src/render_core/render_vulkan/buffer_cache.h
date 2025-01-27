@@ -26,7 +26,7 @@ class BufferCacheRuntime;
 class BaseBufferCache : public buffer::BufferBase {
     public:
         explicit BaseBufferCache(BufferCacheRuntime&, buffer::NullBufferParams null_params);
-        explicit BaseBufferCache(BufferCacheRuntime& runtime, VAddr cpu_addr_, u64 size_bytes_);
+        explicit BaseBufferCache(BufferCacheRuntime& runtime, u64 size_bytes_);
         explicit operator vk::Buffer() const noexcept { return *buffer; }
         void ResetUsageTracking() noexcept { tracker.Reset(); }
         [[nodiscard]] auto IsRegionUsed(u64 offset, u64 size) const noexcept -> bool {

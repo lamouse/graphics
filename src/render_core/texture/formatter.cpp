@@ -15,7 +15,6 @@
 namespace render::texture {
 
 std::string Name(const ImageBase& image) {
-    const GPUVAddr gpu_addr = image.gpu_addr;
     const ImageInfo& info = image.info;
     u32 width = info.size.width;
     u32 height = info.size.height;
@@ -37,21 +36,20 @@ std::string Name(const ImageBase& image) {
     }
     switch (image.info.type) {
         case ImageType::e1D:
-            return fmt::format("Image 1D 0x{:x} {}{}", gpu_addr, width, resource);
+            return fmt::format("Image 1D  {}{}", width, resource);
         case ImageType::e2D:
-            return fmt::format("Image 2D 0x{:x} {}x{}{}", gpu_addr, width, height, resource);
+            return fmt::format("Image 2D  {}x{}{}", width, height, resource);
         case ImageType::e3D:
-            return fmt::format("Image 2D 0x{:x} {}x{}x{}{}", gpu_addr, width, height, depth,
-                               resource);
+            return fmt::format("Image 2D  {}x{}x{}{}", width, height, depth, resource);
         case ImageType::Linear:
-            return fmt::format("Image Linear 0x{:x} {}x{}", gpu_addr, width, height);
+            return fmt::format("Image Linear  {}x{}", width, height);
         case ImageType::Buffer:
-            return fmt::format("Buffer 0x{:x} {}", image.gpu_addr, image.info.size.width);
+            return fmt::format("Buffer {}", image.info.size.width);
     }
     return "Invalid";
 }
 
-std::string Name(const ImageViewBase& image_view, GPUVAddr addr) {
+std::string Name(const ImageViewBase& image_view) {
     const u32 width = image_view.size.width;
     const u32 height = image_view.size.height;
     const u32 depth = image_view.size.depth;
@@ -61,25 +59,23 @@ std::string Name(const ImageViewBase& image_view, GPUVAddr addr) {
     const std::string level = num_levels > 1 ? fmt::format(":{}", num_levels) : "";
     switch (image_view.type) {
         case ImageViewType::e1D:
-            return fmt::format("ImageView 1D 0x{:X} {}{}", addr, width, level);
+            return fmt::format("ImageView 1D  {}{}", width, level);
         case ImageViewType::e2D:
-            return fmt::format("ImageView 2D 0x{:X} {}x{}{}", addr, width, height, level);
+            return fmt::format("ImageView 2D  {}x{}{}", width, height, level);
         case ImageViewType::Cube:
-            return fmt::format("ImageView Cube 0x{:X} {}x{}{}", addr, width, height, level);
+            return fmt::format("ImageView Cube  {}x{}{}", width, height, level);
         case ImageViewType::e3D:
-            return fmt::format("ImageView 3D 0x{:X} {}x{}x{}{}", addr, width, height, depth, level);
+            return fmt::format("ImageView 3D  {}x{}x{}{}", width, height, depth, level);
         case ImageViewType::e1DArray:
-            return fmt::format("ImageView 1DArray 0x{:X} {}{}|{}", addr, width, level, num_layers);
+            return fmt::format("ImageView 1DArray  {}{}|{}", width, level, num_layers);
         case ImageViewType::e2DArray:
-            return fmt::format("ImageView 2DArray 0x{:X} {}x{}{}|{}", addr, width, height, level,
-                               num_layers);
+            return fmt::format("ImageView 2DArray {}x{}{}|{}", width, height, level, num_layers);
         case ImageViewType::CubeArray:
-            return fmt::format("ImageView CubeArray 0x{:X} {}x{}{}|{}", addr, width, height, level,
-                               num_layers);
+            return fmt::format("ImageView CubeArray  {}x{}{}|{}", width, height, level, num_layers);
         case ImageViewType::Rect:
-            return fmt::format("ImageView Rect 0x{:X} {}x{}{}", addr, width, height, level);
+            return fmt::format("ImageView Rect  {}x{}{}", width, height, level);
         case ImageViewType::Buffer:
-            return fmt::format("BufferView 0x{:X} {}", addr, width);
+            return fmt::format("BufferView  {}", width);
     }
     return "Invalid";
 }

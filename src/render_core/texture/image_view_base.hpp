@@ -17,17 +17,17 @@ DECLARE_ENUM_FLAG_OPERATORS(ImageViewFlagBits)
 
 struct ImageViewBase {
         explicit ImageViewBase(const ImageViewInfo& info, const ImageInfo& image_info,
-                               ImageId image_id, GPUVAddr addr);
-        explicit ImageViewBase(const ImageInfo& info, const ImageViewInfo& view_info,
-                               GPUVAddr addr);
+                               ImageId image_id);
+        explicit ImageViewBase(const ImageInfo& info, const ImageViewInfo& view_info);
         explicit ImageViewBase(const NullImageViewParams&);
 
-        [[nodiscard]] bool IsBuffer() const noexcept { return type == ImageViewType::Buffer; }
+        [[nodiscard]] auto IsBuffer() const noexcept -> bool {
+            return type == ImageViewType::Buffer;
+        }
 
-        [[nodiscard]] bool SupportsAnisotropy() const noexcept;
+        [[nodiscard]] auto SupportsAnisotropy() const noexcept -> bool;
 
         ImageId image_id{};
-        GPUVAddr gpu_addr = 0;
         surface::PixelFormat format{};
         ImageViewType type{};
         SubresourceRange range;

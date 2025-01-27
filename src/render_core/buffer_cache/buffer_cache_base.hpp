@@ -50,7 +50,6 @@ static constexpr BufferId NULL_BUFFER_ID{0};
 static constexpr u32 DEFAULT_SKIP_CACHE_SIZE = static_cast<u32>(4_KiB);
 
 struct Binding {
-        DAddr device_addr{};
         u32 size{};
         BufferId buffer_id;
 };
@@ -60,7 +59,6 @@ struct TextureBufferBinding : Binding {
 };
 
 static constexpr Binding NULL_BINDING{
-    .device_addr = 0,
     .size = 0,
     .buffer_id = NULL_BUFFER_ID,
 };
@@ -79,8 +77,6 @@ struct IndirectParams {
         bool is_byte_count;
         bool is_indexed;
         bool include_count;
-        GPUVAddr count_start_address;
-        GPUVAddr indirect_start_address;
         size_t buffer_size;
         size_t max_draw_counts;
         size_t stride;
@@ -168,8 +164,6 @@ class BufferCache : public BufferCacheInfo {
 
         struct OverlapResult {
                 boost::container::small_vector<BufferId, 16> ids;
-                DAddr begin;
-                DAddr end;
                 bool has_stream_leap = false;
         };
 
@@ -189,23 +183,6 @@ class BufferCache : public BufferCacheInfo {
                 index += disabled_bits;
                 enabled_mask >>= disabled_bits;
                 func(index);
-            }
-        }
-
-        template <typename Func>
-        void ForEachBufferInRange(DAddr device_addr, u64 size, Func&& func) {
-            const u64 page_end = common::DivCeil(device_addr + size, CACHING_PAGESIZE);
-            for (u64 page = device_addr >> CACHING_PAGEBITS; page < page_end;) {
-                const BufferId buffer_id = page_table[page];
-                if (!buffer_id) {
-                    ++page;
-                    continue;
-                }
-                Buffer& buffer = slot_buffers[buffer_id];
-                func(buffer_id, buffer);
-
-                const DAddr end_addr = buffer.CpuAddr() + buffer.SizeBytes();
-                page = common::DivCeil(end_addr, CACHING_PAGESIZE);
             }
         }
 

@@ -83,7 +83,7 @@ class TextureCache : public TextureCacheInfo {
         /// Mark images in a range as modified from the CPU
         void WriteMemory(void* data, size_t size);
         /// Create an image from the given parameters
-        [[nodiscard]] auto InsertImage(const ImageInfo& info, RelaxedOptions options) -> ImageId;
+        [[nodiscard]] auto InsertImage(const ImageInfo& info) -> ImageId;
 
         /// Create a new image and join perfectly matching existing images
         /// Remove joined images from the cache
@@ -100,12 +100,46 @@ class TextureCache : public TextureCacheInfo {
         [[nodiscard]] auto RenderTargetFromImage(ImageId, const ImageViewInfo& view_info)
             -> std::pair<FramebufferId, ImageViewId>;
 
+        /// Find or create a sampler from a guest descriptor sampler
+        [[nodiscard]] auto FindSampler(u32 index) -> SamplerId;
+
         /// Find a framebuffer with the currently bound render targets
         /// UpdateRenderTargets should be called before this
         auto GetFramebuffer() -> Framebuffer*;
 
         /// Find or create a framebuffer with the given render target parameters
         auto GetFramebufferId(const RenderTargets& key) -> FramebufferId;
+
+        /// Get the sampler from the graphics descriptor table in the specified index
+        auto GetGraphicsSampler(u32 index) -> Sampler*;
+
+        /// Get the sampler from the compute descriptor table in the specified index
+        auto GetComputeSampler(u32 index) -> Sampler*;
+
+        /// Get the sampler id from the graphics descriptor table in the specified index
+        auto GetGraphicsSamplerId(u32 index) -> SamplerId;
+
+        /// Get the sampler id from the compute descriptor table in the specified index
+        auto GetComputeSamplerId(u32 index) -> SamplerId;
+
+        /// Return a constant reference to the given sampler id
+        [[nodiscard]] auto GetSampler(SamplerId id) const noexcept -> const Sampler&;
+
+        /// Return a reference to the given sampler id
+        [[nodiscard]] auto GetSampler(SamplerId id) noexcept -> Sampler&;
+
+        /// Return a reference to the given sampler id
+        [[nodiscard]] auto CreateSampler(ImageViewId id) -> SamplerId;
+        /// Find or create an image view from a guest descriptor
+        [[nodiscard]] auto FindImageView(const ImageInfo& info) -> ImageViewId;
+
+        /// Create a new image view from a guest descriptor
+        [[nodiscard]] auto CreateImageView(const ImageInfo& info) -> ImageViewId;
+        /// Find or create an image from the given parameters
+        [[nodiscard]] auto FindOrInsertImage(const ImageInfo& info) -> ImageId;
+
+        /// Find an image from the given parameters
+        [[nodiscard]] auto FindImage(const ImageInfo& info) -> ImageId;
 
     private:
         Runtime& runtime;
@@ -115,8 +149,6 @@ class TextureCache : public TextureCacheInfo {
         common::SlotVector<ImageAlloc> slot_image_allocs;
         common::SlotVector<Sampler> slot_samplers;
         common::SlotVector<Framebuffer> slot_framebuffers;
-
-        std::unordered_map<GPUVAddr, ImageAllocId> image_allocs_table;
 
         common::ThreadWorker texture_decode_worker{1, "TextureDecoder"};
         std::vector<std::unique_ptr<AsyncDecodeContext>> async_decodes;

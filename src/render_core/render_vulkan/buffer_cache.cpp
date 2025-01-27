@@ -99,15 +99,11 @@ BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, buffer::NullBuffer
     is_null = true;
 }
 
-BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, DAddr cpu_addr_, u64 size_bytes_)
-    : buffer::BufferBase(cpu_addr_, size_bytes_),
+BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, u64 size_bytes_)
+    : buffer::BufferBase(size_bytes_),
       device{&runtime.device},
       buffer{CreateBuffer(*device, runtime.memory_allocator, sizeBytes())},
-      tracker{sizeBytes()} {
-    if (runtime.device.hasDebuggingToolAttached()) {
-        buffer.SetObjectNameEXT(fmt::format("Buffer 0x{:x}", cpuAddr()).c_str());
-    }
-}
+      tracker{sizeBytes()} {}
 
 auto BaseBufferCache::View(u32 offset, u32 size, surface::PixelFormat format) -> vk::BufferView {
     if (!device) {

@@ -74,13 +74,7 @@ Extent3D MipSize(Extent3D size, u32 level) { return AdjustMipSize(size, level); 
     return true;
 }
 
-ImageBase::ImageBase(const ImageInfo& info_, GPUVAddr gpu_addr_, VAddr cpu_addr_)
-    : info{info_},
-
-      has_scaled{},
-      gpu_addr{gpu_addr_},
-      cpu_addr{cpu_addr_},
-      cpu_addr_end{cpu_addr + guest_size_bytes} {
+ImageBase::ImageBase(const ImageInfo& info_) : info{info_} {
     if (info.type == ImageType::e3D) {
         slice_offsets = {};
         slice_subresources = {};
@@ -89,39 +83,7 @@ ImageBase::ImageBase(const ImageInfo& info_, GPUVAddr gpu_addr_, VAddr cpu_addr_
 
 ImageBase::ImageBase(const NullImageParams& /*unused*/) {}
 
-ImageMapView::ImageMapView(GPUVAddr gpu_addr_, VAddr cpu_addr_, size_t size_, ImageId image_id_)
-    : gpu_addr{gpu_addr_}, cpu_addr{cpu_addr_}, size{size_}, image_id{image_id_} {}
-
-std::optional<SubresourceBase> ImageBase::TryFindBase(GPUVAddr other_addr) const noexcept {
-    if (other_addr < gpu_addr) {
-        // Subresource address can't be lower than the base
-        return std::nullopt;
-    }
-    const u32 diff = static_cast<u32>(other_addr - gpu_addr);
-    if (diff > guest_size_bytes) {
-        // This can happen when two CPU addresses are used for different GPU addresses
-        return std::nullopt;
-    }
-    if (info.type != ImageType::e3D) {
-        const auto [layer, mip_offset] = LayerMipOffset(diff, info.layer_stride);
-        const auto end = mip_level_offsets.begin() + info.resources.levels;
-        const auto it = std::find(mip_level_offsets.begin(), end, static_cast<u32>(mip_offset));
-        if (layer > info.resources.layers || it == end) {
-            return std::nullopt;
-        }
-        return SubresourceBase{
-            .level = static_cast<s32>(std::distance(mip_level_offsets.begin(), it)),
-            .layer = layer,
-        };
-    } else {
-        // TODO: Consider using binary_search after a threshold
-        const auto it = std::ranges::find(slice_offsets, diff);
-        if (it == slice_offsets.cend()) {
-            return std::nullopt;
-        }
-        return slice_subresources[std::distance(slice_offsets.begin(), it)];
-    }
-}
+ImageMapView::ImageMapView(size_t size_, ImageId image_id_) : size{size_}, image_id{image_id_} {}
 
 auto ImageBase::FindView(const ImageViewInfo& view_info) const noexcept -> ImageViewId {
     const auto it = std::ranges::find(image_view_infos, view_info);

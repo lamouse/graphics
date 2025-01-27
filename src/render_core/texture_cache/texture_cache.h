@@ -3,6 +3,7 @@
 #include "render_core/texture/image_base.hpp"
 #include "render_core/texture_cache/utils.hpp"
 #include "render_core/texture/samples_helper.h"
+#include "render_core/texture/image_view_base.hpp"
 #include <algorithm>
 #include <cstring>
 namespace render::texture {
@@ -18,15 +19,9 @@ template <class P>
 void TextureCache<P>::WriteMemory(void* data, size_t size) {}
 
 template <class P>
-auto TextureCache<P>::InsertImage(const ImageInfo& info, RelaxedOptions options) -> ImageId {
+auto TextureCache<P>::InsertImage(const ImageInfo& info) -> ImageId {
     const ImageId image_id = JoinImages(info);
     const Image& image = slot_images[image_id];
-    // Using "image.gpu_addr" instead of "gpu_addr" is important because it might be different
-    const auto [it, is_new] = image_allocs_table.try_emplace(image.gpu_addr);
-    if (is_new) {
-        it->second = slot_image_allocs.insert();
-    }
-    slot_image_allocs[it->second].images.push_back(image_id);
     return image_id;
 }
 
@@ -34,8 +29,6 @@ template <class P>
 auto TextureCache<P>::JoinImages(const ImageInfo& info) -> ImageId {
     ImageInfo new_info = info;
     const size_t size_bytes = utils::CalculateGuestSizeInBytes(new_info);
-    const bool broken_views = runtime.HasBrokenTextureViewFormats();
-    const bool native_bgr = runtime.HasNativeBgr();
     join_overlap_ids.clear();
     join_overlaps_found.clear();
     join_left_aliased_ids.clear();
@@ -45,7 +38,7 @@ auto TextureCache<P>::JoinImages(const ImageInfo& info) -> ImageId {
     join_copies_to_do.clear();
     join_alias_indices.clear();
 
-    const ImageId new_image_id = slot_images.insert(runtime, new_info, 0, 0);
+    const ImageId new_image_id = slot_images.insert(runtime, new_info);
     Image& new_image = slot_images[new_image_id];
 
     auto staging = runtime.UploadStagingBuffer(size_bytes);
@@ -58,81 +51,8 @@ auto TextureCache<P>::JoinImages(const ImageInfo& info) -> ImageId {
     copys[0].buffer_size = size_bytes;
     copys[0].buffer_row_length = 0;
     copys[0].buffer_image_height = 0;
-
     new_image.UploadMemory(staging, copys);
-
-    // image.UploadMemory(staging, {});
-
-    // std::ranges::sort(join_copies_to_do, [this](const JoinCopy& lhs, const JoinCopy& rhs) {
-    //     const ImageBase& lhs_image = slot_images[lhs.id];
-    //     const ImageBase& rhs_image = slot_images[rhs.id];
-    //     return lhs_image.modification_tick < rhs_image.modification_tick;
-    // });
-
-    // ImageBase& new_image_base = new_image;
-    // for (const ImageId aliased_id : join_right_aliased_ids) {
-    //     ImageBase& aliased = slot_images[aliased_id];
-    //     size_t alias_index = new_image_base.aliased_images.size();
-    //     if (!AddImageAlias(new_image_base, aliased, new_image_id, aliased_id)) {
-    //         continue;
-    //     }
-    //     join_alias_indices.emplace(aliased_id, alias_index);
-    //     new_image.flags |= ImageFlagBits::Alias;
-    // }
-    // for (const ImageId aliased_id : join_left_aliased_ids) {
-    //     ImageBase& aliased = slot_images[aliased_id];
-    //     size_t alias_index = new_image_base.aliased_images.size();
-    //     if (!AddImageAlias(aliased, new_image_base, aliased_id, new_image_id)) {
-    //         continue;
-    //     }
-    //     join_alias_indices.emplace(aliased_id, alias_index);
-    //     new_image.flags |= ImageFlagBits::Alias;
-    // }
-    // for (const ImageId aliased_id : join_bad_overlap_ids) {
-    //     ImageBase& aliased = slot_images[aliased_id];
-    //     aliased.overlapping_images.push_back(new_image_id);
-    //     new_image.overlapping_images.push_back(aliased_id);
-    //     if (aliased.info.resources.levels == 1 && aliased.info.block.depth == 0 &&
-    //         aliased.overlapping_images.size() > 1) {
-    //         aliased.flags |= ImageFlagBits::BadOverlap;
-    //     }
-    //     if (new_image.info.resources.levels == 1 && new_image.info.block.depth == 0 &&
-    //         new_image.overlapping_images.size() > 1) {
-    //         new_image.flags |= ImageFlagBits::BadOverlap;
-    //     }
-    // }
-
-    // for (const auto& copy_object : join_copies_to_do) {
-    //     Image& overlap = slot_images[copy_object.id];
-    //     if (copy_object.is_alias) {
-    //         if (!overlap.IsSafeDownload()) {
-    //             continue;
-    //         }
-    //         const auto alias_pointer = join_alias_indices.find(copy_object.id);
-    //         if (alias_pointer == join_alias_indices.end()) {
-    //             continue;
-    //         }
-    //         const AliasedImage& aliased = new_image.aliased_images[alias_pointer->second];
-    //         CopyImage(new_image_id, aliased.id, aliased.copies);
-    //         new_image.modification_tick = overlap.modification_tick;
-    //         continue;
-    //     }
-    //     if (True(overlap.flags & ImageFlagBits::GpuModified)) {
-    //         new_image.flags |= ImageFlagBits::GpuModified;
-    //         const SubresourceBase base = new_image.TryFindBase(overlap.gpu_addr).value();
-
-    //         auto copies = utils::MakeShrinkImageCopies(new_info, overlap.info, base, 1, 1);
-    //         if (overlap.info.num_samples != new_image.info.num_samples) {
-    //             runtime.CopyImageMSAA(new_image, overlap, std::move(copies));
-    //         } else {
-    //             runtime.CopyImage(new_image, overlap, std::move(copies));
-    //         }
-    //         new_image.modification_tick = overlap.modification_tick;
-    //     }
-    //     if (True(overlap.flags & ImageFlagBits::Tracked)) {
-    //     }
-    // }
-
+    AddImageAlias(new_image, new_image, new_image_id, new_image_id);
     return new_image_id;
 }
 
@@ -242,6 +162,84 @@ auto TextureCache<P>::GetFramebufferId(const RenderTargets& key) -> FramebufferI
 template <class P>
 auto TextureCache<P>::GetFramebuffer() -> typename P::Framebuffer* {
     return &slot_framebuffers[GetFramebufferId(render_targets)];
+}
+
+template <class P>
+auto TextureCache<P>::FindSampler(u32 index) -> SamplerId {
+    if (index > slot_samplers.size()) {
+        SamplerId id = slot_samplers.insert(runtime, SamplerReduction::Max, 1);
+    }
+
+    return slot_samplers[index];
+}
+
+template <class P>
+auto TextureCache<P>::GetGraphicsSamplerId(u32 index) -> SamplerId {
+    return FindSampler(index);
+}
+
+template <class P>
+auto TextureCache<P>::GetGraphicsSampler(u32 index) -> typename P::Sampler* {
+    return &slot_samplers[GetGraphicsSamplerId(index)];
+}
+
+template <class P>
+auto TextureCache<P>::GetComputeSampler(u32 index) -> typename P::Sampler* {
+    return &slot_samplers[GetComputeSamplerId(index)];
+}
+
+template <class P>
+auto TextureCache<P>::GetSampler(SamplerId id) const noexcept -> const typename P::Sampler& {
+    return slot_samplers[id];
+}
+
+template <class P>
+auto TextureCache<P>::GetSampler(SamplerId id) noexcept -> typename P::Sampler& {
+    return slot_samplers[id];
+}
+
+template <class P>
+auto TextureCache<P>::FindImageView(const ImageInfo& info) -> ImageViewId {
+    return CreateImageView(info);
+}
+
+template <class P>
+auto TextureCache<P>::CreateImageView(const ImageInfo& info) -> ImageViewId {
+    if (info.type == ImageType::Buffer) {
+        const ImageViewInfo view_info(info);
+        return slot_image_views.insert(runtime, info, view_info);
+    }
+    const ImageId image_id = FindOrInsertImage(info);
+    if (!image_id) {
+        return NULL_IMAGE_VIEW_ID;
+    }
+    ImageBase& image = slot_images[image_id];
+    const ImageViewInfo view_info(info);
+    const ImageViewId image_view_id = FindOrEmplaceImageView(image_id, view_info);
+    ImageViewBase& image_view = slot_image_views[image_view_id];
+    image_view.flags |= ImageViewFlagBits::Strong;
+    image.flags |= ImageFlagBits::Strong;
+    return image_view_id;
+}
+
+template <class P>
+auto TextureCache<P>::FindOrInsertImage(const ImageInfo& info) -> ImageId {
+    if (const ImageId image_id = FindImage(info); image_id) {
+        return image_id;
+    }
+    return InsertImage(info);
+}
+
+template <class P>
+auto TextureCache<P>::FindImage(const ImageInfo& info) -> ImageId {
+    return ImageId{};
+}
+
+template <class P>
+auto TextureCache<P>::CreateSampler(ImageViewId id) -> SamplerId {
+    const ImageViewBase& image_view = slot_image_views[id];
+    return slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,
+                                image_view.range.extent.levels);
 }
 
 }  // namespace render::texture

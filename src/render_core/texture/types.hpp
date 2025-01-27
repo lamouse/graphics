@@ -11,7 +11,6 @@ using ImageViewId = common::SlotId;
 using ImageId = common::SlotId;
 using ImageMapId = common::SlotId;
 using ImageViewId = common::SlotId;
-using ImageAllocId = common::SlotId;
 using SamplerId = common::SlotId;
 using FramebufferId = common::SlotId;
 

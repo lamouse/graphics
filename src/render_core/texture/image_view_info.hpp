@@ -4,11 +4,13 @@
 #include "render_core/surface.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/texture.hpp"
+#include "render_core/texture/image_info.hpp"
 
 namespace render::texture {
 
 struct ImageViewInfo {
         explicit ImageViewInfo() noexcept = default;
+        explicit ImageViewInfo(const ImageInfo& info) noexcept;
         explicit ImageViewInfo(ImageViewType type, surface::PixelFormat format,
                                SubresourceRange range = {}) noexcept;
 

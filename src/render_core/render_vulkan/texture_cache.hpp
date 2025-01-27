@@ -118,8 +118,8 @@ class TextureCacheRuntime {
 
 class TextureImage : public render::texture::ImageBase {
     public:
-        explicit TextureImage(TextureCacheRuntime& runtime_, const render::texture::ImageInfo& info,
-                              GPUVAddr gpu_addr, VAddr cpu_addr);
+        explicit TextureImage(TextureCacheRuntime& runtime_,
+                              const render::texture::ImageInfo& info);
         explicit TextureImage(const render::texture::NullImageParams&);
 
         ~TextureImage();
@@ -160,7 +160,7 @@ class TextureImage : public render::texture::ImageBase {
 
         auto StorageImageView(s32 level) noexcept -> vk::ImageView;
 
-        auto IsRescaled() const noexcept -> bool;
+        [[nodiscard]] auto IsRescaled() const noexcept -> bool;
 
         auto ScaleUp(bool ignore = false) -> bool;
 
@@ -199,7 +199,7 @@ class TextureImageView : public render::texture::ImageViewBase {
                                   texture::ImageId, TextureImage&,
                                   const common::SlotVector<TextureImage>&);
         explicit TextureImageView(TextureCacheRuntime&, const texture::ImageInfo&,
-                                  const texture::ImageViewInfo&, GPUVAddr);
+                                  const texture::ImageViewInfo&);
         explicit TextureImageView(TextureCacheRuntime&, const texture::NullImageViewParams&);
 
         ~TextureImageView();
@@ -214,9 +214,10 @@ class TextureImageView : public render::texture::ImageViewBase {
         [[nodiscard]] auto StorageView(shader::TextureType texture_type,
                                        shader::ImageFormat image_format) -> vk::ImageView;
 
-        [[nodiscard]] bool IsRescaled() const noexcept;
+        [[nodiscard]] auto IsRescaled() const noexcept -> bool;
 
-        [[nodiscard]] vk::ImageView Handle(shader::TextureType texture_type) const noexcept {
+        [[nodiscard]] auto Handle(shader::TextureType texture_type) const noexcept
+            -> vk::ImageView {
             return *image_views[static_cast<size_t>(texture_type)];
         }
 
@@ -226,9 +227,7 @@ class TextureImageView : public render::texture::ImageViewBase {
 
         [[nodiscard]] auto Samples() const noexcept -> vk::SampleCountFlagBits { return samples; }
 
-        [[nodiscard]] GPUVAddr GpuAddr() const noexcept { return gpu_addr; }
-
-        [[nodiscard]] u32 BufferSize() const noexcept { return buffer_size; }
+        [[nodiscard]] auto BufferSize() const noexcept -> u32 { return buffer_size; }
 
     private:
         struct StorageViews {
@@ -259,11 +258,11 @@ class TextureImageAlloc : public texture::ImageAllocBase {};
 class TextureSampler {
     public:
         explicit TextureSampler(TextureCacheRuntime&, SamplerReduction reduction,
-                                float imageMipLevels);
+                                int32_t imageMipLevels);
 
-        [[nodiscard]] vk::Sampler Handle() const noexcept { return *sampler; }
+        [[nodiscard]] auto Handle() const noexcept -> vk::Sampler { return *sampler; }
 
-        [[nodiscard]] vk::Sampler HandleWithDefaultAnisotropy() const noexcept {
+        [[nodiscard]] auto HandleWithDefaultAnisotropy() const noexcept -> vk::Sampler {
             return *sampler_default_anisotropy;
         }
 

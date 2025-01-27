@@ -200,8 +200,6 @@ void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t i
 
     const u64 image_offset = GetRawImageOffset(framebuffer, image_index);
 
-    const DAddr framebuffer_addr = framebuffer.address + framebuffer.offset;
-
     // TODO(Rodrigo): Read this from HLE
     constexpr u32 block_height_log2 = 4;
     const u32 bytes_per_pixel = GetBytesPerPixel();

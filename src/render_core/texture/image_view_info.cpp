@@ -23,4 +23,13 @@ auto ImageViewInfo::IsRenderTarget() const noexcept -> bool {
            z_source == RENDER_TARGET_SWIZZLE && w_source == RENDER_TARGET_SWIZZLE;
 }
 
+ImageViewInfo::ImageViewInfo(const ImageInfo& info) noexcept
+    : type{info.type == ImageType::Buffer ? ImageViewType::Buffer : ImageViewType::e2D},
+      format{info.format},
+      range{SubresourceRange{.base = {0, 0}, .extent = info.resources}},
+      x_source{CastSwizzle(SwizzleSource::R)},
+      y_source{CastSwizzle(SwizzleSource::G)},
+      z_source{CastSwizzle(SwizzleSource::B)},
+      w_source{CastSwizzle(SwizzleSource::A)} {}
+
 }  // namespace render::texture

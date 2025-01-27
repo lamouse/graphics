@@ -49,30 +49,14 @@ struct AliasedImage {
 struct NullImageParams {};
 
 struct ImageBase {
-        explicit ImageBase(const ImageInfo& info, GPUVAddr gpu_addr, VAddr cpu_addr);
+        explicit ImageBase(const ImageInfo& info);
         explicit ImageBase(const NullImageParams&);
-
-        [[nodiscard]] auto TryFindBase(GPUVAddr other_addr) const noexcept
-            -> std::optional<SubresourceBase>;
 
         [[nodiscard]] auto FindView(const ImageViewInfo& view_info) const noexcept -> ImageViewId;
 
         void InsertView(const ImageViewInfo& view_info, ImageViewId image_view_id);
 
         [[nodiscard]] auto IsSafeDownload() const noexcept -> bool;
-
-        [[nodiscard]] auto Overlaps(VAddr overlap_cpu_addr, size_t overlap_size) const noexcept
-            -> bool {
-            const VAddr overlap_end = overlap_cpu_addr + overlap_size;
-            return cpu_addr < overlap_end && overlap_cpu_addr < cpu_addr_end;
-        }
-
-        [[nodiscard]] auto OverlapsGPU(GPUVAddr overlap_gpu_addr,
-                                       size_t overlap_size) const noexcept -> bool {
-            const VAddr overlap_end = overlap_gpu_addr + overlap_size;
-            const GPUVAddr gpu_addr_end = gpu_addr + guest_size_bytes;
-            return gpu_addr < overlap_end && overlap_gpu_addr < gpu_addr_end;
-        }
 
         void CheckBadOverlapState();
         void CheckAliasState();
@@ -91,10 +75,6 @@ struct ImageBase {
 
         ImageFlagBits flags = ImageFlagBits::CpuModified;
 
-        GPUVAddr gpu_addr = 0;
-        VAddr cpu_addr = 0;
-        VAddr cpu_addr_end = 0;
-
         u64 modification_tick = 0;
         size_t lru_index = SIZE_MAX;
 
@@ -112,24 +92,7 @@ struct ImageBase {
 };
 
 struct ImageMapView {
-        explicit ImageMapView(GPUVAddr gpu_addr, VAddr cpu_addr, size_t size, ImageId image_id);
-
-        [[nodiscard]] auto Overlaps(VAddr overlap_cpu_addr, size_t overlap_size) const noexcept
-            -> bool {
-            const VAddr overlap_end = overlap_cpu_addr + overlap_size;
-            const VAddr cpu_addr_end = cpu_addr + size;
-            return cpu_addr < overlap_end && overlap_cpu_addr < cpu_addr_end;
-        }
-
-        [[nodiscard]] auto OverlapsGPU(GPUVAddr overlap_gpu_addr,
-                                       size_t overlap_size) const noexcept -> bool {
-            const GPUVAddr overlap_end = overlap_gpu_addr + overlap_size;
-            const GPUVAddr gpu_addr_end = gpu_addr + size;
-            return gpu_addr < overlap_end && overlap_gpu_addr < gpu_addr_end;
-        }
-
-        GPUVAddr gpu_addr;
-        VAddr cpu_addr;
+        explicit ImageMapView(size_t size, ImageId image_id);
         size_t size;
         ImageId image_id;
         bool picked{};

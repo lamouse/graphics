@@ -23,7 +23,6 @@ enum class BlendMode : uint8_t {
 };
 struct FramebufferConfig {
         BlendMode blending{};
-        DAddr address{};
         uint32_t offset{};
         uint32_t width{};
         uint32_t height{};

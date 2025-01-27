@@ -25,8 +25,7 @@ class BufferBase {
         static constexpr u64 BASE_PAGE_BITS = 16;
         static constexpr u64 BASE_PAGE_SIZE = 1ULL << BASE_PAGE_BITS;
 
-        explicit BufferBase(VAddr cpu_addr_, u64 size_bytes_)
-            : cpu_addr{cpu_addr_}, size_bytes{size_bytes_} {}
+        explicit BufferBase(u64 size_bytes_) : size_bytes{size_bytes_} {}
 
         explicit BufferBase(NullBufferParams /*unused*/) {}
 
@@ -50,11 +49,6 @@ class BufferBase {
         /// Returns the likeliness of this being a stream buffer
         [[nodiscard]] auto streamScore() const noexcept -> int { return stream_score; }
 
-        /// Returns true when vaddr -> vaddr+size is fully contained in the buffer
-        [[nodiscard]] auto isInBounds(VAddr addr, u64 size) const noexcept -> bool {
-            return addr >= cpu_addr && addr + size <= cpu_addr + sizeBytes();
-        }
-
         /// Returns true if the buffer has been marked as picked
         [[nodiscard]] auto isPicked() const noexcept -> bool {
             return True(flags & BufferFlagBits::Picked);
@@ -69,15 +63,6 @@ class BufferBase {
             return True(flags & BufferFlagBits::PreemtiveDownload);
         }
 
-        /// Returns the base CPU address of the buffer
-        [[nodiscard]] auto cpuAddr() const noexcept -> VAddr { return cpu_addr; }
-
-        /// Returns the offset relative to the given CPU address
-        /// @pre IsInBounds returns true
-        [[nodiscard]] auto offset(VAddr other_cpu_addr) const noexcept -> u32 {
-            return static_cast<u32>(other_cpu_addr - cpu_addr);
-        }
-
         [[nodiscard]] auto getLRUID() const noexcept -> size_t { return lru_id; }
 
         void setLRUID(size_t lru_id_) { lru_id = lru_id_; }
@@ -85,7 +70,6 @@ class BufferBase {
         [[nodiscard]] auto sizeBytes() const -> size_t { return size_bytes; }
 
     private:
-        VAddr cpu_addr = 0;
         BufferFlagBits flags{};
         int stream_score = 0;
         size_t lru_id = SIZE_MAX;
