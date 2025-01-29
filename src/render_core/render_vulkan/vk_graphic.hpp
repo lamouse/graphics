@@ -14,6 +14,7 @@
 #include "common/common_funcs.hpp"
 namespace render::vulkan {
 
+struct FramebufferTextureInfo;
 class Device;
 
 class VulkanGraphics : public render::Graphic {
@@ -24,9 +25,16 @@ class VulkanGraphics : public render::Graphic {
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
-
+        void start() override {};
         void addTexture(const texture::ImageInfo& imageInfo) override;
+        void addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) override;
+        void addUniformBuffer(void* data, size_t size) override;
+        void drawIndics(u32 indicesSize) override;
+        void end() override {};
         ~VulkanGraphics() override;
+
+        auto AccelerateDisplay(const frame::FramebufferConfig& config,
+                               u32 pixel_stride) -> std::optional<FramebufferTextureInfo>;
 
     private:
         static constexpr size_t MAX_TEXTURES = 192;
@@ -34,7 +42,25 @@ class VulkanGraphics : public render::Graphic {
         static constexpr size_t MAX_IMAGE_VIEWS = MAX_TEXTURES + MAX_IMAGES;
 
         static constexpr vk::DeviceSize DEFAULT_BUFFER_SIZE = 4 * sizeof(float);
-
+        void UpdateDynamicStates();
+        void UpdatePrimitiveRestartEnable();
+        void UpdateRasterizerDiscardEnable();
+        void UpdateDepthBiasEnable();
+        void UpdateVertexInput();
+        void UpdateCullMode();
+        void UpdateDepthCompareOp();
+        void UpdateFrontFace();
+        void UpdateStencilOp();
+        void UpdateDepthBoundsTestEnable();
+        void UpdateDepthTestEnable();
+        void UpdateDepthWriteEnable();
+        void UpdateStencilTestEnable();
+        void UpdateLogicOpEnable();
+        void UpdateDepthClampEnable();
+        void UpdateLogicOp();
+        void UpdateBlending();
+        void UpdateViewportsState();
+        void UpdateScissorsState();
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;
@@ -50,13 +76,14 @@ class VulkanGraphics : public render::Graphic {
         TextureCache texture_cache;
         BufferCacheRuntime buffer_cache_runtime;
         BufferCache buffer_cache;
-
+        texture::ImageViewId image_view_id;
+        texture::SamplerId sampler_id;
+        buffer::BufferId uniform_buffer_id;
         PipelineCache pipeline_cache;
         Event wfi_event;
         boost::container::static_vector<u32, MAX_IMAGE_VIEWS> image_view_indices;
         std::array<texture::ImageViewId, MAX_IMAGE_VIEWS> image_view_ids;
         boost::container::static_vector<vk::Sampler, MAX_TEXTURES> sampler_handles;
-
         u32 draw_counter = 0;
 };
 

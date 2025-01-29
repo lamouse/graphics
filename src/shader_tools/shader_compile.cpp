@@ -173,60 +173,6 @@ auto compileGLSLtoSPIRV(const std::string& sourceCode, EShLanguage shaderType)
 
 namespace shader::compile {
 
-void printShaderAttributes(std::span<const uint32_t> spirv) {
-    spirv_cross::CompilerGLSL compiler(spirv.data(), spirv.size());
-    auto resources = compiler.get_shader_resources();
-    for (const auto& input : resources.stage_inputs) {
-        uint32_t location = compiler.get_decoration(input.id, spv::DecorationLocation);
-        spirv_cross::SPIRType type = compiler.get_type(input.type_id);
-
-        std::string typeName;
-        switch (type.basetype) {
-            case spirv_cross::SPIRType::Float:
-                if (type.vecsize == 1)
-                    typeName = "float";
-                else if (type.vecsize == 2)
-                    typeName = "vec2";
-                else if (type.vecsize == 3)
-                    typeName = "vec3";
-                else if (type.vecsize == 4)
-                    typeName = "vec4";
-                break;
-            case spirv_cross::SPIRType::Int:
-                if (type.vecsize == 1)
-                    typeName = "int";
-                else if (type.vecsize == 2)
-                    typeName = "ivec2";
-                else if (type.vecsize == 3)
-                    typeName = "ivec3";
-                else if (type.vecsize == 4)
-                    typeName = "ivec4";
-                break;
-            // Add more cases as needed
-            default:
-                typeName = "unknown";
-                break;
-        }
-
-        spdlog::debug("layout(location = {} in {} : {}", location, typeName, input.name);
-    }
-
-    // 打印绑定信息
-    for (const auto& uniform_buffer : resources.uniform_buffers) {
-        uint32_t binding = compiler.get_decoration(uniform_buffer.id, spv::DecorationBinding);
-        uint32_t set = compiler.get_decoration(uniform_buffer.id, spv::DecorationDescriptorSet);
-        spdlog::debug("layout(set = {} binding = {}) uniform_buffer.name {}", set, binding,
-                      uniform_buffer.name);
-    }
-
-    for (const auto& sampled_image : resources.sampled_images) {
-        uint32_t binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
-        uint32_t set = compiler.get_decoration(sampled_image.id, spv::DecorationDescriptorSet);
-        spdlog::debug("layout(set = {}, binding = {}) uniform sampler2D {}", set, binding,
-                      sampled_image.name);
-    }
-}
-
 auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     Info info;
 

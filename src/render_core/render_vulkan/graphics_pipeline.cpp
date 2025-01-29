@@ -273,14 +273,17 @@ GraphicsPipeline::GraphicsPipeline(
     ShaderNotify* shader_notify, const Device& device, resource::DescriptorPool& descriptor_pool,
     GuestDescriptorQueue& guest_descriptor_queue_, common::ThreadWorker* worker_thread,
     pipeline::PipelineStatistics* pipeline_statistics, RenderPassCache& render_pass_cache,
-    const GraphicsPipelineCacheKey& key, std::array<ShaderModule, NUM_STAGES> stages,
-    const std::array<const shader::Info*, NUM_STAGES>& infos)
+    const GraphicsPipelineCacheKey& key, TextureCache& texture_cache_,
+    std::array<ShaderModule, NUM_STAGES> stages,
+    const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic_)
     : key_{key},
       device_{device},
       pipeline_cache(pipeline_cache_),
       scheduler_{scheduler},
       guest_descriptor_queue_{guest_descriptor_queue_},
-      spv_modules_{std::move(stages)} {
+      spv_modules_{std::move(stages)},
+      dynamic(dynamic_),
+      texture_cache(texture_cache_) {
     if (shader_notify) {
         shader_notify->MarkShaderBuilding();
     }
@@ -301,7 +304,7 @@ GraphicsPipeline::GraphicsPipeline(
         if (!uses_push_descriptor) {
             descriptor_allocator = descriptor_pool.allocator(*descriptor_set_layout, stage_infos);
         }
-        const VkDescriptorSetLayout set_layout{*descriptor_set_layout};
+        const vk::DescriptorSetLayout set_layout{*descriptor_set_layout};
         pipeline_layout = builder.CreatePipelineLayout(set_layout);
         descriptor_update_template =
             builder.CreateTemplate(set_layout, *pipeline_layout, uses_push_descriptor);
@@ -334,62 +337,70 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 }
 
 template <typename Spec>
-void GraphicsPipeline::configureImpl(bool is_indexed) {}
+void GraphicsPipeline::configureImpl(bool is_indexed) {
+    // std::array<texture::ImageViewInOut, MAX_IMAGE_ELEMENTS> views;
+    // std::array<texture::SamplerId, MAX_IMAGE_ELEMENTS> samplers;
 
-void GraphicsPipeline::ConfigureDraw(const pipeline::RescalingPushConstant& rescaling,
-                                     const pipeline::RenderAreaPushConstant& render_area) {
-    // scheduler_.requestRenderpass(texture_cache.GetFramebuffer());
-
-    // if (!is_built.load(std::memory_order::relaxed)) {
-    //     // Wait for the pipeline to be built
-    //     scheduler.Record([this](vk::CommandBuffer) {
-    //         std::unique_lock lock{build_mutex};
-    //         build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed);
-    //         });
-    //     });
+    // const texture::SamplerId* samplers_it{samplers.data()};
+    // const texture::ImageViewInOut* views_it{views.data()};
+    // const auto prepare_stage{[&](size_t stage) LAMBDA_FORCEINLINE {
+    //     // buffer_cache_.BindHostStageBuffers(stage);
+    //     pipeline::PushImageDescriptors(texture_cache, guest_descriptor_queue_,
+    //     stage_infos[stage],
+    //                                    samplers_it, views_it);
+    // }};
+    // if constexpr (Spec::enabled_stages[0]) {
+    //     prepare_stage(0);
     // }
-    // const bool is_rescaling{texture_cache.IsRescaling()};
-    // const bool update_rescaling{scheduler_.updateRescaling(is_rescaling)};
-    // const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
-    // const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
-    // scheduler.Record([this, descriptor_data, bind_pipeline, rescaling_data = rescaling.Data(),
-    //                   is_rescaling, update_rescaling,
-    //                   uses_render_area = render_area.uses_render_area,
-    //                   render_area_data = render_area.words](vk::CommandBuffer cmdbuf) {
-    //     if (bind_pipeline) {
-    //         cmdbuf.BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
-    //     }
-    //     cmdbuf.PushConstants(*pipeline_layout, VK_SHADER_STAGE_ALL_GRAPHICS,
-    //                          RESCALING_LAYOUT_WORDS_OFFSET, sizeof(rescaling_data),
-    //                          rescaling_data.data());
-    //     if (update_rescaling) {
-    //         const f32 config_down_factor{Settings::values.resolution_info.down_factor};
-    //         const f32 scale_down_factor{is_rescaling ? config_down_factor : 1.0f};
-    //         cmdbuf.PushConstants(*pipeline_layout, VK_SHADER_STAGE_ALL_GRAPHICS,
-    //                              RESCALING_LAYOUT_DOWN_FACTOR_OFFSET, sizeof(scale_down_factor),
-    //                              &scale_down_factor);
-    //     }
-    //     if (uses_render_area) {
-    //         cmdbuf.PushConstants(*pipeline_layout, VK_SHADER_STAGE_ALL_GRAPHICS,
-    //                              RENDERAREA_LAYOUT_OFFSET, sizeof(render_area_data),
-    //                              &render_area_data);
-    //     }
-    //     if (!descriptor_set_layout) {
-    //         return;
-    //     }
-    //     if (uses_push_descriptor) {
-    //         cmdbuf.PushDescriptorSetWithTemplateKHR(*descriptor_update_template,
-    //         *pipeline_layout,
-    //                                                 0, descriptor_data);
-    //     } else {
-    //         const VkDescriptorSet descriptor_set{descriptor_allocator.Commit()};
-    //         const vk::Device& dev{device.GetLogical()};
-    //         dev.UpdateDescriptorSet(descriptor_set, *descriptor_update_template,
-    //         descriptor_data); cmdbuf.BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //         *pipeline_layout, 0,
-    //                                   descriptor_set, nullptr);
-    //     }
-    // });
+    // if constexpr (Spec::enabled_stages[1]) {
+    //     prepare_stage(1);
+    // }
+    // if constexpr (Spec::enabled_stages[2]) {
+    //     prepare_stage(2);
+    // }
+    // if constexpr (Spec::enabled_stages[3]) {
+    //     prepare_stage(3);
+    // }
+    // if constexpr (Spec::enabled_stages[4]) {
+    //     prepare_stage(4);
+    // }
+    guest_descriptor_queue_.Acquire();
+    ConfigureDraw();
+}
+
+void GraphicsPipeline::ConfigureDraw() {
+    scheduler_.requestRenderpass(texture_cache.GetFramebuffer());
+
+    if (!is_built.load(std::memory_order::relaxed)) {
+        // Wait for the pipeline to be built
+        scheduler_.record([this](vk::CommandBuffer) {
+            std::unique_lock lock{build_mutex};
+            build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
+        });
+    }
+    const bool update_rescaling{scheduler_.updateRescaling(false)};
+    const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
+    const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
+    scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
+        if (bind_pipeline) {
+            cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
+        }
+        if (!descriptor_set_layout) {
+            return;
+        }
+        if (uses_push_descriptor) {
+            cmdbuf.pushDescriptorSetWithTemplateKHR(*descriptor_update_template, *pipeline_layout,
+                                                    0, descriptor_data,
+                                                    device_.logical().getDispatchLoaderDynamic());
+        } else {
+            const vk::DescriptorSet descriptor_set{descriptor_allocator.commit()};
+            vk::Device dev = device_.getLogical();
+            dev.updateDescriptorSetWithTemplate(descriptor_set, *descriptor_update_template,
+                                                descriptor_data);
+            cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipeline_layout, 0,
+                                      descriptor_set, nullptr);
+        }
+    });
 }
 GraphicsPipeline::~GraphicsPipeline() = default;
 void GraphicsPipeline::validate() {
@@ -581,34 +592,50 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         VK_DYNAMIC_STATE_STENCIL_WRITE_MASK, VK_DYNAMIC_STATE_STENCIL_REFERENCE,
         VK_DYNAMIC_STATE_LINE_WIDTH,
     };
+    if (dynamic.has_extended_dynamic_state) {
+        static constexpr std::array extended{
+            VK_DYNAMIC_STATE_CULL_MODE_EXT,
+            VK_DYNAMIC_STATE_FRONT_FACE_EXT,
+            VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT,
+            VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT,
+            VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
+            VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
+            VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT,
+            VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
+            VK_DYNAMIC_STATE_STENCIL_OP_EXT,
+        };
+        if (dynamic.has_dynamic_vertex_input) {
+            dynamic_states.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_EXT);
+        }
+        dynamic_states.insert(dynamic_states.end(), extended.begin(), extended.end());
+        if (dynamic.has_extended_dynamic_state_2) {
+            static constexpr std::array extended2{
+                VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT,
+                VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT,
+                VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT,
+            };
+            dynamic_states.insert(dynamic_states.end(), extended2.begin(), extended2.end());
+        }
 
-    static constexpr std::array extended{
-        VK_DYNAMIC_STATE_CULL_MODE_EXT,
-        VK_DYNAMIC_STATE_FRONT_FACE_EXT,
-        VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT,
-        VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT,
-        VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
-        VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
-        VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT,
-        VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
-        VK_DYNAMIC_STATE_STENCIL_OP_EXT,
-    };
-    dynamic_states.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_EXT);
-    dynamic_states.insert(dynamic_states.end(), extended.begin(), extended.end());
-    static constexpr std::array extended2{
-        VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT,
-        VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT,
-        VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT,
-    };
-    dynamic_states.insert(dynamic_states.end(), extended2.begin(), extended2.end());
-    dynamic_states.push_back(VK_DYNAMIC_STATE_LOGIC_OP_EXT);
-    static constexpr std::array extended3{
-        VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT,
-        VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT,
-        VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT,
-    };
-    dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
-
+        if (dynamic.has_extended_dynamic_state_2_extra) {
+            dynamic_states.push_back(VK_DYNAMIC_STATE_LOGIC_OP_EXT);
+        }
+        if (dynamic.has_extended_dynamic_state_3_blend) {
+            static constexpr std::array extended3{
+                VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT,
+                VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT,
+                VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT,
+            };
+            dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
+        }
+        if (dynamic.has_extended_dynamic_state_3_enables) {
+            static constexpr std::array extended3{
+                VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT,
+                VK_DYNAMIC_STATE_LOGIC_OP_ENABLE_EXT,
+            };
+            dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
+        }
+    }
     const VkPipelineDynamicStateCreateInfo dynamic_state_ci{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
         .pNext = nullptr,

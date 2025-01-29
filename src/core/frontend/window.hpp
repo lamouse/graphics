@@ -60,6 +60,10 @@ class EXPORT BaseWindow {
         /// Returns if window is minimized
         [[nodiscard]] virtual auto IsMinimized() const -> bool = 0;
         [[nodiscard]] virtual auto shouldClose() const -> bool = 0;
+        // 这两个主要在imgui使用
+        virtual void configGUI() = 0;
+        virtual void destroyGUI() = 0;
+        virtual void newFrame() = 0;
         [[nodiscard]] virtual auto getActiveConfig() const -> WindowConfig = 0;
         virtual void OnFrameDisplayed() = 0;
         void UpdateCurrentFramebufferLayout(u32 width, u32 height) {

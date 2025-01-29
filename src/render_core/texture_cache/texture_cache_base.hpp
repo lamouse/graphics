@@ -11,6 +11,7 @@
 #include "render_core/texture/image_info.hpp"
 #include "render_core/texture/image_view_info.hpp"
 #include "render_core/texture/render_targets.h"
+#include "render_core/framebufferConfig.hpp"
 #include <unordered_set>
 
 namespace render::texture {
@@ -93,8 +94,8 @@ class TextureCache : public TextureCacheInfo {
         void CopyImage(ImageId dst_id, ImageId src_id, std::vector<ImageCopy> copies);
 
         /// Find or create an image view in the given image with the passed parameters
-        [[nodiscard]] auto FindOrEmplaceImageView(ImageId image_id, const ImageViewInfo& info)
-            -> ImageViewId;
+        [[nodiscard]] auto FindOrEmplaceImageView(ImageId image_id,
+                                                  const ImageViewInfo& info) -> ImageViewId;
 
         /// Create a render target from a given image and image view parameters
         [[nodiscard]] auto RenderTargetFromImage(ImageId, const ImageViewInfo& view_info)
@@ -140,6 +141,12 @@ class TextureCache : public TextureCacheInfo {
 
         /// Find an image from the given parameters
         [[nodiscard]] auto FindImage(const ImageInfo& info) -> ImageId;
+        /// Return a constant reference to the given image view id
+        [[nodiscard]] auto GetImageView(ImageViewId id) const noexcept -> const ImageView&;
+
+        /// Return a reference to the given image view id
+        [[nodiscard]] auto GetImageView(ImageViewId id) noexcept -> ImageView&;
+        std::recursive_mutex mutex;
 
     private:
         Runtime& runtime;

@@ -4,7 +4,7 @@
 #include "common/settings.hpp"
 namespace render::surface {
 
-bool SurfaceTargetIsLayered(SurfaceTarget target) {
+auto SurfaceTargetIsLayered(SurfaceTarget target) -> bool {
     switch (target) {
         case SurfaceTarget::Texture1D:
         case SurfaceTarget::TextureBuffer:
@@ -23,7 +23,7 @@ bool SurfaceTargetIsLayered(SurfaceTarget target) {
     }
 }
 
-bool SurfaceTargetIsArray(SurfaceTarget target) {
+auto SurfaceTargetIsArray(SurfaceTarget target) -> bool {
     switch (target) {
         case SurfaceTarget::Texture1D:
         case SurfaceTarget::TextureBuffer:

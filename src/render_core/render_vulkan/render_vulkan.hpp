@@ -35,7 +35,6 @@ class RendererVulkan final : public render::RenderBase {
         Instance instance;
         DebugUtilsMessenger debug_messenger;
         SurfaceKHR surface;
-
         Device device;
         MemoryAllocator memory_allocator;
         scheduler::Scheduler scheduler;
@@ -45,8 +44,8 @@ class RendererVulkan final : public render::RenderBase {
         BlitScreen blit_capture;
         VulkanGraphics vulkan_graphics;
         std::optional<TurboMode> turbo_mode;
-        std::optional<Imgui> imgui;
         Frame applet_frame;
+        std::unique_ptr<Imgui> imgui;
 };
 
 }  // namespace render::vulkan

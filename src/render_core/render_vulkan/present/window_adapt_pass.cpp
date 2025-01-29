@@ -1,4 +1,5 @@
 #include "window_adapt_pass.hpp"
+#include "render_core/render_vulkan/vk_graphic.hpp"
 #include "present_push_constants.h"
 #include "render_core/host_shaders/vulkan_present_vert_spv.h"
 #include "render_vulkan/vk_shader_util.hpp"
@@ -14,7 +15,6 @@ namespace {}  // namespace
 WindowAdaptPass::WindowAdaptPass(const Device& device_, vk::Format frame_format, Sampler&& sampler_,
                                  ShaderModule&& fragment_shader_)
     : device(device_), sampler(std::move(sampler_)), fragment_shader(std::move(fragment_shader_)) {
-    spdlog::debug("初始化window adapt pass");
     CreateDescriptorSetLayout();
     CreatePipelineLayout();
     CreateVertexShader();
@@ -30,7 +30,6 @@ auto WindowAdaptPass::getDescriptorSetLayout() -> vk::DescriptorSetLayout {
 
 auto WindowAdaptPass::getRenderPass() -> vk::RenderPass { return *render_pass; }
 void WindowAdaptPass::CreateVertexShader() {
-    shader::compile::printShaderAttributes(VULKAN_PRESENT_VERT_SPV);
     vertex_shader =
         ::render::vulkan::utils::buildShader(device.getLogical(), VULKAN_PRESENT_VERT_SPV);
 }
@@ -57,7 +56,6 @@ void WindowAdaptPass::CreateRenderPass(vk::Format frame_format) {
 }
 
 void WindowAdaptPass::CreatePipelines() {
-    spdlog::debug("WindowAdaptPass 创建pipeline");
     opaque_pipeline = utils::CreateWrappedPipeline(device, render_pass, pipeline_layout,
                                                    std::tie(vertex_shader, fragment_shader));
     premultiplied_pipeline = utils::CreateWrappedPremultipliedBlendingPipeline(
@@ -66,11 +64,10 @@ void WindowAdaptPass::CreatePipelines() {
         device, render_pass, pipeline_layout, std::tie(vertex_shader, fragment_shader));
 }
 
-void WindowAdaptPass::Draw(scheduler::Scheduler& scheduler, size_t image_index,
+void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
                            std::list<Layer>& layers,
                            std::span<const frame::FramebufferConfig> configs,
                            const layout::FrameBufferLayout& layout, Frame* dst) {
-    spdlog::debug("WindowAdaptPass 执行Draw image index: {}", image_index);
     const vk::Framebuffer host_framebuffer{*dst->framebuffer};
     const vk::RenderPass renderpass{*render_pass};
     const vk::PipelineLayout graphics_pipeline_layout{*pipeline_layout};
@@ -100,7 +97,7 @@ void WindowAdaptPass::Draw(scheduler::Scheduler& scheduler, size_t image_index,
         }  //(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,  image_index,
            // configs[i], layout)
 
-        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], *sampler, image_index,
+        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler, image_index,
                                 configs[i], layout);
         layer_it++;
     }

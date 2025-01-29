@@ -111,6 +111,7 @@ Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Sc
 
 /// Creates (or recreates) the swapchain with a given size.
 void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) {
+    spdlog::info("执行创建Creating swapchain 宽度：{}, 高度：{}", width, height);
     is_outdated_ = false;
     is_suboptimal_ = false;
     width_ = width;
@@ -134,7 +135,7 @@ auto Swapchain::acquireNextImage() -> bool {
         *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_]);
     switch (result.result) {
         case vk::Result::eSuccess:
-            frame_index_ = result.value;
+            image_index_ = result.value;
             break;
         case vk::Result::eSuboptimalKHR:
             is_suboptimal_ = true;
@@ -248,7 +249,7 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
         .setPSwapchains(swapchain_.address())
         .setImageIndices(image_index_);
 
-    std::scoped_lock lock{scheduler_.submit_mutex_};
+    //std::scoped_lock lock{scheduler_.submit_mutex_};
     switch (const vk::Result result = present_queue.presentKHR(present_info)) {
         case vk::Result::eSuccess:
             break;

@@ -134,12 +134,14 @@ auto TextureCache<P>::RenderTargetFromImage(ImageId image_id, const ImageViewInf
     Extent3D extent = utils::MipSize(image.info.size, view_info.range.base.level);
     const u32 num_samples = image.info.num_samples;
     const auto [samples_x, samples_y] = SamplesLog2(num_samples);
-    const FramebufferId framebuffer_id = GetFramebufferId(RenderTargets{
+    render_targets = RenderTargets{
         .color_buffer_ids = {color_view_id},
         .depth_buffer_id = depth_view_id,
         .size = {extent.width >> samples_x, extent.height >> samples_y},
         .is_rescaled = is_rescaled,
-    });
+    };
+    const FramebufferId framebuffer_id = GetFramebufferId(render_targets);
+
     return {framebuffer_id, view_id};
 }
 
@@ -241,6 +243,16 @@ auto TextureCache<P>::CreateSampler(ImageViewId id) -> SamplerId {
     const ImageViewBase& image_view = slot_image_views[id];
     return slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,
                                 image_view.range.extent.levels);
+}
+
+template <class P>
+auto TextureCache<P>::GetImageView(ImageViewId id) const noexcept -> const typename P::ImageView& {
+    return slot_image_views[id];
+}
+
+template <class P>
+auto TextureCache<P>::GetImageView(ImageViewId id) noexcept -> typename P::ImageView& {
+    return slot_image_views[id];
 }
 
 }  // namespace render::texture

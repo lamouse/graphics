@@ -10,6 +10,7 @@
 #include "present/window_adapt_pass.hpp"
 #include "common/settings.hpp"
 
+#include "render_core/render_vulkan/vk_graphic.hpp"
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,
                        PresentManager& present_manager_, scheduler::Scheduler& scheduler_)
@@ -77,11 +78,10 @@ auto BlitScreen::CreateFramebuffer(const vk::ImageView& image_view, vk::Extent2D
     return CreateFramebuffer(image_view, extent, window_adapt->getRenderPass());
 }
 
-void BlitScreen::DrawToFrame(Frame* frame, const layout::FrameBufferLayout& layout,
+void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame, const layout::FrameBufferLayout& layout,
                              std::span<const frame::FramebufferConfig> framebuffers,
                              size_t current_swapchain_image_count,
                              vk::Format current_swapchain_view_format) {
-    spdlog::debug("BlitScreen 执行 DrawToFrame");
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
@@ -109,7 +109,6 @@ void BlitScreen::DrawToFrame(Frame* frame, const layout::FrameBufferLayout& layo
 
     // If we have a pending resource update, perform it
     if (resource_update_required) {
-        spdlog::debug("BlitScreen 执行 DrawToFrame 更新resource");
         // Wait for idle to ensure no resources are in use
         WaitIdle();
 
@@ -118,7 +117,7 @@ void BlitScreen::DrawToFrame(Frame* frame, const layout::FrameBufferLayout& layo
 
         // Update frame format if needed
         if (presentation_recreate_required) {
-            spdlog::debug("BlitScreen 执行 DrawToFrame recreateFrame");
+            spdlog::info("BlitScreen 执行 DrawToFrame recreateFrame");
             present_manager.recreateFrame(frame, layout.width, layout.height, swapchain_view_format,
                                           window_adapt->getRenderPass());
         }
@@ -136,7 +135,7 @@ void BlitScreen::DrawToFrame(Frame* frame, const layout::FrameBufferLayout& layo
     }
 
     // Perform the draw
-    window_adapt->Draw(scheduler, image_index, layers, framebuffers, layout, frame);
+    window_adapt->Draw(rasterizer,scheduler, image_index, layers, framebuffers, layout, frame);
 
     // Advance to next image
     if (++image_index >= image_count) {

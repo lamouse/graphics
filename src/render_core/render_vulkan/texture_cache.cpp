@@ -1280,7 +1280,6 @@ TextureImage::TextureImage(TextureCacheRuntime& runtime_, const texture::ImageIn
       original_image(MakeImage(runtime_.device, runtime_.memory_allocator, info,
                                runtime->ViewFormats(info.format))),
       aspect_mask(ImageAspectMask(info.format)) {
-    spdlog::debug("TextureImage::TextureImage");
     if (IsPixelFormatASTC(info.format) && !runtime->device.isOptimalAstcSupported()) {
         switch (common::settings::get<settings::Graphics>().astc_decodeMode) {
             case settings::enums::AstcDecodeMode::Gpu:

@@ -90,12 +90,15 @@ auto ScreenWindow::getExtent() -> ScreenExtent {
 
 ScreenWindow::~ScreenWindow() {
     if (window) {
-        ImGui_ImplGlfw_Shutdown();
-
         glfwDestroyWindow(window);
         glfwTerminate();
     }
 }
+
+void ScreenWindow::configGUI() { ImGui_ImplGlfw_InitForVulkan(window, true); }
+void ScreenWindow::destroyGUI() { ImGui_ImplGlfw_Shutdown(); }
+
+void ScreenWindow::newFrame() { ImGui_ImplGlfw_NewFrame(); }
 
 ScreenWindow::ScreenWindow(ScreenWindow&& w) noexcept
     : window(w.window), title_(std::move(w.title_)) {

@@ -59,7 +59,6 @@ class Scheduler {
         template <typename T>
             requires std::is_invocable_v<T, vk::CommandBuffer, vk::CommandBuffer>
         void recordWithUploadBuffer(T&& command) {
-            spdlog::debug("Scheduler 记录: command...");
             if (chunk_->record(command)) {
                 return;
             }
@@ -81,6 +80,11 @@ class Scheduler {
 
         // Registers a callback to perform on queue submission.
         void registerOnSubmit(std::function<void()>&& func) { on_submit_ = std::move(func); }
+        /// Update the rescaling state. Returns true if the state has to be updated.
+        auto updateRescaling(bool is_rescaling) -> bool;
+
+        // Update the pipeline to the current execution context.
+        auto updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool;
 
     private:
         class Command {

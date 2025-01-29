@@ -10,7 +10,7 @@ class Device;
 class FSR;
 class MemoryAllocator;
 struct PresentPushConstants;
-class RasterizerVulkan;
+class VulkanGraphics;
 class AntiAliasPass;
 
 namespace scheduler {
@@ -25,7 +25,7 @@ class Layer final {
         ~Layer();
 
         void ConfigureDraw(PresentPushConstants* out_push_constants,
-                           vk::DescriptorSet* out_descriptor_set, vk::Sampler sampler,
+                           vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer, vk::Sampler sampler,
                            size_t image_index, const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);
 

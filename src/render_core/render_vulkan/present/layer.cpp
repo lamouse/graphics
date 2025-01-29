@@ -3,6 +3,7 @@
 #include "fsr.hpp"
 #include "anti_alias_pass.h"
 #include "present_push_constants.h"
+#include "render_vulkan/blit_screen.hpp"
 #include "vulkan_common/device.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
@@ -12,6 +13,7 @@
 #include "vulkan_utils.hpp"
 #include "render_core/surface.hpp"
 #include "common/alignment.h"
+#include "render_core/render_vulkan/vk_graphic.hpp"
 
 namespace render::vulkan {
 namespace {
@@ -47,7 +49,6 @@ Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
       image_count(image_count_) {
-    spdlog::debug("Layer构造函数");
     CreateDescriptorPool();
     CreateDescriptorSets(layout);
     if (common::settings::get<settings::Graphics>().scaling_filter ==
@@ -87,7 +88,6 @@ auto Layer::CalculateBufferSize(const frame::FramebufferConfig& framebuffer) con
 }
 
 void Layer::CreateRawImages(const frame::FramebufferConfig& framebuffer) {
-    spdlog::debug("layer CreateRawImages");
     const auto format = vk::Format::eA8B8G8R8UnormPack32;  // TODO 有时间处理
     resource_ticks.resize(image_count);
     raw_images.resize(image_count);
@@ -218,7 +218,6 @@ void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t i
 
     };
     scheduler.record([this, copy, index = image_index](vk::CommandBuffer cmdbuf) {
-        spdlog::debug("调度器执行 Layer::UpdateRawImage");
         const vk::Image image = *raw_images[index];
         const vk::ImageMemoryBarrier base_barrier{
             {},
@@ -258,7 +257,7 @@ void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t i
 }
 
 void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
-                          vk::DescriptorSet* out_descriptor_set, vk::Sampler sampler,
+                          vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer, vk::Sampler sampler,
                           size_t image_index, const frame::FramebufferConfig& framebuffer,
                           const layout::FrameBufferLayout& layout) {
     const u32 texture_width = framebuffer.width;
@@ -266,7 +265,7 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     const u32 scaled_width = texture_width;
     const u32 scaled_height = texture_height;
     const bool use_accelerated = false;  // TODO 待处理
-
+    const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
     RefreshResources(framebuffer);
     SetAntiAliasPass();
 
@@ -279,8 +278,8 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
         UpdateRawImage(framebuffer, image_index);
     }
 
-    vk::Image source_image = *raw_images[image_index];
-    vk::ImageView source_image_view = *raw_image_views[image_index];
+    vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
+    vk::ImageView source_image_view =texture_info ? texture_info->image_view :*raw_image_views[image_index];
 
     anti_alias->Draw(scheduler, image_index, &source_image, &source_image_view);
 

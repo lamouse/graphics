@@ -29,10 +29,12 @@ class Model {
         void draw(const ::vk::CommandBuffer& commandBuffer) const;
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices);
         ~Model() = default;
+        std::vector<Model::Vertex> vertices_;
+        std::vector<uint16_t> indices_;
 
     private:
-        core::Buffer vertexBuffer_;
-        core::Buffer indexBuffer_;
+        // core::Buffer vertexBuffer_;
+        // core::Buffer indexBuffer_;
         uint32_t vertexCount;
         uint32_t indicesSize;
 };

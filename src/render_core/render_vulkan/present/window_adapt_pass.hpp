@@ -8,7 +8,7 @@
 namespace render::vulkan {
 class Device;
 struct Frame;
-class RasterizerVulkan;
+class VulkanGraphics;
 class Layer;
 namespace scheduler {
 class Scheduler;
@@ -22,7 +22,7 @@ class WindowAdaptPass final {
 
         auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
         auto getRenderPass() -> vk::RenderPass;
-        void Draw(scheduler::Scheduler& scheduler, size_t image_index, std::list<Layer>& layers,
+        void Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index, std::list<Layer>& layers,
                   std::span<const frame::FramebufferConfig> configs,
                   const layout::FrameBufferLayout& layout, Frame* dst);
 

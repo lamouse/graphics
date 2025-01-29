@@ -15,6 +15,7 @@ class PresentManager;
 class RasterizerVulkan;
 class MemoryAllocator;
 class Layer;
+class VulkanGraphics;
 class Framebuffer;
 namespace present {
 class WindowAdaptPass;
@@ -40,7 +41,7 @@ class BlitScreen {
                             PresentManager& present_manager, scheduler::Scheduler& scheduler);
         ~BlitScreen();
 
-        void DrawToFrame(Frame* frame, const layout::FrameBufferLayout& layout,
+        void DrawToFrame(VulkanGraphics& rasterizer,Frame* frame, const layout::FrameBufferLayout& layout,
                          std::span<const frame::FramebufferConfig> framebuffers,
                          size_t current_swapchain_image_count,
                          vk::Format current_swapchain_view_format);

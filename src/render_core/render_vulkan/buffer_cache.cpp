@@ -469,7 +469,7 @@ void BufferCacheRuntime::PostCopyBarrier() {
     });
 }
 
-void BufferCacheRuntime::ClearBuffer(VkBuffer dest_buffer, u32 offset, size_t size, u32 value) {
+void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value) {
     if (dest_buffer == VK_NULL_HANDLE) {
         return;
     }

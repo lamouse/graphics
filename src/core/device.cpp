@@ -135,7 +135,6 @@ class VKResource {
         }
         void destroy() const {
             std::call_once(device_clean_once_, [&]() {
-                spdlog::debug("destroy vk device and vk instance");
                 clean();
             });
         }

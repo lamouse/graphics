@@ -89,5 +89,4 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
     }
 }
 
-void init_glfw_imgui(GLFWwindow* window) { ImGui_ImplGlfw_InitForVulkan(window, true); }
 }  // namespace GLFWCommon

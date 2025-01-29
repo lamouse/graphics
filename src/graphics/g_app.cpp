@@ -48,9 +48,9 @@ void App::run() {
     auto layout = window->getFramebufferLayout();
     render::frame::FramebufferConfig frames{
         .width = layout.width, .height = layout.height, .stride = 1};
+    // auto gameObjects = loadGameObjects();
 
     // core::Device device_;
-    // auto gameObjects = loadGameObjects();
     // ::std::unique_ptr<DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
     // auto setLayout = DescriptorSetLayout::Builder()
     //                      .addBinding(0, ::vk::DescriptorType::eUniformBuffer,
@@ -80,6 +80,10 @@ void App::run() {
     imageInfo.num_samples = 1;
     imageInfo.resources.levels = 1;
     graphics->addTexture(imageInfo);
+    auto model = Model::createFromFile("models/viking_room.obj");
+    std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
+                                  model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+    graphics->addVertex(verticesSpan, model->indices_);
     // resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
 
     // ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
@@ -97,12 +101,35 @@ void App::run() {
     // descriptorPool_->getDescriptorPool(),
     //             static_cast<::vk::RenderPass>(render),
     //             window->getWindowSystemInfo().render_surface_scale);
-    render_base->composite(std::span{&frames, 1});
-
+    // std::jthread worker_thread([&] {
+    //     while (!window->shouldClose()) {
+    //         render_base->composite(std::span{&frames, 1});
+    //         spdlog::info("composite");
+    //     }
+    // });
     while (!window->shouldClose()) {
         window->pullEvents();
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        static auto startTime = std::chrono::high_resolution_clock::now();
 
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time =
+            std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
+                .count();
+
+        UniformBufferObject ubo{};
+        ubo.model =
+            glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f),
+                                    (float)window->getFramebufferLayout().width /
+                                        (float)window->getFramebufferLayout().height,
+                                    0.1f, 10.0f);
+        ubo.proj[1][1] *= -1;
+        graphics->addUniformBuffer(&ubo, sizeof(ubo));
+        graphics->drawIndics(model->indices_.size());
+        render_base->composite(std::span{&frames, 1});
         // if (window->IsMinimized()) {
         //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
         //     continue;
@@ -125,8 +152,6 @@ void App::run() {
         //     render.endFrame();
         // }
     }
-
-    core::Device::waitIdle();
 }
 
 App::App(const Config& config) {

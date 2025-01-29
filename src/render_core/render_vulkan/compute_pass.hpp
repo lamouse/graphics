@@ -5,13 +5,9 @@
 #include <optional>
 #include "render_core/texture/types.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
-
+#include "render_core/fixed_pipeline_state.h"
 namespace render::vulkan {
-enum class IndexFormat : u32 {
-    UnsignedByte = 0x0,
-    UnsignedShort = 0x1,
-    UnsignedInt = 0x2,
-};
+
 class Device;
 class TextureImage;
 class StagingBufferPool;

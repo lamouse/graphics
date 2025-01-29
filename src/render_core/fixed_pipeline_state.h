@@ -10,7 +10,7 @@
 #include "common/common_types.hpp"
 #include "render_core/surface.hpp"
 
-namespace render::vulkan {
+namespace render {
 
 enum class PrimitiveTopology : u32 {
     Points = 0x0,
@@ -68,6 +68,14 @@ struct DynamicFeatures {
 };
 
 struct FixedPipelineState {
+        struct State {
+                int extended_dynamic_state;
+                int extended_dynamic_state_2;
+                int extended_dynamic_state_2_extra;
+                int extended_dynamic_state_3_blend;
+                int extended_dynamic_state_3_enables;
+                int dynamic_vertex_input;
+        };
         std::array<surface::PixelFormat, 8> color_formats;
         surface::PixelFormat depth_format;
         u32 alpha_test_ref;
@@ -76,6 +84,7 @@ struct FixedPipelineState {
         int depth_enabled;
         MsaaMode msaa_mode;
         int xfb_state;
+        State state;
         [[nodiscard]] auto Hash() const noexcept -> size_t;
 
         auto operator==(const FixedPipelineState& rhs) const noexcept -> bool;
@@ -90,15 +99,22 @@ static_assert(std::has_unique_object_representations_v<FixedPipelineState>);
 static_assert(std::is_trivially_copyable_v<FixedPipelineState>);
 static_assert(std::is_trivially_constructible_v<FixedPipelineState>);
 
-}  // namespace render::vulkan
+}  // namespace render
 
 namespace std {
 
 template <>
-struct hash<render::vulkan::FixedPipelineState> {
-        auto operator()(const render::vulkan::FixedPipelineState& k) const noexcept -> size_t {
+struct hash<render::FixedPipelineState> {
+        auto operator()(const render::FixedPipelineState& k) const noexcept -> size_t {
             return k.Hash();
         }
 };
 
 }  // namespace std
+namespace render {
+enum class IndexFormat : u32 {
+    UnsignedByte = 0x0,
+    UnsignedShort = 0x1,
+    UnsignedInt = 0x2,
+};
+}

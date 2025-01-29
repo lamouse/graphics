@@ -10,7 +10,7 @@
 #include "render_core/render_vulkan/staging_buffer_pool.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/texture/types.hpp"
-#include "render_core/render_vulkan/fixed_pipeline_state.h"
+#include "render_core/fixed_pipeline_state.h"
 
 namespace render::vulkan {
 class Device;
@@ -27,7 +27,7 @@ class BaseBufferCache : public buffer::BufferBase {
     public:
         explicit BaseBufferCache(BufferCacheRuntime&, buffer::NullBufferParams null_params);
         explicit BaseBufferCache(BufferCacheRuntime& runtime, u64 size_bytes_);
-        explicit operator vk::Buffer() const noexcept { return *buffer; }
+        operator vk::Buffer() const noexcept { return *buffer; }
         void ResetUsageTracking() noexcept { tracker.Reset(); }
         [[nodiscard]] auto IsRegionUsed(u64 offset, u64 size) const noexcept -> bool {
             return tracker.IsUsed(offset, size);
@@ -98,7 +98,7 @@ class BufferCacheRuntime {
 
         void PostCopyBarrier();
 
-        void ClearBuffer(VkBuffer dest_buffer, u32 offset, size_t size, u32 value);
+        void ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value);
 
         void BindIndexBuffer(PrimitiveTopology topology, IndexFormat index_format, u32 num_indices,
                              u32 base_vertex, vk::Buffer buffer, u32 offset, u32 size);

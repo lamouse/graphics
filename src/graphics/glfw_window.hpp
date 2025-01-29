@@ -30,6 +30,9 @@ class ScreenWindow : public core::frontend::BaseWindow {
         [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
             return getWindowConfig();
         }
+        void configGUI() override;
+        void destroyGUI() override;
+        void newFrame() override;
         void pullEvents() override { glfwPollEvents(); }
         [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
         static auto getRequiredInstanceExtends(bool enableValidationLayers)

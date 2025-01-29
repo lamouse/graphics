@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.hpp>
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
-#include "fixed_pipeline_state.h"
+#include "render_core/fixed_pipeline_state.h"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "shader_tools/shader_info.h"
 #include <condition_variable>
@@ -10,6 +10,7 @@
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "common/thread_worker.hpp"
+#include "render_core/render_vulkan/texture_cache.hpp"
 namespace render {
 class ShaderNotify;
 }
@@ -79,8 +80,8 @@ class GraphicsPipeline {
             resource::DescriptorPool& descriptor_pool, GuestDescriptorQueue& guest_descriptor_queue,
             common::ThreadWorker* worker_thread, pipeline::PipelineStatistics* pipeline_statistics,
             RenderPassCache& render_pass_cache, const GraphicsPipelineCacheKey& key,
-            std::array<ShaderModule, NUM_STAGES> stages,
-            const std::array<const shader::Info*, NUM_STAGES>& infos);
+            TextureCache& texture_cache, std::array<ShaderModule, NUM_STAGES> stages,
+            const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic);
 
         CLASS_NON_COPYABLE(GraphicsPipeline);
         CLASS_NON_MOVEABLE(GraphicsPipeline);
@@ -107,12 +108,8 @@ class GraphicsPipeline {
         template <typename Spec>
         void configureImpl(bool is_indexed);
 
-        // void ConfigureDraw(const RescalingPushConstant& rescaling,
-        //                 const RenderAreaPushConstant& render_are);
-
         void makePipeline(vk::RenderPass render_pass);
-        void ConfigureDraw(const pipeline::RescalingPushConstant& rescaling,
-                           const pipeline::RenderAreaPushConstant& render_are);
+        void ConfigureDraw();
         void validate();
 
         const GraphicsPipelineCacheKey key_;
@@ -132,13 +129,13 @@ class GraphicsPipeline {
         std::array<u32, 5> enabled_uniform_buffer_masks{};
         render::frame::UniformBufferSizes uniform_buffer_sizes{};
         u32 num_textures{};
-
+        DynamicFeatures dynamic;
         DescriptorSetLayout descriptor_set_layout;
         resource::DescriptorAllocator descriptor_allocator;
         PipelineLayout pipeline_layout;
         DescriptorUpdateTemplate descriptor_update_template;
         Pipeline pipeline;
-        //  TextureCache& texture_cache;
+        TextureCache& texture_cache;
         std::condition_variable build_condvar;
         std::mutex build_mutex;
         std::atomic_bool is_built{false};

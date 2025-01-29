@@ -6,8 +6,6 @@
 #include "shader_tools/shader_info.h"
 namespace shader::compile {
 
-void printShaderAttributes(std::span<const uint32_t> spirv);
-
 auto getShaderInfo(std::span<const uint32_t> spirv) -> Info;
 
 class ShaderCompile {

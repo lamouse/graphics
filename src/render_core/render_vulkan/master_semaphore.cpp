@@ -127,10 +127,6 @@ void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf,
                                           vk::CommandBuffer& upload_cmdbuf,
                                           vk::Semaphore signal_semaphore,
                                           vk::Semaphore wait_semaphore, uint64_t host_tick) {
-    spdlog::debug(
-        "调用 MasterSemaphore::submitQueueTimeline \nhost_tick: {} cmd_buf {}, upload_cmd_buf {}, "
-        "\nsignal_semaphore {}, wait_semaphore {}",
-        host_tick, bool(cmdbuf), bool(upload_cmdbuf), bool(signal_semaphore), bool(wait_semaphore));
     const vk::Semaphore timeline_semaphore = *semaphore_;
 
     std::vector<uint64_t> signal_values{host_tick};
@@ -168,7 +164,6 @@ void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf,
  * 否则，它会更新 GPU 计数器值，直到成功为止。
  */
 void MasterSemaphore::refresh() {
-    spdlog::debug("MasterSemaphore 刷新时间线信号量的计数器...");
     if (!semaphore_) {
         // If we don't support timeline semaphores, there's nothing to refresh
         return;
@@ -186,7 +181,6 @@ void MasterSemaphore::refresh() {
 }
 
 void MasterSemaphore::wait(u64 tick) {
-    spdlog::debug("MasterSemaphore 执行 wait({})", tick);
     if (!semaphore_) {
         // If we don't support timeline semaphores, wait for the value normally
         std::unique_lock lk{free_mutex_};
@@ -216,7 +210,6 @@ void MasterSemaphore::wait(u64 tick) {
 void MasterSemaphore::submitQueue(vk::CommandBuffer& cmdbuf, vk::CommandBuffer& upload_cmdbuf,
                                   vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore,
                                   u64 host_tick) {
-    spdlog::debug("调用MasterSemaphore:: submitQueue");
     if (semaphore_) {
         return submitQueueTimeline(cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore,
                                    host_tick);

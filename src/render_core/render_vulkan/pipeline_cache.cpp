@@ -212,6 +212,8 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
         .has_extended_dynamic_state_3_enables = device.IsExtExtendedDynamicState3EnablesSupported(),
         .has_dynamic_vertex_input = device.IsExtVertexInputDynamicStateSupported(),
     };
+
+    createGraphicsPipeline();  // TODO 临时设置一下后续使用
 }
 
 PipelineCache::~PipelineCache() {
@@ -223,13 +225,18 @@ PipelineCache::~PipelineCache() {
 
 auto PipelineCache::currentGraphicsPipeline() -> GraphicsPipeline* {
     if (current_pipeline) {
-        GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
-        if (next) {
-            current_pipeline = next;
-            return builtPipeline(current_pipeline);
-        }
+        return current_pipeline;
     }
-    return currentGraphicsPipelineSlowPath();
+    return nullptr;
+
+    // if (current_pipeline) {
+    //     GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
+    //     if (next) {
+    //         current_pipeline = next;
+    //         return builtPipeline(current_pipeline);
+    //     }
+    // }
+    // return currentGraphicsPipelineSlowPath();
 }
 
 auto PipelineCache::currentComputePipeline() -> ComputePipeline* {
@@ -386,9 +393,16 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     infos[0] = &vertex_info;
     infos[4] = &frag_info;
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
-    return std::make_unique<GraphicsPipeline>(
+    auto pipeline = std::make_unique<GraphicsPipeline>(
         scheduler, vulkan_pipeline_cache, nullptr, device, descriptor_pool, guest_descriptor_queue,
-        thread_worker, statistics, render_pass_cache, key, std::move(modules), infos);
+        thread_worker, statistics, render_pass_cache, key, texture_cache, std::move(modules), infos,
+        dynamic_features);
+    current_pipeline = pipeline.get();
+    if (pipeline) {
+        graphics_cache.emplace(key, std::move(pipeline));
+    }
+    return nullptr;
+
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("{}", exception.what());
     return nullptr;
@@ -410,6 +424,7 @@ auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline
     }
     key.state.depth_format = surface::PixelFormat::D32_FLOAT;
     key.state.msaa_mode = MsaaMode::Msaa1x1;
+    key.state.depth_enabled = 0;
     return createGraphicsPipeline(key, nullptr, false);
 }
 

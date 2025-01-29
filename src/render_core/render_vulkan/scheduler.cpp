@@ -6,13 +6,13 @@
 #include "common/microprofile.hpp"
 #include "vulkan_common/device.hpp"
 #include "texture_cache.hpp"
+#include <boost/container/small_vector.hpp>
 
 namespace render::vulkan::scheduler {
 // MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
-    spdlog::debug("Scheduler 开始执行全部的command记录: ...");
     auto* command = first;
     while (command != nullptr) {
         auto* next = gsl::owner<Command*>(command->getNext());
@@ -24,7 +24,6 @@ void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
     command_offset = 0;
     first = nullptr;
     last = nullptr;
-    spdlog::debug("Scheduler 完成执行全部的command记录: ...");
 }
 
 Scheduler::Scheduler(const Device& device)
@@ -49,7 +48,6 @@ void Scheduler::workerThread(std::stop_token stop_token) {
     }};
 
     while (!stop_token.stop_requested()) {
-        spdlog::debug("Scheduler 开始工作 workerThread...");
         std::unique_ptr<CommandChunk> work;
 
         {
@@ -148,6 +146,22 @@ void Scheduler::endPendingOperations() {
 #endif
     endRenderPass();
 }
+auto Scheduler::updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool {
+    if (state_.graphics_pipeline_ == pipeline) {
+        return false;
+    }
+    state_.graphics_pipeline_ = pipeline;
+    return true;
+}
+
+auto Scheduler::updateRescaling(bool is_rescaling) -> bool {
+    if (state_.rescaling_defined_ && is_rescaling == state_.is_rescaling_) {
+        return false;
+    }
+    state_.rescaling_defined_ = true;
+    state_.is_rescaling_ = is_rescaling;
+    return true;
+}
 
 void Scheduler::endRenderPass() {
     if (!state_.render_pass_) {
@@ -155,24 +169,24 @@ void Scheduler::endRenderPass() {
     }
     record([num_images = num_render_pass_images_, images = render_pass_images_,
             ranges = render_pass_image_ranges_](vk::CommandBuffer cmdbuf) {
-        std::array<vk::ImageMemoryBarrier, 9> barriers;
+        boost::container::small_vector<vk::ImageMemoryBarrier, 9> barriers;
         for (size_t i = 0; i < num_images; ++i) {
-            barriers[i] = vk::ImageMemoryBarrier{
-                vk::AccessFlagBits::eColorAttachmentWrite |
-                    vk::AccessFlagBits::eDepthStencilAttachmentWrite,
-                vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite |
-                    vk::AccessFlagBits::eColorAttachmentRead |
-                    vk::AccessFlagBits::eColorAttachmentWrite |
-                    vk::AccessFlagBits::eDepthStencilAttachmentRead |
-                    vk::AccessFlagBits::eDepthStencilAttachmentWrite,
-                vk::ImageLayout::eGeneral,
-                vk::ImageLayout::eGeneral,
-
-                VK_QUEUE_FAMILY_IGNORED,
-                VK_QUEUE_FAMILY_IGNORED,
-                images[i],
-                ranges[i],
-            };
+            barriers.push_back(
+                vk::ImageMemoryBarrier()
+                    .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite |
+                                      vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+                    .setDstAccessMask(vk::AccessFlagBits::eShaderRead |
+                                      vk::AccessFlagBits::eShaderWrite |
+                                      vk::AccessFlagBits::eColorAttachmentRead |
+                                      vk::AccessFlagBits::eColorAttachmentWrite |
+                                      vk::AccessFlagBits::eDepthStencilAttachmentRead |
+                                      vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+                    .setOldLayout(vk::ImageLayout::eGeneral)
+                    .setNewLayout(vk::ImageLayout::eGeneral)
+                    .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    .setImage(images[i])
+                    .setSubresourceRange(ranges[i]));
         }
         cmdbuf.endRenderPass();
         cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eEarlyFragmentTests |
@@ -203,8 +217,6 @@ void Scheduler::invalidateState() {
  */
 auto Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore)
     -> u64 {
-    spdlog::debug("Scheduler 提交Execution signal_semaphore: {}, wait_semaphore: {}",
-                  bool(signal_semaphore), bool(wait_semaphore));
     endPendingOperations();
     invalidateState();
 
@@ -235,13 +247,11 @@ auto Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wa
 
 auto Scheduler::flush(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) -> u64 {
     // When flushing, we only send data to the worker thread; no waiting is necessary.
-    spdlog::debug("Scheduler执行flush操作");
     const u64 signal_value = submitExecution(signal_semaphore, wait_semaphore);
     return signal_value;
 }
 void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphore) {
     // When finishing, we need to wait for the submission to have executed on the device.
-    spdlog::debug("Scheduler执行finish操作");
     const u64 presubmit_tick = currentTick();
     submitExecution(signal_semaphore, wait_semaphore);
     wait(presubmit_tick);

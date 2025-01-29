@@ -246,7 +246,6 @@ auto MemoryAllocator::createImage(const VkImageCreateInfo& ci) const -> Image {
 
 auto MemoryAllocator::createBuffer(const VkBufferCreateInfo& ci, MemoryUsage usage) const
     -> Buffer {
-    spdlog::debug("MemoryAllocator create buffer ");
     const VmaAllocationCreateInfo alloc_ci = {
         .flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT | memoryUsageVmaFlags(usage),
         .usage = memoryUsageVma(usage),

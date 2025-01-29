@@ -14,6 +14,85 @@ namespace render::vulkan {
 
 namespace {
 
+auto create_render_pass(const Device& device) -> RenderPass {
+    ::vk::AttachmentDescription colorAttachment;
+    colorAttachment.setFormat(vk::Format::eB8G8R8A8Unorm)
+        .setSamples(vk::SampleCountFlagBits::e8)
+        .setLoadOp(::vk::AttachmentLoadOp::eClear)
+        .setStoreOp(::vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR);
+
+    ::vk::AttachmentDescription depthAttachment;
+    depthAttachment.setFormat(vk::Format::eD32Sfloat)
+        .setSamples(vk::SampleCountFlagBits::e8)
+        .setLoadOp(::vk::AttachmentLoadOp::eClear)
+        .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+    ::vk::AttachmentDescription colorAttachmentResolve;
+    colorAttachmentResolve.setFormat(vk::Format::eB8G8R8A8Unorm)
+        .setSamples(::vk::SampleCountFlagBits::e1)
+        .setLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStoreOp(::vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(::vk::ImageLayout::eUndefined)
+        .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR);
+    ::std::array<::vk::AttachmentDescription, 3> attachments = {colorAttachment, depthAttachment,
+                                                                colorAttachmentResolve};
+
+    ::vk::AttachmentReference colorAttachmentRef(0, ::vk::ImageLayout::eColorAttachmentOptimal);
+    ::vk::AttachmentReference depthAttachmentRef(1,
+                                                 ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
+    ::vk::AttachmentReference colorAttachmentResolveRef(2,
+                                                        ::vk::ImageLayout::eColorAttachmentOptimal);
+
+    ::vk::SubpassDescription subpass;
+    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
+        .setColorAttachments(colorAttachmentRef)
+        .setPDepthStencilAttachment(&depthAttachmentRef)
+        .setResolveAttachments(colorAttachmentResolveRef);
+
+    ::vk::SubpassDependency subpassDependency;
+    subpassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+        .setDstSubpass(0)
+        .setSrcAccessMask(::vk::AccessFlagBits::eNone)
+        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
+        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite |
+                          ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
+                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
+
+    ::vk::RenderPassCreateInfo createInfo;
+    createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subpassDependency);
+    return device.logical().createRenderPass(createInfo);
+}
+
+auto createDescriptorPool(const Device& device) -> VulkanDescriptorPool {
+    constexpr int count = 100;
+    std::array sizes = {vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eSampler, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eStorageTexelBuffer, count),
+                        vk::DescriptorPoolSize(vk::DescriptorType::eInputAttachment, count)};
+    return device.logical().createDescriptorPool(
+        vk::DescriptorPoolCreateInfo()
+            .setPoolSizes(sizes)
+            .setFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
+            .setMaxSets(count));
+}
+
 void check_vk_result(VkResult err) {
     if (err == 0) {
         return;
@@ -25,8 +104,11 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-Imgui::Imgui(const Device& device, vk::PhysicalDevice physical, vk::Instance instance,
-             ::vk::DescriptorPool& descriptorPool, vk::RenderPass renderPass, float scale) {
+Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::PhysicalDevice physical,
+             vk::Instance instance, float scale)
+    : renderPass(create_render_pass(device)),
+      descriptorPool(createDescriptorPool(device)),
+      window(window_) {
     init_debug_info();
     // 这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
@@ -59,7 +141,7 @@ Imgui::Imgui(const Device& device, vk::PhysicalDevice physical, vk::Instance ins
     }
 
     // Setup Platform/Renderer backends
-
+    window->configGUI();
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = instance;
     init_info.PhysicalDevice = physical;
@@ -67,7 +149,7 @@ Imgui::Imgui(const Device& device, vk::PhysicalDevice physical, vk::Instance ins
     init_info.QueueFamily = device.getGraphicsFamily();
     init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = descriptorPool;
+    init_info.DescriptorPool = *descriptorPool;
     init_info.Subpass = 0;
     init_info.MinImageCount = 2;
     init_info.ImageCount = 2;
@@ -75,8 +157,9 @@ Imgui::Imgui(const Device& device, vk::PhysicalDevice physical, vk::Instance ins
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
     // init_info.UseDynamicRendering = true;
-    init_info.RenderPass = renderPass;
+    init_info.RenderPass = *renderPass;
     ImGui_ImplVulkan_Init(&init_info);
+    init_debug_info();
 }
 
 void Imgui::init_debug_info() {
@@ -139,7 +222,7 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    window->newFrame();
     ImGui::NewFrame();
     {
         {
@@ -190,7 +273,7 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
 
 Imgui::~Imgui() {
     ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
+    window->destroyGUI();
     ImGui::DestroyContext();
 }
 

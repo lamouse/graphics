@@ -37,7 +37,8 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
         turbo_mode.emplace(instance);
         scheduler.registerOnSubmit([this] { turbo_mode->QueueSubmitted(); });
     }
-
+    imgui = std::make_unique<Imgui>(window, device, device.getPhysical(), *instance,
+                                    window->getWindowSystemInfo().render_surface_scale);
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("Vulkan initialization failed with error: {}", exception.what());
     throw std::runtime_error{fmt::format("Vulkan initialization error {}", exception.what())};
@@ -52,6 +53,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     if (frame_buffers.empty()) {
         return;
     }
+    //scheduler.record([this](vk::CommandBuffer cmdbuf) { imgui->draw(cmdbuf); });
 
     RenderAppletCaptureLayer(frame_buffers);
     SCOPE_EXIT { window_->OnFrameDisplayed(); };
@@ -60,9 +62,12 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     }
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
-    scheduler.flush(*frame->render_ready);
-    blit_swapchain.DrawToFrame(frame, window_->getFramebufferLayout(), frame_buffers,
+
+    blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(), frame_buffers,
                                swapchain.getImageCount(), swapchain.getImageViewFormat());
+
+    scheduler.flush(*frame->render_ready);
+    present_manager.present(frame);
 }
 
 void RendererVulkan::RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers) {
@@ -83,7 +88,7 @@ auto RendererVulkan::RenderToBuffer(std::span<const frame::FramebufferConfig> fr
 
     auto dst_buffer =
         present::utils::CreateWrappedBuffer(memory_allocator, buffer_size, MemoryUsage::Download);
-    blit_capture.DrawToFrame(&frame, layout, framebuffers, 1, format);
+    blit_capture.DrawToFrame(vulkan_graphics, &frame, layout, framebuffers, 1, format);
 
     scheduler.requestOutsideRenderPassOperationContext();
     scheduler.record([&](vk::CommandBuffer cmdbuf) {

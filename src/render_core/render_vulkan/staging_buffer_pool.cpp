@@ -87,7 +87,7 @@ void StagingBufferPool::TickFrame() {
     ReleaseCache(MemoryUsage::Download);
 }
 
-StagingBufferRef StagingBufferPool::GetStreamBuffer(size_t size) {
+auto StagingBufferPool::GetStreamBuffer(size_t size) -> StagingBufferRef {
     if (AreRegionsActive(Region(free_iterator) + 1,
                          std::min(Region(iterator + size) + 1, NUM_SYNCS))) {
         // Avoid waiting for the previous usages to be free
@@ -123,14 +123,14 @@ StagingBufferRef StagingBufferPool::GetStreamBuffer(size_t size) {
     };
 }
 
-bool StagingBufferPool::AreRegionsActive(size_t region_begin, size_t region_end) const {
+auto StagingBufferPool::AreRegionsActive(size_t region_begin, size_t region_end) const -> bool {
     const u64 gpu_tick = scheduler.getMasterSemaphore().knownGpuTick();
     return std::any_of(sync_ticks.begin() + region_begin, sync_ticks.begin() + region_end,
                        [gpu_tick](u64 sync_tick) { return gpu_tick < sync_tick; });
 };
 
-StagingBufferRef StagingBufferPool::GetStagingBuffer(size_t size, MemoryUsage usage,
-                                                     bool deferred) {
+auto StagingBufferPool::GetStagingBuffer(size_t size, MemoryUsage usage, bool deferred)
+    -> StagingBufferRef {
     if (const std::optional<StagingBufferRef> ref = TryGetReservedBuffer(size, usage, deferred)) {
         return *ref;
     }
@@ -161,8 +161,8 @@ std::optional<StagingBufferRef> StagingBufferPool::TryGetReservedBuffer(size_t s
     return it->Ref();
 }
 
-StagingBufferRef StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage usage,
-                                                        bool deferred) {
+auto StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage usage, bool deferred)
+    -> StagingBufferRef {
     const u32 log2 = common::Log2Ceil64(size);
     VkBufferCreateInfo buffer_ci = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,

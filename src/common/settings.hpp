@@ -32,7 +32,7 @@ class Graphics : public common::settings::BaseSetting<Graphics> {
         int fsr_sharpening_slider = 50;
         enums::AstcRecompression astc_recompression;
         enums::AstcDecodeMode astc_decodeMode = enums::AstcDecodeMode::Gpu;
-        enums::ScalingFilter scaling_filter = enums::ScalingFilter::Fsr;
+        enums::ScalingFilter scaling_filter = enums::ScalingFilter::NearestNeighbor;
         bool use_asynchronous_shaders = true;
         static auto get() { return Graphics{}; }
 };

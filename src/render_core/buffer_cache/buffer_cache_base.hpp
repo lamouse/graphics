@@ -139,7 +139,6 @@ class BufferCache : public BufferCacheInfo {
         static constexpr u32 CACHING_PAGEBITS = 16;
         static constexpr u64 CACHING_PAGESIZE = u64{1} << CACHING_PAGEBITS;
 
-        static constexpr bool IS_OPENGL = P::IS_OPENGL;
         static constexpr bool HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS =
             P::HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS;
         static constexpr bool HAS_FULL_INDEX_AND_PRIMITIVE_SUPPORT =
@@ -169,11 +168,16 @@ class BufferCache : public BufferCacheInfo {
 
     public:
         explicit BufferCache(Runtime& runtime_);
+        auto BindIndexBuffer(void* data, u32 size) -> BufferId;
+        auto BindVertexBuffers(void* data, u32 size) -> BufferId;
+        auto BindUniforBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
 
+        [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
+
+        [[nodiscard]] auto GetDrawIndirectBuffer() -> std::pair<Buffer*, u32>;
+
+        [[nodiscard]] auto CreateBuffer(u32 wanted_size) -> BufferId;
         ~BufferCache() = default;
-
-        std::recursive_mutex mutex;
-        Runtime& runtime;
 
     private:
         template <typename Func>
@@ -185,7 +189,8 @@ class BufferCache : public BufferCacheInfo {
                 func(index);
             }
         }
-
+        std::recursive_mutex mutex;
+        Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;
         DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
 

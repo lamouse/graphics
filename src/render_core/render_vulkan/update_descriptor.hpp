@@ -10,9 +10,10 @@ struct DescriptorUpdateEntry {
         struct Empty {};
 
         DescriptorUpdateEntry() = default;
-        DescriptorUpdateEntry(vk::DescriptorImageInfo image_) : image{image_} {}
-        DescriptorUpdateEntry(vk::DescriptorBufferInfo buffer_) : buffer{buffer_} {}
-        DescriptorUpdateEntry(vk::BufferView texel_buffer_) : texel_buffer{texel_buffer_} {}
+        explicit DescriptorUpdateEntry(vk::DescriptorImageInfo image_) : image{image_} {}
+        explicit DescriptorUpdateEntry(vk::DescriptorBufferInfo buffer_) : buffer{buffer_} {}
+        explicit DescriptorUpdateEntry(vk::BufferView texel_buffer_)
+            : texel_buffer{texel_buffer_} {}
 
         union {
                 Empty empty{};
@@ -38,24 +39,27 @@ class UpdateDescriptorQueue final {
         void Acquire();
 
         [[nodiscard]] auto UpdateData() const noexcept -> const DescriptorUpdateEntry* {
-            return upload_start;
+            return payload.data();
         }
 
         void AddSampledImage(vk::ImageView image_view, vk::Sampler sampler) {
-            *(payload_cursor++) =
-                vk::DescriptorImageInfo{sampler, image_view, vk::ImageLayout::eGeneral};
+            *(payload_cursor++) = DescriptorUpdateEntry(
+                vk::DescriptorImageInfo{sampler, image_view, vk::ImageLayout::eGeneral});
         }
 
         void AddImage(vk::ImageView image_view) {
-            *(payload_cursor++) =
-                vk::DescriptorImageInfo{VK_NULL_HANDLE, image_view, vk::ImageLayout::eGeneral};
+            *(payload_cursor++) = DescriptorUpdateEntry(
+                vk::DescriptorImageInfo{VK_NULL_HANDLE, image_view, vk::ImageLayout::eGeneral});
         }
 
         void AddBuffer(vk::Buffer buffer, vk::DeviceSize offset, vk::DeviceSize size) {
-            *(payload_cursor++) = vk::DescriptorBufferInfo{buffer, offset, size};
+            *(payload_cursor++) =
+                DescriptorUpdateEntry(vk::DescriptorBufferInfo{buffer, offset, size});
         }
 
-        void AddTexelBuffer(vk::BufferView texel_buffer) { *(payload_cursor++) = texel_buffer; }
+        void AddTexelBuffer(vk::BufferView texel_buffer) {
+            *(payload_cursor++) = DescriptorUpdateEntry(texel_buffer);
+        }
 
     private:
         const Device& device;
