@@ -3,7 +3,7 @@
 #include "blit_screen.hpp"
 namespace render::vulkan {
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
-                               MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_)
+                               MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_)
     : device(device_),
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
@@ -26,7 +26,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
                            guest_descriptor_queue, compute_pass_descriptor_queue, descriptor_pool),
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
-                     buffer_cache, texture_cache),
+                     buffer_cache, texture_cache, shader_notify_),
       wfi_event(device.logical().createEvent()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;

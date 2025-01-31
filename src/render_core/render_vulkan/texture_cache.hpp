@@ -289,7 +289,7 @@ class TextureFramebuffer {
 
         [[nodiscard]] auto Handle() const noexcept -> vk::Framebuffer { return *framebuffer; }
 
-        [[nodiscard]] auto RenderPass() const noexcept -> vk::RenderPass { return renderpass; }
+        [[nodiscard]] auto RenderPass() const noexcept -> vk::RenderPass { return render_pass; }
 
         [[nodiscard]] auto RenderArea() const noexcept -> vk::Extent2D { return render_area; }
 
@@ -321,7 +321,7 @@ class TextureFramebuffer {
 
     private:
         VulkanFramebuffer framebuffer;
-        vk::RenderPass renderpass;
+        vk::RenderPass render_pass;
         vk::Extent2D render_area;
         vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
         u32 num_color_buffers = 0;

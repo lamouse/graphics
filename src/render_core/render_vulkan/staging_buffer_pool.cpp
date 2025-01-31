@@ -51,7 +51,6 @@ StagingBufferPool::StagingBufferPool(const Device& device_, MemoryAllocator& mem
     if (device.isExtTransformFeedbackSupported()) {
         stream_ci.usage |= VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT;
     }
-    spdlog::debug("StagingBufferPool 构造, 开始创建stream_buffer");
     stream_buffer = memory_allocator.createBuffer(stream_ci, MemoryUsage::Stream);
     if (device.hasDebuggingToolAttached()) {
         stream_buffer.SetObjectNameEXT("Stream Buffer");

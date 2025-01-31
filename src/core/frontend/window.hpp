@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 #include "framebuffer_layout.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
@@ -70,6 +71,8 @@ class EXPORT BaseWindow {
             notifyFramebufferLayoutChanged(layout::DefaultFrameLayout(width, height));
         }
         virtual void pullEvents() = 0;
+
+        virtual void setWindowTitle(std::string_view) = 0;
 
     protected:
         WindowSystemInfo window_info;

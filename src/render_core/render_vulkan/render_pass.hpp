@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <mutex>
 #include "render_core/surface.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
 class Device;
 
@@ -46,7 +47,7 @@ class RenderPassCache {
 
     private:
         const Device* device{};
-        std::unordered_map<RenderPassKey, vk::RenderPass> cache;
+        std::unordered_map<RenderPassKey, RenderPass> cache;
         std::mutex mutex;
 };
 

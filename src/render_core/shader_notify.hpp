@@ -9,7 +9,7 @@
 namespace render {
 class ShaderNotify {
     public:
-        [[nodiscard]] int ShadersBuilding() noexcept;
+        [[nodiscard]] auto ShadersBuilding() noexcept -> int;
 
         void MarkShaderComplete() noexcept { ++num_complete; }
 

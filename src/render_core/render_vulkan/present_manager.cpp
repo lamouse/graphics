@@ -107,16 +107,10 @@ PresentManager::PresentManager(const vk::Instance& instance,
     setImageCount();
 
     const auto& dld = device.getLogical();
-    vk::CommandPoolCreateInfo cmdpool_info;
-    cmdpool_info.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
-                          vk::CommandPoolCreateFlagBits::eTransient);
-    cmdpool_ = dld.createCommandPool(cmdpool_info);
-    vk::CommandBufferAllocateInfo cmdbuffer_info;
-    cmdbuffer_info.setCommandBufferCount(static_cast<uint32_t>(image_count_))
-        .setCommandPool(cmdpool_)
-        .setLevel(vk::CommandBufferLevel::ePrimary);
+    cmdpool_ = device.logical().createCommandPool(vk::CommandPoolCreateInfo().setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
+                          vk::CommandPoolCreateFlagBits::eTransient));
 
-    auto cmdbuffers = dld.allocateCommandBuffers(cmdbuffer_info);
+    auto cmdbuffers = cmdpool_.Allocate(image_count_);
 
     frames_.resize(image_count_);
     for (uint32_t i = 0; i < frames_.size(); i++) {

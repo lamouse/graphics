@@ -197,8 +197,8 @@ void VulkanDescriptorPool::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle, vk::ObjectType::eDescriptorPool, name);
 }
 
-CommandBuffers VulkanCommandPool::Allocate(std::size_t num_buffers,
-                                           vk::CommandBufferLevel level) const {
+auto VulkanCommandPool::Allocate(std::size_t num_buffers,
+                                           vk::CommandBufferLevel level) const -> CommandBuffers {
     const vk::CommandBufferAllocateInfo ai{handle, level, static_cast<u32>(num_buffers)};
 
     std::vector<vk::CommandBuffer> command_buffers(num_buffers);

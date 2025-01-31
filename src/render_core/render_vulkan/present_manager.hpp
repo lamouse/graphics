@@ -65,7 +65,7 @@ class PresentManager {
         scheduler::Scheduler& scheduler_;
         Swapchain& swapchain_;
         SurfaceKHR& surface_;
-        vk::CommandPool cmdpool_;
+        VulkanCommandPool cmdpool_;
         std::vector<Frame> frames_;
         std::queue<Frame*> present_queue_;
         std::queue<Frame*> free_queue_;

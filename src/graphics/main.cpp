@@ -50,7 +50,6 @@ void init(const Config& config) {
     spdlog::set_pattern(logConfig.pattern);
     spdlog::set_level(level);
 
-    SPDLOG_DEBUG("init logging");
     // 刷新日志器
     spdlog::flush_on(level);
 }

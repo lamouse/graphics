@@ -6,6 +6,7 @@
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
 #include "render_core/graphic.hpp"
+#include "render_core/shader_notify.hpp"
 
 namespace render {
 class RenderBase {
@@ -24,11 +25,12 @@ class RenderBase {
 
         virtual auto getAppletCaptureBuffer() -> std::vector<u8> = 0;
         virtual auto getGraphics() -> Graphic* = 0;
-
+        [[nodiscard]] auto getShaderNotify() const -> ShaderNotify&{return *shader_notify_;};
     protected:
         core::frontend::BaseWindow* window_;
-        float current_fp_ = 0.0f;  ///< Current framerate, should be set by the renderer
+        float current_fps_ = 0.0f;  ///< Current framerate, should be set by the renderer
         int current_frame_ = 0;    ///< Current frame, should be set by the renderer
+        std::unique_ptr<ShaderNotify> shader_notify_;
     private:
         void UpdateCurrentFramebufferLayout();
 };

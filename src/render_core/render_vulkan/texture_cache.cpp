@@ -150,10 +150,9 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
         &storage_image_view_usage_create_info});
 }
 
-[[nodiscard]] auto TransformBufferImageCopies(std::span<const texture::BufferImageCopy> copies,
-                                              size_t buffer_offset,
-                                              vk::ImageAspectFlags aspect_mask)
-    -> boost::container::small_vector<vk::BufferImageCopy, 16> {
+[[nodiscard]] auto TransformBufferImageCopies(
+    std::span<const texture::BufferImageCopy> copies, size_t buffer_offset,
+    vk::ImageAspectFlags aspect_mask) -> boost::container::small_vector<vk::BufferImageCopy, 16> {
     struct Maker {
             auto operator()(const texture::BufferImageCopy& copy) const -> vk::BufferImageCopy {
                 return vk::BufferImageCopy{copy.buffer_offset + buffer_offset,
@@ -214,11 +213,10 @@ struct RangedBarrierRange {
         }
 };
 
-[[nodiscard]] auto MakeImageResolve(const texture::Region2D& dst_region,
-                                    const texture::Region2D& src_region,
-                                    const VkImageSubresourceLayers& dst_layers,
-                                    const VkImageSubresourceLayers& src_layers)
-    -> vk::ImageResolve {
+[[nodiscard]] auto MakeImageResolve(
+    const texture::Region2D& dst_region, const texture::Region2D& src_region,
+    const VkImageSubresourceLayers& dst_layers,
+    const VkImageSubresourceLayers& src_layers) -> vk::ImageResolve {
     return VkImageResolve{
         .srcSubresource = src_layers,
         .srcOffset =
@@ -455,8 +453,8 @@ void TryTransformSwizzleIfNeeded(surface::PixelFormat format, std::array<Swizzle
     };
 }
 
-[[nodiscard]] auto ImageUsageFlags(const FormatInfo& info, surface::PixelFormat format)
-    -> vk::ImageUsageFlags {
+[[nodiscard]] auto ImageUsageFlags(const FormatInfo& info,
+                                   surface::PixelFormat format) -> vk::ImageUsageFlags {
     vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferSrc |
                                 vk::ImageUsageFlagBits::eTransferDst |
                                 vk::ImageUsageFlagBits::eSampled;
@@ -565,8 +563,8 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
                            vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, write_barrier);
 }
 
-[[nodiscard]] auto MakeImageCreateInfo(const Device& device, const texture::ImageInfo& info)
-    -> vk::ImageCreateInfo {
+[[nodiscard]] auto MakeImageCreateInfo(const Device& device,
+                                       const texture::ImageInfo& info) -> vk::ImageCreateInfo {
     const bool is_2d = (info.type == texture::ImageType::e2D);
     const bool is_3d = (info.type == texture::ImageType::e3D);
     const auto format_info = device.surfaceFormat(FormatType::Optimal, false, info.format);
@@ -1711,20 +1709,20 @@ auto TextureImageView::IsRescaled() const noexcept -> bool {
     return src_image.IsRescaled();
 }
 
-auto TextureImageView::MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask)
-    -> ImageView {
+auto TextureImageView::MakeView(vk::Format vk_format,
+                                vk::ImageAspectFlags aspect_mask) -> ImageView {
+    const vk::ComponentMapping component_mapping = vk::ComponentMapping()
+                                                       .setA(vk::ComponentSwizzle::eIdentity)
+                                                       .setB(vk::ComponentSwizzle::eIdentity)
+                                                       .setG(vk::ComponentSwizzle::eIdentity)
+                                                       .setR(vk::ComponentSwizzle::eIdentity);
     return device->logical().CreateImageView(
-        vk::ImageViewCreateInfo{{},
-                                image_handle,
-                                ImageViewType(type),
-                                vk_format,
-                                vk::ComponentMapping{
-                                    vk::ComponentSwizzle::eIdentity,
-                                    vk::ComponentSwizzle::eIdentity,
-                                    vk::ComponentSwizzle::eIdentity,
-                                    vk::ComponentSwizzle::eIdentity,
-                                },
-                                MakeSubresourceRange(aspect_mask, range)});
+        vk::ImageViewCreateInfo()
+            .setImage(image_handle)
+            .setViewType(ImageViewType(type))
+            .setFormat(vk_format)
+            .setComponents(component_mapping)
+            .setSubresourceRange(MakeSubresourceRange(aspect_mask, range)));
 }
 
 auto TextureImageView::DepthView() -> vk::ImageView {
@@ -1865,7 +1863,7 @@ void TextureFramebuffer::CreateFramebuffer(
     TextureCacheRuntime& runtime, std::span<TextureImageView*, texture::NUM_RT> color_buffers,
     TextureImageView* depth_buffer, bool is_rescaled_) {
     boost::container::small_vector<vk::ImageView, texture::NUM_RT + 1> attachments;
-    RenderPassKey renderpass_key{};
+    RenderPassKey render_pass_key{};
     s32 num_layers = 1;
 
     is_rescaled = is_rescaled_;
@@ -1876,7 +1874,7 @@ void TextureFramebuffer::CreateFramebuffer(
     for (size_t index = 0; index < texture::NUM_RT; ++index) {
         const TextureImageView* const color_buffer = color_buffers[index];
         if (!color_buffer) {
-            renderpass_key.color_formats[index] = surface::PixelFormat::Invalid;
+            render_pass_key.color_formats[index] = surface::PixelFormat::Invalid;
             continue;
         }
         width = std::min(width, is_rescaled ? resolution.ScaleUp(color_buffer->size.width)
@@ -1884,7 +1882,7 @@ void TextureFramebuffer::CreateFramebuffer(
         height = std::min(height, is_rescaled ? resolution.ScaleUp(color_buffer->size.height)
                                               : color_buffer->size.height);
         attachments.push_back(color_buffer->RenderTarget());
-        renderpass_key.color_formats[index] = color_buffer->format;
+        render_pass_key.color_formats[index] = color_buffer->format;
         num_layers = std::max(num_layers, color_buffer->range.extent.layers);
         images[num_images] = color_buffer->ImageHandle();
         image_ranges[num_images] = MakeSubresourceRange(color_buffer);
@@ -1899,7 +1897,7 @@ void TextureFramebuffer::CreateFramebuffer(
         height = std::min(height, is_rescaled ? resolution.ScaleUp(depth_buffer->size.height)
                                               : depth_buffer->size.height);
         attachments.push_back(depth_buffer->RenderTarget());
-        renderpass_key.depth_format = depth_buffer->format;
+        render_pass_key.depth_format = depth_buffer->format;
         num_layers = std::max(num_layers, depth_buffer->range.extent.layers);
         images[num_images] = depth_buffer->ImageHandle();
         const VkImageSubresourceRange subresource_range = MakeSubresourceRange(depth_buffer);
@@ -1909,24 +1907,21 @@ void TextureFramebuffer::CreateFramebuffer(
         has_depth = (subresource_range.aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT) != 0;
         has_stencil = (subresource_range.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) != 0;
     } else {
-        renderpass_key.depth_format = surface::PixelFormat::Invalid;
+        render_pass_key.depth_format = surface::PixelFormat::Invalid;
     }
-    renderpass_key.samples = samples;
+    render_pass_key.samples = samples;
 
-    renderpass = runtime.render_pass_cache.get(renderpass_key);
+    render_pass = runtime.render_pass_cache.get(render_pass_key);
     render_area.width = std::min(render_area.width, width);
     render_area.height = std::min(render_area.height, height);
 
     num_color_buffers = static_cast<u32>(num_colors);
-    framebuffer = runtime.device.logical().createFramerBuffer(vk::FramebufferCreateInfo{
-        {},
-        renderpass,
-        static_cast<u32>(attachments.size()),
-        attachments.data(),
-        render_area.width,
-        render_area.height,
-        static_cast<u32>(std::max(num_layers, 1)),
-    });
+    framebuffer = runtime.device.logical().createFramerBuffer(vk::FramebufferCreateInfo()
+                                                                  .setRenderPass(render_pass)
+                                                                  .setAttachments(attachments)
+                                                                  .setWidth(render_area.width)
+                                                                  .setHeight(render_area.height)
+                                                                  .setLayers(num_layers));
 }
 
 void TextureCacheRuntime::AccelerateImageUpload(

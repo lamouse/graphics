@@ -21,7 +21,7 @@ class VulkanGraphics : public render::Graphic {
     public:
         explicit VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                 MemoryAllocator& memory_allocator_,
-                                scheduler::Scheduler& scheduler_);
+                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_);
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);

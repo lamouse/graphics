@@ -111,7 +111,7 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
                              resource::DescriptorPool& descriptor_pool,
                              GuestDescriptorQueue& guest_descriptor_queue_,
                              RenderPassCache& render_pass_cache, BufferCache& buffer_cache,
-                             TextureCache& texture_cache)
+                             TextureCache& texture_cache, ShaderNotify& shader_notify_)
     : device(device),
       scheduler(scheduler),
       descriptor_pool(descriptor_pool),
@@ -119,6 +119,7 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
       render_pass_cache(render_pass_cache),
       buffer_cache(buffer_cache),
       texture_cache(texture_cache),
+      shader_notify(shader_notify_),
       use_asynchronous_shaders(
           common::settings::get<settings::Graphics>().use_asynchronous_shaders),
       use_vulkan_pipeline_cache(common::settings::get<settings::RenderVulkan>().use_pipeline_cache),
@@ -394,7 +395,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     infos[4] = &frag_info;
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     auto pipeline = std::make_unique<GraphicsPipeline>(
-        scheduler, vulkan_pipeline_cache, nullptr, device, descriptor_pool, guest_descriptor_queue,
+        scheduler, vulkan_pipeline_cache, &shader_notify, device, descriptor_pool, guest_descriptor_queue,
         thread_worker, statistics, render_pass_cache, key, texture_cache, std::move(modules), infos,
         dynamic_features);
     current_pipeline = pipeline.get();

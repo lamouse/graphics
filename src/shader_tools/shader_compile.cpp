@@ -209,8 +209,6 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
                 typeName = "unknown";
                 break;
         }
-
-        spdlog::debug("layout(location = {} in {} : {}", location, typeName, input.name);
     }
 
     // 打印绑定信息
@@ -219,15 +217,11 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
         uint32_t set = compiler.get_decoration(uniform_buffer.id, spv::DecorationDescriptorSet);
 
         info.constant_buffer_descriptors.push_back({index++, 1});
-        spdlog::debug("layout(set = {} binding = {}) uniform_buffer.name {}", set, binding,
-                      uniform_buffer.name);
     }
 
     for (const auto& sampled_image : resources.sampled_images) {
         uint32_t binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
         uint32_t set = compiler.get_decoration(sampled_image.id, spv::DecorationDescriptorSet);
-        spdlog::debug("layout(set = {}, binding = {}) uniform sampler2D {}", set, binding,
-                      sampled_image.name);
         TextureDescriptor td;
         td.count = 1;
         info.texture_descriptors.push_back(td);

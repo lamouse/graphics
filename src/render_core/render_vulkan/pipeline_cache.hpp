@@ -63,7 +63,7 @@ class PipelineCache {
                       resource::DescriptorPool& descriptor_pool,
                       GuestDescriptorQueue& guest_descriptor_queue,
                       RenderPassCache& render_pass_cache, BufferCache& buffer_cache,
-                      TextureCache& texture_cache);
+                      TextureCache& texture_cache, ShaderNotify& shader_notify);
         ~PipelineCache();
         CLASS_NON_COPYABLE(PipelineCache);
         CLASS_NON_MOVEABLE(PipelineCache);
@@ -102,6 +102,7 @@ class PipelineCache {
         RenderPassCache& render_pass_cache;
         BufferCache& buffer_cache;
         TextureCache& texture_cache;
+        ShaderNotify& shader_notify;
 
         bool use_asynchronous_shaders{};
         bool use_vulkan_pipeline_cache{};

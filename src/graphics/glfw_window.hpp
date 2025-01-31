@@ -30,6 +30,7 @@ class ScreenWindow : public core::frontend::BaseWindow {
         [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
             return getWindowConfig();
         }
+        void setWindowTitle(std::string_view title) override{glfwSetWindowTitle(window, title.data());};
         void configGUI() override;
         void destroyGUI() override;
         void newFrame() override;

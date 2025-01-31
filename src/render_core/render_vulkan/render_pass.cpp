@@ -5,8 +5,8 @@ namespace render::vulkan {
 namespace {
 
 auto createColorAttachmentDescription(auto& formats, vk::SampleCountFlagBits samples,
-                                      bool need_resolvet, bool need_store)
-    -> std::vector<vk::AttachmentDescription> {
+                                      bool need_resolvet,
+                                      bool need_store) -> std::vector<vk::AttachmentDescription> {
     std::vector<vk::AttachmentDescription> attachments;
     for (auto format : formats) {
         if (format == vk::Format::eUndefined) {
@@ -43,8 +43,8 @@ auto createDepthAttachmentDescription(vk::Format format, vk::SampleCountFlagBits
         .setSamples(samples);
     return attach;
 }
-auto createResolveAttachmentDescription(auto& formats, bool need_store)
-    -> std::vector<vk::AttachmentDescription> {
+auto createResolveAttachmentDescription(auto& formats,
+                                        bool need_store) -> std::vector<vk::AttachmentDescription> {
     std::vector<vk::AttachmentDescription> attachments;
     for (auto format : formats) {
         if (format == vk::Format::eUndefined) {
@@ -89,7 +89,7 @@ auto RenderPassCache::get(const RenderPassKey& key) -> vk::RenderPass {
     std::scoped_lock lock{mutex};
     const auto [pair, is_new] = cache.try_emplace(key);
     if (!is_new) {
-        return pair->second;
+        return *pair->second;
     }
     boost::container::static_vector<vk::AttachmentDescription, 9> descriptions;
     std::array<vk::AttachmentReference, 8> references{};
@@ -117,28 +117,15 @@ auto RenderPassCache::get(const RenderPassKey& key) -> vk::RenderPass {
         };
         descriptions.push_back(AttachmentDescription(*device, key.depth_format, key.samples));
     }
-    const vk::SubpassDescription subpass{
-        {},
-        vk::PipelineBindPoint::eGraphics,
-        0,
-        nullptr,
-        num_attachments,
-        references.data(),
-        nullptr,
-        has_depth ? &depth_reference : nullptr,
-        0,
-        nullptr,
-    };
-    pair->second = device->getLogical().createRenderPass(vk::RenderPassCreateInfo{
+    const vk::SubpassDescription subpass =
+        vk::SubpassDescription()
+            .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+            .setColorAttachmentCount(num_attachments)
+            .setPColorAttachments(references.data())
+            .setPDepthStencilAttachment(has_depth ? &depth_reference : nullptr);
+    pair->second = device->logical().createRenderPass(
+        vk::RenderPassCreateInfo().setAttachments(descriptions).setSubpasses(subpass));
 
-        {},
-        static_cast<u32>(descriptions.size()),
-        descriptions.empty() ? nullptr : descriptions.data(),
-        1,
-        &subpass,
-        0,
-        nullptr,
-    });
-    return pair->second;
+    return *pair->second;
 }
 }  // namespace render::vulkan

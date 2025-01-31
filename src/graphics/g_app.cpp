@@ -130,6 +130,14 @@ void App::run() {
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
         graphics->drawIndics(model->indices_.size());
         render_base->composite(std::span{&frames, 1});
+        auto & shader_notify = render_base->getShaderNotify();
+        const int shaders_building = shader_notify.ShadersBuilding();
+
+        if(shaders_building > 0) {
+          window->setWindowTitle(fmt::format("Building {} shader(s)", shaders_building));
+        }else {
+            window->setWindowTitle("graphics");
+        }
         // if (window->IsMinimized()) {
         //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
         //     continue;
