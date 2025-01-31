@@ -585,6 +585,7 @@ void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>
         return;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
+        spdlog::debug("执行bindVertexBuffers2EXT");
         scheduler.record([this, bindings_ = std::move(bindings),
                           buffer_handles_ = std::move(buffer_handles),
                           binding_count](vk::CommandBuffer cmdbuf) {

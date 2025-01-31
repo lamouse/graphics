@@ -46,6 +46,7 @@ class VulkanGraphics : public render::Graphic {
         void UpdatePrimitiveRestartEnable();
         void UpdateRasterizerDiscardEnable();
         void UpdateDepthBiasEnable();
+
         void UpdateVertexInput();
         void UpdateCullMode();
         void UpdateDepthCompareOp();
@@ -59,8 +60,14 @@ class VulkanGraphics : public render::Graphic {
         void UpdateDepthClampEnable();
         void UpdateLogicOp();
         void UpdateBlending();
+
         void UpdateViewportsState();
         void UpdateScissorsState();
+        void UpdateBlendConstants();
+        void UpdateDepthBias();
+        void UpdateDepthBounds();
+        void UpdateStencilFaces();
+        void UpdateLineWidth();
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;

@@ -3,7 +3,8 @@
 #include "blit_screen.hpp"
 namespace render::vulkan {
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
-                               MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_)
+                               MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_,
+                               ShaderNotify& shader_notify_)
     : device(device_),
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
@@ -54,8 +55,8 @@ void VulkanGraphics::drawIndics(u32 indicesSize) {
     // guest_descriptor_queue.TickFrame();
     pipeline->Configure(true);
     UpdateDynamicStates();
-    scheduler.record([this, indicesSize](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setRasterizerDiscardEnableEXT(true, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([indicesSize](vk::CommandBuffer cmdbuf) {
+        spdlog::debug("执行drawIndexed");
         cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0);
     });
 }
@@ -63,6 +64,10 @@ void VulkanGraphics::drawIndics(u32 indicesSize) {
 void VulkanGraphics::UpdateDynamicStates() {
     UpdateViewportsState();
     UpdateScissorsState();
+    UpdateDepthBias();
+    UpdateBlendConstants();
+    UpdateDepthBounds();
+    UpdateStencilFaces();
     if (device.IsExtExtendedDynamicStateSupported()) {
         UpdateCullMode();
         UpdateDepthCompareOp();
@@ -113,6 +118,7 @@ void VulkanGraphics::UpdateRasterizerDiscardEnable() {
 void VulkanGraphics::UpdateDepthBiasEnable() {
     const u32 enable = true;
     scheduler.record([this](vk::CommandBuffer cmdbuf) {
+        spdlog::debug("动态设置DepthBias");
         cmdbuf.setDepthBiasEnableEXT(enable != 0, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -169,27 +175,13 @@ void VulkanGraphics::UpdateFrontFace() {
 }
 
 void VulkanGraphics::UpdateStencilOp() {
-    if (1) {
-        // Separate stencil op per face
-
-        // scheduler.Record([this](vk::CommandBuffer cmdbuf) {
-        //     cmdbuf.setStencilOpEXT(VK_STENCIL_FACE_FRONT_BIT, MaxwellToVK::StencilOp(fail),
-        //                            MaxwellToVK::StencilOp(zpass), MaxwellToVK::StencilOp(zfail),
-        //                            MaxwellToVK::ComparisonOp(compare));
-        //     cmdbuf.SetStencilOpEXT(VK_STENCIL_FACE_BACK_BIT, MaxwellToVK::StencilOp(back_fail),
-        //                            MaxwellToVK::StencilOp(back_zpass),
-        //                            MaxwellToVK::StencilOp(back_zfail),
-        //                            MaxwellToVK::ComparisonOp(back_compare));
-        // });
-    } else {
-        // Front face defines the stencil op of both faces
-        scheduler.record([this](vk::CommandBuffer cmdbuf) {
-            cmdbuf.setStencilOpEXT(vk::StencilFaceFlagBits::eVkStencilFrontAndBack,
-                                   vk::StencilOp::eReplace, vk::StencilOp::eReplace,
-                                   vk::StencilOp::eReplace, vk::CompareOp::eAlways,
-                                   device.logical().getDispatchLoaderDynamic());
-        });
-    }
+    // Front face defines the stencil op of both faces
+    scheduler.record([this](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setStencilOpEXT(vk::StencilFaceFlagBits::eVkStencilFrontAndBack,
+                               vk::StencilOp::eReplace, vk::StencilOp::eReplace,
+                               vk::StencilOp::eReplace, vk::CompareOp::eAlways,
+                               device.logical().getDispatchLoaderDynamic());
+    });
 }
 
 void VulkanGraphics::UpdateDepthBoundsTestEnable() {
@@ -363,6 +355,54 @@ auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config,
     info.scaled_width = info.width;
     info.scaled_height = info.height;
     return info;
+}
+
+void VulkanGraphics::UpdateDepthBias() {
+    float units = -5 / 2.0f;
+    // const bool is_d24 = regs.zeta.format == Tegra::DepthFormat::Z24_UNORM_S8_UINT ||
+    //                     regs.zeta.format == Tegra::DepthFormat::X8Z24_UNORM ||
+    //                     regs.zeta.format == Tegra::DepthFormat::S8Z24_UNORM ||
+    //                     regs.zeta.format == Tegra::DepthFormat::V8Z24_UNORM;
+    // if (is_d24 && !device.SupportsD24DepthBuffer() && program_id == 0x1006A800016E000ULL) {
+    //     // Only activate this in Super Smash Brothers Ultimate
+    //     // the base formulas can be obtained from here:
+    //     //
+    //     https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-output-merger-stage-depth-bias
+    //     const double rescale_factor =
+    //         static_cast<double>(1ULL << (32 - 24)) / (static_cast<double>(0x1.ep+127));
+    //     units = static_cast<float>(static_cast<double>(units) * rescale_factor);
+    // }
+    scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBias(0.0f, 1.f, 1.f); });
+}
+
+void VulkanGraphics::UpdateBlendConstants() {
+    const std::array blend_color = {.0f, .0f, .0f, .0f};
+    scheduler.record(
+        [blend_color](vk::CommandBuffer cmdbuf) { cmdbuf.setBlendConstants(blend_color.data()); });
+}
+
+void VulkanGraphics::UpdateDepthBounds() {
+    scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBounds(0, 1); });
+}
+
+void VulkanGraphics::UpdateStencilFaces() {
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
+        // Front face
+        cmdbuf.setStencilReference(vk::StencilFaceFlagBits::eFrontAndBack, 1);
+    });
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
+        // Front face
+        cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eFrontAndBack, 1);
+    });
+
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
+        // Front face
+        cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eFrontAndBack, 1);
+    });
+}
+
+void VulkanGraphics::UpdateLineWidth() {
+    scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
 }  // namespace render::vulkan

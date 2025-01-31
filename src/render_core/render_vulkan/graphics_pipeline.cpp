@@ -382,6 +382,7 @@ void GraphicsPipeline::ConfigureDraw() {
     const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
     scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
+        spdlog::debug("执行绑定管线和更新DescriptorSet操作");
         if (bind_pipeline) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
         }

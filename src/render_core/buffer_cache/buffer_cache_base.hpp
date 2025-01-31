@@ -4,6 +4,7 @@
 #include "common/common_funcs.hpp"
 #include "common/slot_vector.hpp"
 #include "common/div_ceil.hpp"
+#include "common/lru_cache.h"
 #include "common/literals.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/surface.hpp"
@@ -189,6 +190,9 @@ class BufferCache : public BufferCacheInfo {
                 func(index);
             }
         }
+
+        void TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept;
+
         std::recursive_mutex mutex;
         Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;
@@ -209,6 +213,7 @@ class BufferCache : public BufferCacheInfo {
                 using ObjectType = BufferId;
                 using TickType = u64;
         };
+        common::LeastRecentlyUsedCache<LRUItemParams> lru_cache;
         u64 frame_tick = 0;
         u64 total_used_memory = 0;
         u64 minimum_memory = 0;

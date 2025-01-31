@@ -83,7 +83,7 @@ void App::run() {
     auto model = Model::createFromFile("models/viking_room.obj");
     std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
                                   model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
-    graphics->addVertex(verticesSpan, model->indices_);
+
     // resource::image::ImageTexture imageTexture{device_, img, Swapchain::DEFAULT_COLOR_FORMAT};
 
     // ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
@@ -128,14 +128,15 @@ void App::run() {
                                     0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
+        graphics->addVertex(verticesSpan, model->indices_);
         graphics->drawIndics(model->indices_.size());
         render_base->composite(std::span{&frames, 1});
-        auto & shader_notify = render_base->getShaderNotify();
+        auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
 
-        if(shaders_building > 0) {
-          window->setWindowTitle(fmt::format("Building {} shader(s)", shaders_building));
-        }else {
+        if (shaders_building > 0) {
+            window->setWindowTitle(fmt::format("Building {} shader(s)", shaders_building));
+        } else {
             window->setWindowTitle("graphics");
         }
         // if (window->IsMinimized()) {
