@@ -1910,6 +1910,7 @@ void TextureFramebuffer::CreateFramebuffer(
         render_pass_key.depth_format = surface::PixelFormat::Invalid;
     }
     render_pass_key.samples = samples;
+    render_pass_key.need_resolvet = true;
 
     render_pass = runtime.render_pass_cache.get(render_pass_key);
     render_area.width = std::min(render_area.width, width);
@@ -1935,25 +1936,25 @@ void TextureCacheRuntime::AccelerateImageUpload(
 
 void TextureCacheRuntime::TransitionImageLayout(TextureImage& image) {
     if (!image.ExchangeInitialization()) {
-        vk::ImageMemoryBarrier barrier{
-            vk::AccessFlagBits::eNone,
-            vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite,
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::eGeneral,
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            image.Handle(),
-            vk::ImageSubresourceRange{
-                image.AspectMask(),
-                0,
-                VK_REMAINING_MIP_LEVELS,
-                0,
-                VK_REMAINING_ARRAY_LAYERS,
-            },
-        };
+        vk::ImageMemoryBarrier barrier =
+            vk::ImageMemoryBarrier()
+                .setSrcAccessMask(vk::AccessFlagBits::eNone)
+                .setDstAccessMask(vk::AccessFlagBits::eMemoryRead |
+                                  vk::AccessFlagBits::eMemoryWrite)
+                .setOldLayout(vk::ImageLayout::eUndefined)
+                .setNewLayout(vk::ImageLayout::eGeneral)
+                .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setImage(image.Handle())
+                .setSubresourceRange(vk::ImageSubresourceRange()
+                                         .setAspectMask(image.AspectMask())
+                                         .setBaseMipLevel(0)
+                                         .setLevelCount(VK_REMAINING_MIP_LEVELS)
+                                         .setBaseArrayLayer(0)
+                                         .setLayerCount(VK_REMAINING_ARRAY_LAYERS));
         scheduler.requestOutsideRenderPassOperationContext();
         scheduler.record([barrier](vk::CommandBuffer cmdbuf) {
-            cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+            cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe,
                                    vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, barrier);
         });
     }

@@ -4,7 +4,7 @@ namespace resource::image {
 
 ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format format)
     : imageMipLevels_(image.getMipLevels()), format_(format), device_(device.logicalDevice()) {
-    ImageInfo imgInfo = image.getImageInfo();
+    render::texture::ImageInfo imgInfo = image.getImageInfo();
 
     auto stagingBuffer = device.createBuffer(
         image.size(), 1, ::vk::BufferUsageFlagBits::eTransferSrc,
@@ -12,7 +12,7 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
     stagingBuffer.map();
     stagingBuffer.writeToBuffer(static_cast<void*>(image.getData()));
 
-    device.createImage(imgInfo.width, imgInfo.height, imageMipLevels_, format_,
+    device.createImage(imgInfo.size.width, imgInfo.size.height, imageMipLevels_, format_,
                        ::vk::SampleCountFlagBits::e1, ::vk::ImageTiling::eOptimal,
                        ::vk::ImageUsageFlagBits::eTransferSrc |
                            ::vk::ImageUsageFlagBits::eTransferDst |
@@ -35,12 +35,12 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
             .setImageSubresource(imageSubresourceLayers)
             .setImageOffset({0, 0, 0})
             .setImageExtent(
-                {static_cast<uint32_t>(imgInfo.width), static_cast<uint32_t>(imgInfo.height), 1});
+                {static_cast<uint32_t>(imgInfo.size.width), static_cast<uint32_t>(imgInfo.size.height), 1});
         cmdBuf.copyBufferToImage(stagingBuffer.getBuffer(), image_,
                                  ::vk::ImageLayout::eTransferDstOptimal, region);
     });
 
-    generateMipmaps(device, image_, imgInfo.width, imgInfo.height, imageMipLevels_);
+    generateMipmaps(device, image_, imgInfo.size.width, imgInfo.size.height, imageMipLevels_);
     createTextureImageView(device);
     createTextureSampler(device);
 }
@@ -113,8 +113,8 @@ void ImageTexture::createTextureImageView(core::Device& device) {
         device.createImageView(image_, format_, ::vk::ImageAspectFlagBits::eColor, imageMipLevels_);
 }
 
-void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, int texWidth,
-                                   int texHeight, uint32_t mipLevels) {
+void ImageTexture::generateMipmaps(core::Device& device, ::vk::Image image, uint32_t texWidth,
+                                   uint32_t texHeight, uint32_t mipLevels) {
     ::vk::FormatProperties formatProperties =
         device.getPhysicalDevice().getFormatProperties(::vk::Format::eR8G8B8A8Srgb);
     if (!(formatProperties.optimalTilingFeatures &

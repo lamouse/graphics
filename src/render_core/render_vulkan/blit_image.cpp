@@ -160,8 +160,8 @@ inline constexpr VkSamplerCreateInfo SAMPLER_CREATE_INFO{
     .unnormalizedCoordinates = VK_TRUE,
 };
 
-constexpr vk::PipelineLayoutCreateInfo PipelineLayoutCreateInfo(
-    const vk::DescriptorSetLayout* set_layout, utils::Span<vk::PushConstantRange> push_constants) {
+constexpr auto PipelineLayoutCreateInfo(
+    const vk::DescriptorSetLayout* set_layout, utils::Span<vk::PushConstantRange> push_constants) -> vk::PipelineLayoutCreateInfo {
     return vk::PipelineLayoutCreateInfo{{},
                                         (set_layout != nullptr ? 1u : 0u),
                                         set_layout,
@@ -406,7 +406,7 @@ void BlitImageHelper::BlitColor(const TextureFramebuffer* dst_framebuffer, VkIma
     const VkPipelineLayout layout = *one_texture_pipeline_layout;
     const VkSampler sampler = is_linear ? *linear_sampler : *nearest_sampler;
     const VkPipeline pipeline = FindOrEmplaceColorPipeline(key);
-    scheduler.requestRenderpass(dst_framebuffer);
+    scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([this, dst_region, src_region, pipeline, layout, sampler,
                       src_view](vk::CommandBuffer cmdbuf) {
         // TODO: Barriers
@@ -461,7 +461,7 @@ void BlitImageHelper::BlitDepthStencil(const TextureFramebuffer* dst_framebuffer
     const VkPipelineLayout layout = *two_textures_pipeline_layout;
     const VkSampler sampler = *nearest_sampler;
     const VkPipeline pipeline = FindOrEmplaceDepthStencilPipeline(key);
-    scheduler.requestRenderpass(dst_framebuffer);
+    scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([dst_region, src_region, pipeline, layout, sampler, src_depth_view,
                       src_stencil_view, this](vk::CommandBuffer cmdbuf) {
         // TODO: Barriers
@@ -542,7 +542,7 @@ void BlitImageHelper::ClearColor(const TextureFramebuffer* dst_framebuffer, u8 c
     const BlitImagePipelineKey key{.renderpass = dst_framebuffer->RenderPass()};
     const VkPipeline pipeline = FindOrEmplaceClearColorPipeline(key);
     const vk::PipelineLayout layout = *clear_color_pipeline_layout;
-    scheduler.requestRenderpass(dst_framebuffer);
+    scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record(
         [pipeline, layout, color_mask, clear_color, dst_region](vk::CommandBuffer cmdbuf) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
@@ -570,7 +570,7 @@ void BlitImageHelper::ClearDepthStencil(const TextureFramebuffer* dst_framebuffe
     };
     const VkPipeline pipeline = FindOrEmplaceClearStencilPipeline(key);
     const VkPipelineLayout layout = *clear_color_pipeline_layout;
-    scheduler.requestRenderpass(dst_framebuffer);
+    scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([pipeline, layout, clear_depth, dst_region](vk::CommandBuffer cmdbuf) {
         constexpr std::array blend_constants{0.0f, 0.0f, 0.0f, 0.0f};
         cmdbuf.setBlendConstants(blend_constants.data());
@@ -590,7 +590,7 @@ void BlitImageHelper::Convert(VkPipeline pipeline, const TextureFramebuffer* dst
     const VkSampler sampler = *nearest_sampler;
     const VkExtent2D extent = GetConversionExtent(src_image_view);
 
-    scheduler.requestRenderpass(dst_framebuffer);
+    scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([pipeline, layout, sampler, src_view, extent, this](vk::CommandBuffer cmdbuf) {
         const VkOffset2D offset{
             .x = 0,
@@ -633,7 +633,7 @@ void BlitImageHelper::ConvertDepthStencil(VkPipeline pipeline,
     const VkSampler sampler = *nearest_sampler;
     const VkExtent2D extent = GetConversionExtent(src_image_view);
 
-    scheduler.requestRenderpass(dst_framebuffer);
+    scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([pipeline, layout, sampler, src_depth_view, src_stencil_view, extent,
                       this](vk::CommandBuffer cmdbuf) {
         const VkOffset2D offset{

@@ -9,6 +9,7 @@
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/render_vulkan/buffer_cache.h"
 #include "render_core/render_vulkan/blit_image.hpp"
+#include "render_core/render_vulkan/vk_imgui.hpp"
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
@@ -21,7 +22,7 @@ class VulkanGraphics : public render::Graphic {
     public:
         explicit VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                 MemoryAllocator& memory_allocator_,
-                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_);
+                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_,  Imgui* imgui);
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
@@ -30,6 +31,7 @@ class VulkanGraphics : public render::Graphic {
         void addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) override;
         void addUniformBuffer(void* data, size_t size) override;
         void drawIndics(u32 indicesSize) override;
+        void drawImgui();
         void end() override {};
         ~VulkanGraphics() override;
 
@@ -71,7 +73,7 @@ class VulkanGraphics : public render::Graphic {
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;
-
+        Imgui* imgui;
         StagingBufferPool staging_pool;
         resource::DescriptorPool descriptor_pool;
         GuestDescriptorQueue guest_descriptor_queue;

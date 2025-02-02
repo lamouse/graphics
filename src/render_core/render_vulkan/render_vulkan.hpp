@@ -42,10 +42,10 @@ class RendererVulkan final : public render::RenderBase {
         PresentManager present_manager;
         BlitScreen blit_swapchain;
         BlitScreen blit_capture;
+        std::unique_ptr<Imgui> imgui;
         VulkanGraphics vulkan_graphics;
         std::optional<TurboMode> turbo_mode;
         Frame applet_frame;
-        std::unique_ptr<Imgui> imgui;
 };
 
 }  // namespace render::vulkan

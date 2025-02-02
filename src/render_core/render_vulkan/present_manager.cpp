@@ -30,8 +30,8 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
     };
 }
 [[nodiscard]] auto makeImageBlit(std::int32_t frame_width, std::int32_t frame_height,
-                                 std::int32_t swapchain_width, std::int32_t swapchain_height)
-    -> vk::ImageBlit {
+                                 std::int32_t swapchain_width,
+                                 std::int32_t swapchain_height) -> vk::ImageBlit {
     return VkImageBlit{
         .srcSubresource = makeImageSubresourceLayers(),
         .srcOffsets =
@@ -64,8 +64,8 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
     };
 }
 [[nodiscard]] auto MakeImageCopy(uint32_t frame_width, uint32_t frame_height,
-                                 uint32_t swapchain_width, uint32_t swapchain_height)
-    -> vk::ImageCopy {
+                                 uint32_t swapchain_width,
+                                 uint32_t swapchain_height) -> vk::ImageCopy {
     return VkImageCopy{
         .srcSubresource = makeImageSubresourceLayers(),
         .srcOffset =
@@ -107,8 +107,9 @@ PresentManager::PresentManager(const vk::Instance& instance,
     setImageCount();
 
     const auto& dld = device.getLogical();
-    cmdpool_ = device.logical().createCommandPool(vk::CommandPoolCreateInfo().setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
-                          vk::CommandPoolCreateFlagBits::eTransient));
+    cmdpool_ = device.logical().createCommandPool(
+        vk::CommandPoolCreateInfo().setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
+                                             vk::CommandPoolCreateFlagBits::eTransient));
 
     auto cmdbuffers = cmdpool_.Allocate(image_count_);
 
@@ -209,83 +210,71 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
     }
 
     const vk::CommandBuffer cmdbuf{frame->cmdbuf};
-    vk::CommandBufferBeginInfo begin_info;
-    begin_info.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    cmdbuf.begin(begin_info);
+    cmdbuf.begin(
+        vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
     const vk::Image image{swapchain_.currentImage()};
     const vk::Extent2D extent = swapchain_.getExtent();
     const std::array pre_barriers{
-        ::vk::ImageMemoryBarrier{
-            vk::AccessFlagBits::eIndirectCommandRead,
-            vk::AccessFlagBits::eTransferWrite,
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::eTransferDstOptimal,
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            image,
-            vk::ImageSubresourceRange{
-                vk::ImageAspectFlagBits::eColor,
-                0,
-                1,
-                0,
-                VK_REMAINING_ARRAY_LAYERS,
-            },
-        },
-        ::vk::ImageMemoryBarrier{
+        ::vk::ImageMemoryBarrier()
+            .setSrcAccessMask(vk::AccessFlagBits::eIndirectCommandRead)
+            .setDstAccessMask(vk::AccessFlagBits::eTransferWrite)
+            .setOldLayout(vk::ImageLayout::eUndefined)
+            .setNewLayout(vk::ImageLayout::eTransferDstOptimal)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setImage(image)
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(1)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(VK_REMAINING_ARRAY_LAYERS)),
 
-            vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eTransferRead,
-            vk::ImageLayout::eGeneral,
-            vk::ImageLayout::eTransferSrcOptimal,
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            *frame->image,
-            vk::ImageSubresourceRange{
-                vk::ImageAspectFlagBits::eColor,
-                0,
-                1,
-                0,
-                VK_REMAINING_ARRAY_LAYERS,
-            },
-
-        },
+        ::vk::ImageMemoryBarrier()
+            .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+            .setDstAccessMask(vk::AccessFlagBits::eTransferRead)
+            .setOldLayout(vk::ImageLayout::eGeneral)
+            .setNewLayout(vk::ImageLayout::eTransferSrcOptimal)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setImage(*frame->image)
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(1)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(VK_REMAINING_ARRAY_LAYERS)),
     };
     const std::array post_barriers{
-        ::vk::ImageMemoryBarrier{
-            vk::AccessFlagBits::eTransferWrite,
-            vk::AccessFlagBits::eMemoryRead,
-            vk::ImageLayout::eTransferDstOptimal,
-            vk::ImageLayout::ePresentSrcKHR,
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            image,
-            vk::ImageSubresourceRange{
-                vk::ImageAspectFlagBits::eColor,
-                0,
-                1,
-                0,
-                VK_REMAINING_ARRAY_LAYERS,
-            },
-        },
-        ::vk::ImageMemoryBarrier{
-
-            vk::AccessFlagBits::eTransferRead,
-            vk::AccessFlagBits::eMemoryWrite,
-            vk::ImageLayout::eTransferSrcOptimal,
-            vk::ImageLayout::eGeneral,
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            *frame->image,
-            vk::ImageSubresourceRange{
-                vk::ImageAspectFlagBits::eColor,
-                0,
-                1,
-                0,
-                VK_REMAINING_ARRAY_LAYERS,
-            },
-
-        },
+        ::vk::ImageMemoryBarrier()
+            .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+            .setDstAccessMask(vk::AccessFlagBits::eMemoryRead)
+            .setOldLayout(vk::ImageLayout::eTransferDstOptimal)
+            .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setImage(image)
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(1)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(VK_REMAINING_ARRAY_LAYERS)),
+        ::vk::ImageMemoryBarrier()
+            .setSrcAccessMask(vk::AccessFlagBits::eTransferRead)
+            .setDstAccessMask(vk::AccessFlagBits::eMemoryWrite)
+            .setOldLayout(vk::ImageLayout::eTransferSrcOptimal)
+            .setNewLayout(vk::ImageLayout::eGeneral)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setImage(*frame->image)
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(1)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(VK_REMAINING_ARRAY_LAYERS)),
     };
 
     cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
@@ -323,12 +312,14 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
         .setSignalSemaphores(render_semaphore);
 
     // Submit the image copy/blit to the swapchain
-    std::scoped_lock submit_lock{scheduler_.submit_mutex_};
-    try {
-        device_.getGraphicsQueue().submit(submit_info, *frame->present_done);
+    {
+        std::scoped_lock submit_lock{scheduler_.submit_mutex_};
+        try {
+            device_.getGraphicsQueue().submit(submit_info, *frame->present_done);
 
-    } catch (const std::exception& e) {
-        spdlog::error("Failed to submit image copy/blit to swapchain: {}", e.what());
+        } catch (const std::exception& e) {
+            spdlog::error("Failed to submit image copy/blit to swapchain: {}", e.what());
+        }
     }
 
     // Present

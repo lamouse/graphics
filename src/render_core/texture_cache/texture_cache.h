@@ -21,37 +21,15 @@ void TextureCache<P>::WriteMemory(void* data, size_t size) {}
 template <class P>
 auto TextureCache<P>::InsertImage(const ImageInfo& info) -> ImageId {
     const ImageId image_id = JoinImages(info);
-    const Image& image = slot_images[image_id];
     return image_id;
 }
 
 template <class P>
 auto TextureCache<P>::JoinImages(const ImageInfo& info) -> ImageId {
     ImageInfo new_info = info;
-    const size_t size_bytes = utils::CalculateGuestSizeInBytes(new_info);
-    join_overlap_ids.clear();
-    join_overlaps_found.clear();
-    join_left_aliased_ids.clear();
-    join_right_aliased_ids.clear();
-    join_ignore_textures.clear();
-    join_bad_overlap_ids.clear();
-    join_copies_to_do.clear();
-    join_alias_indices.clear();
-
     const ImageId new_image_id = slot_images.insert(runtime, new_info);
     Image& new_image = slot_images[new_image_id];
-
-    auto staging = runtime.UploadStagingBuffer(size_bytes);
-
-    std::memcpy(staging.mapped_span.data(), info.data, size_bytes);
-    BufferImageCopy copys[1];
-    copys[0].image_offset = {0, 0, 0};
-    copys[0].image_extent = new_info.size;
-    copys[0].buffer_offset = 0;
-    copys[0].buffer_size = size_bytes;
-    copys[0].buffer_row_length = 0;
-    copys[0].buffer_image_height = 0;
-    new_image.UploadMemory(staging, copys);
+    runtime.TransitionImageLayout(new_image);
     AddImageAlias(new_image, new_image, new_image_id, new_image_id);
     return new_image_id;
 }
@@ -110,8 +88,8 @@ void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<Imag
 }
 
 template <class P>
-auto TextureCache<P>::FindOrEmplaceImageView(ImageId image_id, const ImageViewInfo& info)
-    -> ImageViewId {
+auto TextureCache<P>::FindOrEmplaceImageView(ImageId image_id,
+                                             const ImageViewInfo& info) -> ImageViewId {
     Image& image = slot_images[image_id];
     if (const ImageViewId image_view_id = image.FindView(info); image_view_id) {
         return image_view_id;
@@ -163,7 +141,7 @@ auto TextureCache<P>::GetFramebufferId(const RenderTargets& key) -> FramebufferI
 
 template <class P>
 auto TextureCache<P>::GetFramebuffer() -> typename P::Framebuffer* {
-    return &slot_framebuffers[GetFramebufferId(render_targets)];
+    return &slot_framebuffers[frame_buffer_ids[current_framebuffer_index]];
 }
 
 template <class P>
@@ -177,7 +155,10 @@ auto TextureCache<P>::FindSampler(u32 index) -> SamplerId {
 
 template <class P>
 auto TextureCache<P>::GetGraphicsSamplerId(u32 index) -> SamplerId {
-    return FindSampler(index);
+    if (index > graphics_sampler_ids.size() - 1) {
+        return NULL_SAMPLER_ID;
+    }
+    return graphics_sampler_ids[index];
 }
 
 template <class P>
@@ -221,7 +202,6 @@ auto TextureCache<P>::CreateImageView(const ImageInfo& info) -> ImageViewId {
     ImageViewBase& image_view = slot_image_views[image_view_id];
     image_view.flags |= ImageViewFlagBits::Strong;
     image.flags |= ImageFlagBits::Strong;
-    RenderTargetFromImage(image_id, view_info);
     return image_view_id;
 }
 
@@ -254,5 +234,87 @@ template <class P>
 auto TextureCache<P>::GetImageView(ImageViewId id) noexcept -> typename P::ImageView& {
     return slot_image_views[id];
 }
+
+template <class P>
+auto TextureCache<P>::GetImageView(u32 index) noexcept -> typename P::ImageView& {
+    const auto image_view_id = graphics_image_view_ids[index];
+    return slot_image_views[image_view_id];
+}
+
+template <class P>
+void TextureCache<P>::SynchronizeGraphicsDescriptors() {
+    graphics_sampler_ids.resize(100);
+    graphics_image_view_ids.resize(100);
+}
+
+template <class P>
+void TextureCache<P>::addGraphics(const ImageInfo& info) {
+    ImageInfo new_info = info;
+    const size_t size_bytes = utils::CalculateGuestSizeInBytes(new_info);
+
+    const ImageId new_image_id = slot_images.insert(runtime, new_info);
+    Image& new_image = slot_images[new_image_id];
+
+    auto staging = runtime.UploadStagingBuffer(size_bytes);
+
+    std::memcpy(staging.mapped_span.data(), info.data, size_bytes);
+    BufferImageCopy copys[1];
+    copys[0].image_offset = {0, 0, 0};
+    copys[0].image_extent = new_info.size;
+    copys[0].buffer_offset = 0;
+    copys[0].buffer_size = size_bytes;
+    copys[0].buffer_row_length = 0;
+    copys[0].buffer_image_height = 0;
+    new_image.UploadMemory(staging, copys);
+    AddImageAlias(new_image, new_image, new_image_id, new_image_id);
+    ImageBase& image = slot_images[new_image_id];
+    const ImageViewInfo view_info(info);
+    const ImageViewId image_view_id = FindOrEmplaceImageView(new_image_id, view_info);
+    ImageViewBase& image_view = slot_image_views[image_view_id];
+    image_view.flags |= ImageViewFlagBits::Strong;
+    image.flags |= ImageFlagBits::Strong;
+    graphics_image_view_ids.push_back(image_view_id);
+
+    auto slot_id = slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,
+                                        image_view.range.extent.levels);
+    graphics_sampler_ids.push_back(slot_id);
+}
+
+template <class P>
+auto TextureCache<P>::TryFindFramebufferImageView(const frame::FramebufferConfig& config)
+    -> std::pair<typename P::ImageView*, bool> {
+    if (slot_image_views.size() <= 1) {
+        return std::make_pair(nullptr, false);
+    }
+    return std::make_pair(&slot_image_views[ImageViewId(1)], false);
+}
+
+template <class P>
+void TextureCache<P>::UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, bool is_clear) {
+    ImageViewBase& view = GetImageView(view_id);
+
+    ImageViewInfo view_info(info);
+    RenderTargetFromImage(view_id, view_info);
+}
+
+template <class P>
+void TextureCache<P>::createFramebuffers(const ImageInfo& info, int count) {
+    if(slot_framebuffers.size() >= count){
+        return;
+    }
+    for (int i = 0; i < count; i++) {
+        auto view_id = CreateImageView(info);
+        ImageViewBase& view = GetImageView(view_id);
+        ImageViewInfo view_info(info);
+        auto rets = RenderTargetFromImage(view.image_id, view_info);
+        frame_buffer_ids.push_back(rets.first);
+    }
+}
+
+template <class P>
+void TextureCache<P>::updateRenderFramebuffers() {
+   current_framebuffer_index = (++current_framebuffer_index) % frame_buffer_ids.size();
+}
+
 
 }  // namespace render::texture

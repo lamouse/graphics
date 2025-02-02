@@ -94,8 +94,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
             case render::frame::BlendMode::Coverage:
                 graphics_pipelines[i] = *coverage_pipeline;
                 break;
-        }  //(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,  image_index,
-           // configs[i], layout)
+        }
 
         layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler, image_index,
                                 configs[i], layout);
@@ -103,9 +102,9 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
     }
 
     scheduler.record([=](vk::CommandBuffer cmdbuf) {
-        const f32 bg_red = 255.0f;  // TODO 这里有设置作用未知
-        const f32 bg_green = 255.0f;
-        const f32 bg_blue = 255.0f;
+        const f32 bg_red = .0f;  // TODO 这里有设置作用未知
+        const f32 bg_green = .0f;
+        const f32 bg_blue = .0f;
         const VkClearAttachment clear_attachment{
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             .colorAttachment = 0,

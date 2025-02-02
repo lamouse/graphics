@@ -249,7 +249,7 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
         .setPSwapchains(swapchain_.address())
         .setImageIndices(image_index_);
 
-    //std::scoped_lock lock{scheduler_.submit_mutex_};
+    std::scoped_lock lock{scheduler_.submit_mutex_};
     switch (const vk::Result result = present_queue.presentKHR(present_info)) {
         case vk::Result::eSuccess:
             break;

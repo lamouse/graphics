@@ -536,7 +536,7 @@ class Fence : public wrapper::Handle<vk::Fence, vk::Device> {
             return owner.waitForFences(handle, true, timeout);
         }
 
-        vk::Result GetStatus() const noexcept { return owner.getFenceStatus(handle); }
+        [[nodiscard]] auto GetStatus() const noexcept -> vk::Result { return owner.getFenceStatus(handle); }
 
         void Reset() const { owner.resetFences(handle); }
 };

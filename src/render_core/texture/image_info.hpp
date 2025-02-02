@@ -7,7 +7,7 @@ struct ImageInfo {
         surface::PixelFormat format = surface::PixelFormat::Invalid;
         ImageType type = ImageType::e1D;
         SubresourceExtent resources;
-        Extent3D size{1, 1, 1};
+        Extent3D size{0, 0, 1};
         union {
                 Extent3D block{0, 0, 0};
                 u32 pitch;

@@ -19,8 +19,8 @@ class ImageTexture {
         void loadImage();
         void transitionImageLayout(core::Device& device, ::vk::Image image,
                                    ::vk::ImageLayout oldLayout, ::vk::ImageLayout newLayout) const;
-        static void generateMipmaps(core::Device& device, ::vk::Image image, int texWidth,
-                                    int texHeight, uint32_t mipLevels);
+        static void generateMipmaps(core::Device& device, ::vk::Image image, uint32_t texWidth,
+                                    uint32_t texHeight, uint32_t mipLevels);
         void createTextureSampler(core::Device& device);
         void createTextureImageView(core::Device& device);
 

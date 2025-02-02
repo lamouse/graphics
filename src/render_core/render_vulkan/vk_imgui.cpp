@@ -7,7 +7,6 @@
 #include <spdlog/spdlog.h>
 
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
 namespace render::vulkan {

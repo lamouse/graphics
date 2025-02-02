@@ -257,25 +257,25 @@ void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphor
     wait(presubmit_tick);
 }
 
-void Scheduler::requestRenderpass(const TextureFramebuffer* framebuffer) {
-    const vk::RenderPass renderpass = framebuffer->RenderPass();
+void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
+    const vk::RenderPass render_pass = framebuffer->RenderPass();
     const vk::Framebuffer framebuffer_handle = framebuffer->Handle();
     const VkExtent2D render_area = framebuffer->RenderArea();
-    if (renderpass == state_.render_pass_ && framebuffer_handle == state_.framebuffer_ &&
+    if (render_pass == state_.render_pass_ && framebuffer_handle == state_.framebuffer_ &&
         render_area.width == state_.render_area_.width &&
         render_area.height == state_.render_area_.height) {
         return;
     }
     endRenderPass();
-    state_.render_pass_ = renderpass;
+    state_.render_pass_ = render_pass;
     state_.framebuffer_ = framebuffer_handle;
     state_.render_area_ = render_area;
 
-    record([renderpass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
-        const VkRenderPassBeginInfo renderpass_bi{
+    record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
+        const VkRenderPassBeginInfo render_pass_bi{
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .pNext = nullptr,
-            .renderPass = renderpass,
+            .renderPass = render_pass,
             .framebuffer = framebuffer_handle,
             .renderArea =
                 {
@@ -285,7 +285,7 @@ void Scheduler::requestRenderpass(const TextureFramebuffer* framebuffer) {
             .clearValueCount = 0,
             .pClearValues = nullptr,
         };
-        cmdbuf.beginRenderPass(renderpass_bi, vk::SubpassContents::eInline);
+        cmdbuf.beginRenderPass(render_pass_bi, vk::SubpassContents::eInline);
     });
     num_render_pass_images_ = framebuffer->NumImages();
     render_pass_images_ = framebuffer->Images();

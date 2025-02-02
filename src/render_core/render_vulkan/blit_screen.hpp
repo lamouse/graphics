@@ -12,7 +12,6 @@
 namespace render::vulkan {
 class Device;
 class PresentManager;
-class RasterizerVulkan;
 class MemoryAllocator;
 class Layer;
 class VulkanGraphics;

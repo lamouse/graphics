@@ -4,10 +4,11 @@
 namespace render::vulkan {
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_,
-                               ShaderNotify& shader_notify_)
+                               ShaderNotify& shader_notify_, Imgui* imgui_)
     : device(device_),
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
+      imgui(imgui_),
       staging_pool(device, memory_allocator, scheduler),
       descriptor_pool(device, scheduler),
       guest_descriptor_queue(device, scheduler),
@@ -33,8 +34,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::addTexture(const texture::ImageInfo& imageInfo) {
-    image_view_id = texture_cache.CreateImageView(imageInfo);
-    sampler_id = texture_cache.CreateSampler(image_view_id);
+    texture_cache.addGraphics(imageInfo);
 }
 
 void VulkanGraphics::addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) {
@@ -48,17 +48,17 @@ void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
 }
 
 void VulkanGraphics::drawIndics(u32 indicesSize) {
+
     guest_descriptor_queue.AddSampledImage(
-        texture_cache.GetImageView(image_view_id).Handle(shader::TextureType::Color2D),
-        texture_cache.GetSampler(sampler_id).Handle());
+        texture_cache.GetImageView(0).Handle(shader::TextureType::Color2D),
+        texture_cache.GetSampler(texture_cache.GetGraphicsSamplerId(0)).Handle());
     auto* pipeline = pipeline_cache.currentGraphicsPipeline();
     // guest_descriptor_queue.TickFrame();
     pipeline->Configure(true);
     UpdateDynamicStates();
-    scheduler.record([indicesSize](vk::CommandBuffer cmdbuf) {
-        spdlog::debug("执行drawIndexed");
-        cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0);
-    });
+    scheduler.record(
+        [indicesSize](vk::CommandBuffer cmdbuf) { cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0); });
+
 }
 
 void VulkanGraphics::UpdateDynamicStates() {
@@ -118,7 +118,6 @@ void VulkanGraphics::UpdateRasterizerDiscardEnable() {
 void VulkanGraphics::UpdateDepthBiasEnable() {
     const u32 enable = true;
     scheduler.record([this](vk::CommandBuffer cmdbuf) {
-        spdlog::debug("动态设置DepthBias");
         cmdbuf.setDepthBiasEnableEXT(enable != 0, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -345,13 +344,15 @@ void VulkanGraphics::UpdateScissorsState() {
 auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config,
                                        u32 pixel_stride) -> std::optional<FramebufferTextureInfo> {
     std::scoped_lock lock{texture_cache.mutex};
-    const auto& image_view = texture_cache.GetImageView(image_view_id);
-
+    const auto& image_view = texture_cache.TryFindFramebufferImageView(config);
+    if(!image_view.first){
+        return std::nullopt;
+    }
     FramebufferTextureInfo info{};
-    info.image = image_view.ImageHandle();
-    info.image_view = image_view.Handle(shader::TextureType::Color2D);
-    info.width = image_view.size.width;
-    info.height = image_view.size.height;
+    info.image = image_view.first->ImageHandle();
+    info.image_view = image_view.first->Handle(shader::TextureType::Color2D);
+    info.width = image_view.first->size.width;
+    info.height = image_view.first->size.height;
     info.scaled_width = info.width;
     info.scaled_height = info.height;
     return info;
@@ -372,7 +373,7 @@ void VulkanGraphics::UpdateDepthBias() {
     //         static_cast<double>(1ULL << (32 - 24)) / (static_cast<double>(0x1.ep+127));
     //     units = static_cast<float>(static_cast<double>(units) * rescale_factor);
     // }
-    scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBias(0.0f, 1.f, 1.f); });
+    scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBias(0.0f, .0f, .0f); });
 }
 
 void VulkanGraphics::UpdateBlendConstants() {
@@ -403,6 +404,10 @@ void VulkanGraphics::UpdateStencilFaces() {
 
 void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
+}
+
+void VulkanGraphics::drawImgui() {
+    scheduler.record([this](vk::CommandBuffer cmdbuf) { imgui->draw(cmdbuf); });
 }
 
 }  // namespace render::vulkan

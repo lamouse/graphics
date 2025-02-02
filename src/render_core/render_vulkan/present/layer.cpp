@@ -152,8 +152,8 @@ void Layer::ReleaseRawImages() {
     buffer.reset();
 }
 
-auto Layer::GetRawImageOffset(const frame::FramebufferConfig& framebuffer, size_t image_index) const
-    -> u64 {
+auto Layer::GetRawImageOffset(const frame::FramebufferConfig& framebuffer,
+                              size_t image_index) const -> u64 {
     return GetSizeInBytes(framebuffer) * image_index;
 }
 
@@ -179,20 +179,19 @@ void Layer::SetVertexData(PresentPushConstants& data, const layout::FrameBufferL
 }
 
 void Layer::UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, size_t image_index) {
-    const vk::DescriptorImageInfo image_info{sampler, image_view, vk::ImageLayout::eGeneral};
-
-    const vk::WriteDescriptorSet sampler_write{
-        descriptor_sets[image_index],
-        0,
-        0,
-        1,
-        vk::DescriptorType::eCombinedImageSampler,
-        &image_info,
-        nullptr,
-        nullptr,
-    };
-
-    device.getLogical().updateDescriptorSets(sampler_write, {});
+    const vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
+                                                   .setSampler(sampler)
+                                                   .setImageView(image_view)
+                                                   .setImageLayout(vk::ImageLayout::eGeneral);
+    const vk::WriteDescriptorSet write =
+        vk::WriteDescriptorSet()
+            .setDstSet(descriptor_sets[image_index])
+            .setDstBinding(0)
+            .setDstArrayElement(0)
+            .setDescriptorCount(1)
+            .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+            .setPImageInfo(&image_info);
+    device.getLogical().updateDescriptorSets(write, {});
 }
 
 void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t image_index) {
@@ -257,8 +256,9 @@ void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t i
 }
 
 void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
-                          vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer, vk::Sampler sampler,
-                          size_t image_index, const frame::FramebufferConfig& framebuffer,
+                          vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
+                          vk::Sampler sampler, size_t image_index,
+                          const frame::FramebufferConfig& framebuffer,
                           const layout::FrameBufferLayout& layout) {
     const u32 texture_width = framebuffer.width;
     const u32 texture_height = framebuffer.height;
@@ -278,21 +278,22 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
         UpdateRawImage(framebuffer, image_index);
     }
 
-    vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
-    vk::ImageView source_image_view =texture_info ? texture_info->image_view :*raw_image_views[image_index];
+    // vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
+    vk::ImageView source_image_view =
+        texture_info ? texture_info->image_view : *raw_image_views[image_index];
+    // //这里什么也么做
+    // anti_alias->Draw(scheduler, image_index, &source_image, &source_image_view);
 
-    anti_alias->Draw(scheduler, image_index, &source_image, &source_image_view);
+    // const vk::Extent2D render_extent{
+    //     scaled_width,
+    //     scaled_height,
+    // };
 
-    const vk::Extent2D render_extent{
-        scaled_width,
-        scaled_height,
-    };
-
-    if (fsr) {
-        // TODO 这里需要修改
-        source_image_view = fsr->Draw(scheduler, image_index, source_image, source_image_view,
-                                      render_extent, {0, 0, 1, 1});
-    }
+    // if (fsr) {
+    //     // TODO 这里暂时什么也没做
+    //     source_image_view = fsr->Draw(scheduler, image_index, source_image, source_image_view,
+    //                                   render_extent, {0, 0, 1, 1});
+    // }
     SetMatrixData(*out_push_constants, layout);
     // 这里也需要处理
     SetVertexData(*out_push_constants, layout, {0, 0, 1, 1});

@@ -31,6 +31,7 @@ struct AsyncDecodeContext {
 };
 
 class TextureCacheInfo {
+    public:
         std::vector<SamplerId> graphics_sampler_ids;
         std::vector<ImageViewId> graphics_image_view_ids;
 
@@ -119,7 +120,8 @@ class TextureCache : public TextureCacheInfo {
 
         /// Get the sampler id from the graphics descriptor table in the specified index
         auto GetGraphicsSamplerId(u32 index) -> SamplerId;
-
+        // 添加一个图像
+        void addGraphics(const ImageInfo& info);
         /// Get the sampler id from the compute descriptor table in the specified index
         auto GetComputeSamplerId(u32 index) -> SamplerId;
 
@@ -146,11 +148,38 @@ class TextureCache : public TextureCacheInfo {
 
         /// Return a reference to the given image view id
         [[nodiscard]] auto GetImageView(ImageViewId id) noexcept -> ImageView&;
+        /// Get the imageview from the graphics descriptor table in the specified index
+        [[nodiscard]] auto GetImageView(u32 index) noexcept -> ImageView&;
+        /// Refresh the state for graphics image view and sampler descriptors
+        void SynchronizeGraphicsDescriptors();
         std::recursive_mutex mutex;
+
+        /// Try to find a cached image view in the given CPU address
+        [[nodiscard]] auto TryFindFramebufferImageView(const frame::FramebufferConfig& config)
+            -> std::pair<ImageView*, bool>;
+
+        /// Update bound render targets
+        /// @param is_clear True when the render targets are being used for clears
+        void UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, bool is_clear);
+
+        /**
+         * @brief 创建framebuffer用于离屏渲染，数量一般和swapchain的image数量相同， 如果创建过直接返回
+         *
+         * @param info 创建framebuffer 所需要的信息
+         * @param count 数量
+         */
+        void createFramebuffers(const ImageInfo& info, int count);
+
+        /**
+         * @brief 将frame buffer指向下一个
+         *
+         */
+        void updateRenderFramebuffers();
 
     private:
         Runtime& runtime;
-
+        std::vector<FramebufferId> frame_buffer_ids;
+        int current_framebuffer_index{-1};
         common::SlotVector<Image> slot_images;
         common::SlotVector<ImageView> slot_image_views;
         common::SlotVector<ImageAlloc> slot_image_allocs;

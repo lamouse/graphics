@@ -30,15 +30,15 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       blit_capture(device, memory_allocator, present_manager, scheduler),
-      vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify()) {
+      imgui(std::make_unique<Imgui>(window, device, device.getPhysical(), *instance,
+                                    window->getWindowSystemInfo().render_surface_scale)),
+      vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify(), imgui.get()) {
     device.initDispatchLoaderDynamic(*instance);
     if (common::settings::get<settings::RenderVulkan>().renderer_force_max_clock &&
         device.shouldBoostClocks()) {
         turbo_mode.emplace(instance);
         scheduler.registerOnSubmit([this] { turbo_mode->QueueSubmitted(); });
     }
-    imgui = std::make_unique<Imgui>(window, device, device.getPhysical(), *instance,
-                                    window->getWindowSystemInfo().render_surface_scale);
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("Vulkan initialization failed with error: {}", exception.what());
     throw std::runtime_error{fmt::format("Vulkan initialization error {}", exception.what())};
@@ -53,7 +53,6 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     if (frame_buffers.empty()) {
         return;
     }
-    //scheduler.record([this](vk::CommandBuffer cmdbuf) { imgui->draw(cmdbuf); });
 
     RenderAppletCaptureLayer(frame_buffers);
     SCOPE_EXIT { window_->OnFrameDisplayed(); };

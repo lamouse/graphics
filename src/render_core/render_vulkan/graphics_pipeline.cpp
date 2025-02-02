@@ -84,8 +84,8 @@ auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescri
 
 using boost::container::small_vector;
 using boost::container::static_vector;
-auto MakeBuilder(const Device& device, std::span<const shader::Info> infos)
-    -> pipeline::DescriptorLayoutBuilder {
+auto MakeBuilder(const Device& device,
+                 std::span<const shader::Info> infos) -> pipeline::DescriptorLayoutBuilder {
     pipeline::DescriptorLayoutBuilder builder{device};
     for (size_t index = 0; index < infos.size(); ++index) {
         static constexpr std::array stages{
@@ -338,38 +338,27 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 
 template <typename Spec>
 void GraphicsPipeline::configureImpl(bool is_indexed) {
-    // std::array<texture::ImageViewInOut, MAX_IMAGE_ELEMENTS> views;
-    // std::array<texture::SamplerId, MAX_IMAGE_ELEMENTS> samplers;
 
-    // const texture::SamplerId* samplers_it{samplers.data()};
-    // const texture::ImageViewInOut* views_it{views.data()};
-    // const auto prepare_stage{[&](size_t stage) LAMBDA_FORCEINLINE {
-    //     // buffer_cache_.BindHostStageBuffers(stage);
-    //     pipeline::PushImageDescriptors(texture_cache, guest_descriptor_queue_,
-    //     stage_infos[stage],
-    //                                    samplers_it, views_it);
-    // }};
-    // if constexpr (Spec::enabled_stages[0]) {
-    //     prepare_stage(0);
-    // }
-    // if constexpr (Spec::enabled_stages[1]) {
-    //     prepare_stage(1);
-    // }
-    // if constexpr (Spec::enabled_stages[2]) {
-    //     prepare_stage(2);
-    // }
-    // if constexpr (Spec::enabled_stages[3]) {
-    //     prepare_stage(3);
-    // }
-    // if constexpr (Spec::enabled_stages[4]) {
-    //     prepare_stage(4);
-    // }
+
+    const auto prepare_stage{[&](int count) LAMBDA_FORCEINLINE {
+        texture::ImageInfo imageInfo;
+        imageInfo.size = {.width = 800, .height = 600, .depth = 1};
+        imageInfo.format = surface::PixelFormat::B8G8R8A8_UNORM;
+        imageInfo.type = render::texture::ImageType::e2D;
+        imageInfo.num_samples = 1;
+        imageInfo.resources.levels = 1;
+        imageInfo.layer_stride = 4;
+        texture_cache.createFramebuffers(imageInfo, count);
+    }};
+    prepare_stage(3);
+
     guest_descriptor_queue_.Acquire();
+    texture_cache.updateRenderFramebuffers();
     ConfigureDraw();
 }
 
 void GraphicsPipeline::ConfigureDraw() {
-    scheduler_.requestRenderpass(texture_cache.GetFramebuffer());
+    scheduler_.requestRenderPass(texture_cache.GetFramebuffer());
 
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built
@@ -382,7 +371,6 @@ void GraphicsPipeline::ConfigureDraw() {
     const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
     scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
-        spdlog::debug("执行绑定管线和更新DescriptorSet操作");
         if (bind_pipeline) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
         }
