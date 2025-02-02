@@ -64,14 +64,14 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
         .depth = static_cast<u32>(extent3d.depth),
     };
 }
-[[nodiscard]] vk::ImageSubresourceLayers MakeImageSubresourceLayers(
-    texture::SubresourceLayers subresource, vk::ImageAspectFlags aspect_mask) {
-    return vk::ImageSubresourceLayers{
-        aspect_mask,
-        static_cast<u32>(subresource.base_level),
-        static_cast<u32>(subresource.base_layer),
-        static_cast<u32>(subresource.num_layers),
-    };
+[[nodiscard]] auto MakeImageSubresourceLayers(texture::SubresourceLayers subresource,
+                                              vk::ImageAspectFlags aspect_mask)
+    -> vk::ImageSubresourceLayers {
+    return vk::ImageSubresourceLayers()
+        .setAspectMask(aspect_mask)
+        .setMipLevel(subresource.base_level)
+        .setBaseArrayLayer(subresource.base_layer)
+        .setLayerCount(subresource.num_layers);
 }
 [[nodiscard]] auto MakeBufferImageCopy(const texture::ImageCopy& copy, bool is_src,
                                        vk::ImageAspectFlags aspect_mask) noexcept
@@ -105,13 +105,12 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
 [[nodiscard]] auto MakeSubresourceRange(vk::ImageAspectFlags aspect_mask,
                                         const texture::SubresourceRange& range)
     -> vk::ImageSubresourceRange {
-    return vk::ImageSubresourceRange{
-        aspect_mask,
-        static_cast<u32>(range.base.level),
-        static_cast<u32>(range.extent.levels),
-        static_cast<u32>(range.base.layer),
-        static_cast<u32>(range.extent.layers),
-    };
+    return vk::ImageSubresourceRange()
+        .setAspectMask(aspect_mask)
+        .setBaseMipLevel(range.base.level)
+        .setLevelCount(range.extent.levels)
+        .setBaseArrayLayer(range.base.layer)
+        .setLayerCount(range.extent.layers);
 }
 
 [[nodiscard]] vk::ImageSubresourceLayers MakeSubresourceLayers(const TextureImageView* image_view) {

@@ -176,6 +176,12 @@ class TextureCache : public TextureCacheInfo {
          */
         void updateRenderFramebuffers();
 
+        /**
+         * @brief 将离屏渲染结果输出到image
+         *
+         */
+        void FillGraphicsImageViews();
+
     private:
         Runtime& runtime;
         std::vector<FramebufferId> frame_buffer_ids;
@@ -185,9 +191,11 @@ class TextureCache : public TextureCacheInfo {
         common::SlotVector<ImageAlloc> slot_image_allocs;
         common::SlotVector<Sampler> slot_samplers;
         common::SlotVector<Framebuffer> slot_framebuffers;
-
+        std::vector<std::pair<FramebufferId, ImageViewId>> framebuffer_views;
         common::ThreadWorker texture_decode_worker{1, "TextureDecoder"};
         std::vector<std::unique_ptr<AsyncDecodeContext>> async_decodes;
+
+        std::vector<ImageViewId> out_view_ids;
 
         // Join caching
         boost::container::small_vector<ImageId, 4> join_overlap_ids;

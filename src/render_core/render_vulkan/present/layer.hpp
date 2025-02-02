@@ -50,7 +50,6 @@ class Layer final {
         void SetVertexData(PresentPushConstants& data, const layout::FrameBufferLayout& layout,
                            const common::Rectangle<f32>& crop) const;
         void UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, size_t image_index);
-        void UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t image_index);
 
     private:
         const Device& device;

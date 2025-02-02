@@ -353,7 +353,9 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
     prepare_stage(3);
 
     guest_descriptor_queue_.Acquire();
+    texture_cache.FillGraphicsImageViews();
     texture_cache.updateRenderFramebuffers();
+
     ConfigureDraw();
 }
 

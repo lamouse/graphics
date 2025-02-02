@@ -194,67 +194,6 @@ void Layer::UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, s
     device.getLogical().updateDescriptorSets(write, {});
 }
 
-void Layer::UpdateRawImage(const frame::FramebufferConfig& framebuffer, size_t image_index) {
-    const std::span<u8> mapped_span = buffer.Mapped();
-
-    const u64 image_offset = GetRawImageOffset(framebuffer, image_index);
-
-    // TODO(Rodrigo): Read this from HLE
-    constexpr u32 block_height_log2 = 4;
-    const u32 bytes_per_pixel = GetBytesPerPixel();
-    const u64 linear_size{GetSizeInBytes(framebuffer)};
-    const u64 tiled_size{CalculateSize(true, bytes_per_pixel, framebuffer.stride,
-                                       framebuffer.height, 1, block_height_log2, 0)};
-    // TODO 这里需要处理
-
-    const vk::BufferImageCopy copy{
-        image_offset,
-        0,
-        0,
-        vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-        vk::Offset3D{0, 0, 0},
-        vk::Extent3D{framebuffer.width, framebuffer.height, 1}
-
-    };
-    scheduler.record([this, copy, index = image_index](vk::CommandBuffer cmdbuf) {
-        const vk::Image image = *raw_images[index];
-        const vk::ImageMemoryBarrier base_barrier{
-            {},
-            {},
-            vk::ImageLayout::eGeneral,
-            vk::ImageLayout::eGeneral,
-
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            image,
-            vk::ImageSubresourceRange{
-                vk::ImageAspectFlagBits::eColor,
-                0,
-                1,
-                0,
-                1,
-            },
-        };
-        vk::ImageMemoryBarrier read_barrier = base_barrier;
-        read_barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-        read_barrier.oldLayout = vk::ImageLayout::eUndefined;
-        read_barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
-
-        vk::ImageMemoryBarrier write_barrier = base_barrier;
-        write_barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-        write_barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-        write_barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-
-        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eHost,
-                               vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, read_barrier);
-        cmdbuf.copyBufferToImage(*buffer, image, vk::ImageLayout::eTransferDstOptimal, copy);
-        cmdbuf.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTransfer,
-            vk::PipelineStageFlagBits::eFragmentShader | vk::PipelineStageFlagBits::eComputeShader,
-            {}, {}, {}, write_barrier);
-    });
-}
-
 void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
                           vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
                           vk::Sampler sampler, size_t image_index,
@@ -262,9 +201,9 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
                           const layout::FrameBufferLayout& layout) {
     const u32 texture_width = framebuffer.width;
     const u32 texture_height = framebuffer.height;
-    const u32 scaled_width = texture_width;
-    const u32 scaled_height = texture_height;
-    const bool use_accelerated = false;  // TODO 待处理
+    // const u32 scaled_width = texture_width;
+    // const u32 scaled_height = texture_height;
+    // const bool use_accelerated = false;  // TODO 待处理
     const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
     RefreshResources(framebuffer);
     SetAntiAliasPass();
@@ -274,11 +213,8 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     scheduler.wait(resource_ticks[image_index]);
     SCOPE_EXIT { resource_ticks[image_index] = scheduler.currentTick(); };
 
-    if (!use_accelerated) {
-        UpdateRawImage(framebuffer, image_index);
-    }
 
-    // vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
+    vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
     vk::ImageView source_image_view =
         texture_info ? texture_info->image_view : *raw_image_views[image_index];
     // //这里什么也么做

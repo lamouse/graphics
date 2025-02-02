@@ -286,7 +286,9 @@ auto TextureCache<P>::TryFindFramebufferImageView(const frame::FramebufferConfig
     if (slot_image_views.size() <= 1) {
         return std::make_pair(nullptr, false);
     }
-    return std::make_pair(&slot_image_views[ImageViewId(1)], false);
+
+    return std::make_pair(&slot_image_views[out_view_ids[current_framebuffer_index]],
+                          false);
 }
 
 template <class P>
@@ -299,7 +301,7 @@ void TextureCache<P>::UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, 
 
 template <class P>
 void TextureCache<P>::createFramebuffers(const ImageInfo& info, int count) {
-    if(slot_framebuffers.size() >= count){
+    if (slot_framebuffers.size() >= count) {
         return;
     }
     for (int i = 0; i < count; i++) {
@@ -307,14 +309,32 @@ void TextureCache<P>::createFramebuffers(const ImageInfo& info, int count) {
         ImageViewBase& view = GetImageView(view_id);
         ImageViewInfo view_info(info);
         auto rets = RenderTargetFromImage(view.image_id, view_info);
+        framebuffer_views.push_back(rets);
         frame_buffer_ids.push_back(rets.first);
+        view_id = CreateImageView(info);
+        out_view_ids.push_back(view_id);
     }
 }
 
 template <class P>
 void TextureCache<P>::updateRenderFramebuffers() {
-   current_framebuffer_index = (++current_framebuffer_index) % frame_buffer_ids.size();
+    current_framebuffer_index = (++current_framebuffer_index) % frame_buffer_ids.size();
 }
 
+template <class P>
+void TextureCache<P>::FillGraphicsImageViews() {
+    if (current_framebuffer_index < 0) {
+        return;
+    }
+
+    ImageViewBase& view = slot_image_views[framebuffer_views[current_framebuffer_index].second];
+    auto& image = slot_images[view.image_id];
+    ImageViewBase& out_view = slot_image_views[out_view_ids[current_framebuffer_index]];
+    auto& out_image = slot_images[out_view.image_id];
+    std::vector<ImageCopy> copies = {ImageCopy{
+        .extent = {.width = 800, .height = 600, .depth = 1}
+    }};
+    runtime.CopyImage(out_image, image, copies);
+}
 
 }  // namespace render::texture
