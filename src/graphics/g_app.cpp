@@ -51,7 +51,6 @@ void App::run() {
     resource::image::Image img(s);
     resource::image::Image img2(s2);
 
-    graphics->addTexture(img.getImageInfo());
     // graphics->addTexture(img2.getImageInfo());
     auto model = Model::createFromFile("models/viking_room.obj");
     std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
@@ -84,6 +83,8 @@ void App::run() {
                                     0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
+        graphics->addTexture(img.getImageInfo());
+
         graphics->addVertex(verticesSpan, model->indices_);
         graphics->drawIndics(model->indices_.size());
         auto& shader_notify = render_base->getShaderNotify();

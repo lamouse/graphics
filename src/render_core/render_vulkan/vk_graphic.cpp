@@ -48,7 +48,6 @@ void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
 }
 
 void VulkanGraphics::drawIndics(u32 indicesSize) {
-
     guest_descriptor_queue.AddSampledImage(
         texture_cache.GetImageView(0).Handle(shader::TextureType::Color2D),
         texture_cache.GetSampler(texture_cache.GetGraphicsSamplerId(0)).Handle());
@@ -58,7 +57,6 @@ void VulkanGraphics::drawIndics(u32 indicesSize) {
     UpdateDynamicStates();
     scheduler.record(
         [indicesSize](vk::CommandBuffer cmdbuf) { cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0); });
-
 }
 
 void VulkanGraphics::UpdateDynamicStates() {
@@ -277,75 +275,26 @@ void VulkanGraphics::UpdateViewportsState() {
         scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
         return;
     }
-    // const bool is_rescaling{texture_cache.IsRescaling()};
-    // const float scale = is_rescaling ? Settings::values.resolution_info.up_factor : 1.0f;
-    // const std::array viewport_list{
-    //     GetViewportState(device, regs, 0, scale),  GetViewportState(device, regs, 1, scale),
-    //     GetViewportState(device, regs, 2, scale),  GetViewportState(device, regs, 3, scale),
-    //     GetViewportState(device, regs, 4, scale),  GetViewportState(device, regs, 5, scale),
-    //     GetViewportState(device, regs, 6, scale),  GetViewportState(device, regs, 7, scale),
-    //     GetViewportState(device, regs, 8, scale),  GetViewportState(device, regs, 9, scale),
-    //     GetViewportState(device, regs, 10, scale), GetViewportState(device, regs, 11, scale),
-    //     GetViewportState(device, regs, 12, scale), GetViewportState(device, regs, 13, scale),
-    //     GetViewportState(device, regs, 14, scale), GetViewportState(device, regs, 15, scale),
-    // };
-    // scheduler.record([this, viewport_list](vk::CommandBuffer cmdbuf) {
-    //     const u32 num_viewports = std::min<u32>(device.GetMaxViewports(), Maxwell::NumViewports);
-    //     const vk::Span<VkViewport> viewports(viewport_list.data(), num_viewports);
-    //     cmdbuf.SetViewport(0, viewports);
-    // });
 }
 
 void VulkanGraphics::UpdateScissorsState() {
-    if (1) {  // TODO 这里需要修改
-        const auto x = 0;
-        const auto y = 0;
-        const auto width = 800;
-        const auto height = 600;
-        vk::Rect2D scissor;
-        scissor.offset.x = static_cast<u32>(x);
-        scissor.offset.y = static_cast<u32>(y);
-        scissor.extent.width = static_cast<u32>(width != 0.0f ? width : 1.0f);
-        scissor.extent.height = static_cast<u32>(height != 0.0f ? height : 1.0f);
-        scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
-        return;
-    }
-    // u32 up_scale = 1;
-    // u32 down_shift = 0;
-    // if (texture_cache.IsRescaling()) {
-    //     up_scale = Settings::values.resolution_info.up_scale;
-    //     down_shift = Settings::values.resolution_info.down_shift;
-    // }
-    // const std::array scissor_list{
-    //     GetScissorState(regs, 0, up_scale, down_shift),
-    //     GetScissorState(regs, 1, up_scale, down_shift),
-    //     GetScissorState(regs, 2, up_scale, down_shift),
-    //     GetScissorState(regs, 3, up_scale, down_shift),
-    //     GetScissorState(regs, 4, up_scale, down_shift),
-    //     GetScissorState(regs, 5, up_scale, down_shift),
-    //     GetScissorState(regs, 6, up_scale, down_shift),
-    //     GetScissorState(regs, 7, up_scale, down_shift),
-    //     GetScissorState(regs, 8, up_scale, down_shift),
-    //     GetScissorState(regs, 9, up_scale, down_shift),
-    //     GetScissorState(regs, 10, up_scale, down_shift),
-    //     GetScissorState(regs, 11, up_scale, down_shift),
-    //     GetScissorState(regs, 12, up_scale, down_shift),
-    //     GetScissorState(regs, 13, up_scale, down_shift),
-    //     GetScissorState(regs, 14, up_scale, down_shift),
-    //     GetScissorState(regs, 15, up_scale, down_shift),
-    // };
-    // scheduler.Record([this, scissor_list](vk::CommandBuffer cmdbuf) {
-    //     const u32 num_scissors = std::min<u32>(device.GetMaxViewports(), Maxwell::NumViewports);
-    //     const vk::Span<VkRect2D> scissors(scissor_list.data(), num_scissors);
-    //     cmdbuf.SetScissor(0, scissors);
-    // });
+    const auto x = 0;
+    const auto y = 0;
+    const auto width = 800;
+    const auto height = 600;
+    vk::Rect2D scissor;
+    scissor.offset.x = static_cast<u32>(x);
+    scissor.offset.y = static_cast<u32>(y);
+    scissor.extent.width = static_cast<u32>(width != 0.0f ? width : 1.0f);
+    scissor.extent.height = static_cast<u32>(height != 0.0f ? height : 1.0f);
+    scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
 }
 
 auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config,
                                        u32 pixel_stride) -> std::optional<FramebufferTextureInfo> {
     std::scoped_lock lock{texture_cache.mutex};
     const auto& image_view = texture_cache.TryFindFramebufferImageView(config);
-    if(!image_view.first){
+    if (!image_view.first) {
         return std::nullopt;
     }
     FramebufferTextureInfo info{};
@@ -360,19 +309,7 @@ auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config,
 
 void VulkanGraphics::UpdateDepthBias() {
     float units = -5 / 2.0f;
-    // const bool is_d24 = regs.zeta.format == Tegra::DepthFormat::Z24_UNORM_S8_UINT ||
-    //                     regs.zeta.format == Tegra::DepthFormat::X8Z24_UNORM ||
-    //                     regs.zeta.format == Tegra::DepthFormat::S8Z24_UNORM ||
-    //                     regs.zeta.format == Tegra::DepthFormat::V8Z24_UNORM;
-    // if (is_d24 && !device.SupportsD24DepthBuffer() && program_id == 0x1006A800016E000ULL) {
-    //     // Only activate this in Super Smash Brothers Ultimate
-    //     // the base formulas can be obtained from here:
-    //     //
-    //     https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-output-merger-stage-depth-bias
-    //     const double rescale_factor =
-    //         static_cast<double>(1ULL << (32 - 24)) / (static_cast<double>(0x1.ep+127));
-    //     units = static_cast<float>(static_cast<double>(units) * rescale_factor);
-    // }
+
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBias(0.0f, .0f, .0f); });
 }
 

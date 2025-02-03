@@ -43,26 +43,24 @@ class DescriptorLayoutBuilder {
                                        device->getLogical()};
         }
 
-        [[nodiscard]] auto CreateTemplate(vk::DescriptorSetLayout descriptor_set_layout,
-                                          vk::PipelineLayout pipeline_layout,
-                                          bool use_push_descriptor) const
-            -> DescriptorUpdateTemplate {
+        [[nodiscard]] auto CreateTemplate(
+            vk::DescriptorSetLayout descriptor_set_layout, vk::PipelineLayout pipeline_layout,
+            bool use_push_descriptor) const -> DescriptorUpdateTemplate {
             if (entries.empty()) {
                 return nullptr;
             }
             const vk::DescriptorUpdateTemplateType type =
                 use_push_descriptor ? vk::DescriptorUpdateTemplateType::ePushDescriptorsKHR
                                     : vk::DescriptorUpdateTemplateType::eDescriptorSet;
+            ;
             return device->logical().createDescriptorUpdateTemplate(
-                vk::DescriptorUpdateTemplateCreateInfo{
-                    {},
-                    entries,
-                    type,
-                    descriptor_set_layout,
-                    vk::PipelineBindPoint::eGraphics,
-                    pipeline_layout,
-                    0,
-                });
+                vk::DescriptorUpdateTemplateCreateInfo()
+                    .setDescriptorUpdateEntries(entries)
+                    .setTemplateType(type)
+                    .setDescriptorSetLayout(descriptor_set_layout)
+                    .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+                    .setPipelineLayout(pipeline_layout)
+                    .setSet(0));
         }
 
         [[nodiscard]] auto CreatePipelineLayout(vk::DescriptorSetLayout descriptor_set_layout) const
@@ -76,14 +74,12 @@ class DescriptorLayoutBuilder {
                 static_cast<u32>(sizeof(RescalingLayout)) - size_offset +
                     static_cast<u32>(sizeof(RenderAreaLayout)),
             };
-
-            return device->logical().createPipelineLayout(vk::PipelineLayoutCreateInfo{
-                {},
-                descriptor_set_layout ? 1u : 0u,
-                bindings.empty() ? nullptr : &descriptor_set_layout,
-                1,
-                &range,
-            });
+            ;
+            return device->logical().createPipelineLayout(
+                vk::PipelineLayoutCreateInfo()
+                    .setSetLayoutCount(descriptor_set_layout ? 1u : 0u)
+                    .setPSetLayouts(bindings.empty() ? nullptr : &descriptor_set_layout)
+                    .setPushConstantRanges(range));
         }
         void Add(const shader::Info& info, vk::ShaderStageFlags stage) {
             is_compute |=

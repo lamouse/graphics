@@ -56,18 +56,18 @@ void SortPhysicalDevices(std::vector<vk::PhysicalDevice>& devices) {
 
 template <typename T>
 void SetObjectName(vk::Device device, T handle, vk::ObjectType type, const char* name) {
-    const VkDebugUtilsObjectNameInfoEXT name_info{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-        .pNext = nullptr,
-        .objectType = static_cast<VkObjectType>(type),
-        .objectHandle = reinterpret_cast<u64>(&handle),
-        .pObjectName = name,
-    };
-    auto fun = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(
-        device, "vkSetDebugUtilsObjectNameEXT");
-    if (fun) {
-        utils::check(fun(device, &name_info));
-    }
+    // const VkDebugUtilsObjectNameInfoEXT name_info{
+    //     .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+    //     .pNext = nullptr,
+    //     .objectType = static_cast<VkObjectType>(type),
+    //     .objectHandle = reinterpret_cast<u64>(&handle),
+    //     .pObjectName = name,
+    // };
+    // auto fun = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(
+    //     device, "vkSetDebugUtilsObjectNameEXT");
+    // if (fun) {
+    //     utils::check(fun(device, &name_info));
+    // }
 }
 }  // namespace
 void Image::SetObjectNameEXT(const char* name) const {
@@ -125,7 +125,7 @@ void Buffer::Invalidate() const {
 }
 
 void Buffer::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eBuffer, name);
+    SetObjectName(owner, static_cast<VkBuffer>(handle), vk::ObjectType::eBuffer, name);
 }
 
 void Buffer::Release() const noexcept {

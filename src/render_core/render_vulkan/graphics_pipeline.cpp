@@ -339,7 +339,6 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 template <typename Spec>
 void GraphicsPipeline::configureImpl(bool is_indexed) {
 
-
     const auto prepare_stage{[&](int count) LAMBDA_FORCEINLINE {
         texture::ImageInfo imageInfo;
         imageInfo.size = {.width = 800, .height = 600, .depth = 1};
