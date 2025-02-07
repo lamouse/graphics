@@ -5,7 +5,9 @@
 #include "../config.hpp"
 #include "config/log.h"
 #include "g_app.hpp"
+#include "app.hpp"
 #include "utils/log_util.hpp"
+
 
 using namespace std;
 using namespace g;

@@ -34,8 +34,8 @@ ImageTexture::ImageTexture(core::Device& device, Image& image, ::vk::Format form
             .setBufferImageHeight(0)
             .setImageSubresource(imageSubresourceLayers)
             .setImageOffset({0, 0, 0})
-            .setImageExtent(
-                {static_cast<uint32_t>(imgInfo.size.width), static_cast<uint32_t>(imgInfo.size.height), 1});
+            .setImageExtent({static_cast<uint32_t>(imgInfo.size.width),
+                             static_cast<uint32_t>(imgInfo.size.height), 1});
         cmdBuf.copyBufferToImage(stagingBuffer.getBuffer(), image_,
                                  ::vk::ImageLayout::eTransferDstOptimal, region);
     });
@@ -89,22 +89,22 @@ void ImageTexture::transitionImageLayout(core::Device& device, ::vk::Image image
 }
 
 void ImageTexture::createTextureSampler(core::Device& device) {
-    ::vk::SamplerCreateInfo samplerInfo;
-    samplerInfo.setMagFilter(::vk::Filter::eLinear)
-        .setMinFilter(::vk::Filter::eLinear)
-        .setAddressModeU(::vk::SamplerAddressMode::eRepeat)
-        .setAddressModeV(::vk::SamplerAddressMode::eRepeat)
-        .setAddressModeW(::vk::SamplerAddressMode::eRepeat)
-        .setAnisotropyEnable(VK_TRUE)
-        .setMaxAnisotropy(device.getMaxAnisotropy())
-        .setBorderColor(::vk::BorderColor::eIntOpaqueBlack)
-        .setUnnormalizedCoordinates(VK_FALSE)
-        .setCompareEnable(VK_FALSE)
-        .setCompareOp(::vk::CompareOp::eAlways)
-        .setMipmapMode(::vk::SamplerMipmapMode::eLinear)
-        .setMipLodBias(0.0f)
-        .setMinLod(0.0f)
-        .setMaxLod(static_cast<float>(imageMipLevels_));
+    ::vk::SamplerCreateInfo samplerInfo = ::vk::SamplerCreateInfo()
+                                              .setMagFilter(::vk::Filter::eLinear)
+                                              .setMinFilter(::vk::Filter::eLinear)
+                                              .setAddressModeU(::vk::SamplerAddressMode::eRepeat)
+                                              .setAddressModeV(::vk::SamplerAddressMode::eRepeat)
+                                              .setAddressModeW(::vk::SamplerAddressMode::eRepeat)
+                                              .setAnisotropyEnable(VK_TRUE)
+                                              .setMaxAnisotropy(device.getMaxAnisotropy())
+                                              .setBorderColor(::vk::BorderColor::eIntOpaqueBlack)
+                                              .setUnnormalizedCoordinates(VK_FALSE)
+                                              .setCompareEnable(VK_FALSE)
+                                              .setCompareOp(::vk::CompareOp::eAlways)
+                                              .setMipmapMode(::vk::SamplerMipmapMode::eLinear)
+                                              .setMipLodBias(0.0f)
+                                              .setMinLod(0.0f)
+                                              .setMaxLod(static_cast<float>(imageMipLevels_));
     sampler_ = device.logicalDevice().createSampler(samplerInfo);
 }
 

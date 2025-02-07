@@ -76,15 +76,14 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
 [[nodiscard]] auto MakeBufferImageCopy(const texture::ImageCopy& copy, bool is_src,
                                        vk::ImageAspectFlags aspect_mask) noexcept
     -> vk::BufferImageCopy {
-    return vk::BufferImageCopy{
-        0,
-        0,
-        0,
-        MakeImageSubresourceLayers(is_src ? copy.src_subresource : copy.dst_subresource,
-                                   aspect_mask),
-        MakeOffset3D(is_src ? copy.src_offset : copy.dst_offset),
-        MakeExtent3D(copy.extent),
-    };
+    return vk::BufferImageCopy()
+        .setBufferOffset(0)
+        .setBufferRowLength(0)
+        .setBufferImageHeight(0)
+        .setImageSubresource(MakeImageSubresourceLayers(
+            is_src ? copy.src_subresource : copy.dst_subresource, aspect_mask))
+        .setImageOffset(MakeOffset3D(is_src ? copy.src_offset : copy.dst_offset))
+        .setImageExtent(MakeExtent3D(copy.extent));
 }
 [[nodiscard]] auto ImageAspectMask(surface::PixelFormat format) -> vk::ImageAspectFlags {
     switch (surface::GetFormatType(format)) {
@@ -113,40 +112,47 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
         .setLayerCount(range.extent.layers);
 }
 
-[[nodiscard]] vk::ImageSubresourceLayers MakeSubresourceLayers(const TextureImageView* image_view) {
-    return vk::ImageSubresourceLayers{
-        ImageAspectMask(image_view->format),
-        static_cast<u32>(image_view->range.base.level),
-        static_cast<u32>(image_view->range.base.layer),
-        static_cast<u32>(image_view->range.extent.layers),
-    };
+[[nodiscard]] auto MakeSubresourceLayers(const TextureImageView* image_view)
+    -> vk::ImageSubresourceLayers {
+    return vk::ImageSubresourceLayers()
+        .setAspectMask(ImageAspectMask(image_view->format))
+        .setMipLevel(static_cast<u32>(image_view->range.base.level))
+        .setBaseArrayLayer(static_cast<u32>(image_view->range.base.layer))
+        .setLayerCount(static_cast<u32>(image_view->range.extent.layers));
 }
 
 [[nodiscard]] auto MakeImageCopy(const texture::ImageCopy& copy,
                                  vk::ImageAspectFlags aspect_mask) noexcept -> vk::ImageCopy {
-    return vk::ImageCopy{
-        MakeImageSubresourceLayers(copy.src_subresource, aspect_mask),
-        MakeOffset3D(copy.src_offset),
-        MakeImageSubresourceLayers(copy.dst_subresource, aspect_mask),
-        MakeOffset3D(copy.dst_offset),
-        MakeExtent3D(copy.extent),
-    };
+    return vk::ImageCopy()
+        .setSrcSubresource(MakeImageSubresourceLayers(copy.src_subresource, aspect_mask))
+        .setSrcOffset(MakeOffset3D(copy.src_offset))
+        .setDstSubresource(MakeImageSubresourceLayers(copy.dst_subresource, aspect_mask))
+        .setDstOffset(MakeOffset3D(copy.dst_offset))
+        .setExtent(MakeExtent3D(copy.extent));
 }
 
 [[nodiscard]] auto MakeStorageView(const LogicDevice& device, u32 level, vk::Image image,
                                    vk::Format format) -> ImageView {
     static constexpr vk::ImageViewUsageCreateInfo storage_image_view_usage_create_info{
         vk::ImageUsageFlagBits::eStorage};
-    return device.CreateImageView(vk::ImageViewCreateInfo{
-        {},
-        image,
-        vk::ImageViewType::e2DArray,
-        format,
-        vk::ComponentMapping{vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity,
-                             vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity},
-        vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, level, 1, 0,
-                                  vk::RemainingArrayLayers},
-        &storage_image_view_usage_create_info});
+    ;
+    return device.CreateImageView(
+        vk::ImageViewCreateInfo()
+            .setImage(image)
+            .setViewType(vk::ImageViewType::e2DArray)
+            .setFormat(format)
+            .setComponents(vk::ComponentMapping()
+                               .setR(vk::ComponentSwizzle::eIdentity)
+                               .setG(vk::ComponentSwizzle::eIdentity)
+                               .setB(vk::ComponentSwizzle::eIdentity)
+                               .setA(vk::ComponentSwizzle::eIdentity))
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                     .setBaseMipLevel(level)
+                                     .setLevelCount(1)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(vk::RemainingArrayLayers))
+            .setPNext(&storage_image_view_usage_create_info));
 }
 
 [[nodiscard]] auto TransformBufferImageCopies(
@@ -154,25 +160,24 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
     vk::ImageAspectFlags aspect_mask) -> boost::container::small_vector<vk::BufferImageCopy, 16> {
     struct Maker {
             auto operator()(const texture::BufferImageCopy& copy) const -> vk::BufferImageCopy {
-                return vk::BufferImageCopy{copy.buffer_offset + buffer_offset,
-                                           copy.buffer_row_length,
-                                           copy.buffer_image_height,
-                                           vk::ImageSubresourceLayers{
-                                               aspect_mask,
-                                               static_cast<u32>(copy.image_subresource.base_level),
-                                               static_cast<u32>(copy.image_subresource.base_layer),
-                                               static_cast<u32>(copy.image_subresource.num_layers),
-                                           },
-                                           vk::Offset3D{
-                                               copy.image_offset.x,
-                                               copy.image_offset.y,
-                                               copy.image_offset.z,
-                                           },
-                                           vk::Extent3D{
-                                               copy.image_extent.width,
-                                               copy.image_extent.height,
-                                               copy.image_extent.depth,
-                                           }};
+                return vk::BufferImageCopy()
+                    .setBufferOffset(copy.buffer_offset + buffer_offset)
+                    .setBufferRowLength(copy.buffer_row_length)
+                    .setBufferImageHeight(copy.buffer_image_height)
+                    .setImageSubresource(
+                        vk::ImageSubresourceLayers()
+                            .setAspectMask(aspect_mask)
+                            .setMipLevel(static_cast<u32>(copy.image_subresource.base_level))
+                            .setBaseArrayLayer(static_cast<u32>(copy.image_subresource.base_layer))
+                            .setLayerCount(static_cast<u32>(copy.image_subresource.num_layers)))
+                    .setImageOffset(vk::Offset3D()
+                                        .setX(copy.image_offset.x)
+                                        .setY(copy.image_offset.y)
+                                        .setZ(copy.image_offset.z))
+                    .setImageExtent(vk::Extent3D()
+                                        .setWidth(copy.image_extent.width)
+                                        .setHeight(copy.image_extent.height)
+                                        .setDepth(copy.image_extent.depth));
             }
             size_t buffer_offset;
             vk::ImageAspectFlags aspect_mask;
@@ -206,9 +211,12 @@ struct RangedBarrierRange {
 
         [[nodiscard]] auto SubresourceRange(vk::ImageAspectFlags aspect_mask) const noexcept
             -> vk::ImageSubresourceRange {
-            return vk::ImageSubresourceRange{
-                aspect_mask, min_mip, max_mip - min_mip, min_layer, max_layer - min_layer,
-            };
+            return vk::ImageSubresourceRange()
+                .setAspectMask(aspect_mask)
+                .setBaseMipLevel(min_mip)
+                .setLevelCount(max_mip - min_mip)
+                .setBaseArrayLayer(min_layer)
+                .setLayerCount(max_layer - min_layer);
         }
 };
 
@@ -522,38 +530,37 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
     static constexpr vk::AccessFlags READ_ACCESS_FLAGS =
         vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eColorAttachmentRead |
         vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    const vk::ImageMemoryBarrier read_barrier{
-        WRITE_ACCESS_FLAGS,
-        vk::AccessFlagBits::eTransferWrite,
-        is_initialized ? vk::ImageLayout::eGeneral : vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eTransferDstOptimal,
-        VK_QUEUE_FAMILY_IGNORED,
-        VK_QUEUE_FAMILY_IGNORED,
-        image,
-        vk::ImageSubresourceRange{
-            aspect_mask,
-            0,
-            VK_REMAINING_MIP_LEVELS,
-            0,
-            VK_REMAINING_ARRAY_LAYERS,
-        },
-    };
-    const vk::ImageMemoryBarrier write_barrier{
-        vk::AccessFlagBits::eTransferWrite,
-        WRITE_ACCESS_FLAGS | READ_ACCESS_FLAGS,
-        vk::ImageLayout::eTransferDstOptimal,
-        vk::ImageLayout::eGeneral,
-        VK_QUEUE_FAMILY_IGNORED,
-        VK_QUEUE_FAMILY_IGNORED,
-        image,
-        vk::ImageSubresourceRange{
-            aspect_mask,
-            0,
-            VK_REMAINING_MIP_LEVELS,
-            0,
-            VK_REMAINING_ARRAY_LAYERS,
-        },
-    };
+
+    const vk::ImageMemoryBarrier read_barrier =
+        vk::ImageMemoryBarrier()
+            .setSrcAccessMask(WRITE_ACCESS_FLAGS)
+            .setDstAccessMask(vk::AccessFlagBits::eTransferWrite)
+            .setOldLayout(is_initialized ? vk::ImageLayout::eGeneral : vk::ImageLayout::eUndefined)
+            .setNewLayout(vk::ImageLayout::eTransferDstOptimal)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setImage(image)
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(aspect_mask)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(VK_REMAINING_MIP_LEVELS)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(VK_REMAINING_ARRAY_LAYERS));
+    const vk::ImageMemoryBarrier write_barrier =
+        vk::ImageMemoryBarrier()
+            .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+            .setDstAccessMask(WRITE_ACCESS_FLAGS | READ_ACCESS_FLAGS)
+            .setOldLayout(vk::ImageLayout::eTransferDstOptimal)
+            .setNewLayout(vk::ImageLayout::eGeneral)
+            .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            .setImage(image)
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(aspect_mask)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(VK_REMAINING_MIP_LEVELS)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(VK_REMAINING_ARRAY_LAYERS));
     cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
                            vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, read_barrier);
     cmdbuf.copyBufferToImage(src_buffer, image, vk::ImageLayout::eTransferDstOptimal, copies);
@@ -584,23 +591,22 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
         }
     }
     const auto [samples_x, samples_y] = texture::SamplesLog2(info.num_samples);
-    return vk::ImageCreateInfo{flags,
-                               ConvertImageType(info.type),
-                               format_info.format,
-                               vk::Extent3D{
-                                   info.size.width >> samples_x,
-                                   info.size.height >> samples_y,
-                                   info.size.depth,
-                               },
-                               static_cast<u32>(info.resources.levels),
-                               static_cast<u32>(info.resources.layers),
-                               ConvertSampleCount(info.num_samples),
-                               vk::ImageTiling::eOptimal,
-                               usage,
-                               vk::SharingMode::eExclusive,
-                               0,
-                               nullptr,
-                               vk::ImageLayout::eUndefined};
+    return vk::ImageCreateInfo()
+        .setFlags(flags)
+        .setImageType(ConvertImageType(info.type))
+        .setFormat(format_info.format)
+        .setExtent(vk::Extent3D()
+                       .setWidth(info.size.width >> samples_x)
+                       .setHeight(info.size.height >> samples_y)
+                       .setDepth(info.size.depth))
+        .setMipLevels(static_cast<u32>(info.resources.levels))
+        .setArrayLayers(static_cast<u32>(info.resources.layers))
+        .setSamples(ConvertSampleCount(info.num_samples))
+        .setTiling(vk::ImageTiling::eOptimal)
+        .setUsage(usage)
+        .setSharingMode(vk::SharingMode::eExclusive)
+        .setPQueueFamilyIndices(nullptr)
+        .setInitialLayout(vk::ImageLayout::eUndefined);
 }
 
 [[nodiscard]] auto MakeImage(const Device& device, const MemoryAllocator& allocator,
@@ -610,9 +616,9 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
         return Image{};
     }
     vk::ImageCreateInfo image_ci = MakeImageCreateInfo(device, info);
-    const vk::ImageFormatListCreateInfo image_format_list{
-        view_formats,
-    };
+    const vk::ImageFormatListCreateInfo image_format_list =
+        vk::ImageFormatListCreateInfo().setViewFormats(view_formats);
+
     if (view_formats.size() > 1) {
         image_ci.flags |= vk::ImageCreateFlagBits::eMutableFormat;
         if (device.isKhrImageFormatListSupported()) {
@@ -1488,7 +1494,7 @@ auto TextureImage::ScaleUp(bool ignore) -> bool {
     return true;
 }
 
-bool TextureImage::ScaleDown(bool ignore) {
+auto TextureImage::ScaleDown(bool ignore) -> bool {
     const auto& resolution = runtime->resolution;
     if (!resolution.active) {
         return false;
@@ -1619,15 +1625,17 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
     }
     const auto format_info = device->surfaceFormat(FormatType::Optimal, true, format);
     const vk::ImageViewUsageCreateInfo image_view_usage{image.UsageFlags()};
-    const vk::ImageViewCreateInfo create_info{
-        {},
-        image.Handle(),
-        vk::ImageViewType{},
-        format_info.format,
-        vk::ComponentMapping{ComponentSwizzle(swizzle[0]), ComponentSwizzle(swizzle[1]),
-                             ComponentSwizzle(swizzle[2]), ComponentSwizzle(swizzle[3])},
-        MakeSubresourceRange(aspect_mask, info.range),
-        &image_view_usage};
+    const vk::ImageViewCreateInfo create_info =
+        vk::ImageViewCreateInfo()
+            .setImage(image.Handle())
+            .setFormat(format_info.format)
+            .setComponents(vk::ComponentMapping()
+                               .setR(ComponentSwizzle(swizzle[0]))
+                               .setG(ComponentSwizzle(swizzle[1]))
+                               .setB(ComponentSwizzle(swizzle[2]))
+                               .setA(ComponentSwizzle(swizzle[3])))
+            .setSubresourceRange(MakeSubresourceRange(aspect_mask, info.range))
+            .setPNext(&image_view_usage);
     const auto create = [&](shader::TextureType tex_type, std::optional<u32> num_layers) {
         vk::ImageViewCreateInfo ci{create_info};
         ci.viewType = ImageViewType(tex_type);
@@ -1790,10 +1798,10 @@ TextureSampler::TextureSampler(TextureCacheRuntime& runtime, SamplerReduction re
     const bool arbitrary_borders = runtime.device.isExtCustomBorderColorSupported();
     auto border_color = std::array<float, 4>{0, 0, 0, 0};
     vk::ClearColorValue color{std::bit_cast<vk::ClearColorValue>(border_color)};
-    const vk::SamplerCustomBorderColorCreateInfoEXT border_ci{
-        color,
-        vk::Format::eUndefined,
-    };
+    const vk::SamplerCustomBorderColorCreateInfoEXT border_ci =
+        vk::SamplerCustomBorderColorCreateInfoEXT().setCustomBorderColor(color).setFormat(
+            vk::Format::eUndefined);
+
     const void* pnext = nullptr;
     if (arbitrary_borders) {
         pnext = &border_ci;
@@ -1808,24 +1816,26 @@ TextureSampler::TextureSampler(TextureCacheRuntime& runtime, SamplerReduction re
     const f32 max_anisotropy = std::clamp(device.getMaxAnisotropy(), 1.0f, 16.0f);
 
     const auto create_sampler = [&](const f32 anisotropy) {
-        return device.logical().CreateSampler(vk::SamplerCreateInfo{
-            {},
-            ::vk::Filter::eLinear,
-            ::vk::Filter::eLinear,
-            ::vk::SamplerMipmapMode::eLinear,
-            ::vk::SamplerAddressMode::eRepeat,
-            ::vk::SamplerAddressMode::eRepeat,
-            ::vk::SamplerAddressMode::eRepeat,
-            0.0f,
-            static_cast<VkBool32>(anisotropy > 1.0f ? VK_TRUE : VK_FALSE),
-            anisotropy,
-            VK_FALSE,
-            ::vk::CompareOp::eAlways,
-            0.0f,
-            static_cast<float>(imageMipLevels),
-            arbitrary_borders ? vk::BorderColor::eFloatCustomEXT : ConvertBorderColor(border_color),
-            VK_FALSE,
-            pnext});
+        ;
+        return device.logical().CreateSampler(
+            vk::SamplerCreateInfo()
+                .setMagFilter(vk::Filter::eLinear)
+                .setMinFilter(vk::Filter::eLinear)
+                .setMipmapMode(vk::SamplerMipmapMode::eLinear)
+                .setAddressModeU(vk::SamplerAddressMode::eRepeat)
+                .setAddressModeV(vk::SamplerAddressMode::eRepeat)
+                .setAddressModeW(vk::SamplerAddressMode::eRepeat)
+                .setMipLodBias(.0f)
+                .setAnisotropyEnable(static_cast<VkBool32>(anisotropy > 1.0f ? VK_TRUE : VK_FALSE))
+                .setMaxAnisotropy(anisotropy)
+                .setCompareEnable(VK_FALSE)
+                .setCompareOp(::vk::CompareOp::eAlways)
+                .setMinLod(.0f)
+                .setMaxLod(static_cast<float>(imageMipLevels))
+                .setBorderColor(arbitrary_borders ? vk::BorderColor::eFloatCustomEXT
+                                                  : ConvertBorderColor(border_color))
+                .setUnnormalizedCoordinates(VK_FALSE)
+                .setPNext(pnext));
     };
 
     sampler = create_sampler(max_anisotropy);
@@ -1909,7 +1919,6 @@ void TextureFramebuffer::CreateFramebuffer(
         render_pass_key.depth_format = surface::PixelFormat::Invalid;
     }
     render_pass_key.samples = samples;
-    render_pass_key.need_resolvet = true;
 
     render_pass = runtime.render_pass_cache.get(render_pass_key);
     render_area.width = std::min(render_area.width, width);

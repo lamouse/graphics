@@ -19,7 +19,7 @@ void Image::readImage(::std::string& path) {
     imageInfo.size.height = h;
     imageInfo.type = render::texture::ImageType::e2D;
     imageInfo.data = data;
-    imageInfo.format = render::surface::PixelFormat::B8G8R8A8_UNORM;
+    imageInfo.format = render::surface::PixelFormat::A8B8G8R8_SRGB;
     imageInfo.num_samples = 1;
     imageInfo.resources.levels = 1;
     imageInfo.layer_stride = 4;

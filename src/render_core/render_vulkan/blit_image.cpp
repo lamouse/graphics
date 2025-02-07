@@ -160,8 +160,9 @@ inline constexpr VkSamplerCreateInfo SAMPLER_CREATE_INFO{
     .unnormalizedCoordinates = VK_TRUE,
 };
 
-constexpr auto PipelineLayoutCreateInfo(
-    const vk::DescriptorSetLayout* set_layout, utils::Span<vk::PushConstantRange> push_constants) -> vk::PipelineLayoutCreateInfo {
+constexpr auto PipelineLayoutCreateInfo(const vk::DescriptorSetLayout* set_layout,
+                                        utils::Span<vk::PushConstantRange> push_constants)
+    -> vk::PipelineLayoutCreateInfo {
     return vk::PipelineLayoutCreateInfo{{},
                                         (set_layout != nullptr ? 1u : 0u),
                                         set_layout,
@@ -380,12 +381,8 @@ BlitImageHelper::BlitImageHelper(const Device& device_, scheduler::Scheduler& sc
           utils::buildShader(device.getLogical(), CONVERT_D24S8_TO_ABGR8_FRAG_SPV)),
       convert_s8d24_to_abgr8_frag(
           utils::buildShader(device.getLogical(), CONVERT_S8D24_TO_ABGR8_FRAG_SPV)),
-      linear_sampler(
-          Sampler{device.getLogical().createSampler(SAMPLER_CREATE_INFO<VK_FILTER_LINEAR>),
-                  device_.getLogical()}),
-      nearest_sampler(
-          Sampler{device.getLogical().createSampler(SAMPLER_CREATE_INFO<VK_FILTER_NEAREST>),
-                  device_.getLogical()}) {
+      linear_sampler(device.logical().CreateSampler(SAMPLER_CREATE_INFO<VK_FILTER_LINEAR>)),
+      nearest_sampler(device.logical().CreateSampler(SAMPLER_CREATE_INFO<VK_FILTER_NEAREST>)) {
     if (device.isExtShaderStencilExportSupported()) {
         blit_depth_stencil_frag =
             utils::buildShader(device.getLogical(), VULKAN_BLIT_DEPTH_STENCIL_FRAG_SPV);

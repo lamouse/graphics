@@ -13,10 +13,6 @@ struct RenderPassKey {
         std::array<surface::PixelFormat, 8> color_formats;
         surface::PixelFormat depth_format;
         vk::SampleCountFlagBits samples;
-        bool need_resolvet;
-        bool save_depth;
-        bool need_clear;
-        bool need_store;
 };
 }  // namespace render::vulkan
 namespace std {
@@ -30,11 +26,8 @@ struct hash<render::vulkan::RenderPassKey> {
             }
             std::size_t h2 = std::hash<int>()(static_cast<int>(key.depth_format));
             std::size_t h3 = std::hash<int>()(static_cast<int>(key.samples));
-            std::size_t h4 = std::hash<bool>()(key.need_resolvet);
-            std::size_t h5 = std::hash<bool>()(key.save_depth);
-            std::size_t h6 = std::hash<bool>()(key.need_clear);
-            std::size_t h7 = std::hash<bool>()(key.need_store);
-            return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3) ^ (h5 << 4) ^ (h6 << 5) ^ (h7 << 6);
+
+            return h1 ^ (h2 << 1) ^ (h3 << 2);
         }
 };
 }  // namespace std

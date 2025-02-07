@@ -6,6 +6,7 @@
 #include "g_defines.hpp"
 #include "g_descriptor.hpp"
 #include "g_game_object.hpp"
+#include "g_imgui.hpp"
 #include "g_render.hpp"
 #include "g_render_system.hpp"
 // imgui begin
@@ -80,19 +81,19 @@ void App::run() {
 
     g::RenderProcessor render([this]() { return dynamic_cast<g::ScreenWindow*>(window.get())->getExtent(); });
     g::RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    // Imgui imgui((*dynamic_cast<g::ScreenWindow*>(window.get()))(), descriptorPool_->getDescriptorPool(),
-    //             static_cast<::vk::RenderPass>(render),
-    //             window->getWindowSystemInfo().render_surface_scale);
+    g::Imgui imgui((*dynamic_cast<g::ScreenWindow*>(window.get()))(), descriptorPool_->getDescriptorPool(),
+                static_cast<::vk::RenderPass>(render),
+                window->getWindowSystemInfo().render_surface_scale);
     while (!window->shouldClose()) {
         glfwPollEvents();
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
-        // g::UniformBufferObject ubo = imgui.get_uniform_buffer(render.extentAspectRation());
+        g::UniformBufferObject ubo = imgui.get_uniform_buffer(render.extentAspectRation());
 
         if (render.beginFrame()) {
-            // uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
+            uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
             uboBuffers[render.getCurrentFrameIndex()]->flush();
 
             g::FrameInfo frameInfo{.frameIndex = render.getCurrentFrameIndex(),
@@ -102,7 +103,7 @@ void App::run() {
 
             render.beginSwapchainRenderPass();
             renderSystem.render(frameInfo);
-            // imgui.draw(render.getCurrentCommandBuffer());
+            imgui.draw(render.getCurrentCommandBuffer());
             render.endSwapchainRenderPass();
             render.endFrame();
         }
