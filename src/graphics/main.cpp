@@ -8,6 +8,7 @@
 #include "app.hpp"
 #include "utils/log_util.hpp"
 
+#define USE_BASE 0
 
 using namespace std;
 using namespace g;
@@ -16,8 +17,16 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
     try {
         Config config("config/config.yaml");
         init(config);
-        g::App app(config);
-        app.run();
+
+        if (USE_BASE) {
+            graphics::App app(config);
+            app.run();
+        }
+        else {
+            g::App app(config);
+            app.run();
+        }
+
     } catch (const ::std::exception& e) {
         ::spdlog::error(e.what());
         return EXIT_FAILURE;

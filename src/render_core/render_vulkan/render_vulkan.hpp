@@ -4,7 +4,6 @@
 #include "render_core/render_vulkan/present_manager.hpp"
 #include "render_core/render_vulkan/swapchain.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
-#include "render_core/render_vulkan/vk_turbo_mode.hpp"
 #include "render_core/render_vulkan/blit_screen.hpp"
 #include "render_core/render_vulkan/vk_graphic.hpp"
 #include "render_core/render_vulkan/vk_imgui.hpp"
@@ -44,7 +43,6 @@ class RendererVulkan final : public render::RenderBase {
         BlitScreen blit_capture;
         std::unique_ptr<Imgui> imgui;
         VulkanGraphics vulkan_graphics;
-        std::optional<TurboMode> turbo_mode;
         Frame applet_frame;
 };
 

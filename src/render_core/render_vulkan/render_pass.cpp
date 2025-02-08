@@ -70,17 +70,15 @@ auto createResolveAttachmentDescription(auto& formats,
 
 auto AttachmentDescription(const Device& device, surface::PixelFormat format,
                            vk::SampleCountFlagBits samples) -> vk::AttachmentDescription {
-    return vk::AttachmentDescription{{},
-                                     device.surfaceFormat(FormatType::Optimal, true, format).format,
-                                     samples,
-                                     vk::AttachmentLoadOp::eLoad,
-                                     vk::AttachmentStoreOp::eStore,
-                                     vk::AttachmentLoadOp::eLoad,
-                                     vk::AttachmentStoreOp::eStore,
-                                     vk::ImageLayout::eGeneral,
-                                     vk::ImageLayout::eGeneral
-
-    };
+    return vk::AttachmentDescription()
+        .setFormat(device.surfaceFormat(FormatType::Optimal, true, format).format)
+        .setSamples(samples)
+        .setLoadOp(vk::AttachmentLoadOp::eLoad)
+        .setStoreOp(vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(vk::AttachmentLoadOp::eLoad)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eStore)
+        .setInitialLayout(vk::ImageLayout::eGeneral)
+        .setFinalLayout(vk::ImageLayout::eGeneral);
 }
 
 }  // namespace
@@ -111,10 +109,7 @@ auto RenderPassCache::get(const RenderPassKey& key) -> vk::RenderPass {
     const bool has_depth{key.depth_format != surface::PixelFormat::Invalid};
     vk::AttachmentReference depth_reference{};
     if (key.depth_format != surface::PixelFormat::Invalid) {
-        depth_reference = vk::AttachmentReference{
-            num_colors,
-            vk::ImageLayout::eGeneral,
-        };
+        depth_reference.setAttachment(num_colors).setLayout(vk::ImageLayout::eGeneral);
         descriptions.push_back(AttachmentDescription(*device, key.depth_format, key.samples));
     }
     const vk::SubpassDescription subpass =

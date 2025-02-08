@@ -17,7 +17,6 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         bool use_present_thread = false;
         bool async_presentation = false;
         bool render_debug = true;
-        bool renderer_force_max_clock = false;
         bool use_pipeline_cache = true;
         enums::VSyncMode vSyncMode = enums::VSyncMode::Mailbox;
         enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
