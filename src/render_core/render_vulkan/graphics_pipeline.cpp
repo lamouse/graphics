@@ -273,7 +273,7 @@ GraphicsPipeline::GraphicsPipeline(
     ShaderNotify* shader_notify, const Device& device, resource::DescriptorPool& descriptor_pool,
     GuestDescriptorQueue& guest_descriptor_queue_, common::ThreadWorker* worker_thread,
     pipeline::PipelineStatistics* pipeline_statistics, RenderPassCache& render_pass_cache,
-    const GraphicsPipelineCacheKey& key, TextureCache& texture_cache_,
+    const GraphicsPipelineCacheKey& key, TextureCache& texture_cache_, BufferCache& buffer_cache_,
     std::array<ShaderModule, NUM_STAGES> stages,
     const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic_)
     : key_{key},
@@ -283,7 +283,8 @@ GraphicsPipeline::GraphicsPipeline(
       guest_descriptor_queue_{guest_descriptor_queue_},
       spv_modules_{std::move(stages)},
       dynamic(dynamic_),
-      texture_cache(texture_cache_) {
+      texture_cache(texture_cache_),
+      buffer_cache(buffer_cache_) {
     if (shader_notify) {
         shader_notify->MarkShaderBuilding();
     }
@@ -352,6 +353,10 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
     prepare_stage(3);
 
     guest_descriptor_queue_.Acquire();
+    buffer_cache.BindStageBuffers(3);
+    guest_descriptor_queue_.AddSampledImage(
+        texture_cache.GetImageView(0).Handle(shader::TextureType::Color2D),
+        texture_cache.GetSampler(texture_cache.GetGraphicsSamplerId(0)).Handle());
     texture_cache.FillGraphicsImageViews();
     texture_cache.updateRenderFramebuffers();
 

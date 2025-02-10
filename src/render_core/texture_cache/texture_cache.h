@@ -14,10 +14,19 @@ using namespace common::literals;
 
 template <class P>
 TextureCache<P>::TextureCache(Runtime& runtime_) : runtime{runtime_} {}
-
 template <class P>
-void TextureCache<P>::WriteMemory(void* data, size_t size) {}
+void TextureCache<P>::TickFrame() {
 
+    runtime.TickFrame();
+    ++frame_tick;
+
+    if constexpr (IMPLEMENTS_ASYNC_DOWNLOADS) {
+        for (auto& buffer : async_buffers_death_ring) {
+            runtime.FreeDeferredStagingBuffer(buffer);
+        }
+        async_buffers_death_ring.clear();
+    }
+}
 template <class P>
 auto TextureCache<P>::InsertImage(const ImageInfo& info) -> ImageId {
     const ImageId image_id = JoinImages(info);
@@ -287,13 +296,12 @@ auto TextureCache<P>::TryFindFramebufferImageView(const frame::FramebufferConfig
         return std::make_pair(nullptr, false);
     }
 
-    return std::make_pair(&slot_image_views[out_view_ids[current_framebuffer_index]],
+    return std::make_pair(&slot_image_views[framebuffer_views[current_framebuffer_index].second],
                           false);
 }
 
 template <class P>
 void TextureCache<P>::UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, bool is_clear) {
-    ImageViewBase& view = GetImageView(view_id);
 
     ImageViewInfo view_info(info);
     RenderTargetFromImage(view_id, view_info);
@@ -311,8 +319,6 @@ void TextureCache<P>::createFramebuffers(const ImageInfo& info, int count) {
         auto rets = RenderTargetFromImage(view.image_id, view_info);
         framebuffer_views.push_back(rets);
         frame_buffer_ids.push_back(rets.first);
-        view_id = CreateImageView(info);
-        out_view_ids.push_back(view_id);
     }
 }
 
@@ -323,18 +329,6 @@ void TextureCache<P>::updateRenderFramebuffers() {
 
 template <class P>
 void TextureCache<P>::FillGraphicsImageViews() {
-    if (current_framebuffer_index < 0) {
-        return;
-    }
-
-    ImageViewBase& view = slot_image_views[framebuffer_views[current_framebuffer_index].second];
-    auto& image = slot_images[view.image_id];
-    ImageViewBase& out_view = slot_image_views[out_view_ids[current_framebuffer_index]];
-    auto& out_image = slot_images[out_view.image_id];
-    std::vector<ImageCopy> copies = {ImageCopy{
-        .extent = {.width = 800, .height = 600, .depth = 1}
-    }};
-    runtime.CopyImage(out_image, image, copies);
 }
 
 }  // namespace render::texture

@@ -382,8 +382,6 @@ void PresentManager::waitPresent() {
 
 void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
                                    vk::Format image_view_format, vk::RenderPass rd) {
-    const auto& dld = device_.getLogical();
-
     frame->width = width;
     frame->height = height;
 
@@ -409,26 +407,31 @@ void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
         .pQueueFamilyIndices = nullptr,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     });
-    vk::ImageViewCreateInfo{{},
-                            *frame->image,
-                            vk::ImageViewType::e2D,
-                            image_view_format,
-                            {},
-                            vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
-    frame->image_view =
-        ImageView{dld.createImageView(vk::ImageViewCreateInfo{
-                      {},
-                      *frame->image,
-                      vk::ImageViewType::e2D,
-                      image_view_format,
-                      {},
-                      vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}}),
-                  dld};
+    frame->image_view = device_.logical().CreateImageView(
+        vk::ImageViewCreateInfo()
+            .setImage(*frame->image)
+            .setViewType(vk::ImageViewType::e2D)
+            .setFormat(image_view_format)
+            .setComponents(vk::ComponentMapping()
+                               .setR(vk::ComponentSwizzle::eIdentity)
+                               .setG(vk::ComponentSwizzle::eIdentity)
+                               .setB(vk::ComponentSwizzle::eIdentity)
+                               .setA(vk::ComponentSwizzle::eIdentity))
+            .setSubresourceRange(vk::ImageSubresourceRange()
+                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                     .setBaseMipLevel(0)
+                                     .setLevelCount(1)
+                                     .setBaseArrayLayer(0)
+                                     .setLayerCount(1)));
 
     const vk::ImageView image_view{*frame->image_view};
-    frame->framebuffer = VulkanFramebuffer{
-        dld.createFramebuffer(vk::FramebufferCreateInfo{{}, rd, image_view, width, height, 1}),
-        dld};
+
+    frame->framebuffer = device_.logical().createFramerBuffer(vk::FramebufferCreateInfo()
+                                                                  .setRenderPass(rd)
+                                                                  .setAttachments(image_view)
+                                                                  .setWidth(width)
+                                                                  .setHeight(height)
+                                                                  .setLayers(1));
 }
 
 }  // namespace render::vulkan

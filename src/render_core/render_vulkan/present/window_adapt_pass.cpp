@@ -64,8 +64,8 @@ void WindowAdaptPass::CreatePipelines() {
         device, render_pass, pipeline_layout, std::tie(vertex_shader, fragment_shader));
 }
 
-void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
-                           std::list<Layer>& layers,
+void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler,
+                           size_t image_index, std::list<Layer>& layers,
                            std::span<const frame::FramebufferConfig> configs,
                            const layout::FrameBufferLayout& layout, Frame* dst) {
     const vk::Framebuffer host_framebuffer{*dst->framebuffer};
@@ -96,8 +96,8 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 break;
         }
 
-        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler, image_index,
-                                configs[i], layout);
+        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,
+                                image_index, configs[i], layout);
         layer_it++;
     }
 
@@ -105,23 +105,20 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
         const f32 bg_red = .0f;  // TODO 这里有设置作用未知
         const f32 bg_green = .0f;
         const f32 bg_blue = .0f;
-        const VkClearAttachment clear_attachment{
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .colorAttachment = 0,
-            .clearValue =
-                {
-                    .color = {.float32 = {bg_red, bg_green, bg_blue, 1.0f}},
-                },
-        };
-        const VkClearRect clear_rect{
-            .rect =
-                {
-                    .offset = {0, 0},
-                    .extent = render_area,
-                },
-            .baseArrayLayer = 0,
-            .layerCount = 1,
-        };
+
+        const vk::ClearAttachment clear_attachment =
+            vk::ClearAttachment()
+                .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                .setColorAttachment(0)
+                .setClearValue(vk::ClearValue().setColor(
+                    vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f})));
+
+        const vk::ClearRect clear_rect =
+            vk::ClearRect()
+                .setRect(
+                    vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
+                .setBaseArrayLayer(0)
+                .setLayerCount(1);
 
         utils::BeginRenderPass(cmdbuf, renderpass, host_framebuffer, render_area);
         cmdbuf.clearAttachments({clear_attachment}, {clear_rect});

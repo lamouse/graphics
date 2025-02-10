@@ -81,9 +81,8 @@ class TextureCache : public TextureCacheInfo {
     public:
         explicit TextureCache(Runtime&);
         ~TextureCache() = default;
-
-        /// Mark images in a range as modified from the CPU
-        void WriteMemory(void* data, size_t size);
+        /// Notify the cache that a new frame has been queued
+        void TickFrame();
         /// Create an image from the given parameters
         [[nodiscard]] auto InsertImage(const ImageInfo& info) -> ImageId;
 
@@ -163,7 +162,8 @@ class TextureCache : public TextureCacheInfo {
         void UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, bool is_clear);
 
         /**
-         * @brief 创建framebuffer用于离屏渲染，数量一般和swapchain的image数量相同， 如果创建过直接返回
+         * @brief 创建framebuffer用于离屏渲染，数量一般和swapchain的image数量相同，
+         * 如果创建过直接返回
          *
          * @param info 创建framebuffer 所需要的信息
          * @param count 数量
@@ -194,8 +194,7 @@ class TextureCache : public TextureCacheInfo {
         std::vector<std::pair<FramebufferId, ImageViewId>> framebuffer_views;
         common::ThreadWorker texture_decode_worker{1, "TextureDecoder"};
         std::vector<std::unique_ptr<AsyncDecodeContext>> async_decodes;
-
-        std::vector<ImageViewId> out_view_ids;
+        std::deque<AsyncBuffer> async_buffers_death_ring;
 
         // Join caching
         boost::container::small_vector<ImageId, 4> join_overlap_ids;
@@ -214,6 +213,7 @@ class TextureCache : public TextureCacheInfo {
         RenderTargets render_targets;
 
         std::unordered_map<RenderTargets, FramebufferId> framebuffers;
+        u64 frame_tick = 0;
 };
 
 }  // namespace render::texture

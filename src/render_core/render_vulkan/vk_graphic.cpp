@@ -15,6 +15,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       compute_pass_descriptor_queue(device, scheduler),
       blit_image(device, scheduler, descriptor_pool),
       render_pass_cache(device),
+      emu_window(emu_window_),
       texture_cache_runtime{device,
                             scheduler,
                             memory_allocator,
@@ -44,19 +45,16 @@ void VulkanGraphics::addVertex(std::span<float> vertex, const ::std::span<uint16
 }
 
 void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
+    // 这里修改，先添加，在pipelinebind
     uniform_buffer_id = buffer_cache.BindUniforBuffers(0, 0, data, static_cast<u32>(size));
 }
 
 void VulkanGraphics::drawIndics(u32 indicesSize) {
-    guest_descriptor_queue.AddSampledImage(
-        texture_cache.GetImageView(0).Handle(shader::TextureType::Color2D),
-        texture_cache.GetSampler(texture_cache.GetGraphicsSamplerId(0)).Handle());
-    auto* pipeline = pipeline_cache.currentGraphicsPipeline();
-    // guest_descriptor_queue.TickFrame();
-    pipeline->Configure(true);
-    UpdateDynamicStates();
-    scheduler.record(
-        [indicesSize](vk::CommandBuffer cmdbuf) { cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0); });
+    PrepareDraw(true, [this, indicesSize] {
+        scheduler.record([indicesSize](vk::CommandBuffer cmdbuf) {
+            cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0);
+        });
+    });
 }
 
 void VulkanGraphics::UpdateDynamicStates() {
@@ -199,25 +197,25 @@ void VulkanGraphics::UpdateDepthTestEnable() {
 }
 
 void VulkanGraphics::UpdateDepthWriteEnable() {
-    scheduler.record([enable = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enable = false, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthWriteEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateStencilTestEnable() {
-    scheduler.record([enable = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enable = false, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setStencilTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateLogicOpEnable() {
-    scheduler.record([enable = 1, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enable = 0, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setLogicOpEnableEXT(enable != 0, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    scheduler.record([is_enabled = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([is_enabled = false, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthClampEnableEXT(is_enabled, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -240,15 +238,14 @@ void VulkanGraphics::UpdateBlending() {
         cmdbuf.setColorWriteMaskEXT(0, setup_masks, device.logical().getDispatchLoaderDynamic());
     });
 
-    std::array<VkBool32, 1> setup_enables{VK_FALSE};
+    std::array<VkBool32, 1> setup_enables{VK_TRUE};
     scheduler.record([this, setup_enables](vk::CommandBuffer cmdbuf) {
         cmdbuf.setColorBlendEnableEXT(0, setup_enables,
                                       device.logical().getDispatchLoaderDynamic());
     });
 
     std::array<vk::ColorBlendEquationEXT, 1> setup_blends{};
-    for (size_t index = 0; index < setup_blends.size(); index++) {
-        auto& host_blend = setup_blends[index];
+    for (auto& host_blend : setup_blends) {
         host_blend.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
         host_blend.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         host_blend.colorBlendOp = vk::BlendOp::eAdd;
@@ -264,24 +261,24 @@ void VulkanGraphics::UpdateBlending() {
 }
 
 void VulkanGraphics::UpdateViewportsState() {
-    if (1) {  // TODO 这里需要修改
-        auto view = vk::Viewport()
-                        .setX(0)
-                        .setY(0)
-                        .setWidth(800)
-                        .setHeight(600)
-                        .setMinDepth(.0f)
-                        .setMaxDepth(1.f);
-        scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
-        return;
-    }
+    auto layout = emu_window->getFramebufferLayout();
+    auto view = vk::Viewport()
+                    .setX(0)
+                    .setY(0)
+                    .setWidth(static_cast<float>(layout.width))
+                    .setHeight(static_cast<float>(layout.height))
+                    .setMinDepth(.0f)
+                    .setMaxDepth(1.f);
+    scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
+    return;
 }
 
 void VulkanGraphics::UpdateScissorsState() {
+    auto layout = emu_window->getFramebufferLayout();
     const auto x = 0;
     const auto y = 0;
-    const auto width = 800;
-    const auto height = 600;
+    const auto width = static_cast<float>(layout.width);
+    const auto height = static_cast<float>(layout.height);
     vk::Rect2D scissor;
     scissor.offset.x = static_cast<u32>(x);
     scissor.offset.y = static_cast<u32>(y);
@@ -345,6 +342,54 @@ void VulkanGraphics::UpdateLineWidth() {
 
 void VulkanGraphics::drawImgui() {
     scheduler.record([this](vk::CommandBuffer cmdbuf) { imgui->draw(cmdbuf); });
+}
+
+void VulkanGraphics::TickFrame() {
+    guest_descriptor_queue.TickFrame();
+    staging_pool.TickFrame();
+    {
+        std::scoped_lock lock{texture_cache.mutex};
+        texture_cache.TickFrame();
+    }
+    {
+        std::scoped_lock lock{buffer_cache.mutex};
+        buffer_cache.TickFrame();
+    }
+}
+
+template <typename Func>
+void VulkanGraphics::PrepareDraw(bool is_indexed, Func&& draw_func) {
+    GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline()};
+    if (!pipeline) {
+        return;
+    }
+    if (!pipeline) {
+        return;
+    }
+    std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
+    pipeline->Configure(is_indexed);
+    UpdateDynamicStates();
+    draw_func();
+    FlushWork();
+}
+
+void VulkanGraphics::FlushWork() {
+    static constexpr u32 DRAWS_TO_DISPATCH = 4096;
+
+    // Only check multiples of 8 draws
+    static_assert(DRAWS_TO_DISPATCH % 8 == 0);
+    if ((++draw_counter & 7) != 7) {
+        return;
+    }
+    if (draw_counter < DRAWS_TO_DISPATCH) {
+        // Send recorded tasks to the worker thread
+        scheduler.dispatchWork();
+        return;
+    }
+    // Otherwise (every certain number of draws) flush execution.
+    // This submits commands to the Vulkan driver.
+    scheduler.flush();
+    draw_counter = 0;
 }
 
 }  // namespace render::vulkan

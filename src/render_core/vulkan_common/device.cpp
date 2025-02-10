@@ -1261,7 +1261,10 @@ auto Device::getDriverName() const -> std::string {
 
 auto Device::getDeviceMemoryUsage() const -> u64 {
     VkPhysicalDeviceMemoryBudgetPropertiesEXT budget;
+    budget.pNext = nullptr;
+    budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
     VkPhysicalDeviceMemoryProperties2 propertie;
+    propertie.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
     propertie.pNext = &budget;
     vkGetPhysicalDeviceMemoryProperties2(physical_, &propertie);
     u64 result{};

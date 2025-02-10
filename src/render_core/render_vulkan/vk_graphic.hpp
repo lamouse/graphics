@@ -22,7 +22,8 @@ class VulkanGraphics : public render::Graphic {
     public:
         explicit VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                 MemoryAllocator& memory_allocator_,
-                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_,  Imgui* imgui);
+                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_,
+                                Imgui* imgui);
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
@@ -37,6 +38,7 @@ class VulkanGraphics : public render::Graphic {
 
         auto AccelerateDisplay(const frame::FramebufferConfig& config,
                                u32 pixel_stride) -> std::optional<FramebufferTextureInfo>;
+        void TickFrame();
 
     private:
         static constexpr size_t MAX_TEXTURES = 192;
@@ -44,6 +46,9 @@ class VulkanGraphics : public render::Graphic {
         static constexpr size_t MAX_IMAGE_VIEWS = MAX_TEXTURES + MAX_IMAGES;
 
         static constexpr vk::DeviceSize DEFAULT_BUFFER_SIZE = 4 * sizeof(float);
+        template <typename Func>
+        void PrepareDraw(bool is_indexed, Func&&);
+        void FlushWork();
         void UpdateDynamicStates();
         void UpdatePrimitiveRestartEnable();
         void UpdateRasterizerDiscardEnable();
@@ -80,7 +85,7 @@ class VulkanGraphics : public render::Graphic {
         ComputePassDescriptorQueue compute_pass_descriptor_queue;
         BlitImageHelper blit_image;
         RenderPassCache render_pass_cache;
-
+        core::frontend::BaseWindow* emu_window;
         TextureCacheRuntime texture_cache_runtime;
         TextureCache texture_cache;
         BufferCacheRuntime buffer_cache_runtime;

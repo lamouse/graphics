@@ -820,11 +820,11 @@ TextureCacheRuntime::TextureCacheRuntime(const Device& device_, scheduler::Sched
 
 void TextureCacheRuntime::Finish() { scheduler.finish(); }
 
-StagingBufferRef TextureCacheRuntime::UploadStagingBuffer(size_t size) {
+auto TextureCacheRuntime::UploadStagingBuffer(size_t size) -> StagingBufferRef {
     return staging_buffer_pool.Request(size, MemoryUsage::Upload);
 }
 
-StagingBufferRef TextureCacheRuntime::DownloadStagingBuffer(size_t size, bool deferred) {
+auto TextureCacheRuntime::DownloadStagingBuffer(size_t size, bool deferred) -> StagingBufferRef {
     return staging_buffer_pool.Request(size, MemoryUsage::Download, deferred);
 }
 
@@ -844,7 +844,7 @@ auto TextureCacheRuntime::ShouldReinterpret(TextureImage& dst, TextureImage& src
     return false;
 }
 
-vk::Buffer TextureCacheRuntime::GetTemporaryBuffer(size_t needed_size) {
+auto TextureCacheRuntime::GetTemporaryBuffer(size_t needed_size) -> vk::Buffer {
     const auto level = (8 * sizeof(size_t)) - std::countl_zero(needed_size - 1ULL);
     if (buffers[level]) {
         return *buffers[level];

@@ -135,20 +135,6 @@ class BufferCacheInfo {
 
 template <class P>
 class BufferCache : public BufferCacheInfo {
-        // Page size for caching purposes.
-        // This is unrelated to the CPU page size and it can be changed as it seems optimal.
-        static constexpr u32 CACHING_PAGEBITS = 16;
-        static constexpr u64 CACHING_PAGESIZE = u64{1} << CACHING_PAGEBITS;
-
-        static constexpr bool HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS =
-            P::HAS_PERSISTENT_UNIFORM_BUFFER_BINDINGS;
-        static constexpr bool HAS_FULL_INDEX_AND_PRIMITIVE_SUPPORT =
-            P::HAS_FULL_INDEX_AND_PRIMITIVE_SUPPORT;
-        static constexpr bool NEEDS_BIND_UNIFORM_INDEX = P::NEEDS_BIND_UNIFORM_INDEX;
-        static constexpr bool NEEDS_BIND_STORAGE_INDEX = P::NEEDS_BIND_STORAGE_INDEX;
-        static constexpr bool USE_MEMORY_MAPS = P::USE_MEMORY_MAPS;
-        static constexpr bool SEPARATE_IMAGE_BUFFERS_BINDINGS = P::SEPARATE_IMAGE_BUFFER_BINDINGS;
-        static constexpr bool USE_MEMORY_MAPS_FOR_UPLOADS = P::USE_MEMORY_MAPS_FOR_UPLOADS;
 
         static constexpr s64 DEFAULT_EXPECTED_MEMORY = 512_MiB;
         static constexpr s64 DEFAULT_CRITICAL_MEMORY = 1_GiB;
@@ -169,16 +155,18 @@ class BufferCache : public BufferCacheInfo {
 
     public:
         explicit BufferCache(Runtime& runtime_);
+        void TickFrame();
         auto BindIndexBuffer(void* data, u32 size) -> BufferId;
         auto BindVertexBuffers(void* data, u32 size) -> BufferId;
         auto BindUniforBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
-
+        void BindStageBuffers(size_t stage);
         [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
 
         [[nodiscard]] auto GetDrawIndirectBuffer() -> std::pair<Buffer*, u32>;
 
         [[nodiscard]] auto CreateBuffer(u32 wanted_size) -> BufferId;
         ~BufferCache() = default;
+        std::recursive_mutex mutex;
 
     private:
         template <typename Func>
@@ -193,7 +181,9 @@ class BufferCache : public BufferCacheInfo {
 
         void TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept;
 
-        std::recursive_mutex mutex;
+        void BindGraphicsUniformBuffers(size_t stage);
+        void BindGraphicsUniformBuffer(size_t stage, u32 index, bool needs_bind);
+
         Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;
         DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
@@ -220,7 +210,6 @@ class BufferCache : public BufferCacheInfo {
         u64 critical_memory = 0;
         BufferId inline_buffer_id;
 
-        std::array<BufferId, ((1ULL << 34) >> CACHING_PAGEBITS)> page_table;
 };
 
 }  // namespace render::buffer

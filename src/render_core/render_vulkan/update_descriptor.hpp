@@ -39,7 +39,7 @@ class UpdateDescriptorQueue final {
         void Acquire();
 
         [[nodiscard]] auto UpdateData() const noexcept -> const DescriptorUpdateEntry* {
-            return payload.data();
+            return upload_start;
         }
 
         void AddSampledImage(vk::ImageView image_view, vk::Sampler sampler) {

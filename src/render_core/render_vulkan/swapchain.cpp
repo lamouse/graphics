@@ -196,8 +196,8 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
         createInfo.setImageSharingMode(vk::SharingMode::eConcurrent)
             .setQueueFamilyIndices(queue_indices);
     }
-    static constexpr std::array view_formats{::vk::Format::eB8G8R8A8Unorm,
-                                             ::vk::Format::eB8G8R8A8Srgb};
+    static constexpr std::array view_formats{::vk::Format::eR8G8B8A8Unorm,
+                                             ::vk::Format::eR8G8B8A8Srgb};
     vk::ImageFormatListCreateInfo format_list{view_formats};
     if (device_.isKhrSwapchainMutableFormatEnabled()) {
         format_list.pNext = std::exchange(createInfo.pNext, &format_list);

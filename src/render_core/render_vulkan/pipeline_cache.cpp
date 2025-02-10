@@ -396,7 +396,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     auto pipeline = std::make_unique<GraphicsPipeline>(
         scheduler, vulkan_pipeline_cache, &shader_notify, device, descriptor_pool, guest_descriptor_queue,
-        thread_worker, statistics, render_pass_cache, key, texture_cache, std::move(modules), infos,
+        thread_worker, statistics, render_pass_cache, key, texture_cache, buffer_cache, std::move(modules), infos,
         dynamic_features);
     current_pipeline = pipeline.get();
     if (pipeline) {

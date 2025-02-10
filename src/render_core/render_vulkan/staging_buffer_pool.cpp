@@ -11,7 +11,7 @@ using namespace common::literals;
 constexpr vk::DeviceSize MAX_ALIGNMENT = 256;
 // Stream buffer size in bytes
 constexpr vk::DeviceSize MAX_STREAM_BUFFER_SIZE = 128_MiB;
-size_t GetStreamBufferSize(const Device& device) {
+auto GetStreamBufferSize(const Device& device) -> size_t {
     vk::DeviceSize size{0};
     if (device.hasDebuggingToolAttached()) {
         ForEachDeviceLocalHostVisibleHeap(device, [&size](size_t index, vk::MemoryHeap& heap) {
@@ -196,7 +196,7 @@ auto StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage usage, bool
     return entry.Ref();
 }
 
-StagingBufferPool::StagingBuffersCache& StagingBufferPool::GetCache(MemoryUsage usage) {
+auto StagingBufferPool::GetCache(MemoryUsage usage) -> StagingBufferPool::StagingBuffersCache& {
     switch (usage) {
         case MemoryUsage::DeviceLocal:
             return device_local_cache;

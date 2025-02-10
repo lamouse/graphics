@@ -20,20 +20,17 @@ auto BufferCache<P>::CreateBuffer(u32 wanted_size) -> BufferId {
 
 template <class P>
 auto BufferCache<P>::BindIndexBuffer(void* data, u32 size) -> BufferId {
-    if(index_buffer.size != size){
+    if (index_buffer.size != size) {
         index_buffer.buffer_id = CreateBuffer(size);
         index_buffer.size = size;
     }
 
     auto& buffer = slot_buffers[index_buffer.buffer_id];
-    if constexpr (USE_MEMORY_MAPS_FOR_UPLOADS) {
-        auto upload_staging = runtime.UploadStagingBuffer(size);
-        std::array<texture::BufferCopy, 1> copies{{texture::BufferCopy{
-            .src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
-        std::memcpy(upload_staging.mapped_span.data(), data, size);
-        runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
-    }
-    // TODO buffer.MarkUsage(offset, size);
+    auto upload_staging = runtime.UploadStagingBuffer(size);
+    std::array<texture::BufferCopy, 1> copies{
+        {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
+    std::memcpy(upload_staging.mapped_span.data(), data, size);
+    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
     runtime.BindIndexBuffer(PrimitiveTopology::Triangles, IndexFormat::UnsignedShort, 0, 1, buffer,
                             0, size);
     indirect_buffer_binding.buffer_id = index_buffer.buffer_id;
@@ -65,11 +62,11 @@ auto BufferCache<P>::BindVertexBuffers(void* data, u32 size) -> BufferId {
             runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
             vertex_buffers[index] = Binding{.size = size, .buffer_id = buffer_id};
         }
-//        Buffer& buffer = slot_buffers[binding.buffer_id];
+        //        Buffer& buffer = slot_buffers[binding.buffer_id];
         // TouchBuffer(buffer, binding.buffer_id);
 
         host_bindings.min_index = std::min(host_bindings.min_index, index);
-        host_bindings.max_index = std::max(host_bindings.max_index, static_cast<u32>(1)); //待修复
+        host_bindings.max_index = std::max(host_bindings.max_index, static_cast<u32>(1));  // 待修复
         any_valid = true;
     }
 
@@ -99,7 +96,7 @@ auto BufferCache<P>::BindUniforBuffers(size_t stage, u32 index, void* data, u32 
     runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
 
     uniform_buffers[stage][index] = bind;
-    runtime.BindUniformBuffer(buffer, 0, size);
+    // runtime.FreeDeferredStagingBuffer(upload_staging);
     return bind.buffer_id;
 }
 
@@ -113,6 +110,58 @@ template <class P>
 auto BufferCache<P>::GetDrawIndirectBuffer() -> std::pair<typename BufferCache<P>::Buffer*, u32> {
     auto& buffer = slot_buffers[indirect_buffer_binding.buffer_id];
     return std::make_pair(&buffer, 0);
+}
+
+template <class P>
+void BufferCache<P>::BindStageBuffers(size_t stage) {
+    BindGraphicsUniformBuffers(stage);
+    // BindHostGraphicsStorageBuffers(stage);
+    // BindHostGraphicsTextureBuffers(stage);
+}
+
+template <class P>
+void BufferCache<P>::BindGraphicsUniformBuffers(size_t stage) {
+    BindGraphicsUniformBuffer(stage, 0, false);
+}
+
+template <class P>
+void BufferCache<P>::BindGraphicsUniformBuffer(size_t stage, u32 index, bool needs_bind) {
+    const Binding& binding = uniform_buffers[0][index];
+    Buffer& buffer = slot_buffers[binding.buffer_id];
+    runtime.BindUniformBuffer(buffer, 0, binding.size);
+}
+
+template <class P>
+void BufferCache<P>::TickFrame() {
+    runtime.TickFrame(slot_buffers);
+
+    // Calculate hits and shots and move hit bits to the right
+    const u32 hits = std::reduce(uniform_cache_hits.begin(), uniform_cache_hits.end());
+    const u32 shots = std::reduce(uniform_cache_shots.begin(), uniform_cache_shots.end());
+    std::copy_n(uniform_cache_hits.begin(), uniform_cache_hits.size() - 1,
+                uniform_cache_hits.begin() + 1);
+    std::copy_n(uniform_cache_shots.begin(), uniform_cache_shots.size() - 1,
+                uniform_cache_shots.begin() + 1);
+    uniform_cache_hits[0] = 0;
+    uniform_cache_shots[0] = 0;
+
+    const bool skip_preferred = hits * 256 < shots * 251;
+    uniform_buffer_skip_cache_size = skip_preferred ? DEFAULT_SKIP_CACHE_SIZE : 0;
+
+    // If we can obtain the memory info, use it instead of the estimate.
+    if (runtime.CanReportMemoryUsage()) {
+        total_used_memory = runtime.GetDeviceMemoryUsage();
+    }
+    // if (total_used_memory >= minimum_memory) {
+    //     RunGarbageCollector();
+    // }
+    ++frame_tick;
+    delayed_destruction_ring.Tick();
+
+    for (auto& buffer : async_buffers_death_ring) {
+        runtime.FreeDeferredStagingBuffer(buffer);
+    }
+    async_buffers_death_ring.clear();
 }
 
 }  // namespace render::buffer

@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include "buffer_cache.h"
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
 #include "render_core/fixed_pipeline_state.h"
@@ -80,7 +81,7 @@ class GraphicsPipeline {
             resource::DescriptorPool& descriptor_pool, GuestDescriptorQueue& guest_descriptor_queue,
             common::ThreadWorker* worker_thread, pipeline::PipelineStatistics* pipeline_statistics,
             RenderPassCache& render_pass_cache, const GraphicsPipelineCacheKey& key,
-            TextureCache& texture_cache, std::array<ShaderModule, NUM_STAGES> stages,
+            TextureCache& texture_cache, BufferCache& buffer_cache, std::array<ShaderModule, NUM_STAGES> stages,
             const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic);
 
         CLASS_NON_COPYABLE(GraphicsPipeline);
@@ -136,6 +137,7 @@ class GraphicsPipeline {
         DescriptorUpdateTemplate descriptor_update_template;
         Pipeline pipeline;
         TextureCache& texture_cache;
+        BufferCache& buffer_cache;
         std::condition_variable build_condvar;
         std::mutex build_mutex;
         std::atomic_bool is_built{false};
