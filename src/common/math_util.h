@@ -55,11 +55,11 @@ struct Rectangle {
             }
         }
 
-        [[nodiscard]] constexpr Rectangle<T> TranslateX(const T x) const {
+        [[nodiscard]] constexpr auto TranslateX(const T x) const -> Rectangle<T> {
             return Rectangle{left + x, top, right + x, bottom};
         }
 
-        [[nodiscard]] constexpr Rectangle<T> TranslateY(const T y) const {
+        [[nodiscard]] constexpr auto TranslateY(const T y) const -> Rectangle<T> {
             return Rectangle{left, top + y, right, bottom + y};
         }
 

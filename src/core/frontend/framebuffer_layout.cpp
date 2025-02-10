@@ -45,7 +45,7 @@ auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout {
     return res;
 }
 
-FrameBufferLayout FrameLayoutFromResolutionScale(f32 res_scale) {
+auto FrameLayoutFromResolutionScale(f32 res_scale) -> FrameBufferLayout {
     const u32 screen_width = 800;
     const u32 screen_height = 600;
 
@@ -55,8 +55,8 @@ FrameBufferLayout FrameLayoutFromResolutionScale(f32 res_scale) {
     return DefaultFrameLayout(width, height);
 }
 
-float EmulationAspectRatio(const FrameBufferLayout& layout, AspectRatio aspect,
-                           float window_aspect_ratio) {
+auto EmulationAspectRatio(const FrameBufferLayout& layout, AspectRatio aspect,
+                           float window_aspect_ratio) -> float {
     switch (aspect) {
         case AspectRatio::Default:
             return static_cast<float>(layout.height) / static_cast<float>(layout.width);

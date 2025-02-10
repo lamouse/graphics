@@ -342,7 +342,7 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
 
     const auto prepare_stage{[&](int count) LAMBDA_FORCEINLINE {
         texture::ImageInfo imageInfo;
-        imageInfo.size = {.width = 800, .height = 600, .depth = 1};
+        imageInfo.size = {.width = 1024, .height = 1024, .depth = 1};
         imageInfo.format = surface::PixelFormat::B8G8R8A8_UNORM;
         imageInfo.type = render::texture::ImageType::e2D;
         imageInfo.num_samples = 1;

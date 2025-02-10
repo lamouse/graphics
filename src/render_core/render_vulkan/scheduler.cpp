@@ -215,8 +215,8 @@ void Scheduler::invalidateState() {
  * @param wait_semaphore 用于等待的 Vulkan 信号量。
  * @return u64 返回信号量的值。
  */
-auto Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore)
-    -> u64 {
+auto Scheduler::submitExecution(vk::Semaphore signal_semaphore,
+                                vk::Semaphore wait_semaphore) -> u64 {
     endPendingOperations();
     invalidateState();
 
@@ -272,20 +272,13 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
     state_.render_area_ = render_area;
 
     record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
-        const VkRenderPassBeginInfo render_pass_bi{
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .pNext = nullptr,
-            .renderPass = render_pass,
-            .framebuffer = framebuffer_handle,
-            .renderArea =
-                {
-                    .offset = {.x = 0, .y = 0},
-                    .extent = render_area,
-                },
-            .clearValueCount = 0,
-            .pClearValues = nullptr,
-        };
-        cmdbuf.beginRenderPass(render_pass_bi, vk::SubpassContents::eInline);
+        cmdbuf.beginRenderPass(
+            vk::RenderPassBeginInfo()
+                .setRenderPass(render_pass)
+                .setFramebuffer(framebuffer_handle)
+                .setRenderArea(
+                    vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area)),
+            vk::SubpassContents::eInline);
     });
     num_render_pass_images_ = framebuffer->NumImages();
     render_pass_images_ = framebuffer->Images();

@@ -46,8 +46,8 @@ void ScreenWindow::initWindow() {
         int w{}, h{};
         glfwGetFramebufferSize(glfw_window, &w, &h);
         auto* base_window = reinterpret_cast<ScreenWindow*>(glfwGetWindowUserPointer(glfw_window));
-        base_window->notifyFramebufferLayoutChanged(
-            {.width = static_cast<uint32_t>(w), .height = static_cast<uint32_t>(h)});
+        base_window->UpdateCurrentFramebufferLayout(static_cast<uint32_t>(w),
+                                                    static_cast<uint32_t>(h));
     });
 }
 

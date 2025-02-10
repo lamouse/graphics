@@ -117,11 +117,10 @@ PresentManager::PresentManager(const vk::Instance& instance,
     for (uint32_t i = 0; i < frames_.size(); i++) {
         Frame& frame = frames_[i];
         frame.cmdbuf = vk::CommandBuffer{cmdbuffers[i]};
-        vk::SemaphoreCreateInfo semaphore_info;
-        frame.render_ready = Semaphore{dld.createSemaphore(semaphore_info), dld};
-        vk::FenceCreateInfo fence_info;
-        fence_info.setFlags(vk::FenceCreateFlagBits::eSignaled);
-        frame.present_done = Fence(dld.createFence(fence_info), dld);
+        frame.render_ready = device_.logical().createSemaphore();
+
+        frame.present_done = device_.logical().createFence(
+            vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
         free_queue_.push(&frame);
     }
 
