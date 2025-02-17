@@ -28,6 +28,7 @@ void App::run() {
 
     while (!window->shouldClose()) {
         auto layout = window->getFramebufferLayout();
+
         render::frame::FramebufferConfig frames{
             .width = layout.width, .height = layout.height, .stride = 1};
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -63,7 +64,6 @@ void App::run() {
             window->setWindowTitle("graphics");
         }
         render_base->composite(std::span{&frames, 1});
-
     }
 }
 

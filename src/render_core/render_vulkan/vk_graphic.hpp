@@ -32,7 +32,7 @@ class VulkanGraphics : public render::Graphic {
         void addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) override;
         void addUniformBuffer(void* data, size_t size) override;
         void drawIndics(u32 indicesSize) override;
-        void drawImgui();
+        void drawImgui(vk::CommandBuffer cmd_buf);
         void end() override {};
         ~VulkanGraphics() override;
 

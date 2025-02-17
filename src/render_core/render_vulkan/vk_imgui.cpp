@@ -8,71 +8,11 @@
 
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
+#include "present/vulkan_utils.hpp"
 
 namespace render::vulkan {
 
 namespace {
-
-auto create_render_pass(const Device& device) -> RenderPass {
-    ::vk::AttachmentDescription colorAttachment;
-    colorAttachment.setFormat(vk::Format::eB8G8R8A8Unorm)
-        .setSamples(vk::SampleCountFlagBits::e8)
-        .setLoadOp(::vk::AttachmentLoadOp::eClear)
-        .setStoreOp(::vk::AttachmentStoreOp::eStore)
-        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
-        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
-        .setInitialLayout(::vk::ImageLayout::eUndefined)
-        .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR);
-
-    ::vk::AttachmentDescription depthAttachment;
-    depthAttachment.setFormat(vk::Format::eD32Sfloat)
-        .setSamples(vk::SampleCountFlagBits::e8)
-        .setLoadOp(::vk::AttachmentLoadOp::eClear)
-        .setStoreOp(::vk::AttachmentStoreOp::eDontCare)
-        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
-        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
-        .setInitialLayout(::vk::ImageLayout::eUndefined)
-        .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal);
-
-    ::vk::AttachmentDescription colorAttachmentResolve;
-    colorAttachmentResolve.setFormat(vk::Format::eB8G8R8A8Unorm)
-        .setSamples(::vk::SampleCountFlagBits::e1)
-        .setLoadOp(::vk::AttachmentLoadOp::eDontCare)
-        .setStoreOp(::vk::AttachmentStoreOp::eStore)
-        .setStencilLoadOp(::vk::AttachmentLoadOp::eDontCare)
-        .setStencilStoreOp(::vk::AttachmentStoreOp::eDontCare)
-        .setInitialLayout(::vk::ImageLayout::eUndefined)
-        .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR);
-    ::std::array<::vk::AttachmentDescription, 3> attachments = {colorAttachment, depthAttachment,
-                                                                colorAttachmentResolve};
-
-    ::vk::AttachmentReference colorAttachmentRef(0, ::vk::ImageLayout::eColorAttachmentOptimal);
-    ::vk::AttachmentReference depthAttachmentRef(1,
-                                                 ::vk::ImageLayout::eDepthStencilAttachmentOptimal);
-    ::vk::AttachmentReference colorAttachmentResolveRef(2,
-                                                        ::vk::ImageLayout::eColorAttachmentOptimal);
-
-    ::vk::SubpassDescription subpass;
-    subpass.setPipelineBindPoint(::vk::PipelineBindPoint::eGraphics)
-        .setColorAttachments(colorAttachmentRef)
-        .setPDepthStencilAttachment(&depthAttachmentRef)
-        .setResolveAttachments(colorAttachmentResolveRef);
-
-    ::vk::SubpassDependency subpassDependency;
-    subpassDependency.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-        .setDstSubpass(0)
-        .setSrcAccessMask(::vk::AccessFlagBits::eNone)
-        .setSrcStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
-                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests)
-        .setDstAccessMask(::vk::AccessFlagBits::eColorAttachmentWrite |
-                          ::vk::AccessFlagBits::eDepthStencilAttachmentWrite)
-        .setDstStageMask(::vk::PipelineStageFlagBits::eColorAttachmentOutput |
-                         ::vk::PipelineStageFlagBits::eEarlyFragmentTests);
-
-    ::vk::RenderPassCreateInfo createInfo;
-    createInfo.setAttachments(attachments).setSubpasses(subpass).setDependencies(subpassDependency);
-    return device.logical().createRenderPass(createInfo);
-}
 
 auto createDescriptorPool(const Device& device) -> VulkanDescriptorPool {
     constexpr int count = 100;
@@ -105,7 +45,8 @@ void check_vk_result(VkResult err) {
 
 Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::PhysicalDevice physical,
              vk::Instance instance, float scale)
-    : renderPass(create_render_pass(device)),
+    : render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eR8G8B8A8Unorm,
+                                                          vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
       window(window_) {
     init_debug_info();
@@ -116,8 +57,8 @@ Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::Phys
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
     // io.ConfigViewportsNoAutoMerge = true;
@@ -152,11 +93,11 @@ Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::Phys
     init_info.Subpass = 0;
     init_info.MinImageCount = 2;
     init_info.ImageCount = 2;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_8_BIT;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
     // init_info.UseDynamicRendering = true;
-    init_info.RenderPass = *renderPass;
+    init_info.RenderPass = *render_pass;
     ImGui_ImplVulkan_Init(&init_info);
     init_debug_info();
 }
@@ -220,8 +161,6 @@ auto Imgui::get_uniform_buffer(float extentAspectRation) const -> UniformBufferO
 void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
-    ImGui_ImplVulkan_NewFrame();
-    window->newFrame();
     ImGui::NewFrame();
     {
         {
@@ -274,6 +213,11 @@ Imgui::~Imgui() {
     ImGui_ImplVulkan_Shutdown();
     window->destroyGUI();
     ImGui::DestroyContext();
+}
+
+void Imgui::newFrame() {
+    window->newFrame();
+    ImGui_ImplVulkan_NewFrame();
 }
 
 }  // namespace render::vulkan

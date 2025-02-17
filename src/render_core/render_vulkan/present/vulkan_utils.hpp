@@ -14,7 +14,7 @@ auto CreateWrappedRenderPass(const Device& device, vk::Format format,
 auto CreateWrappedPipelineLayout(const Device& device, DescriptorSetLayout& layout)
     -> PipelineLayout;
 
-auto CreateWrappedPipeline(const Device& device, RenderPass& renderpass, PipelineLayout& layout,
+auto CreateWrappedPipeline(const Device& device, RenderPass& render_pass, PipelineLayout& layout,
                            std::tuple<ShaderModule&, ShaderModule&> shaders) -> Pipeline;
 
 auto CreateWrappedPremultipliedBlendingPipeline(const Device& device, RenderPass& renderpass,

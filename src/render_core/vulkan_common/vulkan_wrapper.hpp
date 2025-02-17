@@ -536,7 +536,9 @@ class Fence : public wrapper::Handle<vk::Fence, vk::Device> {
             return owner.waitForFences(handle, true, timeout);
         }
 
-        [[nodiscard]] auto GetStatus() const noexcept -> vk::Result { return owner.getFenceStatus(handle); }
+        [[nodiscard]] auto GetStatus() const noexcept -> vk::Result {
+            return owner.getFenceStatus(handle);
+        }
 
         void Reset() const { owner.resetFences(handle); }
 };
@@ -625,14 +627,10 @@ class Semaphore : public wrapper::Handle<vk::Semaphore, vk::Device> {
          * @param timeout Time in nanoseconds to timeout
          * @return        True on successful wait, false on timeout
          */
-        auto Wait(u64 value, u64 timeout = std::numeric_limits<u64>::max()) const -> bool {
-            const vk::SemaphoreWaitInfo wait_info{
-                {},
-                1,
-                &handle,
-                &value,
-            };
-            switch (auto result = owner.waitSemaphores(wait_info, timeout)) {
+        [[nodiscard]] auto Wait(u64 value,
+                                u64 timeout = std::numeric_limits<u64>::max()) const -> bool {
+            switch (auto result = owner.waitSemaphores(
+                        vk::SemaphoreWaitInfo().setSemaphores(handle).setValues(value), timeout)) {
                 case vk::Result::eSuccess:
                     return true;
                 case vk::Result::eTimeout:
@@ -649,8 +647,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
     public:
         static auto Create(vk::PhysicalDevice physical_device,
                            const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
-                           const std::vector<const char*>& enabled_extensions, const void* next)
-            -> LogicDevice;
+                           const std::vector<const char*>& enabled_extensions,
+                           const void* next) -> LogicDevice;
         [[nodiscard]] auto createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
             -> PipelineLayout;
 

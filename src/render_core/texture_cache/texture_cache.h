@@ -150,7 +150,7 @@ auto TextureCache<P>::GetFramebufferId(const RenderTargets& key) -> FramebufferI
 
 template <class P>
 auto TextureCache<P>::GetFramebuffer() -> typename P::Framebuffer* {
-    return &slot_framebuffers[frame_buffer_ids[current_framebuffer_index]];
+    return &slot_framebuffers[frame_buffer_ids[0]];
 }
 
 template <class P>
@@ -296,7 +296,7 @@ auto TextureCache<P>::TryFindFramebufferImageView(const frame::FramebufferConfig
         return std::make_pair(nullptr, false);
     }
 
-    return std::make_pair(&slot_image_views[framebuffer_views[current_framebuffer_index].second],
+    return std::make_pair(&slot_image_views[framebuffer_views[0].second],
                           false);
 }
 

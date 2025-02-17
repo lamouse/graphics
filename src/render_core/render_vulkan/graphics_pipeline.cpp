@@ -350,7 +350,7 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
         imageInfo.layer_stride = 4;
         texture_cache.createFramebuffers(imageInfo, count);
     }};
-    prepare_stage(3);
+    prepare_stage(1);
 
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindStageBuffers(3);

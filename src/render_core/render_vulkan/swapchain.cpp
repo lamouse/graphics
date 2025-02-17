@@ -42,8 +42,8 @@ auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
     });
     return found != formats.end() ? *found : formats[0];
 }
-auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, bool has_fifo_relaxed)
-    -> vk::PresentModeKHR {
+auto chooseSwapPresentMode(bool has_imm, bool has_mailbox,
+                           bool has_fifo_relaxed) -> vk::PresentModeKHR {
     // Mailbox doesn't lock the application like FIFO (vsync)
     // FIFO present mode locks the framerate to the monitor's refresh rate
     settings::enums::VSyncMode setting = [has_imm, has_mailbox]() {

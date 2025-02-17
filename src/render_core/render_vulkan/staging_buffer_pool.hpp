@@ -86,7 +86,7 @@ class StagingBufferPool {
         void ReleaseCache(MemoryUsage usage);
 
         void ReleaseLevel(StagingBuffersCache& cache, size_t log2);
-        size_t Region(size_t iter) const noexcept { return iter / region_size; }
+        [[nodiscard]] auto Region(size_t iter) const noexcept -> size_t { return iter / region_size; }
 
         const Device& device;
         MemoryAllocator& memory_allocator;

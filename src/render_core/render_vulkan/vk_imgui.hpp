@@ -35,8 +35,8 @@ struct ImguiDebugInfo {
 class Imgui {
     private:
         ImguiDebugInfo debugInfo{};
+        RenderPass render_pass;
         void init_debug_info();
-        RenderPass renderPass;
         VulkanDescriptorPool descriptorPool;
         core::frontend::BaseWindow* window;
 
@@ -50,6 +50,7 @@ class Imgui {
         auto operator=(const Imgui&) -> Imgui = delete;
         auto operator=(Imgui&&) -> Imgui = delete;
         Imgui(Imgui&&) = delete;
+        void newFrame();
         ~Imgui();
 };
 

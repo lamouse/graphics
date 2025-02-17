@@ -19,7 +19,7 @@ BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_
       present_manager{present_manager_},
       scheduler{scheduler_},
       image_count{1},
-      swapchain_view_format{vk::Format::eR8G8B8A8Unorm} {}
+      swapchain_view_format{vk::Format::eB8G8R8A8Unorm} {}
 BlitScreen::~BlitScreen() = default;
 
 void BlitScreen::WaitIdle() {

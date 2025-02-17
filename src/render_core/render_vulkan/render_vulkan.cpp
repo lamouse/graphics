@@ -56,7 +56,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     }
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
-
+    imgui->newFrame();
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(), frame_buffers,
                                swapchain.getImageCount(), swapchain.getImageViewFormat());
 

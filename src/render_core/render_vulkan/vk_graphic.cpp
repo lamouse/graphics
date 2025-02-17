@@ -340,8 +340,8 @@ void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
-void VulkanGraphics::drawImgui() {
-    scheduler.record([this](vk::CommandBuffer cmdbuf) { imgui->draw(cmdbuf); });
+void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
+    imgui->draw(cmd_buf);
 }
 
 void VulkanGraphics::TickFrame() {
