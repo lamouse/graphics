@@ -121,8 +121,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 .setLayerCount(1);
 
         utils::BeginRenderPass(cmdbuf, renderpass, host_framebuffer, render_area);
-
-        cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
+        //cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
 
         for (size_t i = 0; i < layer_count; i++) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipelines[i]);

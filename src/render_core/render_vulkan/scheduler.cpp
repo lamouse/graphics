@@ -272,10 +272,14 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
     state_.render_area_ = render_area;
 
     record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
+        ::std::array<::vk::ClearValue, 2> clearValues;
+        clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({0.f, 0.f, 0.f, 1.0f})));
+        clearValues[1].setDepthStencil({1.0f, 0});
         cmdbuf.beginRenderPass(
             vk::RenderPassBeginInfo()
                 .setRenderPass(render_pass)
                 .setFramebuffer(framebuffer_handle)
+                .setClearValues(clearValues)
                 .setRenderArea(
                     vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area)),
             vk::SubpassContents::eInline);
