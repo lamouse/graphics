@@ -45,7 +45,7 @@ void check_vk_result(VkResult err) {
 
 Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::PhysicalDevice physical,
              vk::Instance instance, float scale)
-    : render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eR8G8B8A8Unorm,
+    : render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
                                                           vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
       window(window_) {
