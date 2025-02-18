@@ -13,9 +13,9 @@ namespace render::texture {
 
 /// Framebuffer properties used to lookup a framebuffer
 struct RenderTargets {
-        constexpr bool operator==(const RenderTargets&) const noexcept = default;
+        constexpr auto operator==(const RenderTargets&) const noexcept -> bool = default;
 
-        constexpr bool Contains(std::span<const ImageViewId> elements) const noexcept {
+        [[nodiscard]] constexpr auto Contains(std::span<const ImageViewId> elements) const noexcept -> bool {
             const auto contains = [elements](ImageViewId item) {
                 return std::ranges::find(elements, item) != elements.end();
             };
@@ -35,7 +35,7 @@ namespace std {
 
 template <>
 struct hash<render::texture::RenderTargets> {
-        size_t operator()(const render::texture::RenderTargets& rt) const noexcept {
+        auto operator()(const render::texture::RenderTargets& rt) const noexcept -> size_t {
             using render::texture::ImageViewId;
             size_t value = std::hash<ImageViewId>{}(rt.depth_buffer_id);
             for (const ImageViewId color_buffer_id : rt.color_buffer_ids) {

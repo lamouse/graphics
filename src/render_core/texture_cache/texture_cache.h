@@ -16,7 +16,6 @@ template <class P>
 TextureCache<P>::TextureCache(Runtime& runtime_) : runtime{runtime_} {}
 template <class P>
 void TextureCache<P>::TickFrame() {
-
     runtime.TickFrame();
     ++frame_tick;
 
@@ -145,12 +144,14 @@ auto TextureCache<P>::GetFramebufferId(const RenderTargets& key) -> FramebufferI
     ImageView* const depth_buffer =
         key.depth_buffer_id ? &slot_image_views[key.depth_buffer_id] : nullptr;
     framebuffer_id = slot_framebuffers.insert(runtime, color_buffers, depth_buffer, key);
+
+    framebuffer_views.emplace_back(framebuffer_id, key.color_buffer_ids[0]);
     return framebuffer_id;
 }
 
 template <class P>
-auto TextureCache<P>::GetFramebuffer() -> typename P::Framebuffer* {
-    return &slot_framebuffers[frame_buffer_ids[0]];
+auto TextureCache<P>::GetFramebuffer(const RenderTargets& key) -> typename P::Framebuffer* {
+    return &slot_framebuffers[GetFramebufferId(key)];
 }
 
 template <class P>
@@ -296,39 +297,19 @@ auto TextureCache<P>::TryFindFramebufferImageView(const frame::FramebufferConfig
         return std::make_pair(nullptr, false);
     }
 
-    return std::make_pair(&slot_image_views[framebuffer_views[0].second],
-                          false);
+    return std::make_pair(&slot_image_views[framebuffer_views[0].second], false);
 }
 
 template <class P>
-void TextureCache<P>::UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, bool is_clear) {
-
-    ImageViewInfo view_info(info);
-    RenderTargetFromImage(view_id, view_info);
-}
-
-template <class P>
-void TextureCache<P>::createFramebuffers(const ImageInfo& info, int count) {
-    if (slot_framebuffers.size() >= count) {
-        return;
+auto TextureCache<P>::UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent)->RenderTargets {
+    for (auto& info : infos) {
+        if (surface::GetFormatType(info.format) == SurfaceType::ColorTexture) {
+            render_targets.color_buffer_ids[0] = CreateImageView(info);
+        } else if (surface::GetFormatType(info.format) == SurfaceType::Depth) {
+            render_targets.depth_buffer_id = CreateImageView(info);
+        }
     }
-    for (int i = 0; i < count; i++) {
-        auto view_id = CreateImageView(info);
-        ImageViewBase& view = GetImageView(view_id);
-        ImageViewInfo view_info(info);
-        auto rets = RenderTargetFromImage(view.image_id, view_info);
-        framebuffer_views.push_back(rets);
-        frame_buffer_ids.push_back(rets.first);
-    }
+    render_targets.size = extent;
+    return render_targets;
 }
-
-template <class P>
-void TextureCache<P>::updateRenderFramebuffers() {
-    current_framebuffer_index = (++current_framebuffer_index) % frame_buffer_ids.size();
-}
-
-template <class P>
-void TextureCache<P>::FillGraphicsImageViews() {
-}
-
 }  // namespace render::texture

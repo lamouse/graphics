@@ -42,7 +42,7 @@ auto SurfaceTargetIsArray(SurfaceTarget target) -> bool {
     }
 }
 
-SurfaceType GetFormatType(PixelFormat pixel_format) {
+auto GetFormatType(PixelFormat pixel_format) -> SurfaceType {
     if (pixel_format < PixelFormat::MaxColorFormat) {
         return SurfaceType::ColorTexture;
     }

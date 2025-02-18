@@ -140,6 +140,8 @@ class GraphicsPipeline {
         BufferCache& buffer_cache;
         std::condition_variable build_condvar;
         std::mutex build_mutex;
+        texture::RenderTargets render_targets;
+        bool is_set_render_target{false};
         std::atomic_bool is_built{false};
         bool uses_push_descriptor{false};
 };

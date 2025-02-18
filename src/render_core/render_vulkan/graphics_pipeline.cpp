@@ -54,34 +54,6 @@ auto ShaderStage(uint32_t stage) -> VkShaderStageFlagBits {
     return {};
 }
 
-auto getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription> {
-    ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions(1);
-    bindingDescriptions[0].setBinding(0);
-    bindingDescriptions[0].setStride(sizeof(Vertex));
-
-    return bindingDescriptions;
-}
-
-auto getAttributeDescription() -> ::std::vector<::vk::VertexInputAttributeDescription> {
-    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
-    attributeDescriptions[0].setBinding(0);
-    attributeDescriptions[0].setLocation(0);
-    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
-    attributeDescriptions[0].setOffset(offsetof(Vertex, position));
-
-    attributeDescriptions[1].setBinding(0);
-    attributeDescriptions[1].setLocation(1);
-    attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
-    attributeDescriptions[1].setOffset(offsetof(Vertex, color));
-
-    attributeDescriptions[2].setBinding(0);
-    attributeDescriptions[2].setLocation(2);
-    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-}
-
 using boost::container::small_vector;
 using boost::container::static_vector;
 auto MakeBuilder(const Device& device,
@@ -339,7 +311,6 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 
 template <typename Spec>
 void GraphicsPipeline::configureImpl(bool is_indexed) {
-
     const auto prepare_stage{[&](int count) LAMBDA_FORCEINLINE {
         texture::ImageInfo imageInfo;
         imageInfo.size = {.width = 1920, .height = 1080, .depth = 1};
@@ -348,23 +319,32 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
         imageInfo.num_samples = 1;
         imageInfo.resources.levels = 1;
         imageInfo.layer_stride = 4;
-        texture_cache.createFramebuffers(imageInfo, count);
-    }};
-    prepare_stage(1);
 
+        texture::ImageInfo depth;
+        depth.size = {.width = 1920, .height = 1080, .depth = 1};
+        depth.format = surface::PixelFormat::D32_FLOAT;
+        depth.type = render::texture::ImageType::e2D;
+        depth.num_samples = 1;
+        depth.resources.levels = 1;
+        depth.layer_stride = 4;
+
+        std::array imageInfos = {imageInfo, depth};
+        render_targets = texture_cache.UpdateRenderTargets(imageInfos, {1920, 1080});
+    }};
+    if(!is_set_render_target){
+        prepare_stage(1);
+        is_set_render_target = true;
+    }
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindStageBuffers(3);
     guest_descriptor_queue_.AddSampledImage(
         texture_cache.GetImageView(0).Handle(shader::TextureType::Color2D),
         texture_cache.GetSampler(texture_cache.GetGraphicsSamplerId(0)).Handle());
-    texture_cache.FillGraphicsImageViews();
-    texture_cache.updateRenderFramebuffers();
-
     ConfigureDraw();
 }
 
 void GraphicsPipeline::ConfigureDraw() {
-    scheduler_.requestRenderPass(texture_cache.GetFramebuffer());
+    scheduler_.requestRenderPass(texture_cache.GetFramebuffer(render_targets));
 
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built

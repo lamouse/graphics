@@ -4,7 +4,7 @@
 namespace render::vulkan {
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_,
-                               ShaderNotify& shader_notify_, Imgui* imgui_)
+                               ShaderNotify& shader_notify_, ImguiCore* imgui_)
     : device(device_),
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),

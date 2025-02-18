@@ -43,7 +43,7 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::PhysicalDevice physical,
+ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device, vk::PhysicalDevice physical,
              vk::Instance instance, float scale)
     : render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
                                                           vk::ImageLayout::eUndefined)),
@@ -102,7 +102,7 @@ Imgui::Imgui(core::frontend::BaseWindow* window_, const Device& device, vk::Phys
     init_debug_info();
 }
 
-void Imgui::init_debug_info() {
+void ImguiCore::init_debug_info() {
     debugInfo.speed = 90.0F;
     debugInfo.look_x = 2.0f;
     debugInfo.look_y = 2.0f;
@@ -139,7 +139,7 @@ void fps() {
 
 void debug() {}
 
-auto Imgui::get_uniform_buffer(float extentAspectRation) const -> UniformBufferObject {
+auto ImguiCore::get_uniform_buffer(float extentAspectRation) const -> UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     auto currentTime = ::std::chrono::high_resolution_clock::now();
     float time =
@@ -158,7 +158,7 @@ auto Imgui::get_uniform_buffer(float extentAspectRation) const -> UniformBufferO
     return ubo;
 }
 
-void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
+void ImguiCore::draw(const vk::CommandBuffer& commandBuffer) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     ImGui::NewFrame();
@@ -209,13 +209,13 @@ void Imgui::draw(const vk::CommandBuffer& commandBuffer) {
     }
 }
 
-Imgui::~Imgui() {
+ImguiCore::~ImguiCore() {
     ImGui_ImplVulkan_Shutdown();
     window->destroyGUI();
     ImGui::DestroyContext();
 }
 
-void Imgui::newFrame() {
+void ImguiCore::newFrame() {
     window->newFrame();
     ImGui_ImplVulkan_NewFrame();
 }

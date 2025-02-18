@@ -106,7 +106,7 @@ class TextureCache : public TextureCacheInfo {
 
         /// Find a framebuffer with the currently bound render targets
         /// UpdateRenderTargets should be called before this
-        auto GetFramebuffer() -> Framebuffer*;
+        auto GetFramebuffer(const RenderTargets& key) -> Framebuffer*;
 
         /// Find or create a framebuffer with the given render target parameters
         auto GetFramebufferId(const RenderTargets& key) -> FramebufferId;
@@ -158,29 +158,7 @@ class TextureCache : public TextureCacheInfo {
             -> std::pair<ImageView*, bool>;
 
         /// Update bound render targets
-        /// @param is_clear True when the render targets are being used for clears
-        void UpdateRenderTargets(ImageInfo& info, ImageViewId view_id, bool is_clear);
-
-        /**
-         * @brief 创建framebuffer用于离屏渲染，数量一般和swapchain的image数量相同，
-         * 如果创建过直接返回
-         *
-         * @param info 创建framebuffer 所需要的信息
-         * @param count 数量
-         */
-        void createFramebuffers(const ImageInfo& info, int count);
-
-        /**
-         * @brief 将frame buffer指向下一个
-         *
-         */
-        void updateRenderFramebuffers();
-
-        /**
-         * @brief 将离屏渲染结果输出到image
-         *
-         */
-        void FillGraphicsImageViews();
+        auto UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent) ->RenderTargets;
 
     private:
         Runtime& runtime;

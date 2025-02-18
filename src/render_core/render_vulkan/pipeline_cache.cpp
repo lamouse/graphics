@@ -378,10 +378,9 @@ auto PipelineCache::builtPipeline(GraphicsPipeline* pipeline) const noexcept -> 
     return nullptr;
 }
 
-auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
-                                           pipeline::PipelineStatistics* statistics,
-                                           bool build_in_parallel)
-    -> std::unique_ptr<GraphicsPipeline> try {
+auto PipelineCache::createGraphicsPipeline(
+    const GraphicsPipelineCacheKey& key, pipeline::PipelineStatistics* statistics,
+    bool build_in_parallel) -> std::unique_ptr<GraphicsPipeline> try {
     auto hash = key.Hash();
     SPDLOG_INFO("0x{:016x}", hash);
     size_t env_index{0};
@@ -395,9 +394,9 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     infos[4] = &frag_info;
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     auto pipeline = std::make_unique<GraphicsPipeline>(
-        scheduler, vulkan_pipeline_cache, &shader_notify, device, descriptor_pool, guest_descriptor_queue,
-        thread_worker, statistics, render_pass_cache, key, texture_cache, buffer_cache, std::move(modules), infos,
-        dynamic_features);
+        scheduler, vulkan_pipeline_cache, &shader_notify, device, descriptor_pool,
+        guest_descriptor_queue, thread_worker, statistics, render_pass_cache, key, texture_cache,
+        buffer_cache, std::move(modules), infos, dynamic_features);
     current_pipeline = pipeline.get();
     if (pipeline) {
         graphics_cache.emplace(key, std::move(pipeline));
@@ -425,7 +424,7 @@ auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline
     }
     key.state.depth_format = surface::PixelFormat::D32_FLOAT;
     key.state.msaa_mode = MsaaMode::Msaa1x1;
-    key.state.depth_enabled = 0;
+    key.state.depth_enabled = 1;
     return createGraphicsPipeline(key, nullptr, false);
 }
 
@@ -434,10 +433,9 @@ auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)
     return nullptr;
 }
 
-auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,
-                                          pipeline::PipelineStatistics* statistics,
-                                          bool build_in_parallel)
-    -> std::unique_ptr<ComputePipeline> {
+auto PipelineCache::CreateComputePipeline(
+    const ComputePipelineCacheKey& key, pipeline::PipelineStatistics* statistics,
+    bool build_in_parallel) -> std::unique_ptr<ComputePipeline> {
     return nullptr;
 }
 

@@ -32,7 +32,7 @@ struct ImguiDebugInfo {
         float z_far;
         float z_near;
 };
-class Imgui {
+class ImguiCore {
     private:
         ImguiDebugInfo debugInfo{};
         RenderPass render_pass;
@@ -44,14 +44,14 @@ class Imgui {
         [[nodiscard]] auto get_uniform_buffer(float extentAspectRation) const
             -> UniformBufferObject;
         void draw(const vk::CommandBuffer& commandBuffer);
-        explicit Imgui(core::frontend::BaseWindow* window, const Device& device,
+        explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,
                        vk::PhysicalDevice physical, vk::Instance instance, float scale = 1.0f);
-        Imgui(const Imgui&) = delete;
-        auto operator=(const Imgui&) -> Imgui = delete;
-        auto operator=(Imgui&&) -> Imgui = delete;
-        Imgui(Imgui&&) = delete;
+                       ImguiCore(const ImguiCore&) = delete;
+        auto operator=(const ImguiCore&) -> ImguiCore = delete;
+        auto operator=(ImguiCore&&) -> ImguiCore = delete;
+        ImguiCore(ImguiCore&&) = delete;
         void newFrame();
-        ~Imgui();
+        ~ImguiCore();
 };
 
 }  // namespace render::vulkan

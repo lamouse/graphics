@@ -41,7 +41,7 @@ class RendererVulkan final : public render::RenderBase {
         PresentManager present_manager;
         BlitScreen blit_swapchain;
         BlitScreen blit_capture;
-        std::unique_ptr<Imgui> imgui;
+        std::unique_ptr<ImguiCore> imgui;
         VulkanGraphics vulkan_graphics;
         Frame applet_frame;
 };

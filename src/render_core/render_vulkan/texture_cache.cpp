@@ -369,7 +369,7 @@ struct RangedBarrierRange {
     return vk::ImageViewType::e2D;
 }
 
-[[nodiscard]] SwizzleSource ConvertGreenRed(SwizzleSource value) {
+[[nodiscard]] auto ConvertGreenRed(SwizzleSource value) -> SwizzleSource {
     switch (value) {
         case SwizzleSource::G:
             return SwizzleSource::R;
@@ -378,7 +378,7 @@ struct RangedBarrierRange {
     }
 }
 
-[[nodiscard]] vk::ComponentSwizzle ComponentSwizzle(SwizzleSource swizzle) {
+[[nodiscard]] auto ComponentSwizzle(SwizzleSource swizzle) -> vk::ComponentSwizzle {
     switch (swizzle) {
         case SwizzleSource::Zero:
             return vk::ComponentSwizzle::eZero;
@@ -1618,10 +1618,10 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
         swizzle = info.Swizzle();
         TryTransformSwizzleIfNeeded(format, swizzle, device->mustEmulateBGR565(),
                                     !device->isExt4444FormatsSupported());
-        if ((aspect_mask & (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) !=
-            vk::ImageAspectFlags{}) {
-            std::ranges::transform(swizzle, swizzle.begin(), ConvertGreenRed);
-        }
+        // if ((aspect_mask & (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) !=
+        //     vk::ImageAspectFlags{}) {
+        //     std::ranges::transform(swizzle, swizzle.begin(), ConvertGreenRed);
+        // }
     }
     const auto format_info = device->surfaceFormat(FormatType::Optimal, true, format);
     const vk::ImageViewUsageCreateInfo image_view_usage{image.UsageFlags()};
