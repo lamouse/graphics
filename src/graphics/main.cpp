@@ -1,6 +1,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/async.h>
 
 #include "../config.hpp"
 #include "config/log.h"
@@ -21,8 +22,7 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
         if (USE_BASE) {
             graphics::App app(config);
             app.run();
-        }
-        else {
+        } else {
             g::App app(config);
             app.run();
         }
@@ -37,7 +37,10 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
 void init(const Config& config) {
     auto logConfig = config.getConfig<config::log::Log>();
     auto level = utils::get_log_level_from_string(logConfig.level);
-
+    // 初始化线程池
+    std::size_t queue_size = 8192;  // 队列大小
+    std::size_t thread_count = 1;   // 线程数量
+    spdlog::init_thread_pool(queue_size, thread_count);
     // 创建多接收器日志器
     std::vector<spdlog::sink_ptr> sinks;
     if (logConfig.console.enabled) {
@@ -53,7 +56,9 @@ void init(const Config& config) {
             logConfig.file.path, !logConfig.file.append);
         sinks.push_back(file_sink);
     }
-    auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks.begin(), sinks.end());
+    auto logger = std::make_shared<spdlog::async_logger>("multi_sink", sinks.begin(), sinks.end(),
+                                                         spdlog::thread_pool(),
+                                                         spdlog::async_overflow_policy::block);
 
     // 设置默认日志器
     spdlog::set_default_logger(logger);

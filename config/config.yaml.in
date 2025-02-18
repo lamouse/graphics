@@ -2,7 +2,7 @@ vulkan:  #{type:struct}
   validation_layers: @VULKAN_VALIDATION@    #{type:bool}
 
 log:  #{type:struct}
-  pattern: "[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v"  #{type:string}
+  pattern: "%^[%Y-%m-%d %H:%M:%S.%e] [%l] [thread %t] (%s:%# %!): %v%$"  #{type:string}
   level: @LOG_LEVEL@  #{type:string}
   console:  #{type:struct}
     enabled: @LGO_CONSOLE_ENABLE@  #{type:bool}
