@@ -22,15 +22,19 @@ class RenderBase {
         virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
         [[nodiscard]] auto getCurrentFPS() const -> float;
         [[nodiscard]] auto getCurrentFrame() const -> int;
+        /// Refreshes the settings common to all renderers
+        void RefreshBaseSettings();
 
         virtual auto getAppletCaptureBuffer() -> std::vector<u8> = 0;
         virtual auto getGraphics() -> Graphic* = 0;
-        [[nodiscard]] auto getShaderNotify() const -> ShaderNotify&{return *shader_notify_;};
+        [[nodiscard]] auto getShaderNotify() const -> ShaderNotify& { return *shader_notify_; };
+
     protected:
         core::frontend::BaseWindow* window_;
         float current_fps_ = 0.0f;  ///< Current framerate, should be set by the renderer
-        int current_frame_ = 0;    ///< Current frame, should be set by the renderer
+        int current_frame_ = 0;     ///< Current frame, should be set by the renderer
         std::unique_ptr<ShaderNotify> shader_notify_;
+
     private:
         void UpdateCurrentFramebufferLayout();
 };

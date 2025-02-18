@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
 #include "glfw_window.hpp"
+#include "sdl_window.hpp"
 #include <thread>
 #include "model.hpp"
 #include "render_core/framebufferConfig.hpp"
@@ -27,10 +28,9 @@ void App::run() {
                                   model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
 
     while (!window->shouldClose()) {
-        auto layout = window->getFramebufferLayout();
 
         render::frame::FramebufferConfig frames{
-            .width = layout.width, .height = layout.height, .stride = 1};
+            .width = 1920, .height = 1080, .stride = 1920};
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         window->pullEvents();
@@ -69,9 +69,11 @@ void App::run() {
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    window = std::make_unique<ScreenWindow>(
-        ScreenExtent{.width = window_config.width, .height = window_config.height},
-        window_config.title);
+    // window = std::make_unique<ScreenWindow>(
+    //     ScreenExtent{.width = window_config.width, .height = window_config.height},
+    //     window_config.title);
+    window = std::make_unique<graphics::SDLWindow>(window_config.width,window_config.height,
+            window_config.title);
 
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }

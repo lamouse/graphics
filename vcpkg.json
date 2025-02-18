@@ -15,6 +15,7 @@
         "yaml-cpp",
         "boost-container",
         "glslang",
-        "spirv-cross"
+        "spirv-cross",
+        "sdl3"
     ]
 }
