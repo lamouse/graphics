@@ -11,8 +11,8 @@ namespace layout {
 
 // Finds the largest size subrectangle contained in window area that is confined to the aspect ratio
 template <class T>
-static common::Rectangle<T> MaxRectangle(common::Rectangle<T> window_area,
-                                         float screen_aspect_ratio) {
+static auto MaxRectangle(common::Rectangle<T> window_area,
+                                         float screen_aspect_ratio) -> common::Rectangle<T> {
     const float scale = std::min(static_cast<float>(window_area.GetWidth()),
                                  static_cast<float>(window_area.GetHeight()) / screen_aspect_ratio);
     return common::Rectangle<T>{0, 0, static_cast<T>(std::round(scale)),

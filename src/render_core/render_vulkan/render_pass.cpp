@@ -75,8 +75,8 @@ auto AttachmentDescription(const Device& device, surface::PixelFormat format,
         .setSamples(samples)
         .setLoadOp(vk::AttachmentLoadOp::eClear)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
-        .setStencilLoadOp(vk::AttachmentLoadOp::eClear)
-        .setStencilStoreOp(vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(vk::ImageLayout::eGeneral)
         .setFinalLayout(vk::ImageLayout::eGeneral);
 }

@@ -201,8 +201,8 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
                           const layout::FrameBufferLayout& layout) {
     const u32 texture_width = framebuffer.width;
     const u32 texture_height = framebuffer.height;
-    // const u32 scaled_width = texture_width;
-    // const u32 scaled_height = texture_height;
+    const u32 scaled_width = texture_width;
+    const u32 scaled_height = texture_height;
     // const bool use_accelerated = false;  // TODO 待处理
     const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
     RefreshResources(framebuffer);
@@ -217,19 +217,19 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
     vk::ImageView source_image_view =
         texture_info ? texture_info->image_view : *raw_image_views[image_index];
-    // //这里什么也么做
-    // anti_alias->Draw(scheduler, image_index, &source_image, &source_image_view);
+    //这里什么也么做
+    anti_alias->Draw(scheduler, image_index, &source_image, &source_image_view);
 
-    // const vk::Extent2D render_extent{
-    //     scaled_width,
-    //     scaled_height,
-    // };
+    const vk::Extent2D render_extent{
+        scaled_width,
+        scaled_height,
+    };
 
-    // if (fsr) {
-    //     // TODO 这里暂时什么也没做
-    //     source_image_view = fsr->Draw(scheduler, image_index, source_image, source_image_view,
-    //                                   render_extent, {0, 0, 1, 1});
-    // }
+    if (fsr) {
+        // TODO 这里暂时什么也没做
+        source_image_view = fsr->Draw(scheduler, image_index, source_image, source_image_view,
+                                      render_extent, {0, 0, 1, 1});
+    }
     SetMatrixData(*out_push_constants, layout);
     // 这里也需要处理
     SetVertexData(*out_push_constants, layout, {0, 0, 1, 1});
