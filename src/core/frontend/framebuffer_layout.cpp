@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: Copyright 2018 yuzu Emulator Project
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <cassert>
 #include <cmath>
 
-#include "common/settings_enums.hpp"
+#include "common/settings.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 
 namespace layout {
@@ -19,6 +20,8 @@ static common::Rectangle<T> MaxRectangle(common::Rectangle<T> window_area,
 }
 
 auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout {
+    assert(width > 0);
+    assert(height > 0);
     // The drawing code needs at least somewhat valid values for both screens
     // so just calculate them both even if the other isn't showing.
     FrameBufferLayout res{
@@ -29,8 +32,9 @@ auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout {
     };
 
     const float window_aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
+    auto graphics = common::settings::get<settings::Graphics>();
     const float emulation_aspect_ratio = EmulationAspectRatio(
-        res, static_cast<AspectRatio>(0), window_aspect_ratio);  // TODO 这里之后修改
+        static_cast<AspectRatio>(graphics.aspect_ratio), window_aspect_ratio);
 
     const common::Rectangle<u32> screen_window_area{0, 0, width, height};
     common::Rectangle<u32> screen = MaxRectangle(screen_window_area, emulation_aspect_ratio);
@@ -45,21 +49,11 @@ auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout {
     return res;
 }
 
-auto FrameLayoutFromResolutionScale(f32 res_scale) -> FrameBufferLayout {
-    const u32 screen_width = 800;
-    const u32 screen_height = 600;
-
-    const u32 width = static_cast<u32>(static_cast<f32>(screen_width) * res_scale);
-    const u32 height = static_cast<u32>(static_cast<f32>(screen_height) * res_scale);
-
-    return DefaultFrameLayout(width, height);
-}
-
-auto EmulationAspectRatio(const FrameBufferLayout& layout, AspectRatio aspect,
+auto EmulationAspectRatio(AspectRatio aspect,
                            float window_aspect_ratio) -> float {
     switch (aspect) {
         case AspectRatio::Default:
-            return static_cast<float>(layout.height) / static_cast<float>(layout.width);
+            return 9.0f / 16.0f;
         case AspectRatio::R4_3:
             return 3.0f / 4.0f;
         case AspectRatio::R21_9:
@@ -71,7 +65,7 @@ auto EmulationAspectRatio(const FrameBufferLayout& layout, AspectRatio aspect,
         case AspectRatio::StretchToWindow:
             return window_aspect_ratio;
         default:
-            return static_cast<float>(layout.height) / static_cast<float>(layout.width);
+            return 9.0f / 16.0f;;
     }
 }
 

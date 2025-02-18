@@ -32,6 +32,7 @@ class Graphics : public common::settings::BaseSetting<Graphics> {
         enums::AstcRecompression astc_recompression;
         enums::AstcDecodeMode astc_decodeMode = enums::AstcDecodeMode::Gpu;
         enums::ScalingFilter scaling_filter = enums::ScalingFilter::NearestNeighbor;
+        enums::AspectRatio aspect_ratio = enums::AspectRatio::R16_9;
         bool use_asynchronous_shaders = true;
         static auto get() { return Graphics{}; }
 };

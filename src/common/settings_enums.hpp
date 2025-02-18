@@ -81,6 +81,7 @@ ENUM(AstcRecompression, Uncompressed, Bc1, Bc3);
 ENUM(ScalingFilter, NearestNeighbor, Bilinear, Bicubic, Gaussian, ScaleForce, Fsr, MaxEnum);
 ENUM(VramUsageMode, Conservative, Aggressive);
 ENUM(ShaderBackend, Glsl, Glasm, SpirV);
+ENUM(AspectRatio, R16_9, R4_3, R21_9, R16_10, R32_9, Stretch);
 template <typename Type>
 inline std::string CanonicalizeEnum(Type id) {
     const auto group = EnumMetadata<Type>::canonicalizations();

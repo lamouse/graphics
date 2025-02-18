@@ -26,12 +26,6 @@ struct FrameBufferLayout {
 };
 
 /**
- * Convenience method to get frame layout by resolution scale
- * @param res_scale resolution scale factor
- */
-auto FrameLayoutFromResolutionScale(f32 res_scale) -> FrameBufferLayout;
-
-/**
  * Factory method for constructing a default FramebufferLayout
  * @param width Window framebuffer width in pixels
  * @param height Window framebuffer height in pixels
@@ -45,7 +39,7 @@ auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout;
  * @param window_aspect_ratio Current window aspect ratio
  * @return Emulation render window aspect ratio
  */
-auto EmulationAspectRatio(const FrameBufferLayout& layout, AspectRatio aspect,
+auto EmulationAspectRatio(AspectRatio aspect,
                           float window_aspect_ratio) -> float;
 
 }  // namespace layout
