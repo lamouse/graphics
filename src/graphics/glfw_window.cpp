@@ -30,9 +30,7 @@ ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{st
     conf.extent.height = extent.height;
     conf.fullscreen = false;
     setWindowConfig(conf);
-    int const w = static_cast<int>((float)conf.extent.width * window_info.render_surface_scale);
-    int const h = static_cast<int>((float)conf.extent.height * window_info.render_surface_scale);
-    window = ::glfwCreateWindow(w, h, title_.c_str(), nullptr, nullptr);
+    window = ::glfwCreateWindow(conf.extent.width,  conf.extent.height, title_.c_str(), nullptr, nullptr);
     if (!window) {
         ::glfwTerminate();
     }

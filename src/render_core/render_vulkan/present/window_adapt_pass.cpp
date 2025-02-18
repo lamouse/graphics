@@ -102,7 +102,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
     }
 
     scheduler.record([=, &rasterizer](vk::CommandBuffer cmdbuf) {
-        const f32 bg_red = .0f;  // TODO 这里有设置作用未知
+        const f32 bg_red = .0f;
         const f32 bg_green = .0f;
         const f32 bg_blue = .0f;
 
@@ -121,7 +121,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 .setLayerCount(1);
 
         utils::BeginRenderPass(cmdbuf, renderpass, host_framebuffer, render_area);
-        //cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
+        cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
 
         for (size_t i = 0; i < layer_count; i++) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipelines[i]);

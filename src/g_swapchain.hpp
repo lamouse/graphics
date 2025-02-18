@@ -16,7 +16,7 @@ class Swapchain {
         void beginRenderPass(const ::vk::CommandBuffer& commandBuffer,
                              const ::vk::RenderPass& renderPass, uint32_t imageIndex) const;
         [[nodiscard]] auto extentAspectRation() const -> float {
-            return static_cast<float>(extent_.width) / static_cast<float>(extent_.width);
+            return static_cast<float>(extent_.width) / static_cast<float>(extent_.height);
         }
         [[nodiscard]] auto compareFormats(const Swapchain& compareSwapchain) const -> bool {
             return depthFormat == compareSwapchain.depthFormat &&

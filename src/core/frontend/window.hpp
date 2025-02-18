@@ -56,6 +56,8 @@ class EXPORT BaseWindow {
         [[nodiscard]] auto getFramebufferLayout() const -> const layout::FrameBufferLayout& {
             return frame_buffer_layout;
         }
+        [[nodiscard]] auto getAspectRatio() const -> float;
+
         /// Returns if window is shown (not minimized)
         [[nodiscard]] virtual auto IsShown() const -> bool = 0;
         /// Returns if window is minimized
@@ -71,7 +73,6 @@ class EXPORT BaseWindow {
             notifyFramebufferLayoutChanged(layout::DefaultFrameLayout(width, height));
         }
         virtual void pullEvents() = 0;
-
         virtual void setWindowTitle(std::string_view) = 0;
 
     protected:
