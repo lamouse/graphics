@@ -101,7 +101,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
         layer_it++;
     }
 
-    scheduler.record([=, &rasterizer](vk::CommandBuffer cmdbuf) {
+    scheduler.record([=, &rasterizer, &scheduler](vk::CommandBuffer cmdbuf) {
         const f32 bg_red = .0f;
         const f32 bg_green = .0f;
         const f32 bg_blue = .0f;
@@ -132,6 +132,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
             cmdbuf.draw(4, 1, 0, 0);
         }
         rasterizer.drawImgui(cmdbuf);
+
         cmdbuf.endRenderPass();
     });
 }

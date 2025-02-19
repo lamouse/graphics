@@ -31,7 +31,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       blit_capture(device, memory_allocator, present_manager, scheduler),
       imgui(std::make_unique<ImguiCore>(window, device, device.getPhysical(), *instance,
-                                    window->getWindowSystemInfo().render_surface_scale)),
+                                        window->getWindowSystemInfo().render_surface_scale)),
       vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify(), imgui.get()) {
     device.initDispatchLoaderDynamic(*instance);
 } catch (const std::exception& exception) {
@@ -57,13 +57,24 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
     imgui->newFrame();
-    blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(), frame_buffers,
-                               swapchain.getImageCount(), swapchain.getImageViewFormat());
-
+    blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
+                               frame_buffers, swapchain.getImageCount(),
+                               swapchain.getImageViewFormat());
+    if (imgui_ui) {
+        imgui_ui();
+    }else {
+        imgui->imgui_predraw();
+    }
     scheduler.flush(*frame->render_ready);
+
+    {
+        std::scoped_lock submit_lock{scheduler.submit_mutex_};
+        imgui->endFrame();
+    }
     present_manager.present(frame);
 
     vulkan_graphics.TickFrame();
+    imgui_ui = nullptr;
 }
 
 void RendererVulkan::RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers) {

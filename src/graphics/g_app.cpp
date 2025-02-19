@@ -10,6 +10,7 @@
 #include <thread>
 #include "model.hpp"
 #include "render_core/framebufferConfig.hpp"
+#include "ui.hpp"
 
 namespace g {
 namespace {}  // namespace
@@ -26,32 +27,21 @@ void App::run() {
     auto model = graphics::Model::createFromFile("models/viking_room.obj");
     std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
                                   model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
-
+    auto debugInfo = graphics::ui::init_debug_info();
+    render::frame::FramebufferConfig frames{
+        .width = 1920, .height = 1080, .stride = 1920};
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     while (!window->shouldClose()) {
 
-        render::frame::FramebufferConfig frames{
-            .width = 1920, .height = 1080, .stride = 1920};
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        render_base->addImguiUI([&](){
+            graphics::ui::begin();
+            graphics::ui::main_ui();
+            graphics::ui::uniform_ui(debugInfo);
+            graphics::ui::end();
+        });
 
         window->pullEvents();
-
-        static auto startTime = std::chrono::high_resolution_clock::now();
-
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        float time =
-            std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
-                .count();
-
-        UniformBufferObject ubo{};
-        ubo.model =
-            glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                               glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f),
-                                    (float)window->getFramebufferLayout().width /
-                                        (float)window->getFramebufferLayout().height,
-                                    0.1f, 10.0f);
-        ubo.proj[1][1] *= -1;
+        auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
         graphics->addVertex(verticesSpan, model->indices_);
         graphics->drawIndics(model->indices_.size());

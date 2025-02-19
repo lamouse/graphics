@@ -7,8 +7,10 @@
 #include "common/common_funcs.hpp"
 #include "render_core/graphic.hpp"
 #include "render_core/shader_notify.hpp"
+#include <functional>
 
 namespace render {
+    using imgui_ui_fun = std::function<void()>;
 class RenderBase {
     public:
         CLASS_NON_COPYABLE(RenderBase);
@@ -19,6 +21,7 @@ class RenderBase {
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }
+        void addImguiUI(const imgui_ui_fun& fun) { imgui_ui = fun; }
         virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
         [[nodiscard]] auto getCurrentFPS() const -> float;
         [[nodiscard]] auto getCurrentFrame() const -> int;
@@ -34,7 +37,7 @@ class RenderBase {
         float current_fps_ = 0.0f;  ///< Current framerate, should be set by the renderer
         int current_frame_ = 0;     ///< Current frame, should be set by the renderer
         std::unique_ptr<ShaderNotify> shader_notify_;
-
+        imgui_ui_fun imgui_ui;
     private:
         void UpdateCurrentFramebufferLayout();
 };

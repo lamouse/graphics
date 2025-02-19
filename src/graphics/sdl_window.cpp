@@ -38,15 +38,16 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
 
     window_info.type = get_window_system_info();
     window_info.render_surface = get_windows_handles(window_);
-
     // 添加事件监视器
     SDL_AddEventWatch(
         [](void* userdata, SDL_Event* event) -> bool {
             if (event->type == SDL_EVENT_WINDOW_RESIZED) {
                 auto* base_window = reinterpret_cast<SDLWindow*>(userdata);
-                base_window->UpdateCurrentFramebufferLayout(
-                    static_cast<uint32_t>(event->window.data1),
-                    static_cast<uint32_t>(event->window.data2));
+                if (event->window.windowID == SDL_GetWindowID(base_window->getWindow())) {
+                    base_window->UpdateCurrentFramebufferLayout(
+                        static_cast<uint32_t>(event->window.data1),
+                        static_cast<uint32_t>(event->window.data2));
+                }
             }
             return false;
         },
