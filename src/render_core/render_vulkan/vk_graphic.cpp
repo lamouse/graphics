@@ -273,27 +273,23 @@ void VulkanGraphics::UpdateBlending() {
 void VulkanGraphics::UpdateViewportsState() {
     auto layout = emu_window->getFramebufferLayout();
     auto view = vk::Viewport()
-                    .setX(static_cast<float>(layout.screen.Left()))
-                    .setY(static_cast<float>(layout.screen.Top()))
-                    .setWidth(static_cast<float>(layout.screen.GetWidth()))
-                    .setHeight(static_cast<float>(layout.screen.GetHeight()))
-                    .setMinDepth(.0f)
-                    .setMaxDepth(1.f);
+                    .setX(pipeline_state.viewport.x)
+                    .setY(pipeline_state.viewport.y)
+                    .setWidth(pipeline_state.viewport.width == 0.f ? 1.f: pipeline_state.viewport.width)
+                    .setHeight(pipeline_state.viewport.height == 0.f ? 1.f: pipeline_state.viewport.height)
+                    .setMinDepth(pipeline_state.viewport.minDepth)
+                    .setMaxDepth(pipeline_state.viewport.maxDepth);
     scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
     return;
 }
 
 void VulkanGraphics::UpdateScissorsState() {
-    auto layout = emu_window->getFramebufferLayout();
-    const auto x = layout.screen.Left();
-    const auto y = layout.screen.Top();
-    const auto width = static_cast<float>(layout.screen.GetWidth());
-    const auto height = static_cast<float>(layout.screen.GetHeight());
+
     vk::Rect2D scissor;
-    scissor.offset.x = static_cast<int32_t>(x);
-    scissor.offset.y = static_cast<int32_t>(y);
-    scissor.extent.width = static_cast<u32>(width != 0.0f ? width : 1.0f);
-    scissor.extent.height = static_cast<u32>(height != 0.0f ? height : 1.0f);
+    scissor.offset.x = pipeline_state.scissors.x;
+    scissor.offset.y = pipeline_state.scissors.y;
+    scissor.extent.width = static_cast<u32>(pipeline_state.scissors.width != 0 ? pipeline_state.scissors.width : 1);
+    scissor.extent.height = static_cast<u32>(pipeline_state.scissors.height != 0 ? pipeline_state.scissors.height : 1);
     scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
 }
 

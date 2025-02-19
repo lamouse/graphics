@@ -32,6 +32,11 @@ void App::run() {
         .width = 1920, .height = 1080, .stride = 1920};
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     render::PipelineState pipeline_state;
+    auto layout = window->getFramebufferLayout();
+    pipeline_state.viewport.width = layout.screen.GetWidth();
+    pipeline_state.viewport.height = layout.screen.GetHeight();
+    pipeline_state.scissors.width = layout.screen.GetWidth();
+    pipeline_state.scissors.height = layout.screen.GetHeight();
     while (!window->shouldClose()) {
 
         render_base->addImguiUI([&](){

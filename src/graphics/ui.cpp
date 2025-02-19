@@ -3,7 +3,6 @@
 #include "ui.hpp"
 #include <chrono>
 namespace {
-
 void fps() {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
@@ -35,7 +34,9 @@ auto init_debug_info() -> ImguiDebugInfo {
     debugInfo.up_z = 1.f;
     debugInfo.up_y = 0.f;
     debugInfo.up_x = 0.f;
-    debugInfo.rotate_z = 2.0;
+    debugInfo.rotate_x = .0f;
+    debugInfo.rotate_y = .0f;
+    debugInfo.rotate_z = .1f;
     debugInfo.radians = 45.f;
     debugInfo.z_far = .1f;
     debugInfo.z_near = 10.f;
@@ -62,26 +63,42 @@ void uniform_ui(ImguiDebugInfo& debugInfo) {
             float center_x = debugInfo.look_x + 0.3f;
             float center_y = debugInfo.look_y + 0.3f;
             float center_z = debugInfo.look_z + 0.3f;
+
             ImGui::SliderFloat("speed", &debugInfo.speed, .0f, 180.0f);
-            ImGui::SliderFloat("look at x", &debugInfo.look_x, .0f, 8.f);
-            ImGui::SliderFloat("look at y", &debugInfo.look_y, .0f, 8.f);
-            ImGui::SliderFloat("look at z", &debugInfo.look_z, .0f, 8.f);
+            if (ImGui::TreeNode("look at")) {
+                ImGui::SliderFloat("x", &debugInfo.look_x, .0f, 8.f);
+                ImGui::SliderFloat("y", &debugInfo.look_y, .0f, 8.f);
+                ImGui::SliderFloat("z", &debugInfo.look_z, .0f, 8.f);
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("center")) {
+                ImGui::SliderFloat("x", &debugInfo.center_x, .0f, center_x);
+                ImGui::SliderFloat("y", &debugInfo.center_y, .0f, center_y);
+                ImGui::SliderFloat("z", &debugInfo.center_z, .0f, center_z);
+                ImGui::TreePop();
+            }
 
-            ImGui::SliderFloat("center x", &debugInfo.center_x, .0f, center_x);
-            ImGui::SliderFloat("center y", &debugInfo.center_y, .0f, center_y);
-            ImGui::SliderFloat("center z", &debugInfo.center_z, .0f, center_z);
+            if (ImGui::TreeNode("up")) {
+                ImGui::SliderFloat("x", &debugInfo.up_x, .0f, 2.f);
+                ImGui::SliderFloat("y", &debugInfo.up_y, .0f, 2.f);
+                ImGui::SliderFloat("z", &debugInfo.up_z, .0f, 2.f);
+                ImGui::TreePop();
+            }
 
-            ImGui::SliderFloat("up x", &debugInfo.up_x, .0f, 2.f);
-            ImGui::SliderFloat("up y", &debugInfo.up_y, .0f, 2.f);
-            ImGui::SliderFloat("up z", &debugInfo.up_z, .0f, 2.f);
-            ImGui::SliderFloat("rotate x", &debugInfo.rotate_x, .0f, 10.f);
-            ImGui::SliderFloat("rotate y", &debugInfo.rotate_y, .0f, 10.f);
-            ImGui::SliderFloat("rotate z", &debugInfo.rotate_z, .1f, 10.f);
-
+            if (ImGui::TreeNode("rotate")) {
+                ImGui::SliderFloat("x", &debugInfo.rotate_x, .0f, 10.f);
+                ImGui::SliderFloat("y", &debugInfo.rotate_y, .0f, 10.f);
+                ImGui::SliderFloat("z", &debugInfo.rotate_z, .1f, 10.f);
+                ImGui::TreePop();
+            }
             ImGui::SliderFloat("radians z", &debugInfo.radians, 10.f, 180.f);
-
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
+
+            // 添加恢复默认值的按钮
+            if (ImGui::Button("Restore Default")) {
+                debugInfo = init_debug_info();
+            }
             ImGui::End();
         }
     }
@@ -122,17 +139,40 @@ void end() { ImGui::Render(); }
 
 void pipeline_state(render::PipelineState &state){
     ImGui::Begin("pipeline state");
-    ImGui::Checkbox("colorBlendEnable", &state.colorBlendEnable);
-    ImGui::Checkbox("logicOpEnable", &state.logicOpEnable);
-    ImGui::Checkbox("stencilTestEnable", &state.stencilTestEnable);
-    ImGui::Checkbox("depthClampEnable", &state.depthClampEnable);
-    ImGui::Checkbox("depthWriteEnable", &state.depthWriteEnable);
-    ImGui::Checkbox("depthTestEnable", &state.depthTestEnable);
-    ImGui::Checkbox("depthBoundsTestEnable", &state.depthBoundsTestEnable);
-    ImGui::Checkbox("cullMode", &state.cullMode);
-    ImGui::Checkbox("depthBiasEnable", &state.depthBiasEnable);
-    ImGui::Checkbox("rasterizerDiscardEnable", &state.rasterizerDiscardEnable);
-    ImGui::Checkbox("primitiveRestartEnable", &state.primitiveRestartEnable);
+
+
+        if (ImGui::TreeNode("set pipeline state")) {
+            ImGui::Checkbox("colorBlendEnable", &state.colorBlendEnable);
+            ImGui::Checkbox("logicOpEnable", &state.logicOpEnable);
+            ImGui::Checkbox("stencilTestEnable", &state.stencilTestEnable);
+            ImGui::Checkbox("depthClampEnable", &state.depthClampEnable);
+            ImGui::Checkbox("depthWriteEnable", &state.depthWriteEnable);
+            ImGui::Checkbox("depthTestEnable", &state.depthTestEnable);
+            ImGui::Checkbox("depthBoundsTestEnable", &state.depthBoundsTestEnable);
+            ImGui::Checkbox("cullMode", &state.cullMode);
+            ImGui::Checkbox("depthBiasEnable", &state.depthBiasEnable);
+            ImGui::Checkbox("rasterizerDiscardEnable", &state.rasterizerDiscardEnable);
+            ImGui::Checkbox("primitiveRestartEnable", &state.primitiveRestartEnable);
+
+            ImGui::TreePop();
+        }
+    if (ImGui::TreeNode("set viewport")) {
+        ImGui::SliderFloat("x", &state.viewport.x, .0f,  2048.f);
+        ImGui::SliderFloat("y", &state.viewport.y, .0f, 2048.f);
+        ImGui::SliderFloat("width", &state.viewport.width, 1.0f, 2048.f);
+        ImGui::SliderFloat("height", &state.viewport.height, 1.0f, 2048.f);
+        ImGui::SliderFloat("minDepth", &state.viewport.minDepth, .0f, 1.f);
+        ImGui::SliderFloat("maxDepth", &state.viewport.maxDepth, .0, 1.f);
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("set scissors")) {
+        ImGui::SliderInt("x", &state.scissors.x, 0,  2048);
+        ImGui::SliderInt("y", &state.scissors.y, 0, 2048);
+        ImGui::SliderInt("width", &state.scissors.width, 1, 2048);
+        ImGui::SliderInt("height", &state.scissors.height, 1, 2048);
+        ImGui::TreePop();
+    }
+
     ImGui::End();
     }
 }  // namespace graphics::ui
