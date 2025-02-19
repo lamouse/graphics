@@ -31,19 +31,21 @@ void App::run() {
     render::frame::FramebufferConfig frames{
         .width = 1920, .height = 1080, .stride = 1920};
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    render::PipelineState pipeline_state;
     while (!window->shouldClose()) {
 
         render_base->addImguiUI([&](){
             graphics::ui::begin();
             graphics::ui::main_ui();
             graphics::ui::uniform_ui(debugInfo);
+            graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::end();
         });
-
         window->pullEvents();
         auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
         graphics->addVertex(verticesSpan, model->indices_);
+        graphics->setPipelineState(pipeline_state);
         graphics->drawIndics(model->indices_.size());
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();

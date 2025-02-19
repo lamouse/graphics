@@ -9,7 +9,6 @@
 #include "common/bit_field.hpp"
 #include "common/common_types.hpp"
 #include "render_core/surface.hpp"
-
 namespace render {
 
 enum class PrimitiveTopology : u32 {
@@ -116,5 +115,19 @@ enum class IndexFormat : u32 {
     UnsignedByte = 0x0,
     UnsignedShort = 0x1,
     UnsignedInt = 0x2,
+};
+
+struct PipelineState{
+    bool colorBlendEnable = true;
+    bool logicOpEnable = false;
+    bool stencilTestEnable = true;
+    bool depthClampEnable = true;
+    bool depthWriteEnable = true;
+    bool depthTestEnable = true;
+    bool depthBoundsTestEnable = true;
+    bool cullMode = false;
+    bool depthBiasEnable = true;
+    bool rasterizerDiscardEnable = false;
+    bool primitiveRestartEnable = false;
 };
 }

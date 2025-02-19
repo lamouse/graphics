@@ -51,6 +51,9 @@ void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
     // 这里修改，先添加，在pipelinebind
     uniform_buffer_id = buffer_cache.BindUniforBuffers(0, 0, data, static_cast<u32>(size));
 }
+void VulkanGraphics::setPipelineState(const PipelineState& state) {
+    pipeline_state = state;
+}
 
 void VulkanGraphics::drawIndics(u32 indicesSize) {
     PrepareDraw(true, [this, indicesSize] {
@@ -102,20 +105,20 @@ void VulkanGraphics::UpdateDynamicStates() {
 }
 
 void VulkanGraphics::UpdatePrimitiveRestartEnable() {
-    scheduler.record([this, enable = false](vk::CommandBuffer cmdbuf) {
+    scheduler.record([this, enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setPrimitiveRestartEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
-    scheduler.record([this, enable = false](vk::CommandBuffer cmdbuf) {
+    scheduler.record([this, enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setRasterizerDiscardEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateDepthBiasEnable() {
-    const bool enable = true;
-    scheduler.record([this](vk::CommandBuffer cmdbuf) {
+    const bool enable = pipeline_state.depthBiasEnable;
+    scheduler.record([enable, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthBiasEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -151,7 +154,7 @@ void VulkanGraphics::UpdateVertexInput() {
 }
 
 void VulkanGraphics::UpdateCullMode() {
-    scheduler.record([enabled = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enabled = pipeline_state.cullMode, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setCullModeEXT(enabled ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone,
                               device.logical().getDispatchLoaderDynamic());
     });
@@ -181,7 +184,7 @@ void VulkanGraphics::UpdateStencilOp() {
 }
 
 void VulkanGraphics::UpdateDepthBoundsTestEnable() {
-    bool enabled = true;
+    bool enabled = pipeline_state.depthBoundsTestEnable;
     if (enabled && !device.IsDepthBoundsSupported()) {
         SPDLOG_WARN("Depth bounds is enabled but not supported");
         enabled = false;
@@ -192,7 +195,7 @@ void VulkanGraphics::UpdateDepthBoundsTestEnable() {
 }
 
 void VulkanGraphics::UpdateDepthTestEnable() {
-    scheduler.record([enable = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enable = pipeline_state.depthTestEnable, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -202,25 +205,25 @@ void VulkanGraphics::UpdateDepthTestEnable() {
  *
  */
 void VulkanGraphics::UpdateDepthWriteEnable() {
-    scheduler.record([enable = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enable = pipeline_state.depthWriteEnable, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthWriteEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateStencilTestEnable() {
-    scheduler.record([enable = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([enable = pipeline_state.stencilTestEnable, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setStencilTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateLogicOpEnable() {
-    scheduler.record([enable = 0, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setLogicOpEnableEXT(enable != 0, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.logicOpEnable, this](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setLogicOpEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    scheduler.record([is_enabled = true, this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([is_enabled = pipeline_state.depthClampEnable, this](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthClampEnableEXT(is_enabled, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -242,8 +245,10 @@ void VulkanGraphics::UpdateBlending() {
     scheduler.record([this, setup_masks](vk::CommandBuffer cmdbuf) {
         cmdbuf.setColorWriteMaskEXT(0, setup_masks, device.logical().getDispatchLoaderDynamic());
     });
-
-    std::array<VkBool32, 1> setup_enables{VK_TRUE};
+    std::array<VkBool32, 1> setup_enables{VK_FALSE};
+    if (pipeline_state.colorBlendEnable) {
+        setup_enables[0] = VK_TRUE;
+    }
     scheduler.record([this, setup_enables](vk::CommandBuffer cmdbuf) {
         cmdbuf.setColorBlendEnableEXT(0, setup_enables,
                                       device.logical().getDispatchLoaderDynamic());
@@ -268,10 +273,10 @@ void VulkanGraphics::UpdateBlending() {
 void VulkanGraphics::UpdateViewportsState() {
     auto layout = emu_window->getFramebufferLayout();
     auto view = vk::Viewport()
-                    .setX(0)
-                    .setY(0)
-                    .setWidth(static_cast<float>(layout.width))
-                    .setHeight(static_cast<float>(layout.height))
+                    .setX(static_cast<float>(layout.screen.Left()))
+                    .setY(static_cast<float>(layout.screen.Top()))
+                    .setWidth(static_cast<float>(layout.screen.GetWidth()))
+                    .setHeight(static_cast<float>(layout.screen.GetHeight()))
                     .setMinDepth(.0f)
                     .setMaxDepth(1.f);
     scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
@@ -280,13 +285,13 @@ void VulkanGraphics::UpdateViewportsState() {
 
 void VulkanGraphics::UpdateScissorsState() {
     auto layout = emu_window->getFramebufferLayout();
-    const auto x = 0;
-    const auto y = 0;
-    const auto width = static_cast<float>(layout.width);
-    const auto height = static_cast<float>(layout.height);
+    const auto x = layout.screen.Left();
+    const auto y = layout.screen.Top();
+    const auto width = static_cast<float>(layout.screen.GetWidth());
+    const auto height = static_cast<float>(layout.screen.GetHeight());
     vk::Rect2D scissor;
-    scissor.offset.x = static_cast<u32>(x);
-    scissor.offset.y = static_cast<u32>(y);
+    scissor.offset.x = static_cast<int32_t>(x);
+    scissor.offset.y = static_cast<int32_t>(y);
     scissor.extent.width = static_cast<u32>(width != 0.0f ? width : 1.0f);
     scissor.extent.height = static_cast<u32>(height != 0.0f ? height : 1.0f);
     scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
@@ -310,8 +315,6 @@ auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config,
 }
 
 void VulkanGraphics::UpdateDepthBias() {
-    float units = -5 / 2.0f;
-
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBias(0.0f, .0f, .0f); });
 }
 

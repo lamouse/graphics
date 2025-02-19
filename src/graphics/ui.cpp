@@ -33,6 +33,8 @@ auto init_debug_info() -> ImguiDebugInfo {
     debugInfo.look_y = 2.0f;
     debugInfo.look_z = 2.0F;
     debugInfo.up_z = 1.f;
+    debugInfo.up_y = 0.f;
+    debugInfo.up_x = 0.f;
     debugInfo.rotate_z = 2.0;
     debugInfo.radians = 45.f;
     debugInfo.z_far = .1f;
@@ -106,8 +108,8 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo,
 }
 
 void main_ui() {
-    static bool show_fps = false;
-    ImGui::Begin("main Window");
+    static bool show_fps = true;
+    ImGui::Begin("main");
     ImGui::Checkbox("show fps", &show_fps);
     ImGui::End();
     if(show_fps){
@@ -117,4 +119,20 @@ void main_ui() {
 
 void begin() {}
 void end() { ImGui::Render(); }
+
+void pipeline_state(render::PipelineState &state){
+    ImGui::Begin("pipeline state");
+    ImGui::Checkbox("colorBlendEnable", &state.colorBlendEnable);
+    ImGui::Checkbox("logicOpEnable", &state.logicOpEnable);
+    ImGui::Checkbox("stencilTestEnable", &state.stencilTestEnable);
+    ImGui::Checkbox("depthClampEnable", &state.depthClampEnable);
+    ImGui::Checkbox("depthWriteEnable", &state.depthWriteEnable);
+    ImGui::Checkbox("depthTestEnable", &state.depthTestEnable);
+    ImGui::Checkbox("depthBoundsTestEnable", &state.depthBoundsTestEnable);
+    ImGui::Checkbox("cullMode", &state.cullMode);
+    ImGui::Checkbox("depthBiasEnable", &state.depthBiasEnable);
+    ImGui::Checkbox("rasterizerDiscardEnable", &state.rasterizerDiscardEnable);
+    ImGui::Checkbox("primitiveRestartEnable", &state.primitiveRestartEnable);
+    ImGui::End();
+    }
 }  // namespace graphics::ui

@@ -102,9 +102,9 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
     }
 
     scheduler.record([=, &rasterizer, &scheduler](vk::CommandBuffer cmdbuf) {
-        const f32 bg_red = .0f;
-        const f32 bg_green = .0f;
-        const f32 bg_blue = .0f;
+        const f32 bg_red = 255.0f;
+        const f32 bg_green = 255.0f;
+        const f32 bg_blue = 255.0f;
 
         const vk::ClearAttachment clear_attachment =
             vk::ClearAttachment()

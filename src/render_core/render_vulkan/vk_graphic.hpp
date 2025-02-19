@@ -31,6 +31,7 @@ class VulkanGraphics : public render::Graphic {
         void addTexture(const texture::ImageInfo& imageInfo) override;
         void addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) override;
         void addUniformBuffer(void* data, size_t size) override;
+        void setPipelineState(const PipelineState& state);
         void drawIndics(u32 indicesSize) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
         void end() override {};
@@ -95,6 +96,7 @@ class VulkanGraphics : public render::Graphic {
         buffer::BufferId uniform_buffer_id;
         PipelineCache pipeline_cache;
         Event wfi_event;
+        PipelineState pipeline_state;
         boost::container::static_vector<u32, MAX_IMAGE_VIEWS> image_view_indices;
         std::array<texture::ImageViewId, MAX_IMAGE_VIEWS> image_view_ids;
         boost::container::static_vector<vk::Sampler, MAX_TEXTURES> sampler_handles;
