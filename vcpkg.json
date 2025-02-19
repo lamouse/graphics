@@ -16,6 +16,9 @@
         "boost-container",
         "glslang",
         "spirv-cross",
-        "sdl3"
+        {
+            "name": "sdl3",
+            "features": [ "vulkan" ]
+        }
     ]
 }
