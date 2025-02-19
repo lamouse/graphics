@@ -35,6 +35,7 @@ target_include_directories(render-core PRIVATE ${CMAKE_SOURCE_DIR}/third-party/i
 target_link_libraries(render-core PUBLIC core common shader)
 target_link_libraries(render-core PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
 target_link_libraries(render-core PUBLIC spdlog::spdlog)
+target_link_libraries(render-core PRIVATE Tracy::TracyClient)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)

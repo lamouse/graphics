@@ -96,6 +96,7 @@ find_package(spirv_cross_core CONFIG REQUIRED)
 find_package(spirv_cross_glsl CONFIG REQUIRED)
 find_package(spirv_cross_cpp CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
+find_package(Tracy CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 

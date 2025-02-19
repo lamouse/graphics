@@ -1,6 +1,7 @@
 #include "vk_graphic.hpp"
 #include "uniforms.hpp"
 #include "blit_screen.hpp"
+#include <tracy/Tracy.hpp>
 namespace render::vulkan {
 
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
@@ -361,6 +362,7 @@ void VulkanGraphics::TickFrame() {
 
 template <typename Func>
 void VulkanGraphics::PrepareDraw(bool is_indexed, Func&& draw_func) {
+    ZoneScopedN("VulkanGraphics::PrepareDraw()");
     GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline()};
     if (!pipeline) {
         return;

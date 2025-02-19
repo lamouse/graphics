@@ -7,6 +7,7 @@
 #include "common/thread.hpp"
 #include "vulkan_common/vk_surface.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
+#include <tracy/Tracy.hpp>
 #if defined min
 #undef min
 #endif
@@ -190,7 +191,7 @@ void PresentManager::copyToSwapchain(Frame* frame) {
 }
 
 void PresentManager::copyToSwapchainImpl(Frame* frame) {
-
+    ZoneScopedN("PresentManager::copyToSwapchainImpl()");
     // If the size of the incoming frames has changed, recreate the swapchain
     // to account for that.
     const bool is_suboptimal = swapchain_.needsRecreation();
@@ -322,6 +323,7 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
 }
 
 auto PresentManager::getRenderFrame() -> Frame* {
+    ZoneScopedN("PresentManager::getRenderFrame()");
     // Wait for free presentation frames
     std::unique_lock lock{free_mutex_};
     free_cv_.wait(lock, [this] { return !free_queue_.empty(); });
