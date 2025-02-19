@@ -20,9 +20,7 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
-target_link_libraries(common PUBLIC core microprofile)
 target_link_libraries(common PUBLIC Vulkan::Vulkan spdlog::spdlog)
-target_include_directories(common PUBLIC ${CMAKE_SOURCE_DIR}/third-party/microprofile)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(common PROPERTIES VERSION 0.0.1 SOVERSION 0)

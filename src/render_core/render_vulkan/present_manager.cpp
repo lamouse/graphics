@@ -7,13 +7,10 @@
 #include "common/thread.hpp"
 #include "vulkan_common/vk_surface.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
-#include "common/microprofile.hpp"
 #if defined min
 #undef min
 #endif
 namespace render::vulkan {
-MICROPROFILE_DEFINE(Vulkan_WaitPresent, "Vulkan", "Wait For Present", MP_RGB(128, 128, 128));
-MICROPROFILE_DEFINE(Vulkan_CopyToSwapchain, "Vulkan", "Copy to swapchain", MP_RGB(192, 255, 192));
 namespace {
 
 auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format format) -> bool {
@@ -193,7 +190,6 @@ void PresentManager::copyToSwapchain(Frame* frame) {
 }
 
 void PresentManager::copyToSwapchainImpl(Frame* frame) {
-    MICROPROFILE_SCOPE(Vulkan_CopyToSwapchain);
 
     // If the size of the incoming frames has changed, recreate the swapchain
     // to account for that.
@@ -326,8 +322,6 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
 }
 
 auto PresentManager::getRenderFrame() -> Frame* {
-    MICROPROFILE_SCOPE(Vulkan_WaitPresent);
-
     // Wait for free presentation frames
     std::unique_lock lock{free_mutex_};
     free_cv_.wait(lock, [this] { return !free_queue_.empty(); });

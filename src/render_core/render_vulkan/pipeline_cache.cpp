@@ -1,5 +1,4 @@
 #include "pipeline_cache.hpp"
-#include "common/microprofile.hpp"
 #include "common/cityhash.h"
 #include "common/fs/fs.h"
 #include "descriptor_pool.hpp"
