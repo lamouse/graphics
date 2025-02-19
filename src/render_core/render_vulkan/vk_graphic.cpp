@@ -1,7 +1,16 @@
 #include "vk_graphic.hpp"
 #include "uniforms.hpp"
 #include "blit_screen.hpp"
+#include "common/microprofile.hpp"
 namespace render::vulkan {
+MICROPROFILE_DEFINE(Vulkan_Drawing, "Vulkan", "Record drawing", MP_RGB(192, 128, 128));
+MICROPROFILE_DEFINE(Vulkan_Compute, "Vulkan", "Record compute", MP_RGB(192, 128, 128));
+MICROPROFILE_DEFINE(Vulkan_Clearing, "Vulkan", "Record clearing", MP_RGB(192, 128, 128));
+MICROPROFILE_DEFINE(Vulkan_PipelineCache, "Vulkan", "Pipeline cache", MP_RGB(192, 128, 128));
+namespace scheduler {
+MICROPROFILE_DEFINE(Vulkan_WaitForWorker, "Vulkan", "Wait for worker", MP_RGB(255, 192, 192));
+
+}
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_,
                                ShaderNotify& shader_notify_, ImguiCore* imgui_)
@@ -30,7 +39,10 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
-      wfi_event(device.logical().createEvent()) {}
+      wfi_event(device.logical().createEvent()) {
+    // Render MicroProfile.
+    MicroProfileFlip(nullptr, 1);
+}
 
 VulkanGraphics::~VulkanGraphics() = default;
 
@@ -106,8 +118,7 @@ void VulkanGraphics::UpdatePrimitiveRestartEnable() {
 
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
     scheduler.record([this, enable = false](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setRasterizerDiscardEnableEXT(enable,
-                                             device.logical().getDispatchLoaderDynamic());
+        cmdbuf.setRasterizerDiscardEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
@@ -172,10 +183,9 @@ void VulkanGraphics::UpdateFrontFace() {
 void VulkanGraphics::UpdateStencilOp() {
     // Front face defines the stencil op of both faces
     scheduler.record([this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setStencilOpEXT(vk::StencilFaceFlagBits::eFront,
+        cmdbuf.setStencilOpEXT(vk::StencilFaceFlagBits::eFront, vk::StencilOp::eReplace,
                                vk::StencilOp::eReplace, vk::StencilOp::eReplace,
-                               vk::StencilOp::eReplace, vk::CompareOp::eAlways,
-                               device.logical().getDispatchLoaderDynamic());
+                               vk::CompareOp::eAlways, device.logical().getDispatchLoaderDynamic());
     });
 }
 
@@ -344,9 +354,7 @@ void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
-void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
-    imgui->draw(cmd_buf);
-}
+void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) { imgui->draw(cmd_buf); }
 
 void VulkanGraphics::TickFrame() {
     guest_descriptor_queue.TickFrame();

@@ -9,7 +9,7 @@
 #include <boost/container/small_vector.hpp>
 
 namespace render::vulkan::scheduler {
-// MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
+MICROPROFILE_DECLARE(Vulkan_WaitForWorker);
 
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
@@ -110,7 +110,7 @@ void Scheduler::acquireNewChunk() {
 }
 
 void Scheduler::waitWorker() {
-    // MICROPROFILE_SCOPE(Vulkan_WaitForWorker);
+    MICROPROFILE_SCOPE(Vulkan_WaitForWorker);
     dispatchWork();
 
     // Ensure the queue is drained.

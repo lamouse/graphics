@@ -57,8 +57,8 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device, 
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
     // io.ConfigViewportsNoAutoMerge = true;
@@ -159,8 +159,9 @@ auto ImguiCore::get_uniform_buffer(float extentAspectRation) const -> UniformBuf
 }
 
 void ImguiCore::draw(const vk::CommandBuffer& commandBuffer) {
-    ImGuiIO const& io = ImGui::GetIO();
-    (void)io;
+
+    window->newFrame();
+    ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
     {
         {
@@ -203,6 +204,8 @@ void ImguiCore::draw(const vk::CommandBuffer& commandBuffer) {
     }
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    ImGuiIO const& io = ImGui::GetIO();
+    (void)io;
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
@@ -216,8 +219,7 @@ ImguiCore::~ImguiCore() {
 }
 
 void ImguiCore::newFrame() {
-    window->newFrame();
-    ImGui_ImplVulkan_NewFrame();
+
 }
 
 }  // namespace render::vulkan
