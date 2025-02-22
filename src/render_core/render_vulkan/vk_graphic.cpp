@@ -344,9 +344,9 @@ void VulkanGraphics::clear() {
         static_cast<uint32_t>(pipeline_state.viewport.width),
         static_cast<uint32_t>(pipeline_state.viewport.height)
     };
-    const f32 bg_red = .2f;
-    const f32 bg_green = .3f;
-    const f32 bg_blue = .1f;
+    const f32 bg_red = pipeline_state.clearColor.r/255.f;
+    const f32 bg_green = pipeline_state.clearColor.g/255.f;
+    const f32 bg_blue = pipeline_state.clearColor.b/255.f;
     auto clear_value = vk::ClearValue().setColor(
           vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
     const vk::ClearAttachment clear_attachment =
@@ -355,7 +355,7 @@ void VulkanGraphics::clear() {
       .setColorAttachment(0)
       .setClearValue(clear_value);
 
-    auto clear_depth = vk::ClearDepthStencilValue().setDepth(1).setStencil(0);
+    auto clear_depth = vk::ClearDepthStencilValue().setDepth(pipeline_state.clearColor.depth).setStencil(pipeline_state.clearColor.stencil);
     auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
     const vk::ClearAttachment depth_attachment =
 vk::ClearAttachment()

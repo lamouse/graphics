@@ -172,6 +172,14 @@ void pipeline_state(render::PipelineState &state){
         ImGui::SliderInt("height", &state.scissors.height, 1, 2048);
         ImGui::TreePop();
     }
+    if (ImGui::TreeNode("set clear value")) {
+        ImGui::SliderFloat("r", &state.clearColor.r, .0f,  255.f);
+        ImGui::SliderFloat("g", &state.clearColor.g, .0f, 255.f);
+        ImGui::SliderFloat("b", &state.clearColor.b, .0f, 255.f);
+        ImGui::SliderFloat("depth", &state.clearColor.depth, .9f, 1.f);
+        ImGui::SliderInt("stencil", &state.clearColor.stencil, 0, 10);
+        ImGui::TreePop();
+    }
 
     ImGui::End();
     }
