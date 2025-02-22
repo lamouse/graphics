@@ -135,7 +135,6 @@ class BufferCacheInfo {
 
 template <class P>
 class BufferCache : public BufferCacheInfo {
-
         static constexpr s64 DEFAULT_EXPECTED_MEMORY = 512_MiB;
         static constexpr s64 DEFAULT_CRITICAL_MEMORY = 1_GiB;
         static constexpr s64 TARGET_THRESHOLD = 4_GiB;
@@ -156,12 +155,10 @@ class BufferCache : public BufferCacheInfo {
     public:
         explicit BufferCache(Runtime& runtime_);
         void TickFrame();
-        auto BindIndexBuffer(void* data, u32 size) -> BufferId;
-        auto BindVertexBuffers(void* data, u32 size) -> BufferId;
         auto addVertexBuffer(void* data, u32 size) -> BufferId;
-        auto addIndexBuffer(void* data, u32 size)-> BufferId;
-  void BindIndexBuffer(BufferId id);
-  void BindVertexBuffers(BufferId id, u32 size);
+        auto addIndexBuffer(void* data, u32 size) -> BufferId;
+        void BindIndexBuffer(BufferId id);
+        void BindVertexBuffers(BufferId id, u32 size);
 
         auto BindUniforBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
         void BindStageBuffers(size_t stage);
@@ -214,7 +211,6 @@ class BufferCache : public BufferCacheInfo {
         u64 minimum_memory = 0;
         u64 critical_memory = 0;
         BufferId inline_buffer_id;
-
 };
 
 }  // namespace render::buffer
