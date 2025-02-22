@@ -102,7 +102,7 @@ void BufferCache<P>::BindUniformBuffers(BufferId id, void* data, size_t size){
     std::array<texture::BufferCopy, 1> copies{
         {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
     std::memcpy(upload_staging.mapped_span.data(), data, size);
-    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
+    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true, true);
 }
 
 template <class P>

@@ -370,8 +370,7 @@ vk::ClearAttachment()
             .setBaseArrayLayer(0)
             .setLayerCount(1);
     scheduler.record([clear_attachment, depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
-        cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
-        cmdbuf.clearAttachments({depth_attachment}, {clear_rect});
+        cmdbuf.clearAttachments({clear_attachment, depth_attachment}, {clear_rect});
     });
 }
 
