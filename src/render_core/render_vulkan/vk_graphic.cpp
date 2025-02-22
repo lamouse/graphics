@@ -311,7 +311,7 @@ void VulkanGraphics::UpdateDepthBias() {
 }
 
 void VulkanGraphics::UpdateBlendConstants() {
-    const std::array blend_color = {.0f, .0f, .0f, .0f};
+    const std::array blend_color = {pipeline_state.blendColor.r, pipeline_state.blendColor.g, pipeline_state.blendColor.b, pipeline_state.blendColor.a};
     scheduler.record(
         [blend_color](vk::CommandBuffer cmdbuf) { cmdbuf.setBlendConstants(blend_color.data()); });
 }

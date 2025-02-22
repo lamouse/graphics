@@ -157,5 +157,15 @@ struct PipelineState{
     };
 
     ClearColor clearColor;
+
+
+    //cmdbuf.setBlendConstants
+    struct BlendColor {
+        float r{};
+        float g{};
+        float b{};
+        float a{};
+    };
+    BlendColor blendColor;
 };
 }

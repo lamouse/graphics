@@ -176,8 +176,16 @@ void pipeline_state(render::PipelineState &state){
         ImGui::SliderFloat("r", &state.clearColor.r, .0f,  255.f);
         ImGui::SliderFloat("g", &state.clearColor.g, .0f, 255.f);
         ImGui::SliderFloat("b", &state.clearColor.b, .0f, 255.f);
-        ImGui::SliderFloat("depth", &state.clearColor.depth, .9f, 1.f);
+        ImGui::SliderFloat("depth", &state.clearColor.depth, .96f, 1.f);
         ImGui::SliderInt("stencil", &state.clearColor.stencil, 0, 10);
+        ImGui::TreePop();
+    }
+
+        if (ImGui::TreeNode("set blend color")) {
+        ImGui::SliderFloat("r", &state.blendColor.r, .0f,  255.f);
+        ImGui::SliderFloat("g", &state.blendColor.g, .0f, 255.f);
+        ImGui::SliderFloat("b", &state.blendColor.b, .0f, 1.f);
+        ImGui::SliderFloat("a", &state.blendColor.a, .0f, 1.f);
         ImGui::TreePop();
     }
 
