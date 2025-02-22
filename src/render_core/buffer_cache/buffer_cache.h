@@ -23,7 +23,7 @@ auto BufferCache<P>::addIndexBuffer(void* data, u32 size) -> BufferId {
     auto& buffer = slot_buffers[buffer_id];
     auto upload_staging = runtime.UploadStagingBuffer(size);
     std::array<texture::BufferCopy, 1> copies{
-            {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
+        {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
     std::memcpy(upload_staging.mapped_span.data(), data, size);
     runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
     return buffer_id;
@@ -31,8 +31,8 @@ auto BufferCache<P>::addIndexBuffer(void* data, u32 size) -> BufferId {
 
 template <class P>
 void BufferCache<P>::BindIndexBuffer(BufferId id) {
-    runtime.BindIndexBuffer(PrimitiveTopology::Triangles, IndexFormat::UnsignedShort, 0, 1, slot_buffers[id],
-                            0, 0);
+    runtime.BindIndexBuffer(PrimitiveTopology::Triangles, IndexFormat::UnsignedShort, 0, 1,
+                            slot_buffers[id], 0, 0);
 }
 
 template <class P>
@@ -40,7 +40,7 @@ void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size) {
     HostBindings<typename P::Buffer> host_bindings;
     for (u32 index = 0; index < 1; ++index) {
         Buffer& buffer = slot_buffers[id];
-        TouchBuffer(buffer, id);
+        //TouchBuffer(buffer, id);
         host_bindings.min_index = std::min(host_bindings.min_index, index);
         host_bindings.max_index = std::max(host_bindings.max_index, static_cast<u32>(1));  // 待修复
     }
@@ -66,15 +66,15 @@ auto BufferCache<P>::addVertexBuffer(void* data, u32 size) -> BufferId {
     auto buffer_id = CreateBuffer(size);
     auto& buffer = slot_buffers[buffer_id];
     auto upload_staging = runtime.UploadStagingBuffer(size);
-    std::array<texture::BufferCopy, 1> copies{{texture::BufferCopy{
-        .src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
+    std::array<texture::BufferCopy, 1> copies{
+        {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
     std::memcpy(upload_staging.mapped_span.data(), data, size);
     runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
     return buffer_id;
 }
 
 template <class P>
-auto BufferCache<P>::BindUniforBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId {
+auto BufferCache<P>::BindUniformBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId {
     Binding bind = uniform_buffers[stage][index];
     if (!bind.buffer_id || bind.size != size) {
         bind.buffer_id = CreateBuffer(size);
@@ -90,6 +90,19 @@ auto BufferCache<P>::BindUniforBuffers(size_t stage, u32 index, void* data, u32 
     uniform_buffers[stage][index] = bind;
     // runtime.FreeDeferredStagingBuffer(upload_staging);
     return bind.buffer_id;
+}
+template <class P>
+auto BufferCache<P>::addUniformBuffer(u32 size) -> BufferId {
+    return CreateBuffer(size);
+}
+template <class P>
+void BufferCache<P>::BindUniformBuffers(BufferId id, void* data, size_t size){
+    auto& buffer = slot_buffers[id];
+    auto upload_staging = runtime.UploadStagingBuffer(size);
+    std::array<texture::BufferCopy, 1> copies{
+        {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
+    std::memcpy(upload_staging.mapped_span.data(), data, size);
+    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
 }
 
 template <class P>
@@ -109,6 +122,12 @@ void BufferCache<P>::BindStageBuffers(size_t stage) {
     BindGraphicsUniformBuffers(stage);
     // BindHostGraphicsStorageBuffers(stage);
     // BindHostGraphicsTextureBuffers(stage);
+}
+
+template <class P>
+void BufferCache<P>::BindCurrentUniformBuffers() {
+    Buffer& buffer = slot_buffers[current_uniform_buffer.buffer_id];
+    runtime.BindUniformBuffer(buffer, 0, current_uniform_buffer.size);
 }
 
 template <class P>
@@ -155,5 +174,9 @@ void BufferCache<P>::TickFrame() {
     }
     async_buffers_death_ring.clear();
 }
-
+template <class P>
+void BufferCache<P>::setCurrentUniformBuffer(BufferId id, u32 size) {
+    current_uniform_buffer.buffer_id = id;
+    current_uniform_buffer.size = size;
+}
 }  // namespace render::buffer

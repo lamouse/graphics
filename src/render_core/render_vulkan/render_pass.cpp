@@ -3,80 +3,15 @@
 #include <boost/container/static_vector.hpp>
 namespace render::vulkan {
 namespace {
-
-auto createColorAttachmentDescription(auto& formats, vk::SampleCountFlagBits samples,
-                                      bool need_resolvet,
-                                      bool need_store) -> std::vector<vk::AttachmentDescription> {
-    std::vector<vk::AttachmentDescription> attachments;
-    for (auto format : formats) {
-        if (format == vk::Format::eUndefined) {
-            continue;
-        }
-        vk::AttachmentDescription attach;
-
-        attach.setLoadOp(need_store ? vk::AttachmentLoadOp::eLoad : ::vk::AttachmentLoadOp::eClear)
-            .setFormat(format)
-            .setStoreOp(vk::AttachmentStoreOp::eStore)
-            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(need_resolvet ? ::vk::ImageLayout::eColorAttachmentOptimal
-                                          : vk::ImageLayout::ePresentSrcKHR)
-            .setSamples(samples);
-        attachments.push_back(attach);
-    }
-
-    return attachments;
-}
-auto createDepthAttachmentDescription(vk::Format format, vk::SampleCountFlagBits samples,
-                                      bool need_store) -> vk::AttachmentDescription {
-    vk::AttachmentDescription attach;
-    attach.setLoadOp(need_store ? vk::AttachmentLoadOp::eLoad : ::vk::AttachmentLoadOp::eClear)
-        .setFormat(format)
-        .setStoreOp(need_store ? vk::AttachmentStoreOp::eDontCare : vk::AttachmentStoreOp::eStore)
-        .setStencilLoadOp(need_store ? vk::AttachmentLoadOp::eLoad
-                                     : vk::AttachmentLoadOp::eDontCare)
-        .setStencilStoreOp(need_store ? vk::AttachmentStoreOp::eStore
-                                      : vk::AttachmentStoreOp::eDontCare)
-        .setInitialLayout(vk::ImageLayout::eUndefined)
-        .setFinalLayout(::vk::ImageLayout::eDepthStencilAttachmentOptimal)
-        .setSamples(samples);
-    return attach;
-}
-auto createResolveAttachmentDescription(auto& formats,
-                                        bool need_store) -> std::vector<vk::AttachmentDescription> {
-    std::vector<vk::AttachmentDescription> attachments;
-    for (auto format : formats) {
-        if (format == vk::Format::eUndefined) {
-            continue;
-        }
-        vk::AttachmentDescription attach;
-        attach.setLoadOp(need_store ? vk::AttachmentLoadOp::eLoad : ::vk::AttachmentLoadOp::eClear)
-            .setFormat(format)
-            .setStoreOp(need_store ? vk::AttachmentStoreOp::eDontCare
-                                   : vk::AttachmentStoreOp::eStore)
-            .setStencilLoadOp(need_store ? vk::AttachmentLoadOp::eLoad
-                                         : vk::AttachmentLoadOp::eDontCare)
-            .setStencilStoreOp(need_store ? vk::AttachmentStoreOp::eStore
-                                          : vk::AttachmentStoreOp::eDontCare)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(::vk::ImageLayout::ePresentSrcKHR)
-            .setSamples(vk::SampleCountFlagBits::e1);
-        attachments.push_back(attach);
-    }
-
-    return attachments;
-}
-
 auto AttachmentDescription(const Device& device, surface::PixelFormat format,
                            vk::SampleCountFlagBits samples) -> vk::AttachmentDescription {
     return vk::AttachmentDescription()
         .setFormat(device.surfaceFormat(FormatType::Optimal, true, format).format)
         .setSamples(samples)
-        .setLoadOp(vk::AttachmentLoadOp::eClear)
+        .setLoadOp(vk::AttachmentLoadOp::eLoad)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
-        .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-        .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setStencilLoadOp(vk::AttachmentLoadOp::eLoad)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eStore)
         .setInitialLayout(vk::ImageLayout::eGeneral)
         .setFinalLayout(vk::ImageLayout::eGeneral);
 }

@@ -72,7 +72,6 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
         imgui->endFrame();
     }
     present_manager.present(frame);
-
     vulkan_graphics.TickFrame();
     imgui_ui = nullptr;
 }

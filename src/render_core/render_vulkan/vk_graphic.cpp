@@ -36,9 +36,20 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 
 VulkanGraphics::~VulkanGraphics() = default;
 
+void VulkanGraphics::start() {
+    //TODO 这里是一个临时策略
+    std::scoped_lock lock{texture_cache.mutex};
+    static bool is_new_frame = true;
+    if (is_new_frame) {
+        is_new_frame = false;
+        return;
+    }
+    scheduler.requestRenderPass(texture_cache.GetFramebuffer());
+    clear();
+}
 void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
     // 这里修改，先添加，在pipelinebind
-    uniform_buffer_id = buffer_cache.BindUniforBuffers(0, 0, data, static_cast<u32>(size));
+    uniform_buffer_id = buffer_cache.BindUniformBuffers(0, 0, data, static_cast<u32>(size));
 }
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
@@ -332,6 +343,41 @@ void VulkanGraphics::UpdateStencilFaces() {
 void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
+void VulkanGraphics::clear() {
+    const vk::Extent2D render_area{
+        static_cast<uint32_t>(pipeline_state.viewport.width),
+        static_cast<uint32_t>(pipeline_state.viewport.height)
+    };
+    const f32 bg_red = .2f;
+    const f32 bg_green = .3f;
+    const f32 bg_blue = .1f;
+    auto clear_value = vk::ClearValue().setColor(
+          vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
+    const vk::ClearAttachment clear_attachment =
+  vk::ClearAttachment()
+      .setAspectMask(vk::ImageAspectFlagBits::eColor)
+      .setColorAttachment(0)
+      .setClearValue(clear_value);
+
+    auto clear_depth = vk::ClearDepthStencilValue().setDepth(1).setStencil(0);
+    auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
+    const vk::ClearAttachment depth_attachment =
+vk::ClearAttachment()
+  .setAspectMask(vk::ImageAspectFlagBits::eDepth)
+  .setColorAttachment(0)
+  .setClearValue(clear_depth_value);
+
+    const vk::ClearRect clear_rect =
+        vk::ClearRect()
+            .setRect(
+                vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
+            .setBaseArrayLayer(0)
+            .setLayerCount(1);
+    scheduler.record([clear_attachment, depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
+        cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
+        cmdbuf.clearAttachments({depth_attachment}, {clear_rect});
+    });
+}
 
 void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) { imgui->draw(cmd_buf); }
 auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> GraphicsId {
@@ -342,14 +388,22 @@ auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> Graphi
     info.image_view_id = viewId;
     info.sampler_id = samplerId;
     info.vertex_buffer_id = buffer_cache.addVertexBuffer(context.vertex.data(), info.vertex_size);
-    ;
+    info.uniform_buffer_size = context.uniform_size;
+    info.uniform_buffer_id = buffer_cache.addUniformBuffer(info.uniform_buffer_size);
     info.indices_buffer_id = buffer_cache.addIndexBuffer(
         context.indices.data(), static_cast<u32>(context.indices.size() * sizeof(uint16_t)));
     auto graphicsId = slot_graphics.insert();
     draw_indices[graphicsId] = info;
     return graphicsId;
 }
+void VulkanGraphics::bindUniformBuffer(GraphicsId id, void* data, size_t size) {
+    auto draw_info = draw_indices[id];
+    buffer_cache.BindUniformBuffers(draw_info.uniform_buffer_id, data, size);
+}
 void VulkanGraphics::draw(GraphicsId id) {
+    const auto drawInfo = draw_indices[id];
+    buffer_cache.setCurrentUniformBuffer(drawInfo.uniform_buffer_id, drawInfo.uniform_buffer_size);
+    texture_cache.setCurrentImage(drawInfo.image_view_id, drawInfo.sampler_id);
     PrepareDraw(true, [id, this] {
         const auto drawInfo = draw_indices[id];
         buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);

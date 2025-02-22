@@ -336,10 +336,10 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
         is_set_render_target = true;
     }
     guest_descriptor_queue_.Acquire();
-    buffer_cache.BindStageBuffers(3);
-    guest_descriptor_queue_.AddSampledImage(
-        texture_cache.GetImageView(0).Handle(shader::TextureType::Color2D),
-        texture_cache.GetSampler(texture_cache.GetGraphicsSamplerId(0)).Handle());
+    buffer_cache.BindCurrentUniformBuffers();
+    auto [view, sample] = texture_cache.getCurrentImage();
+    guest_descriptor_queue_.AddSampledImage(view->Handle(shader::TextureType::Color2D), sample->Handle()
+        );
     ConfigureDraw();
 }
 
@@ -357,7 +357,7 @@ void GraphicsPipeline::ConfigureDraw() {
     const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
     scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
-        if (bind_pipeline) {
+         if (bind_pipeline) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
         }
         if (!descriptor_set_layout) {

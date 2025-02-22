@@ -40,9 +40,11 @@ void App::run() {
     graphics_ctx.indices = model->indices_;
     graphics_ctx.indices_size = model->indices_.size();
     graphics_ctx.index_format = render::IndexFormat::UnsignedShort;
+    graphics_ctx.uniform_size = sizeof(render::UniformBufferObject);
     auto graphicId = graphics->addGraphicContext(graphics_ctx);
+    graphics_ctx.image = img2.getImageInfo();
+    auto graphicId2 = graphics->addGraphicContext(graphics_ctx);
     while (!window->shouldClose()) {
-
         render_base->addImguiUI([&](){
             graphics::ui::begin();
             graphics::ui::main_ui();
@@ -51,10 +53,23 @@ void App::run() {
             graphics::ui::end();
         });
         window->pullEvents();
+        graphics->start();
         auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
+        graphics->bindUniformBuffer(graphicId, &ubo, sizeof(ubo));
         graphics->setPipelineState(pipeline_state);
         graphics->draw(graphicId);
+
+        auto debug2 = debugInfo;
+        debug2.look_x += 8.f;
+        debug2.center_z += 2.f;
+        auto ubo2 = graphics::ui::get_uniform_buffer(debug2, window->getAspectRatio());
+        graphics->addUniformBuffer(&ubo2, sizeof(ubo2));
+        graphics->bindUniformBuffer(graphicId2, &ubo2, sizeof(ubo2));
+        graphics->setPipelineState(pipeline_state);
+        graphics->draw(graphicId2);
+
+        graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
         if (shaders_building > 0) {

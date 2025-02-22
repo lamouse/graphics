@@ -155,6 +155,11 @@ auto TextureCache<P>::GetFramebuffer(const RenderTargets& key) -> typename P::Fr
 }
 
 template <class P>
+auto TextureCache<P>::GetFramebuffer() -> Framebuffer* {
+    return &slot_framebuffers[GetFramebufferId(render_targets)];
+}
+
+template <class P>
 auto TextureCache<P>::FindSampler(u32 index) -> SamplerId {
     if (index > slot_samplers.size()) {
         SamplerId id = slot_samplers.insert(runtime, SamplerReduction::Max, 1);
@@ -312,5 +317,15 @@ auto TextureCache<P>::UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D e
     }
     render_targets.size = extent;
     return render_targets;
+}
+
+template <class P>
+void TextureCache<P>:: setCurrentImage(ImageViewId view_id, SamplerId sampler_id)
+{
+    current_image_view = std::make_pair(view_id, sampler_id);
+}
+template <class P>
+auto TextureCache<P>:: getCurrentImage()->std::pair<ImageView*, Sampler*> {
+    return std::make_pair<ImageView*, Sampler*>(&slot_image_views[current_image_view.first], &slot_samplers[current_image_view.second]);
 }
 }  // namespace render::texture

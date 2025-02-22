@@ -108,6 +108,7 @@ class TextureCache : public TextureCacheInfo {
         /// UpdateRenderTargets should be called before this
         auto GetFramebuffer(const RenderTargets& key) -> Framebuffer*;
 
+        auto GetFramebuffer() -> Framebuffer*;
         /// Find or create a framebuffer with the given render target parameters
         auto GetFramebufferId(const RenderTargets& key) -> FramebufferId;
 
@@ -159,7 +160,15 @@ class TextureCache : public TextureCacheInfo {
 
         /// Update bound render targets
         auto UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent) ->RenderTargets;
-
+        /**
+         * 这里主要针对添加的图片
+         */
+        void setCurrentImage(ImageViewId view_id, SamplerId sampler_id);
+        /**
+         *
+         * @return 这里主要针对上次设置的的图片
+         */
+        auto getCurrentImage()->std::pair<ImageView*, Sampler*>;
     private:
         Runtime& runtime;
         std::vector<FramebufferId> frame_buffer_ids;
@@ -189,7 +198,7 @@ class TextureCache : public TextureCacheInfo {
         std::unordered_map<ImageId, size_t> join_alias_indices;
 
         RenderTargets render_targets;
-
+        std::pair<ImageViewId, SamplerId> current_image_view;
         std::unordered_map<RenderTargets, FramebufferId> framebuffers;
         u64 frame_tick = 0;
 };

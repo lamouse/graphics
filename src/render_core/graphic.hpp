@@ -10,7 +10,7 @@ struct GraphicsContext {
   std::span<float> vertex;
   std::span<uint16_t> indices;
   u32 indices_size = 0;
-  size_t uniform_size= 0;
+  u32 uniform_size= 0;
   IndexFormat index_format;
 };
 class Graphic {
@@ -19,6 +19,7 @@ class Graphic {
         virtual void drawIndics(u32 indicesSize) = 0;
         virtual void setPipelineState(const PipelineState& state) = 0;
         virtual void addUniformBuffer(void* data, size_t size) = 0;
+        virtual void bindUniformBuffer(GraphicsId id, void* data, size_t size) = 0;
         virtual auto addGraphicContext(const GraphicsContext& context) -> GraphicsId = 0;
         virtual void draw(GraphicsId id) = 0;
         virtual void start() = 0;

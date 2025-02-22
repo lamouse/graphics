@@ -20,6 +20,7 @@ struct RenderTargetInfo {
         buffer::BufferId vertex_buffer_id;
         u32 vertex_size;
         buffer::BufferId uniform_buffer_id;
+        u32 uniform_buffer_size;
         texture::ImageViewId image_view_id;
         texture::SamplerId sampler_id;
         RenderTargetInfo() = default;
@@ -41,12 +42,13 @@ class VulkanGraphics : public render::Graphic {
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
-        void start() override {};
+        void start() override;
         void addUniformBuffer(void* data, size_t size) override;
         void setPipelineState(const PipelineState& state) override;
         void drawIndics(u32 indicesSize) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
         auto addGraphicContext(const GraphicsContext& context) -> GraphicsId override;
+        void bindUniformBuffer(GraphicsId id, void* data, size_t size) override;
         void draw(GraphicsId id) override;
         void end() override {};
         ~VulkanGraphics() override;
@@ -90,6 +92,7 @@ class VulkanGraphics : public render::Graphic {
         void UpdateDepthBounds();
         void UpdateStencilFaces();
         void UpdateLineWidth();
+        void clear();
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;

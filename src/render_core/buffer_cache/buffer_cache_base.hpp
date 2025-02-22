@@ -157,11 +157,14 @@ class BufferCache : public BufferCacheInfo {
         void TickFrame();
         auto addVertexBuffer(void* data, u32 size) -> BufferId;
         auto addIndexBuffer(void* data, u32 size) -> BufferId;
+        auto addUniformBuffer(u32 size)-> BufferId;
         void BindIndexBuffer(BufferId id);
         void BindVertexBuffers(BufferId id, u32 size);
-
-        auto BindUniforBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
+        void BindUniformBuffers(BufferId id, void* data, size_t size);
+        auto BindUniformBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
         void BindStageBuffers(size_t stage);
+        void BindCurrentUniformBuffers();
+        void setCurrentUniformBuffer(BufferId id, u32 size);
         [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
 
         [[nodiscard]] auto GetDrawIndirectBuffer() -> std::pair<Buffer*, u32>;
@@ -191,7 +194,7 @@ class BufferCache : public BufferCacheInfo {
         DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
 
         IndirectParams* current_draw_indirect{};
-
+        Binding current_uniform_buffer{};
         u32 last_index_count = 0;
 
         // Async Buffers
