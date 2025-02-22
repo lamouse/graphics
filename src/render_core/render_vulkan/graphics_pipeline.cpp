@@ -369,8 +369,7 @@ void GraphicsPipeline::ConfigureDraw() {
                                                     device_.logical().getDispatchLoaderDynamic());
         } else {
             const vk::DescriptorSet descriptor_set{descriptor_allocator.commit()};
-            vk::Device dev = device_.getLogical();
-            dev.updateDescriptorSetWithTemplate(descriptor_set, *descriptor_update_template,
+            device_.getLogical().updateDescriptorSetWithTemplate(descriptor_set, *descriptor_update_template,
                                                 descriptor_data);
             cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipeline_layout, 0,
                                       descriptor_set, nullptr);

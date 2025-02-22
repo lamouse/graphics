@@ -21,9 +21,6 @@ void App::run() {
     ::std::string s2(image_path + "p1.jpg");
     resource::image::Image img(s);
     resource::image::Image img2(s2);
-    graphics->addTexture(img.getImageInfo());
-
-    // graphics->addTexture(img2.getImageInfo());
     auto model = graphics::Model::createFromFile("models/viking_room.obj");
     std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
                                   model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
@@ -37,6 +34,13 @@ void App::run() {
     pipeline_state.viewport.height = layout.screen.GetHeight();
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
+    render::GraphicsContext graphics_ctx{};
+    graphics_ctx.image = img.getImageInfo();
+    graphics_ctx.vertex = verticesSpan;
+    graphics_ctx.indices = model->indices_;
+    graphics_ctx.indices_size = model->indices_.size();
+    graphics_ctx.index_format = render::IndexFormat::UnsignedShort;
+    auto graphicId = graphics->addGraphicContext(graphics_ctx);
     while (!window->shouldClose()) {
 
         render_base->addImguiUI([&](){
@@ -49,12 +53,10 @@ void App::run() {
         window->pullEvents();
         auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
         graphics->addUniformBuffer(&ubo, sizeof(ubo));
-        graphics->addVertex(verticesSpan, model->indices_);
         graphics->setPipelineState(pipeline_state);
-        graphics->drawIndics(model->indices_.size());
+        graphics->draw(graphicId);
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
-
         if (shaders_building > 0) {
             window->setWindowTitle(fmt::format("Building {} shader(s)", shaders_building));
         } else {

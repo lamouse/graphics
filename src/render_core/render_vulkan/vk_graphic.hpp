@@ -14,7 +14,21 @@
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
 namespace render::vulkan {
-
+struct RenderTargetInfo {
+        u32 indices_size;
+        buffer::BufferId indices_buffer_id;
+        buffer::BufferId vertex_buffer_id;
+        u32 vertex_size;
+        buffer::BufferId uniform_buffer_id;
+        texture::ImageViewId image_view_id;
+        texture::SamplerId sampler_id;
+        RenderTargetInfo() = default;
+        RenderTargetInfo(u32 indices_size, buffer::BufferId indices_buffer_id,
+                         buffer::BufferId vertex_buffer_id, buffer::BufferId uniform_buffer_id,
+                         texture::ImageViewId image_view_id, texture::SamplerId sampler_id);
+        CLASS_DEFAULT_MOVEABLE(RenderTargetInfo);
+        CLASS_DEFAULT_COPYABLE(RenderTargetInfo);
+};
 struct FramebufferTextureInfo;
 class Device;
 
@@ -28,12 +42,12 @@ class VulkanGraphics : public render::Graphic {
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
         void start() override {};
-        void addTexture(const texture::ImageInfo& imageInfo) override;
-        void addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) override;
         void addUniformBuffer(void* data, size_t size) override;
-        void setPipelineState(const PipelineState& state);
+        void setPipelineState(const PipelineState& state) override;
         void drawIndics(u32 indicesSize) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
+        auto addGraphicContext(const GraphicsContext& context) -> GraphicsId override;
+        void draw(GraphicsId id) override;
         void end() override {};
         ~VulkanGraphics() override;
 
@@ -91,8 +105,6 @@ class VulkanGraphics : public render::Graphic {
         TextureCache texture_cache;
         BufferCacheRuntime buffer_cache_runtime;
         BufferCache buffer_cache;
-        texture::ImageViewId image_view_id;
-        texture::SamplerId sampler_id;
         buffer::BufferId uniform_buffer_id;
         PipelineCache pipeline_cache;
         Event wfi_event;
@@ -101,6 +113,8 @@ class VulkanGraphics : public render::Graphic {
         std::array<texture::ImageViewId, MAX_IMAGE_VIEWS> image_view_ids;
         boost::container::static_vector<vk::Sampler, MAX_TEXTURES> sampler_handles;
         u32 draw_counter = 0;
+        std::unordered_map<GraphicsId, RenderTargetInfo> draw_indices;
+        common::SlotVector<RenderTargetInfo> slot_graphics;
 };
 
 }  // namespace render::vulkan

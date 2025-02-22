@@ -17,7 +17,17 @@ auto BufferCache<P>::CreateBuffer(u32 wanted_size) -> BufferId {
     new_buffer.MarkUsage(0, size_bytes);
     return new_buffer_id;
 }
-
+template <class P>
+auto BufferCache<P>::addIndexBuffer(void* data, u32 size) -> BufferId {
+    auto buffer_id = CreateBuffer(size);
+    auto& buffer = slot_buffers[buffer_id];
+    auto upload_staging = runtime.UploadStagingBuffer(size);
+    std::array<texture::BufferCopy, 1> copies{
+            {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
+    std::memcpy(upload_staging.mapped_span.data(), data, size);
+    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
+    return buffer_id;
+}
 template <class P>
 auto BufferCache<P>::BindIndexBuffer(void* data, u32 size) -> BufferId {
     if (index_buffer.size != size) {
@@ -37,12 +47,48 @@ auto BufferCache<P>::BindIndexBuffer(void* data, u32 size) -> BufferId {
     indirect_buffer_binding.size = size;
     return index_buffer.buffer_id;
 }
+template <class P>
+void BufferCache<P>::BindIndexBuffer(BufferId id) {
+    runtime.BindIndexBuffer(PrimitiveTopology::Triangles, IndexFormat::UnsignedShort, 0, 1, slot_buffers[id],
+                            0, 0);
+}
+
+template <class P>
+void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size) {
+    HostBindings<typename P::Buffer> host_bindings;
+    for (u32 index = 0; index < 1; ++index) {
+        Buffer& buffer = slot_buffers[id];
+        TouchBuffer(buffer, id);
+        host_bindings.min_index = std::min(host_bindings.min_index, index);
+        host_bindings.max_index = std::max(host_bindings.max_index, static_cast<u32>(1));  // 待修复
+    }
+    for (u32 index = host_bindings.min_index; index < host_bindings.max_index; index++) {
+        auto& buffer = slot_buffers[id];
+        host_bindings.buffers.push_back(&buffer);
+        host_bindings.offsets.push_back(0);
+        host_bindings.sizes.push_back(size);
+        host_bindings.strides.push_back(32);
+        runtime.BindVertexBuffers(host_bindings);
+    }
+}
 
 template <class P>
 void BufferCache<P>::TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept {
     if (buffer_id != NULL_BUFFER_ID) {
         lru_cache.Touch(buffer.getLRUID(), frame_tick);
     }
+}
+
+template <class P>
+auto BufferCache<P>::addVertexBuffer(void* data, u32 size) -> BufferId {
+    auto buffer_id = CreateBuffer(size);
+    auto& buffer = slot_buffers[buffer_id];
+    auto upload_staging = runtime.UploadStagingBuffer(size);
+    std::array<texture::BufferCopy, 1> copies{{texture::BufferCopy{
+        .src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
+    std::memcpy(upload_staging.mapped_span.data(), data, size);
+    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
+    return buffer_id;
 }
 
 template <class P>

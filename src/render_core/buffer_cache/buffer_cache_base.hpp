@@ -158,6 +158,11 @@ class BufferCache : public BufferCacheInfo {
         void TickFrame();
         auto BindIndexBuffer(void* data, u32 size) -> BufferId;
         auto BindVertexBuffers(void* data, u32 size) -> BufferId;
+        auto addVertexBuffer(void* data, u32 size) -> BufferId;
+        auto addIndexBuffer(void* data, u32 size)-> BufferId;
+  void BindIndexBuffer(BufferId id);
+  void BindVertexBuffers(BufferId id, u32 size);
+
         auto BindUniforBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
         void BindStageBuffers(size_t stage);
         [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;

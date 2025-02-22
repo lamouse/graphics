@@ -120,7 +120,7 @@ class TextureCache : public TextureCacheInfo {
         /// Get the sampler id from the graphics descriptor table in the specified index
         auto GetGraphicsSamplerId(u32 index) -> SamplerId;
         // 添加一个图像
-        void addGraphics(const ImageInfo& info);
+        auto addGraphics(const ImageInfo& info) ->std::pair<ImageViewId, SamplerId>;
         /// Get the sampler id from the compute descriptor table in the specified index
         auto GetComputeSamplerId(u32 index) -> SamplerId;
 

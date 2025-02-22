@@ -32,28 +32,15 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
-      wfi_event(device.logical().createEvent()) {
-}
+      wfi_event(device.logical().createEvent()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;
-
-void VulkanGraphics::addTexture(const texture::ImageInfo& imageInfo) {
-    texture_cache.addGraphics(imageInfo);
-}
-
-void VulkanGraphics::addVertex(std::span<float> vertex, const ::std::span<uint16_t>& indices) {
-    buffer_cache.BindVertexBuffers(vertex.data(), static_cast<u32>(vertex.size() * sizeof(float)));
-    buffer_cache.BindIndexBuffer(indices.data(),
-                                 static_cast<u32>(indices.size() * sizeof(uint16_t)));
-}
 
 void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
     // 这里修改，先添加，在pipelinebind
     uniform_buffer_id = buffer_cache.BindUniforBuffers(0, 0, data, static_cast<u32>(size));
 }
-void VulkanGraphics::setPipelineState(const PipelineState& state) {
-    pipeline_state = state;
-}
+void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
 void VulkanGraphics::drawIndics(u32 indicesSize) {
     PrepareDraw(true, [this, indicesSize] {
@@ -105,13 +92,15 @@ void VulkanGraphics::UpdateDynamicStates() {
 }
 
 void VulkanGraphics::UpdatePrimitiveRestartEnable() {
-    scheduler.record([this, enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
+    scheduler.record([this,
+                      enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setPrimitiveRestartEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
 
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
-    scheduler.record([this, enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
+    scheduler.record([this,
+                      enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setRasterizerDiscardEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
@@ -199,7 +188,6 @@ void VulkanGraphics::UpdateDepthTestEnable() {
         cmdbuf.setDepthTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
     });
 }
-
 /**
  * @brief 设置这个后深度信息显示正常了
  *
@@ -223,9 +211,10 @@ void VulkanGraphics::UpdateLogicOpEnable() {
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    scheduler.record([is_enabled = pipeline_state.depthClampEnable, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthClampEnableEXT(is_enabled, device.logical().getDispatchLoaderDynamic());
-    });
+    scheduler.record(
+        [is_enabled = pipeline_state.depthClampEnable, this](vk::CommandBuffer cmdbuf) {
+            cmdbuf.setDepthClampEnableEXT(is_enabled, device.logical().getDispatchLoaderDynamic());
+        });
 }
 
 void VulkanGraphics::UpdateLogicOp() {
@@ -263,7 +252,6 @@ void VulkanGraphics::UpdateBlending() {
         host_blend.dstAlphaBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         host_blend.alphaBlendOp = vk::BlendOp::eAdd;
     }
-
     scheduler.record([this, setup_blends](vk::CommandBuffer cmdbuf) {
         cmdbuf.setColorBlendEquationEXT(0, setup_blends,
                                         device.logical().getDispatchLoaderDynamic());
@@ -271,25 +259,26 @@ void VulkanGraphics::UpdateBlending() {
 }
 
 void VulkanGraphics::UpdateViewportsState() {
-    auto layout = emu_window->getFramebufferLayout();
-    auto view = vk::Viewport()
-                    .setX(pipeline_state.viewport.x)
-                    .setY(pipeline_state.viewport.y)
-                    .setWidth(pipeline_state.viewport.width == 0.f ? 1.f: pipeline_state.viewport.width)
-                    .setHeight(pipeline_state.viewport.height == 0.f ? 1.f: pipeline_state.viewport.height)
-                    .setMinDepth(pipeline_state.viewport.minDepth)
-                    .setMaxDepth(pipeline_state.viewport.maxDepth);
+    auto view =
+        vk::Viewport()
+            .setX(pipeline_state.viewport.x)
+            .setY(pipeline_state.viewport.y)
+            .setWidth(pipeline_state.viewport.width == 0.f ? 1.f : pipeline_state.viewport.width)
+            .setHeight(pipeline_state.viewport.height == 0.f ? 1.f : pipeline_state.viewport.height)
+            .setMinDepth(pipeline_state.viewport.minDepth)
+            .setMaxDepth(pipeline_state.viewport.maxDepth);
     scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
     return;
 }
 
 void VulkanGraphics::UpdateScissorsState() {
-
     vk::Rect2D scissor;
     scissor.offset.x = pipeline_state.scissors.x;
     scissor.offset.y = pipeline_state.scissors.y;
-    scissor.extent.width = static_cast<u32>(pipeline_state.scissors.width != 0 ? pipeline_state.scissors.width : 1);
-    scissor.extent.height = static_cast<u32>(pipeline_state.scissors.height != 0 ? pipeline_state.scissors.height : 1);
+    scissor.extent.width =
+        static_cast<u32>(pipeline_state.scissors.width != 0 ? pipeline_state.scissors.width : 1);
+    scissor.extent.height =
+        static_cast<u32>(pipeline_state.scissors.height != 0 ? pipeline_state.scissors.height : 1);
     scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
 }
 
@@ -345,6 +334,31 @@ void VulkanGraphics::UpdateLineWidth() {
 }
 
 void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) { imgui->draw(cmd_buf); }
+auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> GraphicsId {
+    auto [viewId, samplerId] = texture_cache.addGraphics(context.image);
+    RenderTargetInfo info{};
+    info.vertex_size = static_cast<u32>(context.vertex.size() * sizeof(float));
+    info.indices_size = context.indices_size;
+    info.image_view_id = viewId;
+    info.sampler_id = samplerId;
+    info.vertex_buffer_id = buffer_cache.addVertexBuffer(context.vertex.data(), info.vertex_size);
+    ;
+    info.indices_buffer_id = buffer_cache.addIndexBuffer(
+        context.indices.data(), static_cast<u32>(context.indices.size() * sizeof(uint16_t)));
+    auto graphicsId = slot_graphics.insert();
+    draw_indices[graphicsId] = info;
+    return graphicsId;
+}
+void VulkanGraphics::draw(GraphicsId id) {
+    PrepareDraw(true, [id, this] {
+        const auto drawInfo = draw_indices[id];
+        buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);
+        buffer_cache.BindIndexBuffer(drawInfo.indices_buffer_id);
+        scheduler.record([indices_size = drawInfo.indices_size, this](vk::CommandBuffer cmdbuf) {
+            cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
+        });
+    });
+}
 
 void VulkanGraphics::TickFrame() {
     guest_descriptor_queue.TickFrame();

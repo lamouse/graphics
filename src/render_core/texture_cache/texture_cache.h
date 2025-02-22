@@ -258,7 +258,7 @@ void TextureCache<P>::SynchronizeGraphicsDescriptors() {
 }
 
 template <class P>
-void TextureCache<P>::addGraphics(const ImageInfo& info) {
+auto TextureCache<P>::addGraphics(const ImageInfo& info) ->std::pair<ImageViewId, SamplerId>{
     ImageInfo new_info = info;
     const size_t size_bytes = utils::CalculateGuestSizeInBytes(new_info);
 
@@ -288,6 +288,7 @@ void TextureCache<P>::addGraphics(const ImageInfo& info) {
     auto slot_id = slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,
                                         image_view.range.extent.levels);
     graphics_sampler_ids.push_back(slot_id);
+    return std::make_pair(image_view_id, slot_id);
 }
 
 template <class P>
