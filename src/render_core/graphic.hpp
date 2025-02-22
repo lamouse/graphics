@@ -18,7 +18,6 @@ class Graphic {
         virtual ~Graphic() = default;
         virtual void drawIndics(u32 indicesSize) = 0;
         virtual void setPipelineState(const PipelineState& state) = 0;
-        virtual void addUniformBuffer(void* data, size_t size) = 0;
         virtual void bindUniformBuffer(GraphicsId id, void* data, size_t size) = 0;
         virtual auto addGraphicContext(const GraphicsContext& context) -> GraphicsId = 0;
         virtual void draw(GraphicsId id) = 0;

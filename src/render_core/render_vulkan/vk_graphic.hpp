@@ -43,7 +43,6 @@ class VulkanGraphics : public render::Graphic {
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
         void start() override;
-        void addUniformBuffer(void* data, size_t size) override;
         void setPipelineState(const PipelineState& state) override;
         void drawIndics(u32 indicesSize) override;
         void drawImgui(vk::CommandBuffer cmd_buf);

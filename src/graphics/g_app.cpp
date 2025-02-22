@@ -55,7 +55,6 @@ void App::run() {
         window->pullEvents();
         graphics->start();
         auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
-        graphics->addUniformBuffer(&ubo, sizeof(ubo));
         graphics->bindUniformBuffer(graphicId, &ubo, sizeof(ubo));
         graphics->setPipelineState(pipeline_state);
         graphics->draw(graphicId);
@@ -64,7 +63,6 @@ void App::run() {
         debug2.look_x += 8.f;
         debug2.center_z += 2.f;
         auto ubo2 = graphics::ui::get_uniform_buffer(debug2, window->getAspectRatio());
-        graphics->addUniformBuffer(&ubo2, sizeof(ubo2));
         graphics->bindUniformBuffer(graphicId2, &ubo2, sizeof(ubo2));
         graphics->setPipelineState(pipeline_state);
         graphics->draw(graphicId2);

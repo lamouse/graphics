@@ -47,10 +47,6 @@ void VulkanGraphics::start() {
     scheduler.requestRenderPass(texture_cache.GetFramebuffer());
     clear();
 }
-void VulkanGraphics::addUniformBuffer(void* data, size_t size) {
-    // 这里修改，先添加，在pipelinebind
-    uniform_buffer_id = buffer_cache.BindUniformBuffers(0, 0, data, static_cast<u32>(size));
-}
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
 void VulkanGraphics::drawIndics(u32 indicesSize) {
@@ -404,8 +400,7 @@ void VulkanGraphics::draw(GraphicsId id) {
     const auto drawInfo = draw_indices[id];
     buffer_cache.setCurrentUniformBuffer(drawInfo.uniform_buffer_id, drawInfo.uniform_buffer_size);
     texture_cache.setCurrentImage(drawInfo.image_view_id, drawInfo.sampler_id);
-    PrepareDraw(true, [id, this] {
-        const auto drawInfo = draw_indices[id];
+    PrepareDraw(true, [drawInfo, this] {
         buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);
         buffer_cache.BindIndexBuffer(drawInfo.indices_buffer_id);
         scheduler.record([indices_size = drawInfo.indices_size, this](vk::CommandBuffer cmdbuf) {
