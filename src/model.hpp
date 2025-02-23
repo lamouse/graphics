@@ -1,10 +1,10 @@
 #pragma once
 
-#include <glm/gtx/hash.hpp>
 #include <memory>
 #include <vector>
+#include <string>
+#include <glm/gtx/hash.hpp>
 
-#include "core/buffer.hpp"
 namespace graphics {
 class Model {
     public:
@@ -12,13 +12,9 @@ class Model {
                 ::glm::vec3 position;
                 ::glm::vec3 color;
                 ::glm::vec2 texCoord;
-                static auto getBindingDescription()
-                    -> ::std::vector<::vk::VertexInputBindingDescription>;
-                static auto getAttributeDescription()
-                    -> ::std::vector<::vk::VertexInputAttributeDescription>;
                 auto operator==(const Vertex& other) const -> bool {
-                    return position == other.position && color == other.color &&
-                           texCoord == other.texCoord;
+                  return position == other.position && color == other.color &&
+                         texCoord == other.texCoord;
                 }
         };
 

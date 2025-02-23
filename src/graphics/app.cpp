@@ -1,137 +1,102 @@
 #include "app.hpp"
 
-#include "config/vulkan.h"
 #include "config/window.h"
-#include "core/buffer.hpp"
 #include "g_defines.hpp"
-#include "g_descriptor.hpp"
-#include "g_game_object.hpp"
-#include "g_imgui.hpp"
-#include "g_render.hpp"
-#include "g_render_system.hpp"
-// imgui begin
-//#include "g_imgui.hpp"
-#include "resource/image_texture.hpp"
-// imgui end
+#include "resource/image.hpp"
 #include <spdlog/spdlog.h>
+#include "render_core/render_vulkan/render_vulkan.hpp"
 #include "glfw_window.hpp"
-
-#include <chrono>
+#include "sdl_window.hpp"
 #include <thread>
+#include "model.hpp"
+#include "render_core/framebufferConfig.hpp"
+#include "ui.hpp"
 
 namespace graphics {
-namespace {
-auto create_descriptor_pool(int count) -> ::std::unique_ptr<g::DescriptorPool> {
-    return g::DescriptorPool::Builder()
-        .setPoolFlags(::vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-        .setMaxSets(count)
-        .addPoolSize(::vk::DescriptorType::eUniformBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eSampler, count)
-        .addPoolSize(::vk::DescriptorType::eCombinedImageSampler, count)
-        .addPoolSize(::vk::DescriptorType::eStorageImage, count)
-        .addPoolSize(::vk::DescriptorType::eSampledImage, count)
-        .addPoolSize(::vk::DescriptorType::eUniformTexelBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eStorageTexelBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eStorageBuffer, count)
-        .addPoolSize(::vk::DescriptorType::eStorageBufferDynamic, count)
-        .addPoolSize(::vk::DescriptorType::eUniformBufferDynamic, count)
-        .addPoolSize(::vk::DescriptorType::eInputAttachment, count)
-        .build();
-}
-auto loadGameObjects() -> g::GameObject::Map {
-    g::GameObject::Map gameObjects;
-    auto cube = g::GameObject::createGameObject();
-    cube.model = g::Model::createFromFile("models/viking_room.obj");
-    gameObjects.emplace(cube.getId(), ::std::move(cube));
-    return gameObjects;
-}
-}  // namespace
+namespace {}  // namespace
 
 void App::run() {
-    core::Device device_;
-    auto gameObjects = loadGameObjects();
-    ::std::unique_ptr<g::DescriptorPool> descriptorPool_ = create_descriptor_pool(1000);
-    auto setLayout = g::DescriptorSetLayout::Builder()
-                         .addBinding(0, ::vk::DescriptorType::eUniformBuffer,
-                                     ::vk::ShaderStageFlagBits::eAllGraphics)
-                         .addBinding(1, ::vk::DescriptorType::eCombinedImageSampler,
-                                     ::vk::ShaderStageFlagBits::eAllGraphics)
-                         .build();
-
-    ::std::vector<::std::unique_ptr<core::Buffer>> uboBuffers(2);
-    for (auto& uboBuffer : uboBuffers) {
-        uboBuffer = ::std::make_unique<core::Buffer>(device_.createBuffer(
-            sizeof(g::UniformBufferObject), 1, ::vk::BufferUsageFlagBits::eUniformBuffer,
-            ::vk::MemoryPropertyFlagBits::eHostVisible |
-                ::vk::MemoryPropertyFlagBits::eHostCoherent));
-        uboBuffer->map();
-    }
+    auto* graphics = render_base->getGraphics();
     ::std::string s(image_path + "viking_room.png");
+    ::std::string s2(image_path + "p1.jpg");
     resource::image::Image img(s);
-    resource::image::ImageTexture imageTexture{device_, img, g::Swapchain::DEFAULT_COLOR_FORMAT};
-
-    ::std::vector<::vk::DescriptorSet> descriptorSets(uboBuffers.size());
-    for (int i = 0; auto& descriptorSet : descriptorSets) {
-        auto bufferInfo = uboBuffers[i++]->descriptorInfo();
-        descriptorSet = g::DescriptorWriter()
-                            .writeBuffer((*setLayout)(0), bufferInfo)
-                            .writeImage((*setLayout)(1), imageTexture.descriptorImageInfo())
-                            .build(*descriptorPool_, (*setLayout)());
-    }
-
-    g::RenderProcessor render([this]() { return dynamic_cast<g::ScreenWindow*>(window.get())->getExtent(); });
-    g::RenderSystem renderSystem(device_, static_cast<::vk::RenderPass>(render), (*setLayout)());
-    g::Imgui imgui((*dynamic_cast<g::ScreenWindow*>(window.get()))(), descriptorPool_->getDescriptorPool(),
-                static_cast<::vk::RenderPass>(render),
-                window->getWindowSystemInfo().render_surface_scale);
+    resource::image::Image img2(s2);
+    auto model = graphics::Model::createFromFile("models/viking_room.obj");
+    std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
+                                  model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+    auto debugInfo = graphics::ui::init_debug_info();
+    render::frame::FramebufferConfig frames{
+        .width = 1920, .height = 1080, .stride = 1920};
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    render::PipelineState pipeline_state;
+    auto layout = window->getFramebufferLayout();
+    pipeline_state.viewport.width = layout.screen.GetWidth();
+    pipeline_state.viewport.height = layout.screen.GetHeight();
+    pipeline_state.scissors.width = layout.screen.GetWidth();
+    pipeline_state.scissors.height = layout.screen.GetHeight();
+    render::GraphicsContext graphics_ctx{};
+    graphics_ctx.image = img.getImageInfo();
+    graphics_ctx.vertex = verticesSpan;
+    graphics_ctx.indices = model->indices_;
+    graphics_ctx.indices_size = model->indices_.size();
+    graphics_ctx.index_format = render::IndexFormat::UnsignedShort;
+    graphics_ctx.uniform_size = sizeof(render::UniformBufferObject);
+    auto graphicId = graphics->addGraphicContext(graphics_ctx);
+    graphics_ctx.image = img2.getImageInfo();
+    auto graphicId2 = graphics->addGraphicContext(graphics_ctx);
     while (!window->shouldClose()) {
-        glfwPollEvents();
+        window->pullEvents();
         if (window->IsMinimized()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
-        g::UniformBufferObject ubo = imgui.get_uniform_buffer(render.extentAspectRation());
+        graphics->start();
+        auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
+        graphics->bindUniformBuffer(graphicId, &ubo, sizeof(ubo));
+        graphics->setPipelineState(pipeline_state);
+        graphics->draw(graphicId);
 
-        if (render.beginFrame()) {
-            uboBuffers[render.getCurrentFrameIndex()]->writeToBuffer(&ubo);
-            uboBuffers[render.getCurrentFrameIndex()]->flush();
+        auto debug2 = debugInfo;
+        debug2.look_x += 8.f;
+        debug2.center_z += 2.f;
+        auto ubo2 = graphics::ui::get_uniform_buffer(debug2, window->getAspectRatio());
+        graphics->bindUniformBuffer(graphicId2, &ubo2, sizeof(ubo2));
+        graphics->setPipelineState(pipeline_state);
+        graphics->draw(graphicId2);
 
-            g::FrameInfo frameInfo{.frameIndex = render.getCurrentFrameIndex(),
-                                .commandBuffer = render.getCurrentCommandBuffer(),
-                                .descriptorSet = descriptorSets[render.getCurrentFrameIndex()],
-                                .gameObjects = gameObjects};
-
-            render.beginSwapchainRenderPass();
-            renderSystem.render(frameInfo);
-            imgui.draw(render.getCurrentCommandBuffer());
-            render.endSwapchainRenderPass();
-            render.endFrame();
+        graphics->end();
+        auto& shader_notify = render_base->getShaderNotify();
+        const int shaders_building = shader_notify.ShadersBuilding();
+        if (shaders_building > 0) {
+            window->setWindowTitle(fmt::format("Building {} shader(s)", shaders_building));
+        } else {
+            window->setWindowTitle("graphics");
         }
+        auto imageId = graphics->getDrawImage();
+        render_base->addImguiUI([&](){
+            graphics::ui::begin();
+            graphics::ui::main_ui();
+            graphics::ui::uniform_ui(debugInfo);
+            graphics::ui::draw_result(imageId, window->getAspectRatio());
+            graphics::ui::pipeline_state(pipeline_state);
+            graphics::ui::draw_setting();
+            graphics::ui::end();
+        });
+        render_base->composite(std::span{&frames, 1});
     }
-
-    core::Device::waitIdle();
 }
 
 App::App(const g::Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    window = std::make_unique<g::ScreenWindow>(
-        g::ScreenExtent{.width = window_config.width, .height = window_config.height},
-        window_config.title);
+    // window = std::make_unique<ScreenWindow>(
+    //     ScreenExtent{.width = window_config.width, .height = window_config.height},
+    //     window_config.title);
+    window = std::make_unique<graphics::SDLWindow>(window_config.width,window_config.height,
+            window_config.title);
 
-    auto vulkan_config = config.getConfig<config::vulkan::Vulkan>();
-    auto requiredInstanceExtends =
-        g::ScreenWindow::getRequiredInstanceExtends(vulkan_config.validation_layers);
-    auto deviceExtensions = config::getDeviceExtensions();
-
-    core::Device::init(
-        requiredInstanceExtends, deviceExtensions,
-        [this](VkInstance instance) -> VkSurfaceKHR {
-            return dynamic_cast<g::ScreenWindow*>(window.get())->getSurface(instance);
-            // return render::vulkan::createSurface(instance, window->getWindowSystemInfo());
-        },
-        vulkan_config.validation_layers);
+    render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }
 
-App::~App() { core::Device::destroy(); };
+App::~App(){};
 
 }  // namespace g

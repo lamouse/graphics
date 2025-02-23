@@ -21,34 +21,6 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
-auto Model::Vertex::getBindingDescription() -> ::std::vector<::vk::VertexInputBindingDescription> {
-    ::std::vector<::vk::VertexInputBindingDescription> bindingDescriptions(1);
-    bindingDescriptions[0].setBinding(0);
-    bindingDescriptions[0].setStride(sizeof(Vertex));
-
-    return bindingDescriptions;
-}
-auto Model::Vertex::getAttributeDescription()
-    -> ::std::vector<::vk::VertexInputAttributeDescription> {
-    ::std::vector<::vk::VertexInputAttributeDescription> attributeDescriptions(3);
-    attributeDescriptions[0].setBinding(0);
-    attributeDescriptions[0].setLocation(0);
-    attributeDescriptions[0].setFormat(::vk::Format::eR32G32B32Sfloat);
-    attributeDescriptions[0].setOffset(offsetof(Vertex, position));
-
-    attributeDescriptions[1].setBinding(0);
-    attributeDescriptions[1].setLocation(1);
-    attributeDescriptions[1].setFormat(::vk::Format::eR32G32B32Sfloat);
-    attributeDescriptions[1].setOffset(offsetof(Vertex, color));
-
-    attributeDescriptions[2].setBinding(0);
-    attributeDescriptions[2].setLocation(2);
-    attributeDescriptions[2].setFormat(::vk::Format::eR32G32Sfloat);
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-}
-
 auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model> {
     std::vector<Model::Vertex> vertices;
     std::vector<uint16_t> indices;

@@ -412,7 +412,11 @@ void VulkanGraphics::clear() {
     });
 }
 
-void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) { imgui->draw(cmd_buf); }
+void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
+    if (imgui) {
+        imgui->draw(cmd_buf);
+    }
+}
 auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> GraphicsId {
     auto [viewId, samplerId] = texture_cache.addGraphics(context.image);
     RenderTargetInfo info{};

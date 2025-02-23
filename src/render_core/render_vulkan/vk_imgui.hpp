@@ -7,7 +7,6 @@
 #pragma once
 #include "render_core/vulkan_common/device.hpp"
 #include "core/frontend/window.hpp"
-#include <g_frame.hpp>
 #include "render_core/uniforms.hpp"
 namespace render::vulkan {
 class ImguiCore {

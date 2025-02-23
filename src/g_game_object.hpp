@@ -3,9 +3,9 @@
 #include <memory>
 #include <unordered_map>
 
-#include "g_model.hpp"
+#include "model.hpp"
 
-namespace g {
+namespace graphics {
 
 struct TransformCompoent {
         ::glm::vec3 translation{};  // position offset

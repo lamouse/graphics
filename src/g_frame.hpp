@@ -2,10 +2,9 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "g_camera.hpp"
 #include "g_game_object.hpp"
 
-namespace g {
+namespace graphics {
 
 struct UniformBufferObject {
         glm::mat4 model;
