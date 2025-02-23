@@ -22,7 +22,30 @@ void fps() {
                        1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
 }
+ImVec2 calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) {
+    float targetWidth = availableSize.x;
+    float targetHeight = availableSize.x / aspectRatio;
 
+    // 如果高度超出可用区域，则按高度缩放
+    if (targetHeight > availableSize.y) {
+        targetHeight = availableSize.y;
+        targetWidth = availableSize.y * aspectRatio;
+    }
+
+    return ImVec2(targetWidth, targetHeight);
+}
+
+static void HelpMarker(const char* desc)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::BeginItemTooltip())
+    {
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
 }  // namespace
 namespace graphics::ui {
 auto init_debug_info() -> ImguiDebugInfo {
@@ -138,7 +161,7 @@ void begin() {}
 void end() { ImGui::Render(); }
 
 void pipeline_state(render::PipelineState& state) {
-    ImGui::Begin("pipeline state");
+    ImGui::Begin("pipeline 状态");
 
     if (ImGui::TreeNode("set pipeline state")) {
         ImGui::Checkbox("colorBlendEnable", &state.colorBlendEnable);
@@ -172,9 +195,12 @@ void pipeline_state(render::PipelineState& state) {
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("set clear value")) {
-        ImGui::SliderFloat("r", &state.clearColor.r, .0f, 255.f);
-        ImGui::SliderFloat("g", &state.clearColor.g, .0f, 255.f);
-        ImGui::SliderFloat("b", &state.clearColor.b, .0f, 255.f);
+        HelpMarker("clear color");
+        static float col1[3] = { state.clearColor.r, state.clearColor.g, state.clearColor.b };
+        ImGui::ColorEdit3("clear color", col1);
+        state.clearColor.r = col1[0];
+        state.clearColor.g = col1[1];
+        state.clearColor.b = col1[2];
         ImGui::SliderFloat("depth", &state.clearColor.depth, .96f, 1.f);
         ImGui::SliderInt("stencil", &state.clearColor.stencil, 0, 10);
         ImGui::TreePop();
@@ -191,12 +217,26 @@ void pipeline_state(render::PipelineState& state) {
     ImGui::End();
 }
 
-void draw_result(ImTextureID imguiTextureID) {
-
+void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
+    ImGuiIO const& io = ImGui::GetIO();
+    (void)io;
     // 在 ImGui 窗口中显示 Vulkan 渲染结果
-    ImGui::Begin("Vulkan Framebuffer Output");
-    ImGui::Image(imguiTextureID, ImVec2(800, 600));  // 假设图像尺寸为 800x600
-    ImGui::End();
+    ImGui::Begin("Vulkan绘制结果");
+    // 获取当前 ImGui 窗口的尺寸
+    ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
+    ImVec2 imageSize = calculateAspectRatioSize(windowSize, aspectRatio);
+    ImGui::Image(imguiTextureID, imageSize);
+    // 计算文本的宽度
+    const char* text = "average %.3f ms/frame (%.1f FPS)";
+    ImVec2 textSize = ImGui::CalcTextSize(text);
+    // 设置文本绘制位置为右上角
+    float textPosX = windowSize.x - textSize.x - 20; // 10 是右边距
+    float textPosY = textSize.y + 10; // 20 是上边距
+    // // 设置文本绘制位置为右上角
+    ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
+    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)",
+                1000.0f / io.Framerate, io.Framerate);
+    ImGui::End();
 }
 }  // namespace graphics::ui

@@ -43,7 +43,7 @@ class UI{
  */
 void pipeline_state(render::PipelineState &state);
 
-void draw_result(ImTextureID imguiTextureID);
+void draw_result(ImTextureID imguiTextureID, float aspectRatio);
 void main_ui();
 void begin();
 void end();

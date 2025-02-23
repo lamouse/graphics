@@ -100,9 +100,11 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device, 
     // init_info.UseDynamicRendering = true;
     init_info.RenderPass = *render_pass;
     ImGui_ImplVulkan_Init(&init_info);
+    ImFontConfig fontConfig;
+    fontConfig.OversampleH = 2; // 水平方向抗锯齿
+    fontConfig.OversampleV = 2; // 垂直方向抗锯齿
+    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0f, &fontConfig, io.Fonts->GetGlyphRangesChineseFull());
 }
-
-void debug() {}
 
 void ImguiCore::imgui_predraw(){
     {

@@ -1,5 +1,6 @@
 file(COPY images DESTINATION ${CMAKE_BINARY_DIR}/bin)
 file(COPY models DESTINATION ${CMAKE_BINARY_DIR}/bin)
+file(COPY fronts DESTINATION ${CMAKE_BINARY_DIR}/bin)
 find_program(GLSLC_PROGRAM glslc REQUIRED)
 message(STATUS "run glslc to compile shaders ...")
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin/shader)

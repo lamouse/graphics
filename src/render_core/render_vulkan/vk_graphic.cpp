@@ -383,9 +383,9 @@ void VulkanGraphics::UpdateLineWidth() {
 void VulkanGraphics::clear() {
     const vk::Extent2D render_area{static_cast<uint32_t>(pipeline_state.viewport.width),
                                    static_cast<uint32_t>(pipeline_state.viewport.height)};
-    const f32 bg_red = pipeline_state.clearColor.r / 255.f;
-    const f32 bg_green = pipeline_state.clearColor.g / 255.f;
-    const f32 bg_blue = pipeline_state.clearColor.b / 255.f;
+    const f32 bg_red = pipeline_state.clearColor.r;
+    const f32 bg_green = pipeline_state.clearColor.g;
+    const f32 bg_blue = pipeline_state.clearColor.b;
     auto clear_value = vk::ClearValue().setColor(
         vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
     const vk::ClearAttachment clear_attachment = vk::ClearAttachment()

@@ -77,7 +77,7 @@ void App::run() {
             graphics::ui::begin();
             graphics::ui::main_ui();
             graphics::ui::uniform_ui(debugInfo);
-            graphics::ui::draw_result(imageId);
+            graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::end();
         });
@@ -87,11 +87,11 @@ void App::run() {
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    window = std::make_unique<ScreenWindow>(
-        ScreenExtent{.width = window_config.width, .height = window_config.height},
-        window_config.title);
-    // window = std::make_unique<graphics::SDLWindow>(window_config.width,window_config.height,
-    //         window_config.title);
+    // window = std::make_unique<ScreenWindow>(
+    //     ScreenExtent{.width = window_config.width, .height = window_config.height},
+    //     window_config.title);
+    window = std::make_unique<graphics::SDLWindow>(window_config.width,window_config.height,
+            window_config.title);
 
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }
