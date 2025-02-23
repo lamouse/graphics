@@ -3,6 +3,7 @@
 #include "common/common_funcs.hpp"
 #include "render_core/texture/image_info.hpp"
 #include <span>
+#include <imgui.h>
 namespace render {
 using GraphicsId = common::SlotId;
 struct GraphicsContext {
@@ -20,6 +21,7 @@ class Graphic {
         virtual void setPipelineState(const PipelineState& state) = 0;
         virtual void bindUniformBuffer(GraphicsId id, void* data, size_t size) = 0;
         virtual auto addGraphicContext(const GraphicsContext& context) -> GraphicsId = 0;
+        virtual auto getDrawImage() -> ImTextureID = 0;
         virtual void draw(GraphicsId id) = 0;
         virtual void start() = 0;
         virtual void end() = 0;

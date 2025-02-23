@@ -2,6 +2,7 @@
 #include "uniforms.hpp"
 #include "blit_screen.hpp"
 #include <tracy/Tracy.hpp>
+#include <imgui_impl_vulkan.h>
 namespace render::vulkan {
 
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
@@ -37,7 +38,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::start() {
-    //TODO 这里是一个临时策略
+    // TODO 这里是一个临时策略
     std::scoped_lock lock{texture_cache.mutex};
     static bool is_new_frame = true;
     if (is_new_frame) {
@@ -55,6 +56,42 @@ void VulkanGraphics::drawIndics(u32 indicesSize) {
             cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0);
         });
     });
+}
+
+auto VulkanGraphics::getDrawImage() -> ImTextureID {
+    // 将 Vulkan 纹理绑定到 ImGui
+    const auto& image_view = texture_cache.TryFindFramebufferImageView({});
+    if (!sampler) {
+        ::vk::SamplerCreateInfo samplerInfo =
+            ::vk::SamplerCreateInfo()
+                .setMagFilter(::vk::Filter::eLinear)
+                .setMinFilter(::vk::Filter::eLinear)
+                .setAddressModeU(::vk::SamplerAddressMode::eRepeat)
+                .setAddressModeV(::vk::SamplerAddressMode::eRepeat)
+                .setAddressModeW(::vk::SamplerAddressMode::eRepeat)
+                .setAnisotropyEnable(VK_TRUE)
+                .setMaxAnisotropy(device.getMaxAnisotropy())
+                .setBorderColor(::vk::BorderColor::eIntOpaqueBlack)
+                .setUnnormalizedCoordinates(VK_FALSE)
+                .setCompareEnable(VK_FALSE)
+                .setCompareOp(::vk::CompareOp::eAlways)
+                .setMipmapMode(::vk::SamplerMipmapMode::eLinear)
+                .setMipLodBias(0.0f)
+                .setMinLod(0.0f)
+                .setMaxLod(1);
+        sampler = device.logical().CreateSampler(samplerInfo);
+    }
+    const auto [pair, is_new] =
+        imgui_textures.try_emplace(image_view.first->Handle(shader::TextureType::Color2D));
+    if (!is_new) {
+        return pair->second;
+    }
+    ImTextureID imguiTextureID_{};
+
+    imguiTextureID_ = (ImTextureID)ImGui_ImplVulkan_AddTexture(
+        *sampler, image_view.first->Handle(shader::TextureType::Color2D), VK_IMAGE_LAYOUT_GENERAL);
+    pair->second = imguiTextureID_;
+    return imguiTextureID_;
 }
 
 void VulkanGraphics::UpdateDynamicStates() {
@@ -97,7 +134,9 @@ void VulkanGraphics::UpdateDynamicStates() {
         UpdateVertexInput();
     }
 }
-
+// 用于启用或禁用 图元重启（Primitive
+// Restart）功能。图元重启功能主要用于在绘制图元（如三角形、线条等）时，
+// 允许在索引缓冲区中插入一个特殊值（称为“重启索引”），以分隔不同的图元序列。
 void VulkanGraphics::UpdatePrimitiveRestartEnable() {
     scheduler.record([this,
                       enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
@@ -105,6 +144,7 @@ void VulkanGraphics::UpdatePrimitiveRestartEnable() {
     });
 }
 
+// 用于启用或禁用 光栅化丢弃
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
     scheduler.record([this,
                       enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
@@ -311,7 +351,8 @@ void VulkanGraphics::UpdateDepthBias() {
 }
 
 void VulkanGraphics::UpdateBlendConstants() {
-    const std::array blend_color = {pipeline_state.blendColor.r, pipeline_state.blendColor.g, pipeline_state.blendColor.b, pipeline_state.blendColor.a};
+    const std::array blend_color = {pipeline_state.blendColor.r, pipeline_state.blendColor.g,
+                                    pipeline_state.blendColor.b, pipeline_state.blendColor.a};
     scheduler.record(
         [blend_color](vk::CommandBuffer cmdbuf) { cmdbuf.setBlendConstants(blend_color.data()); });
 }
@@ -340,33 +381,30 @@ void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 void VulkanGraphics::clear() {
-    const vk::Extent2D render_area{
-        static_cast<uint32_t>(pipeline_state.viewport.width),
-        static_cast<uint32_t>(pipeline_state.viewport.height)
-    };
-    const f32 bg_red = pipeline_state.clearColor.r/255.f;
-    const f32 bg_green = pipeline_state.clearColor.g/255.f;
-    const f32 bg_blue = pipeline_state.clearColor.b/255.f;
+    const vk::Extent2D render_area{static_cast<uint32_t>(pipeline_state.viewport.width),
+                                   static_cast<uint32_t>(pipeline_state.viewport.height)};
+    const f32 bg_red = pipeline_state.clearColor.r / 255.f;
+    const f32 bg_green = pipeline_state.clearColor.g / 255.f;
+    const f32 bg_blue = pipeline_state.clearColor.b / 255.f;
     auto clear_value = vk::ClearValue().setColor(
-          vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
-    const vk::ClearAttachment clear_attachment =
-  vk::ClearAttachment()
-      .setAspectMask(vk::ImageAspectFlagBits::eColor)
-      .setColorAttachment(0)
-      .setClearValue(clear_value);
+        vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
+    const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
+                                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                                     .setColorAttachment(0)
+                                                     .setClearValue(clear_value);
 
-    auto clear_depth = vk::ClearDepthStencilValue().setDepth(pipeline_state.clearColor.depth).setStencil(pipeline_state.clearColor.stencil);
+    auto clear_depth = vk::ClearDepthStencilValue()
+                           .setDepth(pipeline_state.clearColor.depth)
+                           .setStencil(pipeline_state.clearColor.stencil);
     auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
-    const vk::ClearAttachment depth_attachment =
-vk::ClearAttachment()
-  .setAspectMask(vk::ImageAspectFlagBits::eDepth)
-  .setColorAttachment(0)
-  .setClearValue(clear_depth_value);
+    const vk::ClearAttachment depth_attachment = vk::ClearAttachment()
+                                                     .setAspectMask(vk::ImageAspectFlagBits::eDepth)
+                                                     .setColorAttachment(0)
+                                                     .setClearValue(clear_depth_value);
 
     const vk::ClearRect clear_rect =
         vk::ClearRect()
-            .setRect(
-                vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
+            .setRect(vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
             .setBaseArrayLayer(0)
             .setLayerCount(1);
     scheduler.record([clear_attachment, depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
@@ -402,7 +440,7 @@ void VulkanGraphics::draw(GraphicsId id) {
     PrepareDraw(true, [drawInfo, this] {
         buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);
         buffer_cache.BindIndexBuffer(drawInfo.indices_buffer_id);
-        scheduler.record([indices_size = drawInfo.indices_size, this](vk::CommandBuffer cmdbuf) {
+        scheduler.record([indices_size = drawInfo.indices_size](vk::CommandBuffer cmdbuf) {
             cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
         });
     });

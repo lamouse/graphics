@@ -35,7 +35,6 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
         throw std::runtime_error(
             fmt::format("SDL_GetWindowDisplayScale! SDL_Error: {}\n", SDL_GetError()));
     }
-
     window_info.type = get_window_system_info();
     window_info.render_surface = get_windows_handles(window_);
     // 添加事件监视器
@@ -52,6 +51,8 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
             return false;
         },
         this);
+    // 设置窗口的最小和最大尺寸
+    SDL_SetWindowMinimumSize(window_, 160, 90); // 最小尺寸
     SDL_SetWindowPosition(window_, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     SDL_ShowWindow(window_);
 }

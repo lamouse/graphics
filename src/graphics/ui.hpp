@@ -1,6 +1,7 @@
 #pragma once
 #include "render_core/uniforms.hpp"
 #include "render_core/fixed_pipeline_state.h"
+#include "imgui.h"
 namespace graphics::ui {
     struct ImguiDebugInfo {
         float speed;
@@ -41,6 +42,8 @@ class UI{
  * @param state 这里的属性值会被修改
  */
 void pipeline_state(render::PipelineState &state);
+
+void draw_result(ImTextureID imguiTextureID);
 void main_ui();
 void begin();
 void end();

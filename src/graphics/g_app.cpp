@@ -45,14 +45,11 @@ void App::run() {
     graphics_ctx.image = img2.getImageInfo();
     auto graphicId2 = graphics->addGraphicContext(graphics_ctx);
     while (!window->shouldClose()) {
-        render_base->addImguiUI([&](){
-            graphics::ui::begin();
-            graphics::ui::main_ui();
-            graphics::ui::uniform_ui(debugInfo);
-            graphics::ui::pipeline_state(pipeline_state);
-            graphics::ui::end();
-        });
         window->pullEvents();
+        if (window->IsMinimized()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
         graphics->start();
         auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
         graphics->bindUniformBuffer(graphicId, &ubo, sizeof(ubo));
@@ -75,17 +72,26 @@ void App::run() {
         } else {
             window->setWindowTitle("graphics");
         }
+        auto imageId = graphics->getDrawImage();
+        render_base->addImguiUI([&](){
+            graphics::ui::begin();
+            graphics::ui::main_ui();
+            graphics::ui::uniform_ui(debugInfo);
+            graphics::ui::draw_result(imageId);
+            graphics::ui::pipeline_state(pipeline_state);
+            graphics::ui::end();
+        });
         render_base->composite(std::span{&frames, 1});
     }
 }
 
 App::App(const Config& config) {
     auto window_config = config.getConfig<config::window::Window>();
-    // window = std::make_unique<ScreenWindow>(
-    //     ScreenExtent{.width = window_config.width, .height = window_config.height},
-    //     window_config.title);
-    window = std::make_unique<graphics::SDLWindow>(window_config.width,window_config.height,
-            window_config.title);
+    window = std::make_unique<ScreenWindow>(
+        ScreenExtent{.width = window_config.width, .height = window_config.height},
+        window_config.title);
+    // window = std::make_unique<graphics::SDLWindow>(window_config.width,window_config.height,
+    //         window_config.title);
 
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }

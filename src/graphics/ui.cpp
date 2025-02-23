@@ -129,7 +129,7 @@ void main_ui() {
     ImGui::Begin("main");
     ImGui::Checkbox("show fps", &show_fps);
     ImGui::End();
-    if(show_fps){
+    if (show_fps) {
         fps();
     }
 }
@@ -137,27 +137,26 @@ void main_ui() {
 void begin() {}
 void end() { ImGui::Render(); }
 
-void pipeline_state(render::PipelineState &state){
+void pipeline_state(render::PipelineState& state) {
     ImGui::Begin("pipeline state");
 
+    if (ImGui::TreeNode("set pipeline state")) {
+        ImGui::Checkbox("colorBlendEnable", &state.colorBlendEnable);
+        ImGui::Checkbox("logicOpEnable", &state.logicOpEnable);
+        ImGui::Checkbox("stencilTestEnable", &state.stencilTestEnable);
+        ImGui::Checkbox("depthClampEnable", &state.depthClampEnable);
+        ImGui::Checkbox("depthWriteEnable", &state.depthWriteEnable);
+        ImGui::Checkbox("depthTestEnable", &state.depthTestEnable);
+        ImGui::Checkbox("depthBoundsTestEnable", &state.depthBoundsTestEnable);
+        ImGui::Checkbox("cullMode", &state.cullMode);
+        ImGui::Checkbox("depthBiasEnable", &state.depthBiasEnable);
+        ImGui::Checkbox("rasterizerDiscardEnable", &state.rasterizerDiscardEnable);
+        ImGui::Checkbox("primitiveRestartEnable", &state.primitiveRestartEnable);
 
-        if (ImGui::TreeNode("set pipeline state")) {
-            ImGui::Checkbox("colorBlendEnable", &state.colorBlendEnable);
-            ImGui::Checkbox("logicOpEnable", &state.logicOpEnable);
-            ImGui::Checkbox("stencilTestEnable", &state.stencilTestEnable);
-            ImGui::Checkbox("depthClampEnable", &state.depthClampEnable);
-            ImGui::Checkbox("depthWriteEnable", &state.depthWriteEnable);
-            ImGui::Checkbox("depthTestEnable", &state.depthTestEnable);
-            ImGui::Checkbox("depthBoundsTestEnable", &state.depthBoundsTestEnable);
-            ImGui::Checkbox("cullMode", &state.cullMode);
-            ImGui::Checkbox("depthBiasEnable", &state.depthBiasEnable);
-            ImGui::Checkbox("rasterizerDiscardEnable", &state.rasterizerDiscardEnable);
-            ImGui::Checkbox("primitiveRestartEnable", &state.primitiveRestartEnable);
-
-            ImGui::TreePop();
-        }
+        ImGui::TreePop();
+    }
     if (ImGui::TreeNode("set viewport")) {
-        ImGui::SliderFloat("x", &state.viewport.x, .0f,  2048.f);
+        ImGui::SliderFloat("x", &state.viewport.x, .0f, 2048.f);
         ImGui::SliderFloat("y", &state.viewport.y, .0f, 2048.f);
         ImGui::SliderFloat("width", &state.viewport.width, 1.0f, 2048.f);
         ImGui::SliderFloat("height", &state.viewport.height, 1.0f, 2048.f);
@@ -166,14 +165,14 @@ void pipeline_state(render::PipelineState &state){
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("set scissors")) {
-        ImGui::SliderInt("x", &state.scissors.x, 0,  2048);
+        ImGui::SliderInt("x", &state.scissors.x, 0, 2048);
         ImGui::SliderInt("y", &state.scissors.y, 0, 2048);
         ImGui::SliderInt("width", &state.scissors.width, 1, 2048);
         ImGui::SliderInt("height", &state.scissors.height, 1, 2048);
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("set clear value")) {
-        ImGui::SliderFloat("r", &state.clearColor.r, .0f,  255.f);
+        ImGui::SliderFloat("r", &state.clearColor.r, .0f, 255.f);
         ImGui::SliderFloat("g", &state.clearColor.g, .0f, 255.f);
         ImGui::SliderFloat("b", &state.clearColor.b, .0f, 255.f);
         ImGui::SliderFloat("depth", &state.clearColor.depth, .96f, 1.f);
@@ -181,8 +180,8 @@ void pipeline_state(render::PipelineState &state){
         ImGui::TreePop();
     }
 
-        if (ImGui::TreeNode("set blend color")) {
-        ImGui::SliderFloat("r", &state.blendColor.r, .0f,  255.f);
+    if (ImGui::TreeNode("set blend color")) {
+        ImGui::SliderFloat("r", &state.blendColor.r, .0f, 255.f);
         ImGui::SliderFloat("g", &state.blendColor.g, .0f, 255.f);
         ImGui::SliderFloat("b", &state.blendColor.b, .0f, 1.f);
         ImGui::SliderFloat("a", &state.blendColor.a, .0f, 1.f);
@@ -190,5 +189,14 @@ void pipeline_state(render::PipelineState &state){
     }
 
     ImGui::End();
-    }
+}
+
+void draw_result(ImTextureID imguiTextureID) {
+
+    // 在 ImGui 窗口中显示 Vulkan 渲染结果
+    ImGui::Begin("Vulkan Framebuffer Output");
+    ImGui::Image(imguiTextureID, ImVec2(800, 600));  // 假设图像尺寸为 800x600
+    ImGui::End();
+
+}
 }  // namespace graphics::ui

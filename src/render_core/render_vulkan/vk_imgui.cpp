@@ -10,6 +10,8 @@
 #include "imgui_impl_vulkan.h"
 #include "present/vulkan_utils.hpp"
 
+#include <vulkan/vk_enum_string_helper.h>
+
 namespace render::vulkan {
 
 namespace {
@@ -36,9 +38,9 @@ void check_vk_result(VkResult err) {
     if (err == 0) {
         return;
     }
-    spdlog::error("[vulkan] Error: VkResult = {}", static_cast<long>(err));
+    SPDLOG_ERROR("[vulkan] Error: VkResult = {}", string_VkResult(err));
     if (err < 0) {
-        abort();
+        //abort();
     }
 }
 }  // namespace

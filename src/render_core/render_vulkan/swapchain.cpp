@@ -131,6 +131,7 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
 }
 
 auto Swapchain::acquireNextImage() -> bool {
+    try{
     const ::vk::ResultValue<uint32_t> result = device_.getLogical().acquireNextImageKHR(
         *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_]);
     switch (result.result) {
@@ -150,6 +151,9 @@ auto Swapchain::acquireNextImage() -> bool {
             SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
                          string_VkResult(static_cast<VkResult>(result.result)));
             break;
+    }
+    }catch (const ::vk::OutOfDateKHRError&) {
+        is_outdated_ = true;
     }
     return is_suboptimal_ || is_outdated_;
 }
@@ -250,25 +254,29 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
         .setImageIndices(image_index_);
 
     std::scoped_lock lock{scheduler_.submit_mutex_};
-    switch (const vk::Result result = present_queue.presentKHR(present_info)) {
-        case vk::Result::eSuccess:
+    try {
+        switch (const vk::Result result = present_queue.presentKHR(present_info)) {
+            case vk::Result::eSuccess:
+                break;
+            case vk::Result::eSuboptimalKHR:
+                SPDLOG_DEBUG("Suboptimal swapchain");
             break;
-        case vk::Result::eSuboptimalKHR:
-            SPDLOG_DEBUG("Suboptimal swapchain");
+            case vk::Result::eErrorOutOfDateKHR:
+                is_outdated_ = true;
             break;
-        case vk::Result::eErrorOutOfDateKHR:
-            is_outdated_ = true;
+            case vk::Result::eErrorSurfaceLostKHR:
+                throw utils::VulkanException(result);
             break;
-        case vk::Result::eErrorSurfaceLostKHR:
-            throw utils::VulkanException(result);
+            default:
+                SPDLOG_CRITICAL("Failed to present with error {}",
+                                string_VkResult(static_cast<VkResult>(result)));
             break;
-        default:
-            SPDLOG_CRITICAL("Failed to present with error {}",
-                            string_VkResult(static_cast<VkResult>(result)));
-            break;
+        }
+        ++frame_index_;
+        frame_index_ %= static_cast<uint32_t>(image_count_);
+    }catch (const ::vk::OutOfDateKHRError&) {
+        is_outdated_ = true;
     }
-    ++frame_index_;
-    frame_index_ %= static_cast<uint32_t>(image_count_);
 }
 
 auto Swapchain::needsPresentModeUpdate() const -> bool {

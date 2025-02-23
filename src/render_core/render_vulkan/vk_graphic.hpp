@@ -50,6 +50,7 @@ class VulkanGraphics : public render::Graphic {
         void bindUniformBuffer(GraphicsId id, void* data, size_t size) override;
         void draw(GraphicsId id) override;
         void end() override {};
+        auto getDrawImage() -> ImTextureID override;
         ~VulkanGraphics() override;
 
         auto AccelerateDisplay(const frame::FramebufferConfig& config,
@@ -96,6 +97,7 @@ class VulkanGraphics : public render::Graphic {
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;
         ImguiCore* imgui;
+        Sampler sampler;
         StagingBufferPool staging_pool;
         resource::DescriptorPool descriptor_pool;
         GuestDescriptorQueue guest_descriptor_queue;
@@ -117,6 +119,7 @@ class VulkanGraphics : public render::Graphic {
         u32 draw_counter = 0;
         std::unordered_map<GraphicsId, RenderTargetInfo> draw_indices;
         common::SlotVector<RenderTargetInfo> slot_graphics;
+        std::unordered_map<VkImageView, ImTextureID> imgui_textures;
 };
 
 }  // namespace render::vulkan
