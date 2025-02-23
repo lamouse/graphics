@@ -1,6 +1,7 @@
-#pragma once
 #include "imgui.h"
 #include "ui.hpp"
+#include "common/settings.hpp"
+#include <ranges>
 #include <chrono>
 namespace {
 void fps() {
@@ -18,8 +19,7 @@ void fps() {
                      ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
                      ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings |
                      ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)",
-                       1000.0f / io.Framerate, io.Framerate);
+    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "FPS: %.1f ", io.Framerate);
     ImGui::End();
 }
 ImVec2 calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) {
@@ -45,6 +45,23 @@ static void HelpMarker(const char* desc)
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+}
+
+void vsync_setting() {
+    auto canon = settings::enums::EnumMetadata<settings::enums::VSyncMode>::canonicalizations();
+    std::vector<const char*> names;
+    for (auto& key : canon | std::views::keys) {
+        names.push_back(key.c_str());
+    }
+
+    const auto render_vulkan = common::settings::get<settings::RenderVulkan>();
+    const auto mode = render_vulkan.vSyncMode;
+    static int item_current = static_cast<int>(mode);
+    ImGui::Combo("vsync mode", &item_current, names.data(), names.size());
+    const auto vSyncMode = settings::enums::ToEnum<settings::enums::VSyncMode>(names[item_current]);
+    settings::RenderVulkan::setVsyncMode(vSyncMode);
+    ImGui::SameLine();
+    HelpMarker(std::format("frame 同步方式{}", settings::enums::CanonicalizeEnum<settings::enums::VSyncMode>(mode)).c_str());
 }
 }  // namespace
 namespace graphics::ui {
@@ -148,7 +165,7 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo,
 }
 
 void main_ui() {
-    static bool show_fps = true;
+    static bool show_fps =  false;
     ImGui::Begin("main");
     ImGui::Checkbox("show fps", &show_fps);
     ImGui::End();
@@ -238,5 +255,16 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)",
                 1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
+}
+
+void draw_setting() {
+    {
+        // Using the _simplified_ one-liner Combo() api here
+        // See "Combo" section for examples of how to use the more flexible BeginCombo()/EndCombo() api.
+         //IMGUI_DEMO_MARKER("Widgets/Basic/Combo");
+        ImGui::Begin("系统设置");
+        vsync_setting();
+        ImGui::End();
+    }
 }
 }  // namespace graphics::ui

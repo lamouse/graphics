@@ -1,3 +1,4 @@
-//
-// Created by ziyu on 2025/2/23:星期日.
-//
+#include "settings.hpp"
+namespace settings {
+RenderVulkan RenderVulkan::instance_ = {};
+}

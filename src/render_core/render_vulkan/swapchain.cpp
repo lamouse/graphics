@@ -42,18 +42,13 @@ auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
     });
     return found != formats.end() ? *found : formats[0];
 }
-auto chooseSwapPresentMode(bool has_imm, bool has_mailbox,
-                           bool has_fifo_relaxed) -> vk::PresentModeKHR {
+auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, const bool has_fifo_relaxed) -> vk::PresentModeKHR {
     // Mailbox doesn't lock the application like FIFO (vsync)
     // FIFO present mode locks the framerate to the monitor's refresh rate
     settings::enums::VSyncMode setting = [has_imm, has_mailbox]() {
         // Choose Mailbox or Immediate if unlocked and those modes are supported
 
-        const auto mode = common::settings::get<settings::RenderVulkan>().vSyncMode;
-        /*               if (Settings::values.use_speed_limit.GetValue()) {
-                           return mode;
-                       }*/
-        switch (mode) {
+        switch (const auto mode = common::settings::get<settings::RenderVulkan>().vSyncMode) {
             case settings::enums::VSyncMode::Fifo:
             case settings::enums::VSyncMode::FifoRelaxed:
                 if (has_mailbox) {
@@ -164,6 +159,7 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
 
     const vk::CompositeAlphaFlagBitsKHR alpha_flags{chooseAlphaFlags(capabilities)};
     surface_format_ = chooseSwapSurfaceFormat(formats);
+    init_sync_mode();
     present_mode_ = chooseSwapPresentMode(has_imm_, has_mailbox_, has_fifo_relaxed_);
 
     uint32_t requested_image_count{capabilities.minImageCount + 1};

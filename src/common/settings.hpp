@@ -20,7 +20,11 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         bool use_pipeline_cache = true;
         enums::VSyncMode vSyncMode = enums::VSyncMode::Mailbox;
         enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
-        static auto get() { return RenderVulkan{}; }
+        static void setVsyncMode(enums::VSyncMode vSyncMode){instance_.vSyncMode = vSyncMode;}
+        static auto get() { return instance_; }
+
+    private:
+        static RenderVulkan instance_;
 };
 
 class Graphics : public common::settings::BaseSetting<Graphics> {

@@ -79,6 +79,7 @@ void App::run() {
             graphics::ui::uniform_ui(debugInfo);
             graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
+            graphics::ui::draw_setting();
             graphics::ui::end();
         });
         render_base->composite(std::span{&frames, 1});

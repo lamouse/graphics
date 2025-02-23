@@ -94,8 +94,8 @@ inline std::string CanonicalizeEnum(Type id) {
 }
 
 template <typename Type>
-inline Type ToEnum(const std::string& canonicalization) {
-    const auto group = EnumMetadata<Type>::canonicaLizations();
+inline auto ToEnum(const std::string& canonicalization) -> Type {
+    const auto group = EnumMetadata<Type>::canonicalizations();
     for (auto& [name, value] : group) {
         if (name == canonicalization) {
             return value;
