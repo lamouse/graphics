@@ -75,9 +75,10 @@ void App::run() {
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&](){
             graphics::ui::begin();
+            graphics::ui::draw_docked_window();
+            graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::main_ui();
             graphics::ui::uniform_ui(debugInfo);
-            graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::draw_setting();
             graphics::ui::end();

@@ -35,11 +35,9 @@ ImVec2 calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) {
     return ImVec2(targetWidth, targetHeight);
 }
 
-static void HelpMarker(const char* desc)
-{
+static void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
-    if (ImGui::BeginItemTooltip())
-    {
+    if (ImGui::BeginItemTooltip()) {
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
         ImGui::TextUnformatted(desc);
         ImGui::PopTextWrapPos();
@@ -61,7 +59,9 @@ void vsync_setting() {
     const auto vSyncMode = settings::enums::ToEnum<settings::enums::VSyncMode>(names[item_current]);
     settings::RenderVulkan::setVsyncMode(vSyncMode);
     ImGui::SameLine();
-    HelpMarker(std::format("frame 同步方式{}", settings::enums::CanonicalizeEnum<settings::enums::VSyncMode>(mode)).c_str());
+    HelpMarker(std::format("frame 同步方式{}",
+                           settings::enums::CanonicalizeEnum<settings::enums::VSyncMode>(mode))
+                   .c_str());
 }
 }  // namespace
 namespace graphics::ui {
@@ -165,7 +165,7 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo,
 }
 
 void main_ui() {
-    static bool show_fps =  false;
+    static bool show_fps = false;
     ImGui::Begin("main");
     ImGui::Checkbox("show fps", &show_fps);
     ImGui::End();
@@ -213,7 +213,7 @@ void pipeline_state(render::PipelineState& state) {
     }
     if (ImGui::TreeNode("set clear value")) {
         HelpMarker("clear color");
-        static float col1[3] = { state.clearColor.r, state.clearColor.g, state.clearColor.b };
+        static float col1[3] = {state.clearColor.r, state.clearColor.g, state.clearColor.b};
         ImGui::ColorEdit3("clear color", col1);
         state.clearColor.r = col1[0];
         state.clearColor.g = col1[1];
@@ -235,6 +235,18 @@ void pipeline_state(render::PipelineState& state) {
 }
 
 void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
+    // 设置窗口标志
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                    ImGuiWindowFlags_NoNavFocus;
+
+    // 启用停靠空间
+    // 获取主窗口的尺寸
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    // ImGui::SetNextWindowPos(viewport->Pos);
+    // ImGui::SetNextWindowSize(viewport->Size);
+    // ImGui::SetNextWindowViewport(viewport->ID);
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     // 在 ImGui 窗口中显示 Vulkan 渲染结果
@@ -243,28 +255,56 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
     ImVec2 imageSize = calculateAspectRatioSize(windowSize, aspectRatio);
+        // 计算图像显示位置，使其居中
+        ImVec2 imagePos = ImGui::GetCursorPos();
+        imagePos.x += (windowSize.x - imageSize.x) * 0.5f;
+        imagePos.y += (windowSize.y - imageSize.y) * 0.5f;
+        ImGui::SetCursorPos(imagePos);
     ImGui::Image(imguiTextureID, imageSize);
     // 计算文本的宽度
     const char* text = "average %.3f ms/frame (%.1f FPS)";
     ImVec2 textSize = ImGui::CalcTextSize(text);
     // 设置文本绘制位置为右上角
-    float textPosX = windowSize.x - textSize.x - 20; // 10 是右边距
-    float textPosY = textSize.y + 10; // 20 是上边距
+    float textPosX = windowSize.x - textSize.x - 20;  // 10 是右边距
+    float textPosY = textSize.y + 10;                 // 20 是上边距
     // // 设置文本绘制位置为右上角
     ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
     ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)",
-                1000.0f / io.Framerate, io.Framerate);
+                       1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
 }
 
 void draw_setting() {
     {
         // Using the _simplified_ one-liner Combo() api here
-        // See "Combo" section for examples of how to use the more flexible BeginCombo()/EndCombo() api.
-         //IMGUI_DEMO_MARKER("Widgets/Basic/Combo");
+        // See "Combo" section for examples of how to use the more flexible BeginCombo()/EndCombo()
+        // api.
+        // IMGUI_DEMO_MARKER("Widgets/Basic/Combo");
         ImGui::Begin("系统设置");
         vsync_setting();
         ImGui::End();
     }
 }
+
+void draw_docked_window() {
+    // 设置窗口标志
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                    ImGuiWindowFlags_NoNavFocus;
+
+    // 获取主窗口的尺寸
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::DockSpaceOverViewport();
+
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    // 创建一个大小跟随主窗口的窗口
+    ImGui::Begin("Docked Window", nullptr, window_flags);
+
+    ImGui::End();
+}
+
 }  // namespace graphics::ui
