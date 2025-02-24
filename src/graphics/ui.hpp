@@ -29,14 +29,6 @@ auto init_debug_info() -> ImguiDebugInfo;
 void uniform_ui(ImguiDebugInfo& debugInfo);
 auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation) -> render::UniformBufferObject;
 
-struct UIConfig{
-};
-
-class UI{
-
-    private:
-        UIConfig config;
-};
 /**
  *
  * @param state 这里的属性值会被修改

@@ -33,11 +33,8 @@ class UpdateDescriptorQueue final {
     public:
         explicit UpdateDescriptorQueue(const Device& device_, scheduler::Scheduler& scheduler_);
         ~UpdateDescriptorQueue();
-
         void TickFrame();
-
         void Acquire();
-
         [[nodiscard]] auto UpdateData() const noexcept -> const DescriptorUpdateEntry* {
             return upload_start;
         }
@@ -69,7 +66,7 @@ class UpdateDescriptorQueue final {
         DescriptorUpdateEntry* payload_cursor = nullptr;
         DescriptorUpdateEntry* payload_start = nullptr;
         const DescriptorUpdateEntry* upload_start = nullptr;
-        std::vector<DescriptorUpdateEntry> payload{PAYLOAD_SIZE};  // 原来是array也可以成功
+        std::array<DescriptorUpdateEntry, PAYLOAD_SIZE> payload;
 };
 
 // TODO: should these be separate classes instead?

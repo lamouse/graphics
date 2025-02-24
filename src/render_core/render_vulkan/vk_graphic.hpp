@@ -113,9 +113,6 @@ class VulkanGraphics : public render::Graphic {
         PipelineCache pipeline_cache;
         Event wfi_event;
         PipelineState pipeline_state;
-        boost::container::static_vector<u32, MAX_IMAGE_VIEWS> image_view_indices;
-        std::array<texture::ImageViewId, MAX_IMAGE_VIEWS> image_view_ids;
-        boost::container::static_vector<vk::Sampler, MAX_TEXTURES> sampler_handles;
         u32 draw_counter = 0;
         std::unordered_map<GraphicsId, RenderTargetInfo> draw_indices;
         common::SlotVector<RenderTargetInfo> slot_graphics;
