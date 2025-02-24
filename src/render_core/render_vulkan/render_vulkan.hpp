@@ -6,7 +6,6 @@
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "render_core/render_vulkan/blit_screen.hpp"
 #include "render_core/render_vulkan/vk_graphic.hpp"
-#include "render_core/render_vulkan/vk_imgui.hpp"
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;

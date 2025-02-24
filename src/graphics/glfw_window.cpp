@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "glfw_common.hpp"
+#if defined(USE_DEBUG_UI)
 #include "imgui_impl_glfw.h"
+#endif
 
 namespace g {
 
@@ -98,10 +100,22 @@ ScreenWindow::~ScreenWindow() {
     }
 }
 
-void ScreenWindow::configGUI() { ImGui_ImplGlfw_InitForVulkan(window, true); }
-void ScreenWindow::destroyGUI() { ImGui_ImplGlfw_Shutdown(); }
+void ScreenWindow::configGUI() {
+#if defined(USE_DEBUG_UI)
+    ImGui_ImplGlfw_InitForVulkan(window, true);
+#endif
+}
+void ScreenWindow::destroyGUI() {
+#if defined(USE_DEBUG_UI)
+    ImGui_ImplGlfw_Shutdown();
+#endif
+}
 
-void ScreenWindow::newFrame() { ImGui_ImplGlfw_NewFrame(); }
+void ScreenWindow::newFrame() {
+#if defined(USE_DEBUG_UI)
+    ImGui_ImplGlfw_NewFrame();
+#endif
+}
 
 ScreenWindow::ScreenWindow(ScreenWindow&& w) noexcept
     : window(w.window), title_(std::move(w.title_)) {

@@ -57,7 +57,7 @@ void VulkanGraphics::drawIndics(u32 indicesSize) {
         });
     });
 }
-
+#if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
     // 将 Vulkan 纹理绑定到 ImGui
     const auto& image_view = texture_cache.TryFindFramebufferImageView({});
@@ -93,6 +93,11 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
     pair->second = imguiTextureID_;
     return imguiTextureID_;
 }
+#else
+auto VulkanGraphics::getDrawImage() -> ImTextureID {
+    return 0;
+}
+#endif
 
 void VulkanGraphics::UpdateDynamicStates() {
     UpdateViewportsState();
@@ -413,9 +418,9 @@ void VulkanGraphics::clear() {
 }
 
 void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
-    if (imgui) {
+#if defined(USE_DEBUG_UI)
         imgui->draw(cmd_buf);
-    }
+ #endif
 }
 auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> GraphicsId {
     auto [viewId, samplerId] = texture_cache.addGraphics(context.image);

@@ -6,7 +6,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(LOG_LEVEL "debug")
     set(LGO_CONSOLE_ENABLE "true")
     set(LGO_FILE_ENABLE "false")
-    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG -DUSE_DEBUG_UI)
 
 else()
     set(VULKAN_VALIDATION "false")
@@ -16,6 +16,9 @@ else()
     add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
 
 endif()
+#设置使用的库
+add_definitions(-DUSE_SDL)
+#add_definitions(-DUSE_GLFW)
 
 set(WINDOW_TITLE "${PROJECT_NAME}")
 # 使用 configure_file 生成最终的 config.yaml

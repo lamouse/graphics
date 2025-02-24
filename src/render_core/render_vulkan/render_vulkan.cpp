@@ -6,7 +6,7 @@
 #include "vulkan_common/debug_callback.hpp"
 #include "vulkan_common/vk_surface.hpp"
 #include "present/vulkan_utils.hpp"
-#include "render_core/render_vulkan/command_pool.hpp"
+
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
@@ -30,8 +30,10 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       blit_capture(device, memory_allocator, present_manager, scheduler),
+#if defined(USE_DEBUG_UI)
       imgui(std::make_unique<ImguiCore>(window, device, device.getPhysical(), *instance,
                                         window->getWindowSystemInfo().render_surface_scale)),
+#endif
       vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify(), imgui.get()) {
     device.initDispatchLoaderDynamic(*instance);
 } catch (const std::exception& exception) {
@@ -56,21 +58,21 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     }
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
-    imgui->newFrame();
+#if defined(USE_DEBUG_UI)
+        imgui->newFrame();
+#endif
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
-    if (imgui_ui) {
-        imgui_ui();
-    }else {
-        imgui->imgui_predraw();
-    }
-    scheduler.flush(*frame->render_ready);
-
-    {
-        std::scoped_lock submit_lock{scheduler.submit_mutex_};
+#if defined(USE_DEBUG_UI)
+        if (imgui_ui) {
+            imgui_ui();
+        }else {
+                imgui->imgui_predraw();
+        }
         imgui->endFrame();
-    }
+#endif
+    scheduler.flush(*frame->render_ready);
     present_manager.present(frame);
     vulkan_graphics.TickFrame();
     imgui_ui = nullptr;

@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.hpp>
 #include "render_core/vulkan_common/vulkan_common.hpp"
 #include "render_core/render_vulkan/master_semaphore.hpp"
+#include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
 #include <array>
 #include <memory>

@@ -74,7 +74,6 @@ class EXPORT BaseWindow {
         }
         virtual void pullEvents() = 0;
         virtual void setWindowTitle(std::string_view) = 0;
-
     protected:
         WindowSystemInfo window_info;
         [[nodiscard]] auto getWindowConfig() const -> WindowConfig { return config; }
