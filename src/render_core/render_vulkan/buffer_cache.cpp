@@ -136,204 +136,6 @@ auto BaseBufferCache::View(u32 offset, u32 size, surface::PixelFormat format) ->
     return *views.back().handle;
 }
 
-class QuadIndexBuffer {
-    public:
-        QuadIndexBuffer(const Device& device_, MemoryAllocator& memory_allocator_,
-                        scheduler::Scheduler& scheduler_, StagingBufferPool& staging_pool_)
-            : device{device_},
-              memory_allocator{memory_allocator_},
-              scheduler{scheduler_},
-              staging_pool{staging_pool_} {}
-
-        virtual ~QuadIndexBuffer() = default;
-
-        void UpdateBuffer(u32 num_indices_) {
-            if (num_indices_ <= num_indices) {
-                return;
-            }
-
-            scheduler.finish();
-
-            num_indices = num_indices_;
-            index_type = IndexTypeFromNumElements(device, num_indices);
-
-            const u32 num_quads = GetQuadsNum(num_indices);
-            const u32 num_triangle_indices = num_quads * 6;
-            const u32 num_first_offset_copies = 4;
-            const size_t bytes_per_index = BytesPerIndex(index_type);
-            const size_t size_bytes =
-                num_triangle_indices * bytes_per_index * num_first_offset_copies;
-            const VkBufferCreateInfo buffer_ci = {
-                .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                .pNext = nullptr,
-                .flags = 0,
-                .size = size_bytes,
-                .usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-                .queueFamilyIndexCount = 0,
-                .pQueueFamilyIndices = nullptr,
-            };
-            buffer = memory_allocator.createBuffer(buffer_ci, MemoryUsage::DeviceLocal);
-            if (device.hasDebuggingToolAttached()) {
-                buffer.SetObjectNameEXT("Quad LUT");
-            }
-
-            const bool host_visible = buffer.IsHostVisible();
-            const StagingBufferRef staging = [&] {
-                if (host_visible) {
-                    return StagingBufferRef{};
-                }
-                return staging_pool.Request(size_bytes, MemoryUsage::Upload);
-            }();
-
-            u8* staging_data = host_visible ? buffer.Mapped().data() : staging.mapped_span.data();
-            const size_t quad_size = bytes_per_index * 6;
-
-            for (u32 first = 0; first < num_first_offset_copies; ++first) {
-                for (u32 quad = 0; quad < num_quads; ++quad) {
-                    MakeAndUpdateIndices(staging_data, quad_size, quad, first);
-                    staging_data += quad_size;
-                }
-            }
-
-            if (!host_visible) {
-                scheduler.requestOutsideRenderPassOperationContext();
-                scheduler.record([src_buffer = staging.buffer, src_offset = staging.offset,
-                                  dst_buffer = *buffer, size_bytes](vk::CommandBuffer cmdbuf) {
-                    const vk::BufferCopy copy{
-                        src_offset,
-                        0,
-                        size_bytes,
-                    };
-                    const vk::BufferMemoryBarrier write_barrier{
-                        vk::AccessFlagBits::eTransferWrite,
-                        vk::AccessFlagBits::eIndexRead,
-                        VK_QUEUE_FAMILY_IGNORED,
-                        VK_QUEUE_FAMILY_IGNORED,
-                        dst_buffer,
-                        0,
-                        size_bytes,
-                    };
-                    cmdbuf.copyBuffer(src_buffer, dst_buffer, copy);
-                    cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
-                                           vk::PipelineStageFlagBits::eVertexInput, {}, {},
-                                           write_barrier, {});
-                });
-            } else {
-                buffer.Flush();
-            }
-        }
-
-        void BindBuffer(u32 first) {
-            const vk::IndexType index_type_ = index_type;
-            const size_t sub_first_offset =
-                static_cast<size_t>(first % 4) * GetQuadsNum(num_indices);
-            const size_t offset =
-                (sub_first_offset + GetQuadsNum(first)) * 6ULL * BytesPerIndex(index_type);
-            scheduler.record([buffer_ = *buffer, index_type_, offset](vk::CommandBuffer cmdbuf) {
-                cmdbuf.bindIndexBuffer(buffer_, offset, index_type_);
-            });
-        }
-
-    protected:
-        [[nodiscard]] virtual auto GetQuadsNum(u32 num_indices) const -> u32 = 0;
-
-        virtual void MakeAndUpdateIndices(u8* staging_data, size_t quad_size, u32 quad,
-                                          u32 first) = 0;
-
-        const Device& device;
-        MemoryAllocator& memory_allocator;
-        scheduler::Scheduler& scheduler;
-        StagingBufferPool& staging_pool;
-
-        Buffer buffer;
-        MemoryCommit memory_commit;
-        vk::IndexType index_type{};
-        u32 num_indices = 0;
-};
-
-class QuadArrayIndexBuffer : public QuadIndexBuffer {
-    public:
-        QuadArrayIndexBuffer(const Device& device_, MemoryAllocator& memory_allocator_,
-                             scheduler::Scheduler& scheduler_, StagingBufferPool& staging_pool_)
-            : QuadIndexBuffer(device_, memory_allocator_, scheduler_, staging_pool_) {}
-
-        ~QuadArrayIndexBuffer() = default;
-
-    private:
-        [[nodiscard]] auto GetQuadsNum(u32 num_indices_) const -> u32 override {
-            return num_indices_ / 4;
-        }
-
-        template <typename T>
-        static auto MakeIndices(u32 quad, u32 first) -> std::array<T, 6> {
-            std::array<T, 6> indices{0, 1, 2, 0, 2, 3};
-            for (T& index : indices) {
-                index = static_cast<T>(first + index + quad * 4);
-            }
-            return indices;
-        }
-
-        void MakeAndUpdateIndices(u8* staging_data, size_t quad_size, u32 quad,
-                                  u32 first) override {
-            switch (index_type) {
-                case vk::IndexType::eUint8EXT:
-                    std::memcpy(staging_data, MakeIndices<u8>(quad, first).data(), quad_size);
-                    break;
-                case vk::IndexType::eUint16:
-                    std::memcpy(staging_data, MakeIndices<u16>(quad, first).data(), quad_size);
-                    break;
-                case vk::IndexType::eUint32:
-                    std::memcpy(staging_data, MakeIndices<u32>(quad, first).data(), quad_size);
-                    break;
-                default:
-                    assert(false);
-                    break;
-            }
-        }
-};
-
-class QuadStripIndexBuffer : public QuadIndexBuffer {
-    public:
-        QuadStripIndexBuffer(const Device& device_, MemoryAllocator& memory_allocator_,
-                             scheduler::Scheduler& scheduler_, StagingBufferPool& staging_pool_)
-            : QuadIndexBuffer(device_, memory_allocator_, scheduler_, staging_pool_) {}
-
-        ~QuadStripIndexBuffer() = default;
-
-    private:
-        [[nodiscard]] auto GetQuadsNum(u32 num_indices_) const -> u32 override {
-            return num_indices_ >= 4 ? (num_indices_ - 2) / 2 : 0;
-        }
-
-        template <typename T>
-        static auto MakeIndices(u32 quad, u32 first) -> std::array<T, 6> {
-            std::array<T, 6> indices{0, 3, 1, 0, 2, 3};
-            for (T& index : indices) {
-                index = static_cast<T>(first + index + quad * 2);
-            }
-            return indices;
-        }
-
-        void MakeAndUpdateIndices(u8* staging_data, size_t quad_size, u32 quad,
-                                  u32 first) override {
-            switch (index_type) {
-                case vk::IndexType::eUint8EXT:
-                    std::memcpy(staging_data, MakeIndices<u8>(quad, first).data(), quad_size);
-                    break;
-                case vk::IndexType::eUint16:
-                    std::memcpy(staging_data, MakeIndices<u16>(quad, first).data(), quad_size);
-                    break;
-                case vk::IndexType::eUint32:
-                    std::memcpy(staging_data, MakeIndices<u32>(quad, first).data(), quad_size);
-                    break;
-                default:
-                    assert(false);
-                    break;
-            }
-        }
-};
-
 BufferCacheRuntime::BufferCacheRuntime(const Device& device_, MemoryAllocator& memory_allocator_,
                                        scheduler::Scheduler& scheduler_,
                                        StagingBufferPool& staging_pool_,
@@ -352,10 +154,6 @@ BufferCacheRuntime::BufferCacheRuntime(const Device& device_, MemoryAllocator& m
         uint8_pass = std::make_unique<Uint8Pass>(device, scheduler, descriptor_pool, staging_pool,
                                                  compute_pass_descriptor_queue);
     }
-    quad_array_index_buffer = std::make_shared<QuadArrayIndexBuffer>(device_, memory_allocator_,
-                                                                     scheduler_, staging_pool_);
-    quad_strip_index_buffer = std::make_shared<QuadStripIndexBuffer>(device_, memory_allocator_,
-                                                                     scheduler_, staging_pool_);
 }
 
 auto BufferCacheRuntime::UploadStagingBuffer(size_t size) -> StagingBufferRef {
@@ -395,9 +193,6 @@ void BufferCacheRuntime::Finish() { scheduler.finish(); }
 
 auto BufferCacheRuntime::CanReorderUpload(const BaseBufferCache& buffer,
                                           std::span<const texture::BufferCopy> copies) -> bool {
-    // if (Settings::values.disable_buffer_reorder) {
-    //     return false;
-    // }
     const bool can_use_upload_cmdbuf =
         std::ranges::all_of(copies, [&](const texture::BufferCopy& copy) {
             return !buffer.IsRegionUsed(copy.dst_offset, copy.size);
@@ -445,29 +240,6 @@ void BufferCacheRuntime::CopyBuffer(vk::Buffer dst_buffer, vk::Buffer src_buffer
     });
 }
 
-void BufferCacheRuntime::PreCopyBarrier() {
-    static constexpr vk::MemoryBarrier READ_BARRIER{
-        vk::AccessFlagBits::eMemoryWrite,
-        vk::AccessFlagBits::eTransferRead | vk::AccessFlagBits::eTransferWrite,
-    };
-    scheduler.requestOutsideRenderPassOperationContext();
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
-                               vk::PipelineStageFlagBits::eTransfer, {}, READ_BARRIER, {}, {});
-    });
-}
-
-void BufferCacheRuntime::PostCopyBarrier() {
-    static constexpr vk::MemoryBarrier WRITE_BARRIER{
-        vk::AccessFlagBits::eTransferWrite,
-        vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite,
-    };
-    scheduler.requestOutsideRenderPassOperationContext();
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
-                               vk::PipelineStageFlagBits::eAllCommands, {}, WRITE_BARRIER, {}, {});
-    });
-}
 
 void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value) {
     if (dest_buffer == VK_NULL_HANDLE) {
@@ -518,24 +290,6 @@ void BufferCacheRuntime::BindIndexBuffer(PrimitiveTopology topology, IndexFormat
     scheduler.record([vk_buffer, vk_offset, vk_index_type](vk::CommandBuffer cmdbuf) {
         cmdbuf.bindIndexBuffer(vk_buffer, vk_offset, vk_index_type);
     });
-}
-
-void BufferCacheRuntime::BindQuadIndexBuffer(PrimitiveTopology topology, u32 first, u32 count) {
-    if (count == 0) {
-        ReserveNullBuffer();
-        scheduler.record([this](vk::CommandBuffer cmdbuf) {
-            cmdbuf.bindIndexBuffer(*null_buffer, 0, vk::IndexType::eUint32);
-        });
-        return;
-    }
-
-    if (topology == PrimitiveTopology::Quads) {
-        quad_array_index_buffer->UpdateBuffer(first + count);
-        quad_array_index_buffer->BindBuffer(first);
-    } else if (topology == PrimitiveTopology::QuadStrip) {
-        quad_strip_index_buffer->UpdateBuffer(first + count);
-        quad_strip_index_buffer->BindBuffer(first);
-    }
 }
 
 void BufferCacheRuntime::BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offset, u32 size,

@@ -54,9 +54,6 @@ class BaseBufferCache : public buffer::BufferBase {
         bool is_null{};
 };
 
-class QuadArrayIndexBuffer;
-class QuadStripIndexBuffer;
-
 class BufferCacheRuntime {
         friend BaseBufferCache;
 
@@ -90,20 +87,14 @@ class BufferCacheRuntime {
 
         void FreeDeferredStagingBuffer(StagingBufferRef& ref);
 
-        void PreCopyBarrier();
-
         void CopyBuffer(vk::Buffer src_buffer, vk::Buffer dst_buffer,
                         std::span<const texture::BufferCopy> copies, bool barrier,
                         bool can_reorder_upload = false);
-
-        void PostCopyBarrier();
 
         void ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value);
 
         void BindIndexBuffer(PrimitiveTopology topology, IndexFormat index_format, u32 num_indices,
                              u32 base_vertex, vk::Buffer buffer, u32 offset, u32 size);
-
-        void BindQuadIndexBuffer(PrimitiveTopology topology, u32 first, u32 count);
 
         void BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offset, u32 size, u32 stride);
 
@@ -148,9 +139,6 @@ class BufferCacheRuntime {
         scheduler::Scheduler& scheduler;
         StagingBufferPool& staging_pool;
         GuestDescriptorQueue& guest_descriptor_queue;
-
-        std::shared_ptr<QuadArrayIndexBuffer> quad_array_index_buffer;
-        std::shared_ptr<QuadStripIndexBuffer> quad_strip_index_buffer;
 
         Buffer null_buffer;
 

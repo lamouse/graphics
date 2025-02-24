@@ -13,17 +13,27 @@
 #include "ui.hpp"
 
 namespace graphics {
-namespace {}  // namespace
+namespace {
+    auto addGraphics(render::Graphic* graphics) -> render::GraphicsId {
+        ::std::string s(image_path + "viking_room.png");
+        resource::image::Image img(s);
+        const auto model = graphics::Model::createFromFile("models/viking_room.obj");
+        std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
+                                      model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+        render::GraphicsContext graphics_ctx{};
+        graphics_ctx.image = img.getImageInfo();
+        graphics_ctx.vertex = verticesSpan;
+        graphics_ctx.indices = model->indices_;
+        graphics_ctx.indices_size = model->indices_.size();
+        graphics_ctx.index_format = render::IndexFormat::UnsignedShort;
+        graphics_ctx.uniform_size = sizeof(render::UniformBufferObject);
+        return  graphics->addGraphicContext(graphics_ctx);
+    }
+}  // namespace
 
 void App::run() {
     auto* graphics = render_base->getGraphics();
-    ::std::string s(image_path + "viking_room.png");
-    ::std::string s2(image_path + "p1.jpg");
-    resource::image::Image img(s);
-    resource::image::Image img2(s2);
-    auto model = graphics::Model::createFromFile("models/viking_room.obj");
-    std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
-                                  model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+
     auto debugInfo = graphics::ui::init_debug_info();
     render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -33,16 +43,7 @@ void App::run() {
     pipeline_state.viewport.height = layout.screen.GetHeight();
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
-    render::GraphicsContext graphics_ctx{};
-    graphics_ctx.image = img.getImageInfo();
-    graphics_ctx.vertex = verticesSpan;
-    graphics_ctx.indices = model->indices_;
-    graphics_ctx.indices_size = model->indices_.size();
-    graphics_ctx.index_format = render::IndexFormat::UnsignedShort;
-    graphics_ctx.uniform_size = sizeof(render::UniformBufferObject);
-    auto graphicId = graphics->addGraphicContext(graphics_ctx);
-    graphics_ctx.image = img2.getImageInfo();
-    auto graphicId2 = graphics->addGraphicContext(graphics_ctx);
+    auto graphicId = addGraphics(graphics);
     while (!window->shouldClose()) {
         window->pullEvents();
         if (window->IsMinimized()) {
@@ -54,14 +55,6 @@ void App::run() {
         graphics->bindUniformBuffer(graphicId, &ubo, sizeof(ubo));
         graphics->setPipelineState(pipeline_state);
         graphics->draw(graphicId);
-
-        auto debug2 = debugInfo;
-        debug2.look_x += 8.f;
-        debug2.center_z += 2.f;
-        auto ubo2 = graphics::ui::get_uniform_buffer(debug2, window->getAspectRatio());
-        graphics->bindUniformBuffer(graphicId2, &ubo2, sizeof(ubo2));
-        graphics->setPipelineState(pipeline_state);
-        graphics->draw(graphicId2);
 
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
