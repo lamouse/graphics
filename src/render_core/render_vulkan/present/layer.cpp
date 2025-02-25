@@ -225,7 +225,6 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     };
 
     if (fsr) {
-        // TODO 这里暂时什么也没做
         source_image_view = fsr->Draw(scheduler, image_index, source_image, source_image_view,
                                       render_extent, crop_rect);
         crop_rect = {0, 0, 1, 1};

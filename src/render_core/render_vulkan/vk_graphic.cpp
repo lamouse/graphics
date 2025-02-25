@@ -50,13 +50,6 @@ void VulkanGraphics::start() {
 }
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
-void VulkanGraphics::drawIndics(u32 indicesSize) {
-    PrepareDraw(true, [this, indicesSize] {
-        scheduler.record([indicesSize](vk::CommandBuffer cmdbuf) {
-            cmdbuf.drawIndexed(indicesSize, 1, 0, 0, 0);
-        });
-    });
-}
 #if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
     // 将 Vulkan 纹理绑定到 ImGui
@@ -450,6 +443,7 @@ void VulkanGraphics::draw(GraphicsId id) {
         buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);
         buffer_cache.BindIndexBuffer(drawInfo.indices_buffer_id);
         scheduler.record([indices_size = drawInfo.indices_size](vk::CommandBuffer cmdbuf) {
+            spdlog::debug("draw index size:{}", indices_size);
             cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
         });
     });

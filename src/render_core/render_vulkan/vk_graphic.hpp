@@ -44,7 +44,6 @@ class VulkanGraphics : public render::Graphic {
         CLASS_NON_MOVEABLE(VulkanGraphics);
         void start() override;
         void setPipelineState(const PipelineState& state) override;
-        void drawIndics(u32 indicesSize) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
         auto addGraphicContext(const GraphicsContext& context) -> GraphicsId override;
         void bindUniformBuffer(GraphicsId id, void* data, size_t size) override;

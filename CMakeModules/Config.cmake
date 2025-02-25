@@ -7,7 +7,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(LGO_CONSOLE_ENABLE "true")
     set(LGO_FILE_ENABLE "false")
     #-DUSE_DEBUG_UI 用来显示imgui debug窗口
-    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG -DUSE_DEBUG_UI)
+    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 
 else()
     set(VULKAN_VALIDATION "false")
