@@ -17,7 +17,6 @@ void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
         command->execute(cmdbuf, upload_cmdbuf);
         command->~Command();
         command = next;
-        i++;
     }
     submit = false;
     command_offset = 0;
