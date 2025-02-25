@@ -87,9 +87,7 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
     return imguiTextureID_;
 }
 #else
-auto VulkanGraphics::getDrawImage() -> ImTextureID {
-    return 0;
-}
+auto VulkanGraphics::getDrawImage() -> ImTextureID { return 0; }
 #endif
 
 void VulkanGraphics::UpdateDynamicStates() {
@@ -412,8 +410,8 @@ void VulkanGraphics::clear() {
 
 void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
 #if defined(USE_DEBUG_UI)
-        imgui->draw(cmd_buf);
- #endif
+    imgui->draw(cmd_buf);
+#endif
 }
 auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> GraphicsId {
     auto [viewId, samplerId] = texture_cache.addGraphics(context.image);
@@ -423,10 +421,11 @@ auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> Graphi
     info.image_view_id = viewId;
     info.sampler_id = samplerId;
     info.vertex_buffer_id = buffer_cache.addVertexBuffer(context.vertex.data(), info.vertex_size);
-    info.uniform_buffer_size = context.uniform_size;
-    info.uniform_buffer_id = buffer_cache.addUniformBuffer(info.uniform_buffer_size);
+
     info.indices_buffer_id = buffer_cache.addIndexBuffer(
         context.indices.data(), static_cast<u32>(context.indices.size() * sizeof(uint16_t)));
+    info.uniform_buffer_size = context.uniform_size;
+    info.uniform_buffer_id = buffer_cache.addUniformBuffer(info.uniform_buffer_size);
     auto graphicsId = slot_graphics.insert();
     draw_indices[graphicsId] = info;
     return graphicsId;
@@ -443,7 +442,6 @@ void VulkanGraphics::draw(GraphicsId id) {
         buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);
         buffer_cache.BindIndexBuffer(drawInfo.indices_buffer_id);
         scheduler.record([indices_size = drawInfo.indices_size](vk::CommandBuffer cmdbuf) {
-            spdlog::debug("draw index size:{}", indices_size);
             cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
         });
     });
