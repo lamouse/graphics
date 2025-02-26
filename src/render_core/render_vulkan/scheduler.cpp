@@ -6,7 +6,7 @@
 #include "vulkan_common/device.hpp"
 #include "texture_cache.hpp"
 #include <boost/container/small_vector.hpp>
-#include <tracy/Tracy.hpp>
+#include "common/tracy.hpp"
 namespace render::vulkan::scheduler {
 
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
@@ -167,7 +167,6 @@ void Scheduler::endRenderPass() {
     }
     record([num_images = num_render_pass_images_, images = render_pass_images_,
             ranges = render_pass_image_ranges_](vk::CommandBuffer cmdbuf) {
-        spdlog::debug("Scheduler endRenderPass");
         boost::container::small_vector<vk::ImageMemoryBarrier, 9> barriers;
         for (size_t i = 0; i < num_images; ++i) {
             barriers.push_back(
@@ -271,7 +270,6 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
     state_.render_area_ = render_area;
 
     record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
-        spdlog::debug("Scheduler beginRenderPass");
         ::std::array<::vk::ClearValue, 2> clearValues;
         clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({.5f, .3f, .2f, 1.0f})));
         clearValues[1].setDepthStencil({1.0f, 0});

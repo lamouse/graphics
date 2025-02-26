@@ -1,8 +1,8 @@
 
 #ifndef TRACY_H
 #define TRACY_H
-#include <tracy/Tracy.hpp>
 #if defined(USE_TRACY)
+#define TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #else
 #define ZoneScopedN(var)

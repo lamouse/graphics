@@ -11,7 +11,7 @@
 #include "imgui_impl_glfw.h"
 #endif
 
-namespace g {
+namespace graphics {
 
 ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{std::move(title)} {
     ::glfwInit();

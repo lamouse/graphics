@@ -7,7 +7,7 @@
 
 #include "core/frontend/window.hpp"
 #include "g_defines.hpp"
-namespace g {
+namespace graphics {
 class ScreenWindow : public core::frontend::BaseWindow {
     private:
         GLFWwindow *window;

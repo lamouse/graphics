@@ -7,7 +7,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(LGO_CONSOLE_ENABLE "true")
     set(LGO_FILE_ENABLE "false")
     #-DUSE_DEBUG_UI 用来显示imgui debug窗口
-    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+    #-DUSE_TRACY用Tracy做性能分析
+    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG -DUSE_DEBUG_UI )
 
 else()
     set(VULKAN_VALIDATION "false")
@@ -18,8 +19,8 @@ else()
 
 endif()
 #设置使用的库
-add_definitions(-DUSE_SDL)
-#add_definitions(-DUSE_GLFW)
+#add_definitions(-DUSE_SDL)
+add_definitions(-DUSE_GLFW)
 
 set(WINDOW_TITLE "${PROJECT_NAME}")
 # 使用 configure_file 生成最终的 config.yaml

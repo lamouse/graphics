@@ -16,7 +16,7 @@
     ::std::string("(") + __FILENAME__ + ::std::string(":") + ::std::to_string(__LINE__) + \
         ::std::string(" ") + __PRETTY_FUNCTION__ + ::std::string("): ") + msg
 
-namespace g {
+namespace graphics {
 struct ScreenExtent {
         int width;
         int height;

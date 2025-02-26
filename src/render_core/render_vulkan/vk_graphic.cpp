@@ -1,7 +1,7 @@
 #include "vk_graphic.hpp"
 #include "uniforms.hpp"
 #include "blit_screen.hpp"
-#include <tracy/Tracy.hpp>
+#include <common/tracy.hpp>
 #include <imgui_impl_vulkan.h>
 namespace render::vulkan {
 

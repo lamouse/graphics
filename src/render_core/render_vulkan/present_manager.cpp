@@ -7,7 +7,7 @@
 #include "common/thread.hpp"
 #include "vulkan_common/vk_surface.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
-#include <tracy/Tracy.hpp>
+#include "common/tracy.hpp"
 #if defined min
 #undef min
 #endif

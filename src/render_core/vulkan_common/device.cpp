@@ -3,8 +3,39 @@
 #include <common/settings.hpp>
 #include <unordered_set>
 #include "common/literals.hpp"
+#if defined(USE_TRACY)
+#include <tracy/Tracy.hpp>
+#endif
 namespace render::vulkan {
 namespace {
+#if defined(USE_TRACY)
+// 自定义内存分配回调
+void* VKAPI_PTR TracyAllocate(void* pUserData, size_t size, size_t alignment,
+                              VkSystemAllocationScope allocationScope) {
+    void* ptr = std::malloc(size);
+    if (ptr) {
+        TracyAlloc(ptr, size);  // 监控内存分配
+    }
+    return ptr;
+}
+
+void VKAPI_PTR TracyFreeC(void* pUserData, void* pMemory) {
+    TracyFree(pMemory);  // 监控内存释放
+    std::free(pMemory);
+}
+
+void* VKAPI_PTR MyReallocate(void* pUserData, void* pOriginal, size_t size, size_t alignment,
+                             VkSystemAllocationScope allocationScope) {
+    if (pOriginal) {
+        TracyFree(pOriginal);  // 监控旧内存的释放
+    }
+    void* newPtr = std::realloc(pOriginal, size);
+    if (newPtr) {
+        TracyAlloc(newPtr, size);  // 监控内存分配
+    }
+    return newPtr;
+}
+#endif
 template <typename T>
 void SetNext(void**& next, T& data) {
     *next = &data;
@@ -131,8 +162,8 @@ constexpr auto isZetaFormat(surface::PixelFormat pixel_format) -> bool {
     return pixel_format >= surface::PixelFormat::MaxColorFormat &&
            pixel_format < surface::PixelFormat::MaxDepthStencilFormat;
 }
-auto GetFormatFeatures(vk::FormatProperties properties, FormatType format_type)
-    -> vk::FormatFeatureFlags {
+auto GetFormatFeatures(vk::FormatProperties properties,
+                       FormatType format_type) -> vk::FormatFeatureFlags {
     switch (format_type) {
         case FormatType::Linear:
             return properties.linearTilingFeatures;
@@ -531,12 +562,24 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     VmaVulkanFunctions functions{};
     functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+// 设置自定义内存分配回调
+#if defined(USE_TRACY)
+    VkAllocationCallbacks allocationCallbacks = {};
+    allocationCallbacks.pfnAllocation = TracyAllocate;
+    allocationCallbacks.pfnFree = TracyFreeC;
+    allocationCallbacks.pfnReallocation = MyReallocate;
+#endif
+
     const VmaAllocatorCreateInfo allocator_info = {
         .flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT,
         .physicalDevice = physical,
         .device = *logical_,
         .preferredLargeHeapBlockSize = 0,
-        .pAllocationCallbacks = nullptr,
+        #if defined(USE_TRACY)
+        .pAllocationCallbacks = &allocationCallbacks,
+        #else
+            .pAllocationCallbacks = nullptr,
+        #endif
         .pDeviceMemoryCallbacks = nullptr,
         .pHeapSizeLimit = nullptr,
         //.pVulkanFunctions = &functions,
@@ -864,7 +907,6 @@ void Device::removeExtensionFeature(bool& extension, Feature& feature,
             current->pNext = static_cast<VkBaseOutStructure*>(pNext);
             break;
         }
-
         current = current->pNext;
     }
 }
@@ -1192,9 +1234,9 @@ auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags
             continue;
         }
         spdlog::warn("Emulating format={} with alternative format={} with usage={} and type={}",
-                      vk::to_string(wanted_format),
-                      vk::to_string(static_cast<vk::Format>(alternative)),
-                      vk::to_string(wanted_usage), static_cast<int>(format_type));
+                     vk::to_string(wanted_format),
+                     vk::to_string(static_cast<vk::Format>(alternative)),
+                     vk::to_string(wanted_usage), static_cast<int>(format_type));
         return static_cast<vk::Format>(alternative);
     }
 
