@@ -258,7 +258,7 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
         // 计算图像显示位置，使其居中
         ImVec2 imagePos = ImGui::GetCursorPos();
         imagePos.x += (windowSize.x - imageSize.x) * 0.5f;
-        imagePos.y += (windowSize.y - imageSize.y) * 0.5f;
+        imagePos.y += 0;
         ImGui::SetCursorPos(imagePos);
     ImGui::Image(imguiTextureID, imageSize);
     // 计算文本的宽度
