@@ -103,8 +103,6 @@ PresentManager::PresentManager(const vk::Instance& instance,
       blit_supported_{canBlitToSwapchain(device.getPhysical(), swapchain.getImageViewFormat())},
       use_present_thread_{common::settings::get<settings::RenderVulkan>().use_present_thread} {
     setImageCount();
-
-    const auto& dld = device.getLogical();
     cmdpool_ = device.logical().createCommandPool(
         vk::CommandPoolCreateInfo().setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer |
                                              vk::CommandPoolCreateFlagBits::eTransient));

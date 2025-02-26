@@ -50,6 +50,7 @@ void App::run() {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
+
         graphics->start();
         auto ubo = graphics::ui::get_uniform_buffer(debugInfo, window->getAspectRatio());
         graphics->bindUniformBuffer(graphicId, &ubo, sizeof(ubo));
