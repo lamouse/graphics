@@ -6,7 +6,8 @@
 #include "vulkan_common/device.hpp"
 #include "texture_cache.hpp"
 #include <boost/container/small_vector.hpp>
-#include "common/tracy.hpp"
+#include <tracy/Tracy.hpp>
+
 namespace render::vulkan::scheduler {
 
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,

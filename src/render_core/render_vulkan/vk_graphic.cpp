@@ -1,8 +1,8 @@
 #include "vk_graphic.hpp"
 #include "uniforms.hpp"
 #include "blit_screen.hpp"
-#include <common/tracy.hpp>
 #include <imgui_impl_vulkan.h>
+#include <tracy/Tracy.hpp>
 namespace render::vulkan {
 
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,

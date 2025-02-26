@@ -26,8 +26,9 @@ if(CMAKE_C_COMPILER MATCHES "ucrt" OR CMAKE_CXX_COMPILER MATCHES "ucrt")
         endif()
 endif()
 
-cmake_minimum_required(VERSION 3.28)
 
+
+cmake_minimum_required(VERSION 3.28)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
 set(EXECUTE_NAME graphics)
@@ -76,6 +77,9 @@ elseif(UNIX AND APPLE)
         add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
 endif()
 
+option(TRACY_ENABLE "Enable Tracy profiling support" OFF)
+option(TRACY_ON_DEMAND "Tracy on on demand" ON)
+
 # 设置可执行文件输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Library output path")
@@ -96,10 +100,11 @@ find_package(spirv_cross_core CONFIG REQUIRED)
 find_package(spirv_cross_glsl CONFIG REQUIRED)
 find_package(spirv_cross_cpp CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
-find_package(Tracy CONFIG REQUIRED)
+
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 
+find_package(Tracy CONFIG REQUIRED)
 
 add_subdirectory(third-party)
 

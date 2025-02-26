@@ -11,6 +11,7 @@ add_library(render-core STATIC ${RENDER_CORE_SRC} ${RENDER_VULKAN_SRC}
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)
     target_compile_options(render-core PRIVATE
+
         # /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         # /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
         # /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
@@ -27,6 +28,7 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
+
 add_subdirectory(host_shaders)
 
 add_dependencies(render-core host_shaders)
@@ -35,7 +37,20 @@ target_include_directories(render-core PRIVATE ${CMAKE_SOURCE_DIR}/third-party/i
 target_link_libraries(render-core PUBLIC core common shader)
 target_link_libraries(render-core PUBLIC Vulkan::Vulkan GPUOpen::VulkanMemoryAllocator)
 target_link_libraries(render-core PUBLIC spdlog::spdlog)
-target_link_libraries(render-core PRIVATE Tracy::TracyClient)
+
+if(TRACY_ENABLE)
+    message(STATUS "Tracy support is enabled")
+    # 添加 Tracy 相关的编译选项或源文件
+    add_definitions(-DTRACY_ENABLE)
+
+    if(TRACY_ON_DEMAND)
+        add_definitions(-DTRACY_ON_DEMAND)
+    endif()
+
+    target_link_libraries(render-core PRIVATE Tracy::TracyClient)
+else()
+    message(STATUS "Tracy support is disabled")
+endif()
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
