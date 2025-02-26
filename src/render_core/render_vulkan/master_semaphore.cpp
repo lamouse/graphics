@@ -13,22 +13,19 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
     if (!device.hasTimelineSemaphore()) {
         static constexpr vk::FenceCreateInfo fence_ci;
         free_queue_.resize(FENCE_RESERVE_SIZE);
-        std::ranges::generate(free_queue_, [&] {
-            return Fence(device.getLogical().createFence(fence_ci), device.getLogical());
-        });
+        std::ranges::generate(free_queue_, [&] { return device.logical().createFence(fence_ci); });
         wait_thread_ =
             std::jthread([this](std::stop_token token) { waitThread(std::move(token)); });
         return;
     }
 
-    static constexpr vk::SemaphoreTypeCreateInfo semaphore_type_ci{
-        vk::SemaphoreType::eTimeline,
-        0,
-    };
-    static constexpr vk::SemaphoreCreateInfo semaphore_ci{
-        {},
-        &semaphore_type_ci,
-    };
+    static constexpr vk::SemaphoreTypeCreateInfo semaphore_type_ci =
+        vk::SemaphoreTypeCreateInfo()
+            .setSemaphoreType(vk::SemaphoreType::eTimeline)
+            .setInitialValue(0);
+
+    static constexpr vk::SemaphoreCreateInfo semaphore_ci =
+        vk::SemaphoreCreateInfo().setPNext(&semaphore_type_ci);
     semaphore_ = device.logical().CreateSemaphore(semaphore_ci);
 
     if (not common::settings::get<settings::RenderVulkan>().render_debug) {
@@ -100,13 +97,13 @@ void MasterSemaphore::submitQueueFence(vk::CommandBuffer& cmdbuf, vk::CommandBuf
 
     const std::array cmdbuffers{upload_cmdbuf, cmdbuf};
 
-    vk::SubmitInfo submit_info{};
-    submit_info.setWaitSemaphoreCount(num_wait_semaphores)
-        .setWaitSemaphores(wait_semaphore)
-        .setWaitDstStageMask(wait_stage_masks)
-        .setCommandBuffers(cmdbuffers)
-        .setSignalSemaphoreCount(num_signal_semaphores)
-        .setSignalSemaphores(signal_semaphore);
+    vk::SubmitInfo submit_info = vk::SubmitInfo()
+                                     .setWaitSemaphoreCount(num_wait_semaphores)
+                                     .setWaitSemaphores(wait_semaphore)
+                                     .setWaitDstStageMask(wait_stage_masks)
+                                     .setCommandBuffers(cmdbuffers)
+                                     .setSignalSemaphoreCount(num_signal_semaphores)
+                                     .setSignalSemaphores(signal_semaphore);
 
     auto fence = getFreeFence();
     try {
@@ -139,11 +136,11 @@ void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf,
     vk::TimelineSemaphoreSubmitInfo timeline_si;
     timeline_si.setSignalSemaphoreValues(signal_values);
 
-    vk::SubmitInfo submit_info{};
-    submit_info.setPNext(&timeline_si)
-        .setWaitDstStageMask(wait_stage_masks)
-        .setCommandBuffers(cmdbuffers)
-        .setSignalSemaphores(signal_semaphores);
+    vk::SubmitInfo submit_info = vk::SubmitInfo()
+                                     .setPNext(&timeline_si)
+                                     .setWaitDstStageMask(wait_stage_masks)
+                                     .setCommandBuffers(cmdbuffers)
+                                     .setSignalSemaphores(signal_semaphores);
     if (wait_semaphore) {
         submit_info.setWaitSemaphores(wait_semaphore);
     } else {

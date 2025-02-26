@@ -272,7 +272,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     : instance_(instance), physical_(physical) {
     format_properties_ = utils::GetFormatProperties(physical_);
     const bool is_suitable = getSuitability(surface != nullptr);
-    const vk::DriverId driver_id = static_cast<vk::DriverId>(properties_.driver_.driverID);
+    const auto driver_id = static_cast<vk::DriverId>(properties_.driver_.driverID);
     const auto device_id = properties_.properties_.deviceID;
     const bool is_radv = driver_id == ::vk::DriverId::eMesaRadv;
     const bool is_amd_driver =
@@ -575,11 +575,11 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         .physicalDevice = physical,
         .device = *logical_,
         .preferredLargeHeapBlockSize = 0,
-        #if defined(USE_TRACY)
+#if defined(USE_TRACY)
         .pAllocationCallbacks = &allocationCallbacks,
-        #else
-            .pAllocationCallbacks = nullptr,
-        #endif
+#else
+        .pAllocationCallbacks = nullptr,
+#endif
         .pDeviceMemoryCallbacks = nullptr,
         .pHeapSizeLimit = nullptr,
         //.pVulkanFunctions = &functions,
@@ -928,12 +928,11 @@ void Device::setupFamilies(vk::SurfaceKHR surface) {
         if (queue_family.queueCount == 0) {
             continue;
         }
-        if ((queue_family.queueFlags & ::vk::QueueFlagBits::eCompute)) {
-            compute = index;
-        }
 
-        if (queue_family.queueFlags & ::vk::QueueFlagBits::eGraphics) {
+        if ((queue_family.queueFlags & ::vk::QueueFlagBits::eGraphics) &&
+            (queue_family.queueFlags & ::vk::QueueFlagBits::eCompute)) {
             graphics = index;
+            compute = index;
         }
         if (surface && physical_.getSurfaceSupportKHR(index, surface)) {
             present = index;

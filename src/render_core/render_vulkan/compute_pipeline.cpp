@@ -46,17 +46,15 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
             flags |= vk::PipelineCreateFlagBits::eCaptureStatisticsKHR;
         }
         pipeline = device.logical().createPipeline(
-            vk::ComputePipelineCreateInfo{
-                flags,
-                vk::PipelineShaderStageCreateInfo{
-                    {},
-                    vk::ShaderStageFlagBits::eCompute,
-                    *spv_module,
-                    "main",
-                    nullptr,
-                    device.isExtSubgroupSizeControlSupported() ? &subgroup_size_ci : nullptr},
-                *pipeline_layout,
-            },
+            vk::ComputePipelineCreateInfo()
+            .setFlags(flags)
+            .setStage(vk::PipelineShaderStageCreateInfo()
+                          .setStage(vk::ShaderStageFlagBits::eCompute)
+                          .setModule(*spv_module)
+                          .setPName("main")
+                          .setPNext(device.isExtSubgroupSizeControlSupported() ? &subgroup_size_ci
+                                                                               : nullptr))
+            .setLayout(*pipeline_layout),
             *pipeline_cache);
 
         if (pipeline_statistics) {
