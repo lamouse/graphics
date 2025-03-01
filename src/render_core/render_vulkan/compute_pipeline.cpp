@@ -26,8 +26,6 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
       guest_descriptor_queue(guest_descriptor_queue_),
       info{info_},
       spv_module(std::move(spv_module_)) {
-    std::copy_n(info.constant_buffer_used_sizes.begin(), uniform_buffer_sizes.size(),
-                uniform_buffer_sizes.begin());
 
     auto func{[this, &descriptor_pool, pipeline_statistics] {
         pipeline::DescriptorLayoutBuilder builder{device};

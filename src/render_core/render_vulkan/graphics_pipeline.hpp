@@ -127,8 +127,6 @@ class GraphicsPipeline {
         std::array<ShaderModule, NUM_STAGES> spv_modules_;
 
         std::array<shader::Info, NUM_STAGES> stage_infos;
-        std::array<u32, 5> enabled_uniform_buffer_masks{};
-        render::frame::UniformBufferSizes uniform_buffer_sizes{};
         u32 num_textures{};
         DynamicFeatures dynamic;
         DescriptorSetLayout descriptor_set_layout;

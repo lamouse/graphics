@@ -1,6 +1,5 @@
 #include "graphics_pipeline.hpp"
 #include "common/cityhash.h"
-#include "uniforms.hpp"
 #include "vulkan_common/device.hpp"
 #include "descriptor_pool.hpp"
 #include "scheduler.hpp"
@@ -266,8 +265,6 @@ GraphicsPipeline::GraphicsPipeline(
             continue;
         }
         stage_infos[stage] = *info;
-        enabled_uniform_buffer_masks[stage] = info->constant_buffer_mask;
-        std::ranges::copy(info->constant_buffer_used_sizes, uniform_buffer_sizes[stage].begin());
         num_textures += shader::NumDescriptors(info->texture_descriptors);
     }
     auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool, pipeline_statistics] {
