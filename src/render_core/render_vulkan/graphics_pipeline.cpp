@@ -10,6 +10,7 @@
 #include "render_pass.hpp"
 #include "pipeline_helper.hpp"
 #include "shader_tools/stage.h"
+#include <gsl/gsl>
 #if defined(_MSC_VER) && defined(NDEBUG)
 #define LAMBDA_FORCEINLINE [[msvc::forceinline]]
 #else
@@ -259,12 +260,12 @@ GraphicsPipeline::GraphicsPipeline(
     if (shader_notify) {
         shader_notify->MarkShaderBuilding();
     }
-    for (size_t stage = 0; stage < NUM_STAGES; ++stage) {
-        const shader::Info* const info{infos[stage]};
+    for (u32 stage = 0; stage < NUM_STAGES; ++stage) {
+        const shader::Info* const info{ gsl::at(infos, stage)};
         if (!info) {
             continue;
         }
-        stage_infos[stage] = *info;
+        gsl::at(stage_infos, stage) = *info;
         num_textures += shader::NumDescriptors(info->texture_descriptors);
     }
     auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool, pipeline_statistics] {
