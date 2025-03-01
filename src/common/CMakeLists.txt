@@ -20,6 +20,10 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
+if (UNIX AND APPLE)
+# for std::stop_source
+add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fexperimental-library>)
+endif()
 target_link_libraries(common PUBLIC Vulkan::Vulkan spdlog::spdlog)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
