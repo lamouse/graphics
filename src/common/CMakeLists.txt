@@ -1,8 +1,9 @@
 aux_source_directory(. RENDER_CORE_SRC)
 aux_source_directory(./fs FS_SRC)
 add_library(common STATIC ${RENDER_CORE_SRC} ${FS_SRC})
-#add_library(core STATIC ${CORE_SRC})
-if (MSVC)
+
+# add_library(core STATIC ${CORE_SRC})
+if(MSVC)
     target_compile_options(common PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
@@ -19,12 +20,15 @@ else()
 
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
+
+    if(UNIX AND APPLE)
+        # for std::stop_source
+        target_compile_options(common PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fexperimental-library>)
+    endif()
 endif()
-if (UNIX AND APPLE)
-# for std::stop_source
-add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fexperimental-library>)
-endif()
+
 target_link_libraries(common PUBLIC Vulkan::Vulkan spdlog::spdlog)
+
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(common PROPERTIES VERSION 0.0.1 SOVERSION 0)
