@@ -77,8 +77,7 @@ auto MasterSemaphore::getFreeFence() -> Fence {
     std::scoped_lock lock{free_mutex_};
     if (free_queue_.empty()) {
         static constexpr VkFenceCreateInfo fence_ci{};
-        auto fence = device_.getLogical().createFence(fence_ci);
-        return Fence{fence, device_.getLogical()};
+        return device_.logical().createFence(fence_ci);
     }
 
     auto fence = std::move(free_queue_.back());

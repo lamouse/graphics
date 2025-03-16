@@ -134,17 +134,7 @@ void Scheduler::dispatchWork() {
     acquireNewChunk();
 }
 
-void Scheduler::endPendingOperations() {
-#if ANDROID
-    if (Settings::IsGPULevelHigh()) {
-        // This is problematic on Android, disable on GPU Normal.
-        // query_cache->DisableStreams();
-    }
-#else
-    // query_cache->DisableStreams();
-#endif
-    endRenderPass();
-}
+void Scheduler::endPendingOperations() { endRenderPass(); }
 auto Scheduler::updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool {
     if (state_.graphics_pipeline_ == pipeline) {
         return false;
@@ -222,9 +212,11 @@ auto Scheduler::submitExecution(vk::Semaphore signal_semaphore,
     const u64 signal_value = master_semaphore_->nextTick();
     recordWithUploadBuffer([signal_semaphore, wait_semaphore, signal_value, this](
                                vk::CommandBuffer cmdbuf, vk::CommandBuffer upload_cmdbuf) {
-        static constexpr vk::MemoryBarrier WRITE_BARRIER{
-            vk::AccessFlagBits::eTransferWrite,
-            vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead};
+        static constexpr vk::MemoryBarrier WRITE_BARRIER =
+            vk::MemoryBarrier()
+                .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+                .setDstAccessMask(vk::AccessFlagBits::eMemoryWrite |
+                                  vk::AccessFlagBits::eMemoryRead);
         upload_cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer,
                                       vk::PipelineStageFlagBits::eAllCommands, {}, WRITE_BARRIER,
                                       {}, {});
@@ -271,14 +263,11 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
     state_.render_area_ = render_area;
 
     record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
-        ::std::array<::vk::ClearValue, 2> clearValues;
-        clearValues[0].setColor(::vk::ClearColorValue(std::array<float, 4>({.5f, .3f, .2f, 1.0f})));
-        clearValues[1].setDepthStencil({1.0f, 0});
+
         cmdbuf.beginRenderPass(
             vk::RenderPassBeginInfo()
                 .setRenderPass(render_pass)
                 .setFramebuffer(framebuffer_handle)
-                //.setClearValues(clearValues)
                 .setRenderArea(
                     vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area)),
             vk::SubpassContents::eInline);
