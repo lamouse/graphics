@@ -2,7 +2,9 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>
-
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 #include "../config.hpp"
 #include "config/log.h"
 #include "app.hpp"
@@ -12,6 +14,9 @@ using namespace std;
 using namespace g;
 void init(const Config& config);
 auto main(int /*argc*/, char** /*argv*/) -> int {
+#if defined(_WIN32)
+    SetConsoleOutputCP(65001);
+#endif
     try {
         Config config("config/config.yaml");
         init(config);

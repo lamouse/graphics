@@ -43,6 +43,7 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
         }
     });
 }
+// NOLINTNEXTLINE
 void MasterSemaphore::waitThread(std::stop_token token) {
     while (!token.stop_requested()) {
         uint64_t host_tick{};

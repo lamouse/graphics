@@ -42,7 +42,8 @@ auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
     });
     return found != formats.end() ? *found : formats[0];
 }
-auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, const bool has_fifo_relaxed) -> vk::PresentModeKHR {
+auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, const bool has_fifo_relaxed)
+    -> vk::PresentModeKHR {
     // Mailbox doesn't lock the application like FIFO (vsync)
     // FIFO present mode locks the framerate to the monitor's refresh rate
     settings::enums::VSyncMode setting = [has_imm, has_mailbox]() {
@@ -106,7 +107,7 @@ Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Sc
 
 /// Creates (or recreates) the swapchain with a given size.
 void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) {
-    spdlog::info("执行创建Creating swapchain 宽度：{}, 高度：{}", width, height);
+    spdlog::info("创建 swapchain w:{}, h:{}", width, height);
     is_outdated_ = false;
     is_suboptimal_ = false;
     width_ = width;
@@ -126,28 +127,28 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
 }
 
 auto Swapchain::acquireNextImage() -> bool {
-    try{
-    const ::vk::ResultValue<uint32_t> result = device_.getLogical().acquireNextImageKHR(
-        *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_]);
-    switch (result.result) {
-        case vk::Result::eSuccess:
-            image_index_ = result.value;
-            break;
-        case vk::Result::eSuboptimalKHR:
-            is_suboptimal_ = true;
-            break;
-        case vk::Result::eErrorOutOfDateKHR:
-            is_outdated_ = true;
-            break;
-        case vk::Result::eErrorSurfaceLostKHR:
-            throw utils::VulkanException(result.result);
-            break;
-        default:
-            SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
-                         string_VkResult(static_cast<VkResult>(result.result)));
-            break;
-    }
-    }catch (const ::vk::OutOfDateKHRError&) {
+    try {
+        const ::vk::ResultValue<uint32_t> result = device_.getLogical().acquireNextImageKHR(
+            *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_]);
+        switch (result.result) {
+            case vk::Result::eSuccess:
+                image_index_ = result.value;
+                break;
+            case vk::Result::eSuboptimalKHR:
+                is_suboptimal_ = true;
+                break;
+            case vk::Result::eErrorOutOfDateKHR:
+                is_outdated_ = true;
+                break;
+            case vk::Result::eErrorSurfaceLostKHR:
+                throw utils::VulkanException(result.result);
+                break;
+            default:
+                SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
+                             string_VkResult(static_cast<VkResult>(result.result)));
+                break;
+        }
+    } catch (const ::vk::OutOfDateKHRError&) {
         is_outdated_ = true;
     }
     return is_suboptimal_ || is_outdated_;
@@ -219,11 +220,11 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
 void Swapchain::init_sync_mode() {
     const auto physical_device{device_.getPhysical()};
     const auto present_modes = physical_device.getSurfacePresentModesKHR(surface_);
-    has_mailbox_ = std::find(present_modes.begin(), present_modes.end(),
+    has_mailbox_ = std::ranges::find(present_modes,
                              ::vk::PresentModeKHR::eMailbox) != present_modes.end();
-    has_imm_ = std::find(present_modes.begin(), present_modes.end(),
+    has_imm_ = std::ranges::find(present_modes,
                          ::vk::PresentModeKHR::eImmediate) != present_modes.end();
-    has_fifo_relaxed_ = std::find(present_modes.begin(), present_modes.end(),
+    has_fifo_relaxed_ = std::ranges::find(present_modes,
                                   ::vk::PresentModeKHR::eFifo) != present_modes.end();
 }
 
@@ -249,28 +250,28 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
         .setPSwapchains(swapchain_.address())
         .setImageIndices(image_index_);
 
-    std::scoped_lock lock{scheduler_.submit_mutex_};
+    const std::scoped_lock lock{scheduler_.submit_mutex_};
     try {
         switch (const vk::Result result = present_queue.presentKHR(present_info)) {
             case vk::Result::eSuccess:
                 break;
             case vk::Result::eSuboptimalKHR:
                 SPDLOG_DEBUG("Suboptimal swapchain");
-            break;
+                break;
             case vk::Result::eErrorOutOfDateKHR:
                 is_outdated_ = true;
-            break;
+                break;
             case vk::Result::eErrorSurfaceLostKHR:
                 throw utils::VulkanException(result);
-            break;
+                break;
             default:
                 SPDLOG_CRITICAL("Failed to present with error {}",
                                 string_VkResult(static_cast<VkResult>(result)));
-            break;
+                break;
         }
         ++frame_index_;
         frame_index_ %= static_cast<uint32_t>(image_count_);
-    }catch (const ::vk::OutOfDateKHRError&) {
+    } catch (const ::vk::OutOfDateKHRError&) {
         is_outdated_ = true;
     }
 }
