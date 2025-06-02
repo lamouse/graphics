@@ -36,7 +36,7 @@ auto chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& formats)
         format.colorSpace = Swapchain::DEFAULT_COLOR_SPACE;
         return format;
     }
-    const auto& found = std::find_if(formats.begin(), formats.end(), [](const auto& format) {
+    const auto& found = std::ranges::find_if(formats, [](const auto& format) {
         return format.format == Swapchain::DEFAULT_COLOR_FORMAT &&
                format.colorSpace == Swapchain::DEFAULT_COLOR_SPACE;
     });
@@ -220,12 +220,12 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
 void Swapchain::init_sync_mode() {
     const auto physical_device{device_.getPhysical()};
     const auto present_modes = physical_device.getSurfacePresentModesKHR(surface_);
-    has_mailbox_ = std::ranges::find(present_modes,
-                             ::vk::PresentModeKHR::eMailbox) != present_modes.end();
-    has_imm_ = std::ranges::find(present_modes,
-                         ::vk::PresentModeKHR::eImmediate) != present_modes.end();
-    has_fifo_relaxed_ = std::ranges::find(present_modes,
-                                  ::vk::PresentModeKHR::eFifo) != present_modes.end();
+    has_mailbox_ =
+        std::ranges::find(present_modes, ::vk::PresentModeKHR::eMailbox) != present_modes.end();
+    has_imm_ =
+        std::ranges::find(present_modes, ::vk::PresentModeKHR::eImmediate) != present_modes.end();
+    has_fifo_relaxed_ =
+        std::ranges::find(present_modes, ::vk::PresentModeKHR::eFifo) != present_modes.end();
 }
 
 void Swapchain::destroy() {

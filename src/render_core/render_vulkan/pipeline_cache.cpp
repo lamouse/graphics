@@ -1,6 +1,5 @@
 #include "pipeline_cache.hpp"
 #include "common/cityhash.h"
-#include "common/fs/fs.h"
 #include "descriptor_pool.hpp"
 #include "render_vulkan/pipeline_statistics.hpp"
 #include "scheduler.hpp"
@@ -38,18 +37,6 @@ void LoadPipelines(std::stop_token stop_loading, const std::filesystem::path& fi
     file.read(magic_number.data(), magic_number.size())
         .read(reinterpret_cast<char*>(&cache_version), sizeof(cache_version));
     if (magic_number != MAGIC_NUMBER || cache_version != expected_cache_version) {
-        file.close();
-        if (common::FS::RemoveFile(filename)) {
-            if (magic_number != MAGIC_NUMBER) {
-                SPDLOG_ERROR("Invalid pipeline cache file");
-            }
-            if (cache_version != expected_cache_version) {
-                SPDLOG_INFO("Deleting old pipeline cache");
-            }
-        } else {
-            SPDLOG_ERROR("Invalid pipeline cache file and failed to delete it in \"{}\"",
-                         common::FS::PathToUTF8String(filename));
-        }
         return;
     }
     while (file.tellg() != end) {
@@ -70,11 +57,6 @@ void LoadPipelines(std::stop_token stop_loading, const std::filesystem::path& fi
     }
 
 } catch (const std::ios_base::failure& e) {
-    SPDLOG_ERROR("{}", e.what());
-    if (!common::FS::RemoveFile(filename)) {
-        SPDLOG_ERROR("Failed to delete pipeline cache file {}",
-                     common::FS::PathToUTF8String(filename));
-    }
 }
 
 constexpr u32 CACHE_VERSION = 11;

@@ -1,25 +1,33 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "graphics",
-  "builtin-baseline": "b545373a9a536dc559dac8583467a21497a0e897",
+  "builtin-baseline": "654410ee8e11f0610c11a4a49a8827a84be5e187",
   "version": "1.0",
-    "dependencies": [
-        "glfw3",
-        "fmt",
-        "spdlog",
-        "assimp",
-        "stb",
-        "glm",
-        "ms-gsl",
-        "gtest",
-        "yaml-cpp",
-        "boost-container",
-        "glslang",
-        "spirv-cross",
-        {
-            "name": "sdl3",
-            "features": [ "vulkan" ]
-        },
-        "tracy"
-    ]
+  "dependencies": [
+    "glfw3",
+    "fmt",
+    "spdlog",
+    "assimp",
+    "stb",
+    "glm",
+    "ms-gsl",
+    "gtest",
+    "yaml-cpp",
+    "boost-container",
+    "glslang",
+    "spirv-cross",
+    {
+      "name": "sdl3",
+      "features": [
+        "vulkan"
+      ]
+    },
+    "tracy"
+  ],
+  "overrides": [
+    {
+      "name": "fmt",
+      "version": "11.2.0"
+    }
+]
 }

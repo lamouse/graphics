@@ -5,7 +5,6 @@
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
-#include <spdlog/spdlog.h>
 namespace {
 namespace fs = std::filesystem;
 
@@ -235,7 +234,6 @@ void ShaderCompile::compile(const std::string_view& shader_path, std::string_vie
         auto shader = read_shader(path);
         auto language = getEShLanguage(path.extension().string());
         auto spirv = compileGLSLtoSPIRV(shader, language);
-        SPDLOG_INFO("Compiling: {}", path.string());
         auto out_file = std::string(out_path.data()) + path.filename().generic_string() + ".spv";
         std::ofstream out(out_file, std::ios::binary);
         out.write(reinterpret_cast<const char*>(spirv.data()), spirv.size() * sizeof(uint32_t));
