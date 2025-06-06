@@ -15,7 +15,8 @@ namespace render::texture {
 struct RenderTargets {
         constexpr auto operator==(const RenderTargets&) const noexcept -> bool = default;
 
-        [[nodiscard]] constexpr auto Contains(std::span<const ImageViewId> elements) const noexcept -> bool {
+        [[nodiscard]] constexpr auto Contains(std::span<const ImageViewId> elements) const noexcept
+            -> bool {
             const auto contains = [elements](ImageViewId item) {
                 return std::ranges::find(elements, item) != elements.end();
             };

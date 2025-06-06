@@ -204,8 +204,8 @@ void Scheduler::invalidateState() {
  * @param wait_semaphore 用于等待的 Vulkan 信号量。
  * @return u64 返回信号量的值。
  */
-auto Scheduler::submitExecution(vk::Semaphore signal_semaphore,
-                                vk::Semaphore wait_semaphore) -> u64 {
+auto Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore)
+    -> u64 {
     endPendingOperations();
     invalidateState();
 
@@ -263,7 +263,6 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
     state_.render_area_ = render_area;
 
     record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
-
         cmdbuf.beginRenderPass(
             vk::RenderPassBeginInfo()
                 .setRenderPass(render_pass)

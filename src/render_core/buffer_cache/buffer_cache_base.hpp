@@ -157,7 +157,7 @@ class BufferCache : public BufferCacheInfo {
         void TickFrame();
         auto addVertexBuffer(void* data, u32 size) -> BufferId;
         auto addIndexBuffer(void* data, u32 size) -> BufferId;
-        auto addUniformBuffer(u32 size)-> BufferId;
+        auto addUniformBuffer(u32 size) -> BufferId;
         void BindIndexBuffer(BufferId id);
         void BindVertexBuffers(BufferId id, u32 size);
         void BindUniformBuffers(BufferId id, void* data, size_t size);

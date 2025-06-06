@@ -34,6 +34,6 @@ struct FramebufferConfig {
 using UniformBufferSizes = std::array<std::array<u32, NUM_GRAPHICS_UNIFORM_BUFFERS>, NUM_STAGES>;
 using ComputeUniformBufferSizes = std::array<u32, NUM_COMPUTE_UNIFORM_BUFFERS>;
 
-auto NormalizeCrop(const FramebufferConfig& framebuffer, u32 texture_width,
-                   u32 texture_height) -> common::Rectangle<f32>;
+auto NormalizeCrop(const FramebufferConfig& framebuffer, u32 texture_width, u32 texture_height)
+    -> common::Rectangle<f32>;
 }  // namespace render::frame

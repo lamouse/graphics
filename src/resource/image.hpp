@@ -10,6 +10,7 @@ class Image {
     private:
         unsigned char* data;
         render::texture::ImageInfo imageInfo;
+
     public:
         void readImage(::std::string& path);
         Image(::std::string& path);

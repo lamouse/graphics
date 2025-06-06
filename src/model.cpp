@@ -10,14 +10,11 @@
 
 namespace graphics {
 
-
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
     : vertices_(vertices),
       indices_(indices),
       vertexCount(static_cast<uint32_t>(vertices.size())),
       indicesSize(static_cast<uint32_t>(indices.size())) {
-
-
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
@@ -60,4 +57,4 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
     return std::make_unique<Model>(vertices, indices);
 }
 
-}  // namespace g
+}  // namespace graphics

@@ -78,7 +78,8 @@ auto BlitScreen::CreateFramebuffer(const vk::ImageView& image_view, vk::Extent2D
     return CreateFramebuffer(image_view, extent, window_adapt->getRenderPass());
 }
 
-void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame, const layout::FrameBufferLayout& layout,
+void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
+                             const layout::FrameBufferLayout& layout,
                              std::span<const frame::FramebufferConfig> framebuffers,
                              size_t current_swapchain_image_count,
                              vk::Format current_swapchain_view_format) {
@@ -134,7 +135,7 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame, const lay
     }
 
     // Perform the draw
-    window_adapt->Draw(rasterizer,scheduler, image_index, layers, framebuffers, layout, frame);
+    window_adapt->Draw(rasterizer, scheduler, image_index, layers, framebuffers, layout, frame);
 
     // Advance to next image
     if (++image_index >= image_count) {

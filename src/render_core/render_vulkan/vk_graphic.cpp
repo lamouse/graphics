@@ -325,8 +325,8 @@ void VulkanGraphics::UpdateScissorsState() {
     scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
 }
 
-auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config,
-                                       u32 pixel_stride) -> std::optional<FramebufferTextureInfo> {
+auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
+    -> std::optional<FramebufferTextureInfo> {
     std::scoped_lock lock{texture_cache.mutex};
     const auto& image_view = texture_cache.TryFindFramebufferImageView(config);
     if (!image_view.first) {

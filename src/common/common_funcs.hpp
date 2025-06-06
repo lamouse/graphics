@@ -20,8 +20,8 @@
     auto operator=(cls&&)->cls& = delete
 
 #define CLASS_DEFAULT_MOVEABLE(cls) \
-    cls(cls&&) noexcept =  default;           \
-    auto operator=(cls&&) noexcept ->cls& = default
+    cls(cls&&) noexcept = default;  \
+    auto operator=(cls&&) noexcept -> cls& = default
 
 #define __FILENAME__ (::std::strrchr(__FILE__, '/') ? ::std::strrchr(__FILE__, '/') + 1 : __FILE__)
 

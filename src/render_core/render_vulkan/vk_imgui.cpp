@@ -40,13 +40,13 @@ void check_vk_result(VkResult err) {
     }
     SPDLOG_ERROR("[vulkan] Error: VkResult = {}", string_VkResult(err));
     if (err < 0) {
-        //abort();
+        // abort();
     }
 }
 }  // namespace
 
-ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device, vk::PhysicalDevice physical,
-             vk::Instance instance, float scale)
+ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device,
+                     vk::PhysicalDevice physical, vk::Instance instance, float scale)
     : render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
                                                           vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
@@ -101,12 +101,13 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device, 
     init_info.RenderPass = *render_pass;
     ImGui_ImplVulkan_Init(&init_info);
     ImFontConfig fontConfig;
-    fontConfig.OversampleH = 2; // 水平方向抗锯齿
-    fontConfig.OversampleV = 2; // 垂直方向抗锯齿
-    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0f, &fontConfig, io.Fonts->GetGlyphRangesChineseFull());
+    fontConfig.OversampleH = 2;  // 水平方向抗锯齿
+    fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
+    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0f, &fontConfig,
+                                 io.Fonts->GetGlyphRangesChineseFull());
 }
 
-void ImguiCore::imgui_predraw(){
+void ImguiCore::imgui_predraw() {
     {
         {
             bool show = false;
@@ -117,7 +118,6 @@ void ImguiCore::imgui_predraw(){
 }
 void ImguiCore::draw(const vk::CommandBuffer& commandBuffer) {
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
-
 }
 
 ImguiCore::~ImguiCore() {
@@ -132,7 +132,7 @@ void ImguiCore::newFrame() {
     ImGui::NewFrame();
 }
 
-void ImguiCore::endFrame(){
+void ImguiCore::endFrame() {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {

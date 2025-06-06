@@ -94,8 +94,8 @@ class TextureCache : public TextureCacheInfo {
         void CopyImage(ImageId dst_id, ImageId src_id, std::vector<ImageCopy> copies);
 
         /// Find or create an image view in the given image with the passed parameters
-        [[nodiscard]] auto FindOrEmplaceImageView(ImageId image_id,
-                                                  const ImageViewInfo& info) -> ImageViewId;
+        [[nodiscard]] auto FindOrEmplaceImageView(ImageId image_id, const ImageViewInfo& info)
+            -> ImageViewId;
 
         /// Create a render target from a given image and image view parameters
         [[nodiscard]] auto RenderTargetFromImage(ImageId, const ImageViewInfo& view_info)
@@ -121,7 +121,7 @@ class TextureCache : public TextureCacheInfo {
         /// Get the sampler id from the graphics descriptor table in the specified index
         auto GetGraphicsSamplerId(u32 index) -> SamplerId;
         // 添加一个图像
-        auto addGraphics(const ImageInfo& info) ->std::pair<ImageViewId, SamplerId>;
+        auto addGraphics(const ImageInfo& info) -> std::pair<ImageViewId, SamplerId>;
         /// Get the sampler id from the compute descriptor table in the specified index
         auto GetComputeSamplerId(u32 index) -> SamplerId;
 
@@ -159,7 +159,7 @@ class TextureCache : public TextureCacheInfo {
             -> std::pair<ImageView*, bool>;
 
         /// Update bound render targets
-        auto UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent) ->RenderTargets;
+        auto UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent) -> RenderTargets;
         /**
          * 这里主要针对添加的图片
          */
@@ -168,7 +168,8 @@ class TextureCache : public TextureCacheInfo {
          *
          * @return 这里主要针对上次设置的的图片
          */
-        auto getCurrentImage()->std::pair<ImageView*, Sampler*>;
+        auto getCurrentImage() -> std::pair<ImageView*, Sampler*>;
+
     private:
         Runtime& runtime;
         std::vector<FramebufferId> frame_buffer_ids;

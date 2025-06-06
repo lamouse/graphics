@@ -96,8 +96,8 @@ void TextureCache<P>::CopyImage(ImageId dst_id, ImageId src_id, std::vector<Imag
 }
 
 template <class P>
-auto TextureCache<P>::FindOrEmplaceImageView(ImageId image_id,
-                                             const ImageViewInfo& info) -> ImageViewId {
+auto TextureCache<P>::FindOrEmplaceImageView(ImageId image_id, const ImageViewInfo& info)
+    -> ImageViewId {
     Image& image = slot_images[image_id];
     if (const ImageViewId image_view_id = image.FindView(info); image_view_id) {
         return image_view_id;
@@ -263,7 +263,7 @@ void TextureCache<P>::SynchronizeGraphicsDescriptors() {
 }
 
 template <class P>
-auto TextureCache<P>::addGraphics(const ImageInfo& info) ->std::pair<ImageViewId, SamplerId>{
+auto TextureCache<P>::addGraphics(const ImageInfo& info) -> std::pair<ImageViewId, SamplerId> {
     ImageInfo new_info = info;
     const size_t size_bytes = utils::CalculateGuestSizeInBytes(new_info);
 
@@ -307,7 +307,8 @@ auto TextureCache<P>::TryFindFramebufferImageView(const frame::FramebufferConfig
 }
 
 template <class P>
-auto TextureCache<P>::UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent)->RenderTargets {
+auto TextureCache<P>::UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D extent)
+    -> RenderTargets {
     for (auto& info : infos) {
         if (surface::GetFormatType(info.format) == SurfaceType::ColorTexture) {
             render_targets.color_buffer_ids[0] = CreateImageView(info);
@@ -320,12 +321,12 @@ auto TextureCache<P>::UpdateRenderTargets(std::span<ImageInfo> infos, Extent2D e
 }
 
 template <class P>
-void TextureCache<P>:: setCurrentImage(ImageViewId view_id, SamplerId sampler_id)
-{
+void TextureCache<P>::setCurrentImage(ImageViewId view_id, SamplerId sampler_id) {
     current_image_view = std::make_pair(view_id, sampler_id);
 }
 template <class P>
-auto TextureCache<P>:: getCurrentImage()->std::pair<ImageView*, Sampler*> {
-    return std::make_pair<ImageView*, Sampler*>(&slot_image_views[current_image_view.first], &slot_samplers[current_image_view.second]);
+auto TextureCache<P>::getCurrentImage() -> std::pair<ImageView*, Sampler*> {
+    return std::make_pair<ImageView*, Sampler*>(&slot_image_views[current_image_view.first],
+                                                &slot_samplers[current_image_view.second]);
 }
 }  // namespace render::texture

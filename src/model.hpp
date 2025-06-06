@@ -13,8 +13,8 @@ class Model {
                 ::glm::vec3 color;
                 ::glm::vec2 texCoord;
                 auto operator==(const Vertex& other) const -> bool {
-                  return position == other.position && color == other.color &&
-                         texCoord == other.texCoord;
+                    return position == other.position && color == other.color &&
+                           texCoord == other.texCoord;
                 }
         };
 

@@ -18,4 +18,4 @@ struct FrameInfo {
         ::vk::DescriptorSet descriptorSet;
         GameObject::Map& gameObjects;
 };
-}  // namespace g
+}  // namespace graphics

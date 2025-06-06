@@ -155,9 +155,10 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
             .setPNext(&storage_image_view_usage_create_info));
 }
 
-[[nodiscard]] auto TransformBufferImageCopies(
-    std::span<const texture::BufferImageCopy> copies, size_t buffer_offset,
-    vk::ImageAspectFlags aspect_mask) -> boost::container::small_vector<vk::BufferImageCopy, 16> {
+[[nodiscard]] auto TransformBufferImageCopies(std::span<const texture::BufferImageCopy> copies,
+                                              size_t buffer_offset,
+                                              vk::ImageAspectFlags aspect_mask)
+    -> boost::container::small_vector<vk::BufferImageCopy, 16> {
     struct Maker {
             auto operator()(const texture::BufferImageCopy& copy) const -> vk::BufferImageCopy {
                 return vk::BufferImageCopy()
@@ -220,10 +221,11 @@ struct RangedBarrierRange {
         }
 };
 
-[[nodiscard]] auto MakeImageResolve(
-    const texture::Region2D& dst_region, const texture::Region2D& src_region,
-    const VkImageSubresourceLayers& dst_layers,
-    const VkImageSubresourceLayers& src_layers) -> vk::ImageResolve {
+[[nodiscard]] auto MakeImageResolve(const texture::Region2D& dst_region,
+                                    const texture::Region2D& src_region,
+                                    const VkImageSubresourceLayers& dst_layers,
+                                    const VkImageSubresourceLayers& src_layers)
+    -> vk::ImageResolve {
     return VkImageResolve{
         .srcSubresource = src_layers,
         .srcOffset =
@@ -460,8 +462,8 @@ void TryTransformSwizzleIfNeeded(surface::PixelFormat format, std::array<Swizzle
     };
 }
 
-[[nodiscard]] auto ImageUsageFlags(const FormatInfo& info,
-                                   surface::PixelFormat format) -> vk::ImageUsageFlags {
+[[nodiscard]] auto ImageUsageFlags(const FormatInfo& info, surface::PixelFormat format)
+    -> vk::ImageUsageFlags {
     vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferSrc |
                                 vk::ImageUsageFlagBits::eTransferDst |
                                 vk::ImageUsageFlagBits::eSampled;
@@ -569,8 +571,8 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
                            vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, write_barrier);
 }
 
-[[nodiscard]] auto MakeImageCreateInfo(const Device& device,
-                                       const texture::ImageInfo& info) -> vk::ImageCreateInfo {
+[[nodiscard]] auto MakeImageCreateInfo(const Device& device, const texture::ImageInfo& info)
+    -> vk::ImageCreateInfo {
     const bool is_2d = (info.type == texture::ImageType::e2D);
     const bool is_3d = (info.type == texture::ImageType::e3D);
     const auto format_info = device.surfaceFormat(FormatType::Optimal, false, info.format);
@@ -1618,7 +1620,8 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
         swizzle = info.Swizzle();
         TryTransformSwizzleIfNeeded(format, swizzle, device->mustEmulateBGR565(),
                                     !device->isExt4444FormatsSupported());
-        // if ((aspect_mask & (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) !=
+        // if ((aspect_mask & (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil))
+        // !=
         //     vk::ImageAspectFlags{}) {
         //     std::ranges::transform(swizzle, swizzle.begin(), ConvertGreenRed);
         // }
@@ -1716,8 +1719,8 @@ auto TextureImageView::IsRescaled() const noexcept -> bool {
     return src_image.IsRescaled();
 }
 
-auto TextureImageView::MakeView(vk::Format vk_format,
-                                vk::ImageAspectFlags aspect_mask) -> ImageView {
+auto TextureImageView::MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask)
+    -> ImageView {
     const vk::ComponentMapping component_mapping = vk::ComponentMapping()
                                                        .setA(vk::ComponentSwizzle::eIdentity)
                                                        .setB(vk::ComponentSwizzle::eIdentity)

@@ -3,7 +3,7 @@
 #include "render_core/fixed_pipeline_state.h"
 #include "imgui.h"
 namespace graphics::ui {
-    struct ImguiDebugInfo {
+struct ImguiDebugInfo {
         float speed;
         float look_x;
         float look_y;
@@ -27,13 +27,14 @@ namespace graphics::ui {
 };
 auto init_debug_info() -> ImguiDebugInfo;
 void uniform_ui(ImguiDebugInfo& debugInfo);
-auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation) -> render::UniformBufferObject;
+auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
+    -> render::UniformBufferObject;
 
 /**
  *
  * @param state 这里的属性值会被修改
  */
-void pipeline_state(render::PipelineState &state);
+void pipeline_state(render::PipelineState& state);
 
 void draw_result(ImTextureID imguiTextureID, float aspectRatio);
 void draw_setting();
@@ -41,4 +42,4 @@ void draw_docked_window();
 void main_ui();
 void begin();
 void end();
-}
+}  // namespace graphics::ui

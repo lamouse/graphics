@@ -162,8 +162,8 @@ constexpr auto isZetaFormat(surface::PixelFormat pixel_format) -> bool {
     return pixel_format >= surface::PixelFormat::MaxColorFormat &&
            pixel_format < surface::PixelFormat::MaxDepthStencilFormat;
 }
-auto GetFormatFeatures(vk::FormatProperties properties,
-                       FormatType format_type) -> vk::FormatFeatureFlags {
+auto GetFormatFeatures(vk::FormatProperties properties, FormatType format_type)
+    -> vk::FormatFeatureFlags {
     switch (format_type) {
         case FormatType::Linear:
             return properties.linearTilingFeatures;

@@ -26,7 +26,6 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
       guest_descriptor_queue(guest_descriptor_queue_),
       info{info_},
       spv_module(std::move(spv_module_)) {
-
     auto func{[this, &descriptor_pool, pipeline_statistics] {
         pipeline::DescriptorLayoutBuilder builder{device};
         builder.Add(info, vk::ShaderStageFlagBits::eCompute);
@@ -45,14 +44,15 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
         }
         pipeline = device.logical().createPipeline(
             vk::ComputePipelineCreateInfo()
-            .setFlags(flags)
-            .setStage(vk::PipelineShaderStageCreateInfo()
-                          .setStage(vk::ShaderStageFlagBits::eCompute)
-                          .setModule(*spv_module)
-                          .setPName("main")
-                          .setPNext(device.isExtSubgroupSizeControlSupported() ? &subgroup_size_ci
-                                                                               : nullptr))
-            .setLayout(*pipeline_layout),
+                .setFlags(flags)
+                .setStage(vk::PipelineShaderStageCreateInfo()
+                              .setStage(vk::ShaderStageFlagBits::eCompute)
+                              .setModule(*spv_module)
+                              .setPName("main")
+                              .setPNext(device.isExtSubgroupSizeControlSupported()
+                                            ? &subgroup_size_ci
+                                            : nullptr))
+                .setLayout(*pipeline_layout),
             *pipeline_cache);
 
         if (pipeline_statistics) {

@@ -359,9 +359,10 @@ auto PipelineCache::builtPipeline(GraphicsPipeline* pipeline) const noexcept -> 
     return nullptr;
 }
 
-auto PipelineCache::createGraphicsPipeline(
-    const GraphicsPipelineCacheKey& key, pipeline::PipelineStatistics* statistics,
-    bool build_in_parallel) -> std::unique_ptr<GraphicsPipeline> try {
+auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
+                                           pipeline::PipelineStatistics* statistics,
+                                           bool build_in_parallel)
+    -> std::unique_ptr<GraphicsPipeline> try {
     auto hash = key.Hash();
     SPDLOG_INFO("0x{:016x}", hash);
     size_t env_index{0};
@@ -414,9 +415,10 @@ auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)
     return nullptr;
 }
 
-auto PipelineCache::CreateComputePipeline(
-    const ComputePipelineCacheKey& key, pipeline::PipelineStatistics* statistics,
-    bool build_in_parallel) -> std::unique_ptr<ComputePipeline> {
+auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,
+                                          pipeline::PipelineStatistics* statistics,
+                                          bool build_in_parallel)
+    -> std::unique_ptr<ComputePipeline> {
     return nullptr;
 }
 

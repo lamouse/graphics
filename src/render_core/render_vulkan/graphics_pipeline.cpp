@@ -56,8 +56,8 @@ auto ShaderStage(uint32_t stage) -> VkShaderStageFlagBits {
 
 using boost::container::small_vector;
 using boost::container::static_vector;
-auto MakeBuilder(const Device& device,
-                 std::span<const shader::Info> infos) -> pipeline::DescriptorLayoutBuilder {
+auto MakeBuilder(const Device& device, std::span<const shader::Info> infos)
+    -> pipeline::DescriptorLayoutBuilder {
     pipeline::DescriptorLayoutBuilder builder{device};
     for (size_t index = 0; index < infos.size(); ++index) {
         static constexpr std::array stages{
@@ -261,7 +261,7 @@ GraphicsPipeline::GraphicsPipeline(
         shader_notify->MarkShaderBuilding();
     }
     for (u32 stage = 0; stage < NUM_STAGES; ++stage) {
-        const shader::Info* const info{ gsl::at(infos, stage)};
+        const shader::Info* const info{gsl::at(infos, stage)};
         if (!info) {
             continue;
         }
@@ -329,15 +329,15 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
         std::array imageInfos = {imageInfo, depth};
         render_targets = texture_cache.UpdateRenderTargets(imageInfos, {1920, 1080});
     }};
-    if(!is_set_render_target){
+    if (!is_set_render_target) {
         prepare_stage(1);
         is_set_render_target = true;
     }
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindCurrentUniformBuffers();
     auto [view, sample] = texture_cache.getCurrentImage();
-    guest_descriptor_queue_.AddSampledImage(view->Handle(shader::TextureType::Color2D), sample->Handle()
-        );
+    guest_descriptor_queue_.AddSampledImage(view->Handle(shader::TextureType::Color2D),
+                                            sample->Handle());
     ConfigureDraw();
 }
 
@@ -355,7 +355,7 @@ void GraphicsPipeline::ConfigureDraw() {
     const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
     scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
-         if (bind_pipeline) {
+        if (bind_pipeline) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
         }
         if (!descriptor_set_layout) {
@@ -367,8 +367,8 @@ void GraphicsPipeline::ConfigureDraw() {
                                                     device_.logical().getDispatchLoaderDynamic());
         } else {
             const vk::DescriptorSet descriptor_set{descriptor_allocator.commit()};
-            device_.getLogical().updateDescriptorSetWithTemplate(descriptor_set, *descriptor_update_template,
-                                                descriptor_data);
+            device_.getLogical().updateDescriptorSetWithTemplate(
+                descriptor_set, *descriptor_update_template, descriptor_data);
             cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, *pipeline_layout, 0,
                                       descriptor_set, nullptr);
         }

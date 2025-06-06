@@ -32,7 +32,8 @@ ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{st
     conf.extent.height = extent.height;
     conf.fullscreen = false;
     setWindowConfig(conf);
-    window = ::glfwCreateWindow(conf.extent.width,  conf.extent.height, title_.c_str(), nullptr, nullptr);
+    window =
+        ::glfwCreateWindow(conf.extent.width, conf.extent.height, title_.c_str(), nullptr, nullptr);
     if (!window) {
         ::glfwTerminate();
     }
@@ -46,14 +47,14 @@ void ScreenWindow::initWindow() {
         int w{}, h{};
         glfwGetFramebufferSize(glfw_window, &w, &h);
         auto* base_window = reinterpret_cast<ScreenWindow*>(glfwGetWindowUserPointer(glfw_window));
-        if(h == 0 || w == 0){
+        if (h == 0 || w == 0) {
             return;
         }
         base_window->UpdateCurrentFramebufferLayout(static_cast<uint32_t>(w),
                                                     static_cast<uint32_t>(h));
     });
-       // 设置窗口最小尺寸为 160x90
-       glfwSetWindowSizeLimits(window, 160, 90, GLFW_DONT_CARE, GLFW_DONT_CARE);
+    // 设置窗口最小尺寸为 160x90
+    glfwSetWindowSizeLimits(window, 160, 90, GLFW_DONT_CARE, GLFW_DONT_CARE);
 }
 
 auto ScreenWindow::getSurface(VkInstance instance) -> VkSurfaceKHR {
@@ -145,4 +146,4 @@ auto ScreenWindow::operator=(ScreenWindow&& w) noexcept -> ScreenWindow& {
 
 auto ScreenWindow::shouldClose() const -> bool { return glfwWindowShouldClose(window); }
 
-}  // namespace g
+}  // namespace graphics

@@ -52,8 +52,8 @@ class VulkanGraphics : public render::Graphic {
         auto getDrawImage() -> ImTextureID override;
         ~VulkanGraphics() override;
 
-        auto AccelerateDisplay(const frame::FramebufferConfig& config,
-                               u32 pixel_stride) -> std::optional<FramebufferTextureInfo>;
+        auto AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
+            -> std::optional<FramebufferTextureInfo>;
         void TickFrame();
 
     private:

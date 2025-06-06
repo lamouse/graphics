@@ -25,8 +25,9 @@ class Layer final {
         ~Layer();
 
         void ConfigureDraw(PresentPushConstants* out_push_constants,
-                           vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer, vk::Sampler sampler,
-                           size_t image_index, const frame::FramebufferConfig& framebuffer,
+                           vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
+                           vk::Sampler sampler, size_t image_index,
+                           const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);
 
     private:

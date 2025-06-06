@@ -43,9 +43,10 @@ class DescriptorLayoutBuilder {
                                        device->getLogical()};
         }
 
-        [[nodiscard]] auto CreateTemplate(
-            vk::DescriptorSetLayout descriptor_set_layout, vk::PipelineLayout pipeline_layout,
-            bool use_push_descriptor) const -> DescriptorUpdateTemplate {
+        [[nodiscard]] auto CreateTemplate(vk::DescriptorSetLayout descriptor_set_layout,
+                                          vk::PipelineLayout pipeline_layout,
+                                          bool use_push_descriptor) const
+            -> DescriptorUpdateTemplate {
             if (entries.empty()) {
                 return nullptr;
             }

@@ -144,8 +144,8 @@ void uniform_ui(ImguiDebugInfo& debugInfo) {
     }
 }
 
-auto get_uniform_buffer(ImguiDebugInfo& debugInfo,
-                        float extentAspectRation) -> render::UniformBufferObject {
+auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
+    -> render::UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     auto currentTime = ::std::chrono::high_resolution_clock::now();
     float time =
@@ -255,11 +255,11 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
     ImVec2 imageSize = calculateAspectRatioSize(windowSize, aspectRatio);
-        // 计算图像显示位置，使其居中
-        ImVec2 imagePos = ImGui::GetCursorPos();
-        imagePos.x += (windowSize.x - imageSize.x) * 0.5f;
-        imagePos.y += 0;
-        ImGui::SetCursorPos(imagePos);
+    // 计算图像显示位置，使其居中
+    ImVec2 imagePos = ImGui::GetCursorPos();
+    imagePos.x += (windowSize.x - imageSize.x) * 0.5f;
+    imagePos.y += 0;
+    ImGui::SetCursorPos(imagePos);
     ImGui::Image(imguiTextureID, imageSize);
     // 计算文本的宽度
     const char* text = "average %.3f ms/frame (%.1f FPS)";

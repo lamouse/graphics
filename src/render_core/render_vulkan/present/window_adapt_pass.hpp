@@ -22,8 +22,8 @@ class WindowAdaptPass final {
 
         auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
         auto getRenderPass() -> vk::RenderPass;
-        void Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index, std::list<Layer>& layers,
-                  std::span<const frame::FramebufferConfig> configs,
+        void Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
+                  std::list<Layer>& layers, std::span<const frame::FramebufferConfig> configs,
                   const layout::FrameBufferLayout& layout, Frame* dst);
 
     private:

@@ -10,7 +10,7 @@
 #include <functional>
 
 namespace render {
-    using imgui_ui_fun = std::function<void()>;
+using imgui_ui_fun = std::function<void()>;
 class RenderBase {
     public:
         CLASS_NON_COPYABLE(RenderBase);
@@ -38,6 +38,7 @@ class RenderBase {
         int current_frame_ = 0;     ///< Current frame, should be set by the renderer
         std::unique_ptr<ShaderNotify> shader_notify_;
         imgui_ui_fun imgui_ui;
+
     private:
         void UpdateCurrentFramebufferLayout();
 };

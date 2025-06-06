@@ -23,6 +23,7 @@ class SDLWindow : public core::frontend::BaseWindow {
         void newFrame() override;
         void pullEvents() override;
         auto getWindow() -> SDL_Window* { return window_; }
+
     private:
         SDL_Window* window_;
         bool should_close_ = false;

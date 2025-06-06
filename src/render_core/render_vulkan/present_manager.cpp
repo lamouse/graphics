@@ -28,8 +28,8 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
     };
 }
 [[nodiscard]] auto makeImageBlit(std::int32_t frame_width, std::int32_t frame_height,
-                                 std::int32_t swapchain_width,
-                                 std::int32_t swapchain_height) -> vk::ImageBlit {
+                                 std::int32_t swapchain_width, std::int32_t swapchain_height)
+    -> vk::ImageBlit {
     return VkImageBlit{
         .srcSubresource = makeImageSubresourceLayers(),
         .srcOffsets =
@@ -62,8 +62,8 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
     };
 }
 [[nodiscard]] auto MakeImageCopy(uint32_t frame_width, uint32_t frame_height,
-                                 uint32_t swapchain_width,
-                                 uint32_t swapchain_height) -> vk::ImageCopy {
+                                 uint32_t swapchain_width, uint32_t swapchain_height)
+    -> vk::ImageCopy {
     return VkImageCopy{
         .srcSubresource = makeImageSubresourceLayers(),
         .srcOffset =

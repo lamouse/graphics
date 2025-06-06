@@ -54,7 +54,7 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
         },
         this);
     // 设置窗口的最小和最大尺寸
-    SDL_SetWindowMinimumSize(window_, 160, 90); // 最小尺寸
+    SDL_SetWindowMinimumSize(window_, 160, 90);  // 最小尺寸
     SDL_SetWindowPosition(window_, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     SDL_ShowWindow(window_);
 }
@@ -77,24 +77,24 @@ void SDLWindow::setWindowTitle(std::string_view title) {
 }
 void SDLWindow::configGUI() {
 #if defined(USE_DEBUG_UI)
-        ImGui_ImplSDL3_InitForVulkan(window_);
+    ImGui_ImplSDL3_InitForVulkan(window_);
 #endif
 }
 void SDLWindow::destroyGUI() {
 #if defined(USE_DEBUG_UI)
-        ImGui_ImplSDL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
 #endif
 }
 void SDLWindow::newFrame() {
 #if defined(USE_DEBUG_UI)
-        ImGui_ImplSDL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
 #endif
 }
 void SDLWindow::pullEvents() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
 #if defined(USE_DEBUG_UI)
-            ImGui_ImplSDL3_ProcessEvent(&e);
+        ImGui_ImplSDL3_ProcessEvent(&e);
 #endif
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {

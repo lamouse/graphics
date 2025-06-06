@@ -21,4 +21,4 @@ struct ScreenExtent {
         int width;
         int height;
 };
-}  // namespace g
+}  // namespace graphics

@@ -627,8 +627,8 @@ class Semaphore : public wrapper::Handle<vk::Semaphore, vk::Device> {
          * @param timeout Time in nanoseconds to timeout
          * @return        True on successful wait, false on timeout
          */
-        [[nodiscard]] auto Wait(u64 value,
-                                u64 timeout = std::numeric_limits<u64>::max()) const -> bool {
+        [[nodiscard]] auto Wait(u64 value, u64 timeout = std::numeric_limits<u64>::max()) const
+            -> bool {
             switch (auto result = owner.waitSemaphores(
                         vk::SemaphoreWaitInfo().setSemaphores(handle).setValues(value), timeout)) {
                 case vk::Result::eSuccess:
@@ -647,8 +647,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
     public:
         static auto Create(vk::PhysicalDevice physical_device,
                            const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
-                           const std::vector<const char*>& enabled_extensions,
-                           const void* next) -> LogicDevice;
+                           const std::vector<const char*>& enabled_extensions, const void* next)
+            -> LogicDevice;
         [[nodiscard]] auto createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
             -> PipelineLayout;
 

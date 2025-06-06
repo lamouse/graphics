@@ -45,4 +45,4 @@ class GameObject {
         GameObject(id_t id) : id(id) {}
 };
 
-}  // namespace g
+}  // namespace graphics

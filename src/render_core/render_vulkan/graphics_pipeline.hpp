@@ -81,7 +81,8 @@ class GraphicsPipeline {
             resource::DescriptorPool& descriptor_pool, GuestDescriptorQueue& guest_descriptor_queue,
             common::ThreadWorker* worker_thread, pipeline::PipelineStatistics* pipeline_statistics,
             RenderPassCache& render_pass_cache, const GraphicsPipelineCacheKey& key,
-            TextureCache& texture_cache, BufferCache& buffer_cache, std::array<ShaderModule, NUM_STAGES> stages,
+            TextureCache& texture_cache, BufferCache& buffer_cache,
+            std::array<ShaderModule, NUM_STAGES> stages,
             const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic);
 
         CLASS_NON_COPYABLE(GraphicsPipeline);

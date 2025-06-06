@@ -152,8 +152,8 @@ void Layer::ReleaseRawImages() {
     buffer.reset();
 }
 
-auto Layer::GetRawImageOffset(const frame::FramebufferConfig& framebuffer,
-                              size_t image_index) const -> u64 {
+auto Layer::GetRawImageOffset(const frame::FramebufferConfig& framebuffer, size_t image_index) const
+    -> u64 {
     return GetSizeInBytes(framebuffer) * image_index;
 }
 
@@ -201,7 +201,8 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
                           const layout::FrameBufferLayout& layout) {
     const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
 
-    const u32 texture_width = texture_info ? texture_info->width : framebuffer.width;;
+    const u32 texture_width = texture_info ? texture_info->width : framebuffer.width;
+    ;
     const u32 texture_height = texture_info ? texture_info->height : framebuffer.height;
     const u32 scaled_width = texture_info ? texture_info->scaled_width : texture_width;
     const u32 scaled_height = texture_info ? texture_info->scaled_height : texture_height;

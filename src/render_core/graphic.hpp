@@ -7,12 +7,12 @@
 namespace render {
 using GraphicsId = common::SlotId;
 struct GraphicsContext {
-  texture::ImageInfo image;
-  std::span<float> vertex;
-  std::span<uint16_t> indices;
-  u32 indices_size = 0;
-  u32 uniform_size= 0;
-  IndexFormat index_format;
+        texture::ImageInfo image;
+        std::span<float> vertex;
+        std::span<uint16_t> indices;
+        u32 indices_size = 0;
+        u32 uniform_size = 0;
+        IndexFormat index_format;
 };
 class Graphic {
     public:

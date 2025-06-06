@@ -87,8 +87,9 @@ auto CreateWrappedPipelineImpl(const Device& device, RenderPass& renderpass, Pip
 }
 }  // namespace
 
-auto CreateWrappedDescriptorSetLayout(
-    const Device& device, std::initializer_list<vk::DescriptorType> types) -> DescriptorSetLayout {
+auto CreateWrappedDescriptorSetLayout(const Device& device,
+                                      std::initializer_list<vk::DescriptorType> types)
+    -> DescriptorSetLayout {
     std::vector<vk::DescriptorSetLayoutBinding> bindings(types.size());
     for (size_t i = 0; i < types.size(); i++) {
         bindings[i] = vk::DescriptorSetLayoutBinding{
@@ -142,8 +143,8 @@ auto CreateWrappedRenderPass(const Device& device, vk::Format format,
                                                  .setDependencies(dependency));
 }
 
-auto CreateWrappedPipelineLayout(const Device& device,
-                                 DescriptorSetLayout& layout) -> PipelineLayout {
+auto CreateWrappedPipelineLayout(const Device& device, DescriptorSetLayout& layout)
+    -> PipelineLayout {
     ;
     return device.logical().createPipelineLayout(
         vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(layout.address()));
@@ -167,9 +168,10 @@ auto CreateWrappedPipeline(const Device& device, RenderPass& render_pass, Pipeli
                                      color_blend_attachment_disabled);
 }
 
-auto CreateWrappedPremultipliedBlendingPipeline(
-    const Device& device, RenderPass& renderpass, PipelineLayout& layout,
-    std::tuple<ShaderModule&, ShaderModule&> shaders) -> Pipeline {
+auto CreateWrappedPremultipliedBlendingPipeline(const Device& device, RenderPass& renderpass,
+                                                PipelineLayout& layout,
+                                                std::tuple<ShaderModule&, ShaderModule&> shaders)
+    -> Pipeline {
     constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_premultiplied{
         VK_TRUE,           vk::BlendFactor::eOne,     vk::BlendFactor::eOneMinusConstantAlpha,
         vk::BlendOp::eAdd, vk::BlendFactor::eOne,     vk::BlendFactor::eZero,
@@ -180,9 +182,10 @@ auto CreateWrappedPremultipliedBlendingPipeline(
                                      color_blend_attachment_premultiplied);
 }
 
-auto CreateWrappedCoverageBlendingPipeline(
-    const Device& device, RenderPass& renderpass, PipelineLayout& layout,
-    std::tuple<ShaderModule&, ShaderModule&> shaders) -> Pipeline {
+auto CreateWrappedCoverageBlendingPipeline(const Device& device, RenderPass& renderpass,
+                                           PipelineLayout& layout,
+                                           std::tuple<ShaderModule&, ShaderModule&> shaders)
+    -> Pipeline {
     constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_coverage{
         VK_TRUE,           vk::BlendFactor::eSrc1Alpha, vk::BlendFactor::eOneMinusSrcAlpha,
         vk::BlendOp::eAdd, vk::BlendFactor::eOne,       vk::BlendFactor::eZero,
@@ -193,8 +196,8 @@ auto CreateWrappedCoverageBlendingPipeline(
                                      color_blend_attachment_coverage);
 }
 
-auto CreateWrappedImage(MemoryAllocator& allocator, vk::Extent2D dimensions,
-                        vk::Format format) -> Image {
+auto CreateWrappedImage(MemoryAllocator& allocator, vk::Extent2D dimensions, vk::Format format)
+    -> Image {
     const VkImageCreateInfo image_ci{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .pNext = nullptr,
@@ -292,8 +295,8 @@ auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
 }
 
 auto CreateWriteDescriptorSet(std::vector<vk::DescriptorImageInfo>& images, vk::Sampler sampler,
-                              vk::ImageView view, vk::DescriptorSet set,
-                              u32 binding) -> vk::WriteDescriptorSet {
+                              vk::ImageView view, vk::DescriptorSet set, u32 binding)
+    -> vk::WriteDescriptorSet {
     assert(images.capacity() > images.size());
     auto& image_info = images.emplace_back(sampler, view, vk::ImageLayout::eGeneral);
 
@@ -391,8 +394,8 @@ auto CreateNearestNeighborSampler(const Device& device) -> Sampler {
     return device.logical().CreateSampler(ci_nn);
 }
 
-auto CreateWrappedBuffer(MemoryAllocator& allocator, vk::DeviceSize size,
-                         MemoryUsage usage) -> Buffer {
+auto CreateWrappedBuffer(MemoryAllocator& allocator, vk::DeviceSize size, MemoryUsage usage)
+    -> Buffer {
     const VkBufferCreateInfo dst_buffer_info{
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext = nullptr,

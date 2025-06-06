@@ -117,55 +117,54 @@ enum class IndexFormat : u32 {
     UnsignedInt = 0x2,
 };
 
-struct PipelineState{
-    bool colorBlendEnable = true;
-    bool logicOpEnable = false;
-    bool stencilTestEnable = true;
-    bool depthClampEnable = true;
-    bool depthWriteEnable = true;
-    bool depthTestEnable = true;
-    bool depthBoundsTestEnable = true;
-    bool cullMode = false;
-    bool depthBiasEnable = true;
-    bool rasterizerDiscardEnable = false;
-    bool primitiveRestartEnable = false;
-    struct ViewPort{
-        f32 x = 0.0f;
-        f32 y = 0.0f;
-        f32 width = 0.0f;
-        f32 height = 0.0f;
-        f32 minDepth = 0.0f;
-        f32 maxDepth = 1.0f;
-    };
-    struct Scissors{
-        int32_t x = 0;
-        int32_t y = 0;
-        int32_t width = 0;
-        int32_t height = 0;
-    };
-    ViewPort viewport;
-    Scissors scissors;
+struct PipelineState {
+        bool colorBlendEnable = true;
+        bool logicOpEnable = false;
+        bool stencilTestEnable = true;
+        bool depthClampEnable = true;
+        bool depthWriteEnable = true;
+        bool depthTestEnable = true;
+        bool depthBoundsTestEnable = true;
+        bool cullMode = false;
+        bool depthBiasEnable = true;
+        bool rasterizerDiscardEnable = false;
+        bool primitiveRestartEnable = false;
+        struct ViewPort {
+                f32 x = 0.0f;
+                f32 y = 0.0f;
+                f32 width = 0.0f;
+                f32 height = 0.0f;
+                f32 minDepth = 0.0f;
+                f32 maxDepth = 1.0f;
+        };
+        struct Scissors {
+                int32_t x = 0;
+                int32_t y = 0;
+                int32_t width = 0;
+                int32_t height = 0;
+        };
+        ViewPort viewport;
+        Scissors scissors;
 
-    //主要影响render pass的clear vlue或者command buffer的clearAttachments
-    struct ClearColor {
-        float r{};
-        float g{};
-        float b{};
-        float a{};
-        float depth{1};
-        int stencil{};
-    };
+        // 主要影响render pass的clear vlue或者command buffer的clearAttachments
+        struct ClearColor {
+                float r{};
+                float g{};
+                float b{};
+                float a{};
+                float depth{1};
+                int stencil{};
+        };
 
-    ClearColor clearColor;
+        ClearColor clearColor;
 
-
-    //cmdbuf.setBlendConstants
-    struct BlendColor {
-        float r{};
-        float g{};
-        float b{};
-        float a{};
-    };
-    BlendColor blendColor;
+        // cmdbuf.setBlendConstants
+        struct BlendColor {
+                float r{};
+                float g{};
+                float b{};
+                float a{};
+        };
+        BlendColor blendColor;
 };
-}
+}  // namespace render

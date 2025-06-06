@@ -240,7 +240,6 @@ void BufferCacheRuntime::CopyBuffer(vk::Buffer dst_buffer, vk::Buffer src_buffer
     });
 }
 
-
 void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value) {
     if (dest_buffer == VK_NULL_HANDLE) {
         return;

@@ -7,7 +7,6 @@
 #include "vulkan_common/vk_surface.hpp"
 #include "present/vulkan_utils.hpp"
 
-
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
     auto physical = instance.EnumeratePhysicalDevices();
@@ -59,18 +58,18 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
 #if defined(USE_DEBUG_UI)
-        imgui->newFrame();
+    imgui->newFrame();
 #endif
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
 #if defined(USE_DEBUG_UI)
-        if (imgui_ui) {
-            imgui_ui();
-        }else {
-                imgui->imgui_predraw();
-        }
-        imgui->endFrame();
+    if (imgui_ui) {
+        imgui_ui();
+    } else {
+        imgui->imgui_predraw();
+    }
+    imgui->endFrame();
 #endif
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);

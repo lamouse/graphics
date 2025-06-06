@@ -20,4 +20,4 @@ class App {
         std::unique_ptr<render::RenderBase> render_base;
         config::ImageQuality imageQualityConfig;
 };
-}  // namespace g
+}  // namespace graphics

@@ -39,7 +39,6 @@ auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout;
  * @param window_aspect_ratio Current window aspect ratio
  * @return Emulation render window aspect ratio
  */
-auto EmulationAspectRatio(AspectRatio aspect,
-                          float window_aspect_ratio) -> float;
+auto EmulationAspectRatio(AspectRatio aspect, float window_aspect_ratio) -> float;
 
 }  // namespace layout

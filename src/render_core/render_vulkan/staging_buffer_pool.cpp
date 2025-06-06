@@ -127,16 +127,16 @@ auto StagingBufferPool::AreRegionsActive(size_t region_begin, size_t region_end)
                        [gpu_tick](u64 sync_tick) { return gpu_tick < sync_tick; });
 };
 
-auto StagingBufferPool::GetStagingBuffer(size_t size, MemoryUsage usage,
-                                         bool deferred) -> StagingBufferRef {
+auto StagingBufferPool::GetStagingBuffer(size_t size, MemoryUsage usage, bool deferred)
+    -> StagingBufferRef {
     if (const std::optional<StagingBufferRef> ref = TryGetReservedBuffer(size, usage, deferred)) {
         return *ref;
     }
     return CreateStagingBuffer(size, usage, deferred);
 }
 
-auto StagingBufferPool::TryGetReservedBuffer(size_t size, MemoryUsage usage,
-                                             bool deferred) -> std::optional<StagingBufferRef> {
+auto StagingBufferPool::TryGetReservedBuffer(size_t size, MemoryUsage usage, bool deferred)
+    -> std::optional<StagingBufferRef> {
     StagingBuffers& cache_level = GetCache(usage)[common::Log2Ceil64(size)];
 
     const auto is_free = [this](const StagingBuffer& entry) {
@@ -158,8 +158,8 @@ auto StagingBufferPool::TryGetReservedBuffer(size_t size, MemoryUsage usage,
     return it->Ref();
 }
 
-auto StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage usage,
-                                            bool deferred) -> StagingBufferRef {
+auto StagingBufferPool::CreateStagingBuffer(size_t size, MemoryUsage usage, bool deferred)
+    -> StagingBufferRef {
     const u32 log2 = common::Log2Ceil64(size);
     VkBufferCreateInfo buffer_ci = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,

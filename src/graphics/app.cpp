@@ -83,16 +83,16 @@ void App::run() {
 }
 
 App::App(const g::Config& config) {
-    auto window_config = config.getConfig<config::window::Window>();
+    auto [width, height, title] = config.getConfig<config::window::Window>();
 
 #if defined(USE_GLFW)
     window = std::make_unique<ScreenWindow>(
-        ScreenExtent{.width = window_config.width, .height = window_config.height},
-        window_config.title);
+        ScreenExtent{.width = width, .height = height},
+        title);
 #endif
 #if defined(USE_SDL)
-    window = std::make_unique<graphics::SDLWindow>(window_config.width, window_config.height,
-                                                   window_config.title);
+    window = std::make_unique<graphics::SDLWindow>(width, height,
+                                                   title);
 #endif
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }
