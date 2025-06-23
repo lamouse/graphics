@@ -22,6 +22,15 @@ void fps() {
     ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "FPS: %.1f ", io.Framerate);
     ImGui::End();
 }
+
+void show_fps() {
+    static bool show_fps = false;
+    ImGui::Checkbox("show fps", &show_fps);
+    if (show_fps) {
+        fps();
+    }
+}
+
 ImVec2 calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) {
     float targetWidth = availableSize.x;
     float targetHeight = availableSize.x / aspectRatio;
@@ -35,7 +44,7 @@ ImVec2 calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) {
     return ImVec2(targetWidth, targetHeight);
 }
 
-static void HelpMarker(const char* desc) {
+void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
     if (ImGui::BeginItemTooltip()) {
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -164,15 +173,6 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
     return ubo;
 }
 
-void main_ui() {
-    static bool show_fps = false;
-    ImGui::Begin("main");
-    ImGui::Checkbox("show fps", &show_fps);
-    ImGui::End();
-    if (show_fps) {
-        fps();
-    }
-}
 
 void begin() {}
 void end() { ImGui::Render(); }
@@ -281,6 +281,7 @@ void draw_setting() {
         // api.
         // IMGUI_DEMO_MARKER("Widgets/Basic/Combo");
         ImGui::Begin("系统设置");
+        show_fps();
         vsync_setting();
         ImGui::End();
     }
