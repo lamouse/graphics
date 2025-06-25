@@ -27,7 +27,7 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
         throw std::runtime_error(
             fmt::format("SDL could not initialize! SDL_Error: {}\n", SDL_GetError()));
     }
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
+#if defined(SDL_PLATFORM_MACOS)
     window_info.render_surface_scale = 1.0f;
 #else
     window_info.render_surface_scale = SDL_GetWindowDisplayScale(window_);

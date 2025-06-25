@@ -72,11 +72,6 @@ else()
         set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
-if(WIN32)
-elseif(UNIX AND APPLE)
-        add_definitions("-DVK_USE_PLATFORM_MACOS_MVK" "-DGL_SILENCE_DEPRECATION")
-endif()
-
 option(TRACY_ENABLE "Enable Tracy profiling support" OFF)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)
 

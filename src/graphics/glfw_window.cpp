@@ -19,7 +19,7 @@ ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{st
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     //::glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER,GLFW_TRUE);
 
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
+#if defined(GLFW_EXPOSE_NATIVE_COCOA)
     window_info.render_surface_scale = 1.0f;
 #else
     float x_scale{}, y_scale{};
@@ -64,24 +64,6 @@ auto ScreenWindow::getSurface(VkInstance instance) -> VkSurfaceKHR {
         throw ::std::runtime_error("createWindowSurface Fail ");
     }
     return surface;
-}
-
-auto ScreenWindow::getRequiredInstanceExtends(bool enableValidationLayers)
-    -> ::std::vector<const char*> {
-    uint32_t count{0};
-    const char** glfwExtends = ::glfwGetRequiredInstanceExtensions(&count);
-    std::vector<const char*> extends(count);
-    for (uint32_t i = 0; i < count; i++) {
-        extends[i] = glfwExtends[i];
-    }
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-    extends.push_back("VK_KHR_portability_enumeration");
-    extends.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-#endif
-    if (enableValidationLayers) {
-        extends.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-    return extends;
 }
 
 auto ScreenWindow::getExtent() -> ScreenExtent {
