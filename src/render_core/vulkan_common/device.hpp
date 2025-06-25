@@ -3,7 +3,6 @@
 #include "device_utils.hpp"
 #include <unordered_map>
 #include <set>
-#include "vma.hpp"
 #include "vulkan_wrapper.hpp"
 #include "render_core/surface.hpp"
 /**

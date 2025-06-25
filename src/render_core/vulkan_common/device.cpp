@@ -3,6 +3,8 @@
 #include <common/settings.hpp>
 #include <unordered_set>
 #include "common/literals.hpp"
+#include "vma.hpp"
+
 #if defined(USE_TRACY)
 #include <tracy/Tracy.hpp>
 #endif

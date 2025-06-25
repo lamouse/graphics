@@ -54,7 +54,7 @@ static void allocatePool(const Device& device, DescriptorBank& bank) {
     add(vk::DescriptorType::eCombinedImageSampler, info.textures_);
     add(vk::DescriptorType::eStorageImage, info.images_);
     vk::DescriptorPoolCreateInfo ci{
-        {}, sets_per_pool, static_cast<uint32_t>(pool_cursor), std::data(pool_sizes)};
+        vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, sets_per_pool, static_cast<uint32_t>(pool_cursor), std::data(pool_sizes)};
     bank.pools.push_back(device.logical().createDescriptorPool(ci));
 }
 

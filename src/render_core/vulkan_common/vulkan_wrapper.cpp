@@ -2,6 +2,8 @@
 #include "common/common_types.hpp"
 #include <vulkan/vk_enum_string_helper.h>
 #include "vulkan_common.hpp"
+#include "vk_mem_alloc.h"
+
 namespace render::vulkan {
 namespace utils {
 auto VulkanException::what() const noexcept -> const char* {

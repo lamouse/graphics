@@ -3,7 +3,6 @@
 #include "common/common_funcs.hpp"
 #include <vector>
 #include <type_traits>
-#include "vk_mem_alloc.h"
 #include "common/common_types.hpp"
 #include <span>
 #include <utility>
