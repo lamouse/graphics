@@ -372,7 +372,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     std::array<const shader::Info*, 5> infos{};
     shader::Info frag_info = shader::compile::getShaderInfo(MODEL_FRAG_SPV);
     shader::Info vertex_info = shader::compile::getShaderInfo(MODEL_VERT_SPV);
-        
+
     infos[0] = &vertex_info;
     infos[4] = &frag_info;
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};

@@ -10,7 +10,7 @@ set(PROGRAM_NAME "graphics")
 add_executable(${PROGRAM_NAME} ${SRC})
 
 target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core)
-target_link_libraries(${PROGRAM_NAME} PRIVATE Vulkan::Vulkan glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
+target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
 target_link_libraries(${PROGRAM_NAME} PRIVATE yaml-cpp::yaml-cpp)
 target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3)
 
