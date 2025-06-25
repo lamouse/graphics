@@ -19,45 +19,6 @@ namespace render::vulkan {
 
 namespace {
 
-constexpr std::array<char, 8> MAGIC_NUMBER{'e', 'n', 'g', 'e', 'c', 'a', 'c', 'h'};
-void LoadPipelines(std::stop_token stop_loading, const std::filesystem::path& filename,
-                   u32 expected_cache_version,
-                   common::UniqueFunction<void, std::ifstream&> load_compute,
-                   common::UniqueFunction<void, std::ifstream&> load_graphics) try {
-    std::ifstream file(filename, std::ios::binary | std::ios::ate);
-    if (!file.is_open()) {
-        return;
-    }
-    file.exceptions(std::ifstream::failbit);
-    const auto end{file.tellg()};
-    file.seekg(0, std::ios::beg);
-
-    std::array<char, 8> magic_number;
-    u32 cache_version;
-    file.read(magic_number.data(), magic_number.size())
-        .read(reinterpret_cast<char*>(&cache_version), sizeof(cache_version));
-    if (magic_number != MAGIC_NUMBER || cache_version != expected_cache_version) {
-        return;
-    }
-    while (file.tellg() != end) {
-        if (stop_loading.stop_requested()) {
-            return;
-        }
-        u32 num_envs{};
-        file.read(reinterpret_cast<char*>(&num_envs), sizeof(num_envs));
-        // std::vector<FileEnvironment> envs(num_envs);
-        // for (FileEnvironment& env : envs) {
-        //     env.Deserialize(file);
-        // }
-        // if (envs.front().ShaderStage() == shader::Stage::Compute) {
-        //     load_compute(file, std::move(envs.front()));
-        // } else {
-        //     load_graphics(file, std::move(envs));
-        // }
-    }
-
-} catch (const std::ios_base::failure& e) {
-}
 
 constexpr u32 CACHE_VERSION = 11;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'e', 'n', 'g', 'e', 'v', 'k', 'c', 'h'};
@@ -310,8 +271,6 @@ void PipelineCache::loadDiskResource(u64 title_id, std::stop_token stop_loading)
         });
         ++state.total;
     }};
-    LoadPipelines(stop_loading, pipeline_cache_filename, CACHE_VERSION, load_compute,
-                  load_graphics);
 
     SPDLOG_INFO("Total Pipeline Count: {}", state.total);
 
