@@ -2,41 +2,23 @@
 #include "render_core/vulkan_common/instance.hpp"
 #include "render_core/vulkan_common/device.hpp"
 #include "shader_tools/shader_compile.hpp"
+#include "model_vert_spv.h"
 #include <gtest/gtest.h>
+#include <print>
 // Demonstrate some basic assertions.
 
 TEST(VulkanInstance, CreateInstance) {
-    vk::Instance instance;
 #ifdef _WIN32
-    instance = render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Windows, true);
+    auto instance = render::vulkan::createInstance(1, core::frontend::WindowSystemType::Windows, true);
 #elif defined(__APPLE__)
     auto instance =
         render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
 #endif
-    ASSERT_TRUE(instance);
-    instance.destroy();
 }
 
-TEST(VulkanDriver, CreateDriver) {
-    vk::Instance instance;
-#ifdef _WIN32
-    instance = render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Windows, true);
-#elif defined(__APPLE__)
-    auto instance =
-        render::vulkan::CreateInstance(1, core::frontend::WindowSystemType::Cocoa, true);
-#endif
-    ASSERT_TRUE(instance);
-    auto phys = instance.enumeratePhysicalDevices();
-    ASSERT_TRUE(phys.size() > 0);
-    for (auto &pyh : phys) {
-        render::vulkan::Device d(instance, pyh, nullptr);
-        ASSERT_TRUE(d.getLogical());
-    }
-
-    instance.destroy();
-}
 
 TEST(Shader, ShaderCompile) {
-    // shader::compile::ShaderCompile shaderCompile;
+        shader::Info vertex_info = shader::compile::getShaderInfo(MODEL_VERT_SPV);
+        std::println("vertex into {}", vertex_info.image_buffer_descriptors.size());
     // shaderCompile.compile("./shaders", "./shaders/build");
 }

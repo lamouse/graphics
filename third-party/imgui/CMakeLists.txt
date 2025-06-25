@@ -77,7 +77,8 @@ endif()
 
 find_package(Vulkan REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(imgui PRIVATE Vulkan::Vulkan glfw)
+find_package(SDL3 CONFIG REQUIRED)
+target_link_libraries(imgui PRIVATE Vulkan::Vulkan glfw SDL3::SDL3)
 
 set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
 #

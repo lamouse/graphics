@@ -3,6 +3,7 @@
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/fixed_pipeline_state.h"
+#include <algorithm>
 #undef min
 #undef max
 namespace render::buffer {
