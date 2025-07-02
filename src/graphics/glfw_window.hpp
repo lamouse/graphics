@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
-#include <vector>
 
 #include "core/frontend/window.hpp"
 #include "g_defines.hpp"

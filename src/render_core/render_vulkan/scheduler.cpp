@@ -88,15 +88,13 @@ void Scheduler::workerThread(std::stop_token stop_token) {
 
 void Scheduler::allocateWorkerCommandBuffer() {
     current_cmd_buf_ = command_pool_->commit();
-    ::vk::CommandBufferBeginInfo begin{vk::CommandBufferUsageFlagBits::eOneTimeSubmit};
-    current_cmd_buf_.begin(begin);
+    current_cmd_buf_.begin(::vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
     current_upload_cmd_buf_ = command_pool_->commit();
-    ::vk::CommandBufferBeginInfo current_begin{vk::CommandBufferUsageFlagBits::eOneTimeSubmit};
-    current_upload_cmd_buf_.begin(current_begin);
+    current_upload_cmd_buf_.begin(vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 }
 
 void Scheduler::acquireNewChunk() {
-    std::scoped_lock rl{reserve_mutex_};
+    const std::scoped_lock rl{reserve_mutex_};
 
     if (chunk_reserve_.empty()) {
         // If we don't have anything reserved, we need to make a new chunk.
