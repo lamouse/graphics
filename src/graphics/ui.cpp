@@ -1,9 +1,13 @@
 #include "imgui.h"
 #include "ui.hpp"
+
 #include "common/settings.hpp"
 #include <ranges>
 #include <chrono>
+
 namespace {
+constexpr auto MAIN_WINDOW_NAME = "Main Window";
+
 void fps() {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
@@ -31,7 +35,7 @@ void show_fps() {
     }
 }
 
-ImVec2 calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) {
+auto calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) -> ImVec2 {
     float targetWidth = availableSize.x;
     float targetHeight = availableSize.x / aspectRatio;
 
@@ -173,7 +177,6 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
     return ubo;
 }
 
-
 void begin() {}
 void end() { ImGui::Render(); }
 
@@ -244,33 +247,38 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     // 启用停靠空间
     // 获取主窗口的尺寸
     ImGuiViewport* viewport = ImGui::GetMainViewport();
-    // ImGui::SetNextWindowPos(viewport->Pos);
-    // ImGui::SetNextWindowSize(viewport->Size);
-    // ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowViewport(viewport->ID);
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     // 在 ImGui 窗口中显示 Vulkan 渲染结果
-    ImGui::Begin("Vulkan绘制结果");
+    static bool first_time = true;
+    if (first_time) {
+        ImGui::SetNextWindowDockID(0x00000002, ImGuiCond_Always);
+        first_time = false;
+    }
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("绘制结果");
     // 获取当前 ImGui 窗口的尺寸
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
     ImVec2 imageSize = calculateAspectRatioSize(windowSize, aspectRatio);
     // 计算图像显示位置，使其居中
     ImVec2 imagePos = ImGui::GetCursorPos();
-    imagePos.x += (windowSize.x - imageSize.x) * 0.5f;
-    imagePos.y += 0;
     ImGui::SetCursorPos(imagePos);
-    ImGui::Image(imguiTextureID, imageSize);
+    ImGui::Image(imguiTextureID, windowSize);
     // 计算文本的宽度
-    const char* text = "average %.3f ms/frame (%.1f FPS)";
-    ImVec2 textSize = ImGui::CalcTextSize(text);
+    const auto* text = "average %.3f ms/frame (%.1f FPS)";
+    const ImVec2 textSize = ImGui::CalcTextSize(text);
     // 设置文本绘制位置为右上角
-    float textPosX = windowSize.x - textSize.x - 20;  // 10 是右边距
-    float textPosY = textSize.y + 10;                 // 20 是上边距
+    const float textPosX = windowSize.x - textSize.x - 20;  // 10 是右边距
+    const float textPosY = textSize.y + 10;                 // 20 是上边距
     // // 设置文本绘制位置为右上角
     ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
-    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "average %.3f ms/frame (%.1f FPS)",
+    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, text,
                        1000.0f / io.Framerate, io.Framerate);
+    ImGui::PopStyleVar();
     ImGui::End();
 }
 
@@ -289,23 +297,23 @@ void draw_setting() {
 
 void draw_docked_window() {
     // 设置窗口标志
-    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-                                    ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                    ImGuiWindowFlags_NoNavFocus;
+    constexpr ImGuiWindowFlags window_flags =
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus;
 
     // 获取主窗口的尺寸
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::DockSpaceOverViewport();
 
     ImGui::SetNextWindowPos(viewport->Pos);
     ImGui::SetNextWindowSize(viewport->Size);
     ImGui::SetNextWindowViewport(viewport->ID);
 
     // 创建一个大小跟随主窗口的窗口
-    ImGui::Begin("Docked Window", nullptr, window_flags);
+    ImGui::Begin(MAIN_WINDOW_NAME, nullptr, window_flags);
 
     ImGui::End();
 }
 
 }  // namespace graphics::ui
+

@@ -1,6 +1,7 @@
 # Xmake cache
 .xmake/
 build/
+build-*/
 cmake-build/
 cmake-build*/
 # MacOS Cache
@@ -14,3 +15,5 @@ out/
 CPTCMakeBuild/
 CMakeSettings.json
 CMakeUserPresets.json
+*.sublime-project
+*.sublime-workspace

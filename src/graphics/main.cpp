@@ -18,7 +18,7 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
     SetConsoleOutputCP(65001);
 #endif
     try {
-        Config config("config/config.yaml");
+        const Config config("config/config.yaml");
         init(config);
 
         graphics::App app(config);
