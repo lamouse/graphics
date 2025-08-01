@@ -1,6 +1,7 @@
 #include "vulkan_wrapper.hpp"
 #include "common/common_types.hpp"
 #include <vulkan/vk_enum_string_helper.h>
+#include "vulkan_common.hpp"
 #include "vk_mem_alloc.h"
 
 namespace render::vulkan {
