@@ -1,7 +1,6 @@
 #include "vulkan_wrapper.hpp"
 #include "common/common_types.hpp"
 #include <vulkan/vk_enum_string_helper.h>
-#include "vulkan_common.hpp"
 #include "vk_mem_alloc.h"
 
 namespace render::vulkan {
@@ -58,22 +57,22 @@ void SortPhysicalDevices(std::vector<vk::PhysicalDevice>& devices) {
 
 template <typename T>
 void SetObjectName(vk::Device device, T handle, vk::ObjectType type, const char* name) {
-    // const VkDebugUtilsObjectNameInfoEXT name_info{
-    //     .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-    //     .pNext = nullptr,
-    //     .objectType = static_cast<VkObjectType>(type),
-    //     .objectHandle = reinterpret_cast<u64>(&handle),
-    //     .pObjectName = name,
-    // };
-    // auto fun = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(
-    //     device, "vkSetDebugUtilsObjectNameEXT");
-    // if (fun) {
-    //     utils::check(fun(device, &name_info));
-    // }
+    const VkDebugUtilsObjectNameInfoEXT name_info{
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .pNext = nullptr,
+        .objectType = static_cast<VkObjectType>(type),
+        .objectHandle = reinterpret_cast<u64>(handle),
+        .pObjectName = name,
+    };
+    auto fun = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetDeviceProcAddr(
+        device, "vkSetDebugUtilsObjectNameEXT"));
+    if (fun) {
+        utils::check(fun(device, &name_info));
+    }
 }
 }  // namespace
 void Image::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eImage, name);
+    SetObjectName(owner, handle.operator VkImage(), vk::ObjectType::eImage, name);
 }
 
 void Image::Release() const noexcept {
@@ -104,14 +103,14 @@ auto DeviceMemory::getMemoryWin32HandleKHR() const -> HANDLE {
         .memory = handle,
         .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR,
     };
-    HANDLE win32_handle;
+    HANDLE win32_handle{};
     utils::check(static_cast<vk::Result>(fun(owner, &get_win32_handle_info, &win32_handle)));
     return win32_handle;
 }
 #endif
 
 void DeviceMemory::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eDeviceMemory, name);
+    SetObjectName(owner, handle.operator VkDeviceMemory(), vk::ObjectType::eDeviceMemory, name);
 }
 
 void Buffer::Flush() const {
@@ -127,7 +126,7 @@ void Buffer::Invalidate() const {
 }
 
 void Buffer::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, static_cast<VkBuffer>(handle), vk::ObjectType::eBuffer, name);
+    SetObjectName(owner, handle, vk::ObjectType::eBuffer, name);
 }
 
 void Buffer::Release() const noexcept {
@@ -136,8 +135,8 @@ void Buffer::Release() const noexcept {
     }
 }
 
-Instance Instance::Create(u32 version, std::span<const char*> layers,
-                          std::span<const char*> extensions) {
+auto Instance::Create(u32 version, std::span<const char*> layers,
+                          std::span<const char*> extensions) -> Instance {
 #ifdef __APPLE__
     constexpr vk::InstanceCreateFlags ci_flags{
         vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR};
@@ -171,22 +170,22 @@ auto Instance::CreateDebugUtilsMessenger(
     return DebugUtilsMessenger(object, handle);
 }
 
-DebugReportCallback Instance::CreateDebugReportCallback(
-    const vk::DebugReportCallbackCreateInfoEXT& create_info) const {
+auto Instance::CreateDebugReportCallback(
+    const vk::DebugReportCallbackCreateInfoEXT& create_info) const -> DebugReportCallback {
     vk::DebugReportCallbackEXT object = handle.createDebugReportCallbackEXT(
         create_info, nullptr, vk::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
     return DebugReportCallback(object, handle);
 }
 
 void VulkanBufferView::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eBufferView, name);
+    SetObjectName(owner, handle.operator VkBufferView(), vk::ObjectType::eBufferView, name);
 }
 
 void ImageView::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eImageView, name);
+    SetObjectName(owner, handle.operator VkImageView(), vk::ObjectType::eImageView, name);
 }
 void VulkanFramebuffer::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eFramebuffer, name);
+    SetObjectName(owner, handle.operator VkFramebuffer(), vk::ObjectType::eFramebuffer, name);
 }
 
 auto VulkanDescriptorPool::Allocate(const vk::DescriptorSetAllocateInfo& ai) const
@@ -196,7 +195,7 @@ auto VulkanDescriptorPool::Allocate(const vk::DescriptorSetAllocateInfo& ai) con
 }
 
 void VulkanDescriptorPool::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eDescriptorPool, name);
+    SetObjectName(owner, handle.operator VkDescriptorPool(), vk::ObjectType::eDescriptorPool, name);
 }
 
 auto VulkanCommandPool::Allocate(std::size_t num_buffers, vk::CommandBufferLevel level) const
@@ -215,7 +214,7 @@ auto VulkanCommandPool::Allocate(std::size_t num_buffers, vk::CommandBufferLevel
 }
 
 void VulkanCommandPool::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eCommandPool, name);
+    SetObjectName(owner, handle.operator VkCommandPool(), vk::ObjectType::eCommandPool, name);
 }
 
 std::vector<vk::Image> SwapchainKHR::GetImages() const {
@@ -223,18 +222,18 @@ std::vector<vk::Image> SwapchainKHR::GetImages() const {
 }
 
 void Event::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eEvent, name);
+    SetObjectName(owner, handle.operator VkEvent(), vk::ObjectType::eEvent, name);
 }
 
 void ShaderModule::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eShaderModule, name);
+    SetObjectName(owner, handle.operator VkShaderModule(), vk::ObjectType::eShaderModule, name);
 }
 
 void VulkanPipelineCache::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::ePipelineCache, name);
+    SetObjectName(owner, handle.operator VkPipelineCache(), vk::ObjectType::ePipelineCache, name);
 }
 void Semaphore::SetObjectNameEXT(const char* name) const {
-    SetObjectName(owner, handle, vk::ObjectType::eSemaphore, name);
+    SetObjectName(owner, handle.operator VkSemaphore(), vk::ObjectType::eSemaphore, name);
 }
 
 LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
