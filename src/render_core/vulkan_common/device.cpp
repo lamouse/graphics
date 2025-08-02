@@ -744,10 +744,10 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 
     const vk::PhysicalDeviceLimits& limits{properties_.properties_.limits};
     const std::array limits_report{
-        Limit{65536, limits.maxUniformBufferRange, "maxUniformBufferRange"},
-        Limit{16, limits.maxViewports, "maxViewports"},
-        Limit{8, limits.maxColorAttachments, "maxColorAttachments"},
-        Limit{8, limits.maxClipDistances, "maxClipDistances"},
+        Limit{.minimum=65536, .value=limits.maxUniformBufferRange, .name="maxUniformBufferRange"},
+        Limit{.minimum=16, .value=limits.maxViewports, .name="maxViewports"},
+        Limit{.minimum=8, .value=limits.maxColorAttachments, .name="maxColorAttachments"},
+        Limit{.minimum=8, .value=limits.maxClipDistances, .name="maxClipDistances"},
     };
 
     for (const auto& [min, value, name] : limits_report) {

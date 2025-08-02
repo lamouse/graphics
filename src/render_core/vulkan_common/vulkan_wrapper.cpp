@@ -218,7 +218,7 @@ void VulkanCommandPool::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle.operator VkCommandPool(), vk::ObjectType::eCommandPool, name);
 }
 
-std::vector<vk::Image> SwapchainKHR::GetImages() const {
+auto SwapchainKHR::GetImages() const -> std::vector<vk::Image> {
     return owner.getSwapchainImagesKHR(handle);
 }
 
@@ -237,10 +237,10 @@ void Semaphore::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle.operator VkSemaphore(), vk::ObjectType::eSemaphore, name);
 }
 
-LogicDevice LogicDevice::Create(vk::PhysicalDevice physical_device,
+auto LogicDevice::Create(vk::PhysicalDevice physical_device,
                                 const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
                                 const std::vector<const char*>& enabled_extensions,
-                                const void* next) {
+                                const void* next) -> LogicDevice {
     vk::DeviceCreateInfo ci{};
     ci.setQueueCreateInfos(queues_ci).setPEnabledExtensionNames(enabled_extensions).setPNext(next);
     return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});

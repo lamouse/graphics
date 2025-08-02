@@ -4,7 +4,6 @@
 #include <spdlog/spdlog.h>
 
 #include <utility>
-#include <vector>
 
 #include "glfw_common.hpp"
 #if defined(USE_DEBUG_UI)

@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <vulkan/vulkan.hpp>
 #include "buffer_cache.h"
 #include "common/common_funcs.hpp"
@@ -95,7 +96,7 @@ class GraphicsPipeline {
             if (key_ == current_key) {
                 return this;
             }
-            const auto it{std::find(transition_keys.begin(), transition_keys.end(), current_key)};
+            const auto it{std::ranges::find(transition_keys, current_key)};
             return it != transition_keys.end()
                        ? transitions[std::distance(transition_keys.begin(), it)]
                        : nullptr;

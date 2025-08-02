@@ -176,19 +176,20 @@ void Swapchain::createSwapchain(const vk::SurfaceCapabilitiesKHR& capabilities) 
         requested_image_count = std::max(requested_image_count, 3U);
     }
 
-    vk::SwapchainCreateInfoKHR createInfo;
-    createInfo.setSurface(surface_)
-        .setMinImageCount(requested_image_count)
-        .setImageFormat(surface_format_.format)
-        .setImageColorSpace(surface_format_.colorSpace)
-        .setImageArrayLayers(1)
-        .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment |
-                       vk::ImageUsageFlagBits::eTransferDst)
-        .setImageSharingMode(vk::SharingMode::eExclusive)
-        .setPreTransform(capabilities.currentTransform)
-        .setCompositeAlpha(alpha_flags)
-        .setPresentMode(present_mode_)
-        .setClipped(VK_FALSE);
+    vk::SwapchainCreateInfoKHR createInfo =
+        vk::SwapchainCreateInfoKHR()
+            .setSurface(surface_)
+            .setMinImageCount(requested_image_count)
+            .setImageFormat(surface_format_.format)
+            .setImageColorSpace(surface_format_.colorSpace)
+            .setImageArrayLayers(1)
+            .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment |
+                           vk::ImageUsageFlagBits::eTransferDst)
+            .setImageSharingMode(vk::SharingMode::eExclusive)
+            .setPreTransform(capabilities.currentTransform)
+            .setCompositeAlpha(alpha_flags)
+            .setPresentMode(present_mode_)
+            .setClipped(VK_FALSE);
 
     const uint32_t graphics_family{device_.getGraphicsFamily()};
     const uint32_t present_family{device_.getPresentFamily()};

@@ -431,7 +431,13 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .flags = 0,
         .patchControlPoints = 4,
     };
-    VkPipelineViewportSwizzleStateCreateInfoNV swizzle_ci{};
+    VkPipelineViewportSwizzleStateCreateInfoNV swizzle_ci{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV,
+        .pNext = nullptr,
+        .flags = 0,
+        .viewportCount = 1,
+        .pViewportSwizzles = nullptr,
+    };
     VkPipelineViewportDepthClipControlCreateInfoEXT ndc_info{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
         .pNext = nullptr,
@@ -447,7 +453,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .pScissors = nullptr,
     };
     if (device_.IsNvViewportSwizzleSupported()) {
-        // swizzle_ci.pNext = std::exchange(viewport_ci.pNext, &swizzle_ci);
+        //swizzle_ci.pNext = std::exchange(viewport_ci.pNext, &swizzle_ci);
     }
     if (device_.IsExtDepthClipControlSupported()) {
         ndc_info.pNext = std::exchange(viewport_ci.pNext, &ndc_info);
