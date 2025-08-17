@@ -1,7 +1,7 @@
-Breathe Demo
+Graphics
 ============
 
-Welcome to the Breathe Demo documentation!
+Welcome graphics documentation!
 
 .. toctree::
    :maxdepth: 2

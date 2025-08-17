@@ -4,7 +4,7 @@ breathe_default_project = "graphics"
 
 project = "graphics"
 author = "ziyu"
-copyright = "2019, Breathe Demo Authors"
+copyright = "c"
 version = "@PROJECT_VERSION@"
 release = "@PROJECT_VERSION@"
 
