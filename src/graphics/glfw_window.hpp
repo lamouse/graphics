@@ -9,7 +9,7 @@
 namespace graphics {
 class ScreenWindow : public core::frontend::BaseWindow {
     private:
-        GLFWwindow *window;
+        GLFWwindow *window = nullptr;
         void initWindow();
         ::std::string title_;
 

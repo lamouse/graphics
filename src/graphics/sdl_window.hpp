@@ -25,7 +25,7 @@ class SDLWindow : public core::frontend::BaseWindow {
         auto getWindow() -> SDL_Window* { return window_; }
 
     private:
-        SDL_Window* window_;
+        SDL_Window* window_ = nullptr;
         bool should_close_ = false;
 };
 }  // namespace graphics
