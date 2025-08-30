@@ -3,7 +3,7 @@
 namespace render::vulkan {
 namespace {
 VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                         VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
+                                         VkDebugUtilsMessageTypeFlagsEXT  /*messageType*/,
                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                          void* /*pUserData*/) -> VkBool32 {
     switch (messageSeverity) {
@@ -26,20 +26,18 @@ VKAPI_ATTR auto VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT 
 
     return VK_FALSE;
 }
-inline void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo) {
-    createInfo.setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                  //vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
-    createInfo.setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                              vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                              vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance);
-    createInfo.pfnUserCallback = debugCallback;
-}
 }  // namespace
 auto createDebugMessenger(::vk::Instance instance) -> DebugUtilsMessenger {
-    ::vk::DebugUtilsMessengerCreateInfoEXT createInfo;
-    populateDebugMessengerCreateInfo(createInfo);
+    ::vk::DebugUtilsMessengerCreateInfoEXT createInfo =
+        ::vk::DebugUtilsMessengerCreateInfoEXT()
+            .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+                                vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+                                // vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+                                vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
+            .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
+                            .setPfnUserCallback(debugCallback);
     return DebugUtilsMessenger{
         instance.createDebugUtilsMessengerEXT(
             createInfo, nullptr, vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr}),
