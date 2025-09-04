@@ -167,14 +167,14 @@ auto Instance::EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevic
 auto Instance::CreateDebugUtilsMessenger(
     const vk::DebugUtilsMessengerCreateInfoEXT& create_info) const -> DebugUtilsMessenger {
     vk::DebugUtilsMessengerEXT object = handle.createDebugUtilsMessengerEXT(
-        create_info, nullptr, vk::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
+        create_info, nullptr, vk::detail::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
     return DebugUtilsMessenger(object, handle);
 }
 
 auto Instance::CreateDebugReportCallback(
     const vk::DebugReportCallbackCreateInfoEXT& create_info) const -> DebugReportCallback {
     vk::DebugReportCallbackEXT object = handle.createDebugReportCallbackEXT(
-        create_info, nullptr, vk::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
+        create_info, nullptr, vk::detail::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
     return DebugReportCallback(object, handle);
 }
 
@@ -365,7 +365,7 @@ void LogicDevice::UpdateDescriptorSet(vk::DescriptorSet set,
 }
 
 void LogicDevice::initDispatchLoaderDynamic(vk::Instance instance) noexcept {
-    dld = vk::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr, handle, vkGetDeviceProcAddr};
+    dld = vk::detail::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr, handle, vkGetDeviceProcAddr};
 }
 
 }  // namespace render::vulkan

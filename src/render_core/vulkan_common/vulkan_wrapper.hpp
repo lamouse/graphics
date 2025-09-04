@@ -57,11 +57,11 @@ inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.des
 inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
 inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
     owner.destroyDebugUtilsMessengerEXT(handle, nullptr,
-                                        vk::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+                                        vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
 }
 inline void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle) noexcept {
     owner.destroyDebugReportCallbackEXT(handle, nullptr,
-                                        vk::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+                                        vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
 }
 
 template <typename Type, typename OwnerType>
@@ -697,14 +697,14 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
         void UpdateDescriptorSet(vk::DescriptorSet set,
                                  vk::DescriptorUpdateTemplate update_template,
                                  const void* data) const noexcept;
-        [[nodiscard]] auto getDispatchLoaderDynamic() const noexcept -> vk::DispatchLoaderDynamic {
+        [[nodiscard]] auto getDispatchLoaderDynamic() const noexcept -> vk::detail::DispatchLoaderDynamic {
             return dld;
         };
 
         void initDispatchLoaderDynamic(vk::Instance instance) noexcept;
 
     private:
-        vk::DispatchLoaderDynamic dld;
+        vk::detail::DispatchLoaderDynamic dld;
 };
 
 }  // namespace render::vulkan

@@ -51,7 +51,7 @@ class DescriptorLayoutBuilder {
                 return nullptr;
             }
             const vk::DescriptorUpdateTemplateType type =
-                use_push_descriptor ? vk::DescriptorUpdateTemplateType::ePushDescriptorsKHR
+                use_push_descriptor ? vk::DescriptorUpdateTemplateType::ePushDescriptors
                                     : vk::DescriptorUpdateTemplateType::eDescriptorSet;
             ;
             return device->logical().createDescriptorUpdateTemplate(
