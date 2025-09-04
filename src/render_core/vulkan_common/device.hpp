@@ -78,7 +78,7 @@ class Device {
         [[nodiscard]] auto getMaxAnisotropy() const -> float {
             return properties_.properties_.limits.maxSamplerAnisotropy;
         }
-        bool shouldBoostClocks() const;
+        [[nodiscard]] auto shouldBoostClocks() const -> bool;
 
         [[nodiscard]] auto cantBlitMSAA() const -> bool { return misc_features_.cant_blit_msaa; }
 
