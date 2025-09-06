@@ -3,7 +3,6 @@
 #include <mach/mach.h>
 #elif defined(_WIN32)
 #include <windows.h>
-#include "string_util.h"
 #else
 #if defined(__Bitrig__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h>
@@ -72,6 +71,17 @@ void SetCurrentThreadPriority(ThreadPriority new_priority) {
 #endif
 
 #ifdef _MSC_VER
+namespace{
+auto UTF8ToUTF16W(const std::string& str) -> std::wstring {
+    if (str.empty()) {
+        return {};
+    }
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), nullptr, 0);
+    std::wstring wstr(len, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), wstr.data(), len);
+    return wstr;
+}
+}
 
 // Sets the debugger-visible name of the current thread.
 void SetCurrentThreadName(const char* name) {
