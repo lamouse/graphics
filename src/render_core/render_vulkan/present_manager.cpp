@@ -20,72 +20,33 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
            vk::FormatFeatureFlagBits::eBlitDst;
 }
 [[nodiscard]] auto makeImageSubresourceLayers() -> vk::ImageSubresourceLayers {
-    return VkImageSubresourceLayers{
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .mipLevel = 0,
-        .baseArrayLayer = 0,
-        .layerCount = 1,
-    };
+    return vk::ImageSubresourceLayers()
+        .setAspectMask(vk::ImageAspectFlagBits::eColor)
+        .setLayerCount(1);
 }
 [[nodiscard]] auto makeImageBlit(std::int32_t frame_width, std::int32_t frame_height,
                                  std::int32_t swapchain_width, std::int32_t swapchain_height)
     -> vk::ImageBlit {
-    return VkImageBlit{
-        .srcSubresource = makeImageSubresourceLayers(),
-        .srcOffsets =
-            {
-                {
-                    .x = 0,
-                    .y = 0,
-                    .z = 0,
-                },
-                {
-                    .x = frame_width,
-                    .y = frame_height,
-                    .z = 1,
-                },
-            },
-        .dstSubresource = makeImageSubresourceLayers(),
-        .dstOffsets =
-            {
-                {
-                    .x = 0,
-                    .y = 0,
-                    .z = 0,
-                },
-                {
-                    .x = swapchain_width,
-                    .y = swapchain_height,
-                    .z = 1,
-                },
-            },
-    };
+    return vk::ImageBlit()
+        .setSrcSubresource(makeImageSubresourceLayers())
+        .setDstSubresource(makeImageSubresourceLayers())
+        .setSrcOffsets(std::array<vk::Offset3D, 2>{
+            vk::Offset3D().setX(0).setY(0).setZ(0),
+            vk::Offset3D().setX(frame_width).setY(frame_height).setZ(1)})
+        .setDstOffsets(std::array<vk::Offset3D, 2>{
+            vk::Offset3D().setX(0).setY(0).setZ(0),
+            vk::Offset3D().setX(swapchain_width).setY(swapchain_height).setZ(1)});
 }
 [[nodiscard]] auto MakeImageCopy(uint32_t frame_width, uint32_t frame_height,
                                  uint32_t swapchain_width, uint32_t swapchain_height)
     -> vk::ImageCopy {
-    return VkImageCopy{
-        .srcSubresource = makeImageSubresourceLayers(),
-        .srcOffset =
-            {
-                .x = 0,
-                .y = 0,
-                .z = 0,
-            },
-        .dstSubresource = makeImageSubresourceLayers(),
-        .dstOffset =
-            {
-                .x = 0,
-                .y = 0,
-                .z = 0,
-            },
-        .extent =
-            {
-                .width = std::min(frame_width, swapchain_width),
-                .height = std::min(frame_height, swapchain_height),
-                .depth = 1,
-            },
-    };
+    return vk::ImageCopy()
+        .setSrcSubresource(makeImageSubresourceLayers())
+        .setDstSubresource(makeImageSubresourceLayers())
+        .setExtent(vk::Extent3D()
+                       .setWidth(std::min(frame_width, swapchain_width))
+                       .setHeight(std::min(frame_height, swapchain_height))
+                       .setDepth(1));
 }
 }  // namespace
 
