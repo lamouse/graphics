@@ -14,7 +14,7 @@ namespace common {
 
 /// Gets the size of a specified type T in bits.
 template <typename T>
-[[nodiscard]] constexpr std::size_t BitSize() {
+[[nodiscard]] constexpr auto BitSize() -> std::size_t {
     return sizeof(T) * CHAR_BIT;
 }
 
