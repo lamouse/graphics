@@ -1043,53 +1043,52 @@ void TextureCacheRuntime::BlitImage(TextureFramebuffer* dst_framebuffer, Texture
     scheduler.record([dst_region, src_region, dst_image, src_image, dst_layers, src_layers,
                       aspect_mask, is_resolve](vk::CommandBuffer cmdbuf) {
         const std::array read_barriers{
-            vk::ImageMemoryBarrier{
-                vk::AccessFlagBits::eShaderWrite |
+            vk::ImageMemoryBarrier()
+                .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite |
+                                  vk::AccessFlagBits::eDepthStencilAttachmentWrite |
+                                  vk::AccessFlagBits::eTransferWrite)
+                .setDstAccessMask(vk::AccessFlagBits::eTransferRead)
+                .setOldLayout(vk::ImageLayout::eGeneral)
+                .setNewLayout(vk::ImageLayout::eTransferSrcOptimal)
+                .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setImage(src_image)
+                .setSubresourceRange(vk::ImageSubresourceRange()
+                                         .setAspectMask(aspect_mask)
+                                         .setLevelCount(VK_REMAINING_MIP_LEVELS)
+                                         .setLayerCount(VK_REMAINING_ARRAY_LAYERS)),
+            vk::ImageMemoryBarrier()
+                .setSrcAccessMask(vk::AccessFlagBits::eShaderWrite |
+                                  vk::AccessFlagBits::eDepthStencilAttachmentWrite |
+                                  vk::AccessFlagBits::eTransferWrite)
+                .setDstAccessMask(vk::AccessFlagBits::eTransferWrite)
+                .setOldLayout(vk::ImageLayout::eGeneral)
+                .setNewLayout(vk::ImageLayout::eTransferDstOptimal)
+                .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setImage(dst_image)
+                .setSubresourceRange(vk::ImageSubresourceRange()
+                                         .setAspectMask(aspect_mask)
+                                         .setLevelCount(VK_REMAINING_MIP_LEVELS)
+                                         .setLayerCount(VK_REMAINING_ARRAY_LAYERS))};
+
+        vk::ImageMemoryBarrier write_barrier =
+            vk::ImageMemoryBarrier()
+                .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
+                .setDstAccessMask(
+                    vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite |
+                    vk::AccessFlagBits::eDepthStencilAttachmentRead |
                     vk::AccessFlagBits::eDepthStencilAttachmentWrite |
-                    vk::AccessFlagBits::eTransferWrite,
-                vk::AccessFlagBits::eTransferRead,
-                vk::ImageLayout::eGeneral,
-                vk::ImageLayout::eGeneral,
-                VK_QUEUE_FAMILY_IGNORED,
-                VK_QUEUE_FAMILY_IGNORED,
-                src_image,
-                vk::ImageSubresourceRange{
-                    static_cast<vk::ImageAspectFlags>(aspect_mask),
-                    0,
-                    VK_REMAINING_MIP_LEVELS,
-                    0,
-                    VK_REMAINING_ARRAY_LAYERS,
-                },
-            },
-            vk::ImageMemoryBarrier{
-                vk::AccessFlagBits::eShaderWrite |
-                    vk::AccessFlagBits::eDepthStencilAttachmentWrite |
-                    vk::AccessFlagBits::eTransferWrite,
-                vk::AccessFlagBits::eTransferWrite, vk::ImageLayout::eGeneral,
-                vk::ImageLayout::eTransferDstOptimal, VK_QUEUE_FAMILY_IGNORED,
-                VK_QUEUE_FAMILY_IGNORED, dst_image,
-                vk::ImageSubresourceRange{static_cast<vk::ImageAspectFlags>(aspect_mask), 0,
-                                          VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS}},
-        };
-        vk::ImageMemoryBarrier write_barrier{
-            vk::AccessFlagBits::eTransferWrite,
-            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite |
-                vk::AccessFlagBits::eDepthStencilAttachmentRead |
-                vk::AccessFlagBits::eDepthStencilAttachmentWrite |
-                vk::AccessFlagBits::eTransferRead | vk::AccessFlagBits::eTransferWrite,
-            vk::ImageLayout::eTransferDstOptimal,
-            vk::ImageLayout::eGeneral,
-            VK_QUEUE_FAMILY_IGNORED,
-            VK_QUEUE_FAMILY_IGNORED,
-            dst_image,
-            vk::ImageSubresourceRange{
-                static_cast<vk::ImageAspectFlags>(aspect_mask),
-                0,
-                VK_REMAINING_MIP_LEVELS,
-                0,
-                VK_REMAINING_ARRAY_LAYERS,
-            },
-        };
+                    vk::AccessFlagBits::eTransferRead | vk::AccessFlagBits::eTransferWrite)
+                .setOldLayout(vk::ImageLayout::eTransferDstOptimal)
+                .setNewLayout(vk::ImageLayout::eGeneral)
+                .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                .setImage(dst_image)
+                .setSubresourceRange(vk::ImageSubresourceRange()
+                                         .setAspectMask(aspect_mask)
+                                         .setLevelCount(VK_REMAINING_MIP_LEVELS)
+                                         .setLayerCount(VK_REMAINING_ARRAY_LAYERS));
         cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
                                vk::PipelineStageFlagBits::eTransfer, {}, nullptr, nullptr,
                                read_barriers);
