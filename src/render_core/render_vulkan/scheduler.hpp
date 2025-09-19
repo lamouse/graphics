@@ -1,6 +1,5 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include "render_core/vulkan_common/vulkan_common.hpp"
 #include "render_core/render_vulkan/master_semaphore.hpp"
 #include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
@@ -9,7 +8,6 @@
 #include <thread>
 #include <mutex>
 #include <vector>
-#include <gsl/gsl>
 #include <spdlog/spdlog.h>
 namespace render::vulkan {
 class TextureFramebuffer;
@@ -100,7 +98,7 @@ class Scheduler {
                 void setNext(Command* next) { next_ = next; }
 
             private:
-                gsl::owner<Command*> next_ = nullptr;
+                Command* next_ = nullptr;
         };
 
         template <typename T>
@@ -153,8 +151,8 @@ class Scheduler {
                 [[nodiscard]] auto hasSubmit() const -> bool { return submit; }
 
             private:
-                gsl::owner<Command*> first = nullptr;
-                gsl::owner<Command*> last = nullptr;
+                Command* first = nullptr;
+                Command* last = nullptr;
 
                 size_t command_offset = 0;
                 bool submit = false;

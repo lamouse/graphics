@@ -14,7 +14,7 @@ void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
                                          vk::CommandBuffer upload_cmdbuf) {
     auto* command = first;
     while (command != nullptr) {
-        auto* next = gsl::owner<Command*>(command->getNext());
+        auto* next = command->getNext();
         command->execute(cmdbuf, upload_cmdbuf);
         command->~Command();
         command = next;
