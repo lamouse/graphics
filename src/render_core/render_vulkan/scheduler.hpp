@@ -3,6 +3,7 @@
 #include "render_core/render_vulkan/master_semaphore.hpp"
 #include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
+#include "common/common_funcs.hpp"
 #include <array>
 #include <memory>
 #include <thread>
@@ -23,6 +24,8 @@ namespace render::vulkan::scheduler {
 class Scheduler {
     public:
         explicit Scheduler(const Device& device);
+        CLASS_NON_COPYABLE(Scheduler);
+        CLASS_NON_MOVEABLE(Scheduler);
         ~Scheduler() = default;
         std::mutex submit_mutex_;
         /// Returns the master timeline semaphore.
@@ -168,8 +171,8 @@ class Scheduler {
         };
 
         struct State {
-                vk::RenderPass render_pass_ = nullptr;
-                vk::Framebuffer framebuffer_ = nullptr;
+                vk::RenderPass render_pass_;
+                vk::Framebuffer framebuffer_;
                 vk::Extent2D render_area_ = {0, 0};
                 GraphicsPipeline* graphics_pipeline_ = nullptr;
                 bool is_rescaling_ = false;
