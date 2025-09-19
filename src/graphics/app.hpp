@@ -3,15 +3,14 @@
 
 #include "../config.hpp"
 #include "render_core/render_base.hpp"
+#include "common/common_funcs.hpp"
 namespace graphics {
 class App {
     public:
         void run();
         explicit App(const g::Config &config);
-        App(const App &) = delete;
-        App(App &&) = delete;
-        auto operator=(const App &) -> App & = delete;
-        auto operator=(App &&) -> App & = delete;
+        CLASS_NON_COPYABLE(App);
+        CLASS_NON_MOVEABLE(App);
         ~App();
 
     private:
