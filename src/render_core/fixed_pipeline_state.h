@@ -29,14 +29,6 @@ enum class PrimitiveTopology : u32 {
     Patches = 0xE,
 };
 
-struct VertexArray {
-        union {
-                BitField<0, 16, u32> start;
-                BitField<16, 12, u32> count;
-                BitField<28, 3, PrimitiveTopology> topology;
-        };
-};
-
 // None Engine
 enum class EngineHint : u32 {
     None = 0x0,

@@ -108,6 +108,7 @@ class TextureCache : public TextureCacheInfo {
         /// UpdateRenderTargets should be called before this
         auto GetFramebuffer(const RenderTargets& key) -> Framebuffer*;
 
+        /// Returns the currently bound framebuffer, or nullptr if none is bound
         auto GetFramebuffer() -> Framebuffer*;
         /// Find or create a framebuffer with the given render target parameters
         auto GetFramebufferId(const RenderTargets& key) -> FramebufferId;

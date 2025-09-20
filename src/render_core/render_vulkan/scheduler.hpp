@@ -110,8 +110,7 @@ class Scheduler {
                 explicit TypedCommand(T&& command_) : command{std::move(command_)} {}
                 ~TypedCommand() override = default;
 
-                TypedCommand(TypedCommand&&) = delete;
-                auto operator=(TypedCommand&&) -> TypedCommand& = delete;
+                CLASS_NON_MOVEABLE(TypedCommand);
 
                 void execute(vk::CommandBuffer cmdBuf,
                              vk::CommandBuffer uploadCmdBuf) const override {

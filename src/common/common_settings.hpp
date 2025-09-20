@@ -9,8 +9,13 @@ auto get() -> decltype(auto) {
 template <typename T>
 class BaseSetting {
     public:
+        /**
+        * @brief
+        * @hiderefby
+        * @param self
+        * @return T
+        */
         auto get(this auto&& self) -> T { return static_cast<T*>(self)->getImpl(); }
-        static auto get() {}
 };
 
 }  // namespace common::settings

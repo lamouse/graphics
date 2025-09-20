@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include "common/common_funcs.hpp"
 namespace render::vulkan {
 namespace semaphore {
 class MasterSemaphore;
@@ -12,11 +13,8 @@ class ResourcePool {
 
         virtual ~ResourcePool() = default;
 
-        auto operator=(ResourcePool&&) noexcept -> ResourcePool& = default;
-        ResourcePool(ResourcePool&&) noexcept = default;
-
-        auto operator=(const ResourcePool&) -> ResourcePool& = default;
-        ResourcePool(const ResourcePool&) = default;
+        CLASS_DEFAULT_COPYABLE(ResourcePool);
+        CLASS_DEFAULT_MOVEABLE(ResourcePool);
 
     protected:
         auto commitResource() -> size_t;
