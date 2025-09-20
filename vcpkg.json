@@ -16,6 +16,7 @@
     "boost-container",
     "glslang",
     "spirv-cross",
+    "farmhash",
     {
       "name": "sdl3",
       "features": [

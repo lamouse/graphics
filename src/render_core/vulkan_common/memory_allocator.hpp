@@ -74,7 +74,7 @@ class MemoryCommit {
 /// Memory allocator container.
 /// Allocates and releases memory allocations on demand.
 class MemoryAllocator {
-        friend MemoryAllocation;
+        friend class MemoryAllocation;
 
     public:
         /**

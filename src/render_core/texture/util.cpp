@@ -158,7 +158,7 @@ template <typename T>
 }
 
 [[nodiscard]] constexpr LevelInfo MakeLevelInfo(const ImageInfo& info) {
-    return MakeLevelInfo(info.format, info.size, info.block, info.tile_width_spacing,
+    return MakeLevelInfo(info.format, info.size, info.block_or_pitch.block, info.tile_width_spacing,
                          info.resources.levels);
 }
 [[nodiscard]] constexpr u32 CalculateLevelOffset(surface::PixelFormat format, Extent3D size,
@@ -178,7 +178,7 @@ auto CalculateGuestSizeInBytes(const ImageInfo& info) noexcept -> u32 {
         return info.size.width * BytesPerBlock(info.format);
     }
     if (info.type == ImageType::Linear) {
-        return info.pitch * common::DivCeil(info.size.height, DefaultBlockHeight(info.format));
+        return info.block_or_pitch.pitch * common::DivCeil(info.size.height, DefaultBlockHeight(info.format));
     }
     if (info.resources.layers > 1) {
         assert(info.layer_stride != 0);
@@ -189,7 +189,7 @@ auto CalculateGuestSizeInBytes(const ImageInfo& info) noexcept -> u32 {
 
 auto CalculateLayerSize(const ImageInfo& info) noexcept -> u32 {
     assert(info.type != ImageType::Linear);
-    return CalculateLevelOffset(info.format, info.size, info.block, info.tile_width_spacing,
+    return CalculateLevelOffset(info.format, info.size, info.block_or_pitch.block, info.tile_width_spacing,
                                 info.resources.levels);
 }
 

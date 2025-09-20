@@ -1,5 +1,4 @@
 #include "pipeline_cache.hpp"
-#include "common/cityhash.h"
 #include "descriptor_pool.hpp"
 #include "render_vulkan/pipeline_statistics.hpp"
 #include "scheduler.hpp"
@@ -14,7 +13,7 @@
 #include "render_core/host_shaders/model_frag_spv.h"
 #include "render_core/render_vulkan/vk_shader_util.hpp"
 #include "shader_tools/shader_compile.hpp"
-
+#include <farmhash.h>
 namespace render::vulkan {
 
 namespace {
@@ -40,7 +39,7 @@ auto GetTotalPipelineWorkers() -> size_t {
 }  // namespace
 
 auto ComputePipelineCacheKey::Hash() const noexcept -> size_t {
-    const u64 hash = common::CityHash64(reinterpret_cast<const char*>(this), sizeof *this);
+    const u64 hash = NAMESPACE_FOR_HASH_FUNCTIONS::Fingerprint64(reinterpret_cast<const char*>(this), sizeof *this);
     return static_cast<size_t>(hash);
 }
 

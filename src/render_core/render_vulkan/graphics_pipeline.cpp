@@ -1,5 +1,4 @@
 #include "graphics_pipeline.hpp"
-#include "common/cityhash.h"
 #include "vulkan_common/device.hpp"
 #include "descriptor_pool.hpp"
 #include "scheduler.hpp"
@@ -11,6 +10,7 @@
 #include "pipeline_helper.hpp"
 #include "shader_tools/stage.h"
 #include <gsl/gsl>
+#include <farmhash.h>
 #if defined(_MSC_VER) && defined(NDEBUG)
 #define LAMBDA_FORCEINLINE [[msvc::forceinline]]
 #else
@@ -236,7 +236,7 @@ auto GraphicsPipelineCacheKey::operator==(const GraphicsPipelineCacheKey& rhs) c
 }
 
 auto GraphicsPipelineCacheKey::Hash() const noexcept -> size_t {
-    const u64 hash = common::CityHash64(reinterpret_cast<const char*>(this), Size());
+    const u64 hash = NAMESPACE_FOR_HASH_FUNCTIONS::Fingerprint64(reinterpret_cast<const char*>(this), Size());
     return static_cast<size_t>(hash);
 }
 

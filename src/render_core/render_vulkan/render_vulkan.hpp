@@ -22,7 +22,10 @@ class RendererVulkan final : public render::RenderBase {
         }
         void composite(std::span<frame::FramebufferConfig> frame_buffers) override;
         auto getAppletCaptureBuffer() -> std::vector<u8> override;
+        /// @cond
+        // TODO doxygen seems to have problems with this
         auto getGraphics() -> Graphic* override { return &vulkan_graphics; }
+        /// @endcond
 
     private:
         void RenderAppletCaptureLayer(std::span<const frame::FramebufferConfig> framebuffers);

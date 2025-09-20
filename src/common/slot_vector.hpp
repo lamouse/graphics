@@ -25,7 +25,7 @@ template <class T>
 class SlotVector {
     public:
         class Iterator {
-                friend SlotVector<T>;
+                friend class SlotVector<T>;
 
             public:
                 constexpr Iterator() = default;

@@ -11,7 +11,7 @@ struct ImageInfo {
         union {
                 Extent3D block{0, 0, 0};
                 u32 pitch;
-        };
+        } block_or_pitch;
         void* data = nullptr;
         u32 layer_stride = 0;
         u32 maybe_unaligned_layer_stride = 0;

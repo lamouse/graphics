@@ -18,9 +18,13 @@ class RenderBase {
         explicit RenderBase(core::frontend::BaseWindow*);
         virtual ~RenderBase() = default;
         [[nodiscard]] virtual auto GetDeviceVendor() const -> std::string = 0;
+        /// @cond
+        /// Get the window associated with this renderer
+        // 等待doxygen支持改语法
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }
+        /// @endcond
         void addImguiUI(const imgui_ui_fun& fun) { imgui_ui = fun; }
         virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
         [[nodiscard]] auto getCurrentFPS() const -> float;

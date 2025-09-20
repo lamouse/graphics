@@ -14,13 +14,14 @@ struct DescriptorUpdateEntry {
         explicit DescriptorUpdateEntry(vk::DescriptorBufferInfo buffer_) : buffer{buffer_} {}
         explicit DescriptorUpdateEntry(vk::BufferView texel_buffer_)
             : texel_buffer{texel_buffer_} {}
-
+        /// @cond
         union {
                 Empty empty{};
                 vk::DescriptorImageInfo image;
                 vk::DescriptorBufferInfo buffer;
                 vk::BufferView texel_buffer;
         };
+        /// @endcond
 };
 
 class UpdateDescriptorQueue final {

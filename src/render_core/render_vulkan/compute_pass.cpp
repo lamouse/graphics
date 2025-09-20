@@ -5,7 +5,6 @@
 #include "compute_pass.hpp"
 #include "texture_cache.hpp"
 #include "common/div_ceil.hpp"
-#include "common/vector_math.h"
 #include "render_core/host_shaders/convert_msaa_to_non_msaa_comp_spv.h"
 #include "render_core/host_shaders/convert_non_msaa_to_msaa_comp_spv.h"
 #include "render_core/host_shaders/vulkan_quad_indexed_comp_spv.h"
@@ -13,6 +12,7 @@
 #include "render_core/host_shaders/vulkan_uint8_comp_spv.h"
 #include "texture/accelerated_swizzle.h"
 #include "staging_buffer_pool.hpp"
+#include <glm/glm.hpp>
 
 #if defined(MemoryBarrier)
 #undef MemoryBarrier
@@ -253,7 +253,7 @@ void MSAACopyPass::CopyImage(TextureImage& dst_image, TextureImage& src_image,
             dst_image.StorageImageView(copy.dst_subresource.base_level));
         const void* const descriptor_data{compute_pass_descriptor_queue.UpdateData()};
 
-        const common::Vec3<u32> num_dispatches = {
+        const glm::uvec3 num_dispatches = {
             common::DivCeil(copy.extent.width, 8U),
             common::DivCeil(copy.extent.height, 8U),
             copy.extent.depth,

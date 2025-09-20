@@ -55,7 +55,7 @@ class BaseBufferCache : public buffer::BufferBase {
 };
 
 class BufferCacheRuntime {
-        friend BaseBufferCache;
+        friend class BaseBufferCache;
 
     public:
         explicit BufferCacheRuntime(const Device& device_, MemoryAllocator& memory_manager_,

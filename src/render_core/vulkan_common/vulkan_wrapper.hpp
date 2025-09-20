@@ -221,8 +221,9 @@ class VulkanException final : public std::exception {
         explicit VulkanException(vk::Result result_) : result{result_} {}
         explicit VulkanException(VkResult result_) : result{static_cast<vk::Result>(result_)} {}
         ~VulkanException() override = default;
-
+        /// @cond
         [[nodiscard]] auto what() const noexcept -> const char* override;
+        /// @endcond
         [[nodiscard]] auto getResult() const noexcept -> vk::Result { return result; }
 
     private:

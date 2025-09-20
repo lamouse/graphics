@@ -25,8 +25,8 @@ class Config {
          * @return decltype(auto)
          */
         template <typename T>
-        auto getConfig(this auto&& self) -> decltype(auto) {
-            return T::read_config(self.config[T::node_name()]);
+        auto getConfig() const -> decltype(auto) {
+            return T::read_config(this->config[T::node_name()]);
         }
 };
 }  // namespace g
