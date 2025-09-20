@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <optional>
-
 #include <boost/container/small_vector.hpp>
 
 #include "common/common_types.hpp"

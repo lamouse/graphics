@@ -11,7 +11,7 @@ set(DOXYGEN_GENERATE_XML YES)
 # don't generate documentation from implementation details
 set(DOXYGEN_EXCLUDE_PATTERNS "*/detail/*")
 # print paths relative to include directory
-set(DOXYGEN_STRIP_FROM_PATH ${PROJECT_SOURCE_DIR}/src/common)
+set(DOXYGEN_STRIP_FROM_PATH ${PROJECT_SOURCE_DIR}/src/render_core/texture)
 set(DOXYGEN_EXCLUDE_SYMBOLS "operator=")
 
 # Note: use doxygen_add_docs(doxygen-doc ALL ...) if you want your documentation

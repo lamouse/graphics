@@ -23,7 +23,7 @@ namespace common::thread {
 #ifdef _WIN32
 
 void SetCurrentThreadPriority(ThreadPriority new_priority) {
-    auto handle = GetCurrentThread();
+    auto* handle = GetCurrentThread();
     int windows_priority = 0;
     switch (new_priority) {
         case ThreadPriority::Low:
