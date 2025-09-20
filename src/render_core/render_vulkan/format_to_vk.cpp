@@ -1,3 +1,235 @@
 //
 // Created by ziyu on 2025/9/20.
 //
+#include "render_core/render_vulkan/format_to_vk.hpp"
+#include "render_core/vulkan_common/device.hpp"
+#include "common/assert.hpp"
+#include <format>
+#include "render_core/vulkan_common/device.hpp"
+namespace render::vulkan {
+auto VertexFormat(const Device& device, VertexAttribute::Type type,
+                      VertexAttribute::Size size) -> vk::Format {
+    if (device.mustEmulateScaledFormats()) {
+        if (type == VertexAttribute::Type::SScaled) {
+            type = VertexAttribute::Type::SInt;
+        }else if (type == VertexAttribute::Type::UScaled) {
+            type = VertexAttribute::Type::UInt;
+        }
+    }
+   const vk::Format format{([&]() {
+        switch (type) {
+        case VertexAttribute::Type::UnusedEnumDoNotUseBecauseItWillGoAway:
+            ASSERT_MSG(false, "Invalid vertex attribute type!");
+            break;
+        case VertexAttribute::Type::UNorm:
+            switch (size) {
+            case VertexAttribute::Size::R8:
+            case VertexAttribute::Size::A8:
+                return VK_FORMAT_R8_UNORM;
+            case VertexAttribute::Size::R8_G8:
+            case VertexAttribute::Size::G8_R8:
+                return VK_FORMAT_R8G8_UNORM;
+            case VertexAttribute::Size::R8_G8_B8:
+                return VK_FORMAT_R8G8B8_UNORM;
+            case VertexAttribute::Size::R8_G8_B8_A8:
+            case VertexAttribute::Size::X8_B8_G8_R8:
+                return VK_FORMAT_R8G8B8A8_UNORM;
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_UNORM;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_UNORM;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_UNORM;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_UNORM;
+            case VertexAttribute::Size::A2_B10_G10_R10:
+                return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+            default:
+                break;
+            }
+            break;
+        case VertexAttribute::Type::SNorm:
+            switch (size) {
+            case VertexAttribute::Size::R8:
+            case VertexAttribute::Size::A8:
+                return VK_FORMAT_R8_SNORM;
+            case VertexAttribute::Size::R8_G8:
+            case VertexAttribute::Size::G8_R8:
+                return VK_FORMAT_R8G8_SNORM;
+            case VertexAttribute::Size::R8_G8_B8:
+                return VK_FORMAT_R8G8B8_SNORM;
+            case VertexAttribute::Size::R8_G8_B8_A8:
+            case VertexAttribute::Size::X8_B8_G8_R8:
+                return VK_FORMAT_R8G8B8A8_SNORM;
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_SNORM;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_SNORM;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_SNORM;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_SNORM;
+            case VertexAttribute::Size::A2_B10_G10_R10:
+                return VK_FORMAT_A2B10G10R10_SNORM_PACK32;
+            default:
+                break;
+            }
+            break;
+        case VertexAttribute::Type::UScaled:
+            switch (size) {
+            case VertexAttribute::Size::R8:
+            case VertexAttribute::Size::A8:
+                return VK_FORMAT_R8_USCALED;
+            case VertexAttribute::Size::R8_G8:
+            case VertexAttribute::Size::G8_R8:
+                return VK_FORMAT_R8G8_USCALED;
+            case VertexAttribute::Size::R8_G8_B8:
+                return VK_FORMAT_R8G8B8_USCALED;
+            case VertexAttribute::Size::R8_G8_B8_A8:
+            case VertexAttribute::Size::X8_B8_G8_R8:
+                return VK_FORMAT_R8G8B8A8_USCALED;
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_USCALED;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_USCALED;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_USCALED;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_USCALED;
+            case VertexAttribute::Size::A2_B10_G10_R10:
+                return VK_FORMAT_A2B10G10R10_USCALED_PACK32;
+            default:
+                break;
+            }
+            break;
+        case VertexAttribute::Type::SScaled:
+            switch (size) {
+            case VertexAttribute::Size::R8:
+            case VertexAttribute::Size::A8:
+                return VK_FORMAT_R8_SSCALED;
+            case VertexAttribute::Size::R8_G8:
+            case VertexAttribute::Size::G8_R8:
+                return VK_FORMAT_R8G8_SSCALED;
+            case VertexAttribute::Size::R8_G8_B8:
+                return VK_FORMAT_R8G8B8_SSCALED;
+            case VertexAttribute::Size::R8_G8_B8_A8:
+            case VertexAttribute::Size::X8_B8_G8_R8:
+                return VK_FORMAT_R8G8B8A8_SSCALED;
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_SSCALED;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_SSCALED;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_SSCALED;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_SSCALED;
+            case VertexAttribute::Size::A2_B10_G10_R10:
+                return VK_FORMAT_A2B10G10R10_SSCALED_PACK32;
+            default:
+                break;
+            }
+            break;
+        case VertexAttribute::Type::UInt:
+            switch (size) {
+            case VertexAttribute::Size::R8:
+            case VertexAttribute::Size::A8:
+                return VK_FORMAT_R8_UINT;
+            case VertexAttribute::Size::R8_G8:
+            case VertexAttribute::Size::G8_R8:
+                return VK_FORMAT_R8G8_UINT;
+            case VertexAttribute::Size::R8_G8_B8:
+                return VK_FORMAT_R8G8B8_UINT;
+            case VertexAttribute::Size::R8_G8_B8_A8:
+            case VertexAttribute::Size::X8_B8_G8_R8:
+                return VK_FORMAT_R8G8B8A8_UINT;
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_UINT;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_UINT;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_UINT;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_UINT;
+            case VertexAttribute::Size::R32:
+                return VK_FORMAT_R32_UINT;
+            case VertexAttribute::Size::R32_G32:
+                return VK_FORMAT_R32G32_UINT;
+            case VertexAttribute::Size::R32_G32_B32:
+                return VK_FORMAT_R32G32B32_UINT;
+            case VertexAttribute::Size::R32_G32_B32_A32:
+                return VK_FORMAT_R32G32B32A32_UINT;
+            case VertexAttribute::Size::A2_B10_G10_R10:
+                return VK_FORMAT_A2B10G10R10_UINT_PACK32;
+            default:
+                break;
+            }
+            break;
+        case VertexAttribute::Type::SInt:
+            switch (size) {
+            case VertexAttribute::Size::R8:
+            case VertexAttribute::Size::A8:
+                return VK_FORMAT_R8_SINT;
+            case VertexAttribute::Size::R8_G8:
+            case VertexAttribute::Size::G8_R8:
+                return VK_FORMAT_R8G8_SINT;
+            case VertexAttribute::Size::R8_G8_B8:
+                return VK_FORMAT_R8G8B8_SINT;
+            case VertexAttribute::Size::R8_G8_B8_A8:
+            case VertexAttribute::Size::X8_B8_G8_R8:
+                return VK_FORMAT_R8G8B8A8_SINT;
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_SINT;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_SINT;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_SINT;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_SINT;
+            case VertexAttribute::Size::R32:
+                return VK_FORMAT_R32_SINT;
+            case VertexAttribute::Size::R32_G32:
+                return VK_FORMAT_R32G32_SINT;
+            case VertexAttribute::Size::R32_G32_B32:
+                return VK_FORMAT_R32G32B32_SINT;
+            case VertexAttribute::Size::R32_G32_B32_A32:
+                return VK_FORMAT_R32G32B32A32_SINT;
+            case VertexAttribute::Size::A2_B10_G10_R10:
+                return VK_FORMAT_A2B10G10R10_SINT_PACK32;
+            default:
+                break;
+            }
+            break;
+        case VertexAttribute::Type::Float:
+            switch (size) {
+            case VertexAttribute::Size::R16:
+                return VK_FORMAT_R16_SFLOAT;
+            case VertexAttribute::Size::R16_G16:
+                return VK_FORMAT_R16G16_SFLOAT;
+            case VertexAttribute::Size::R16_G16_B16:
+                return VK_FORMAT_R16G16B16_SFLOAT;
+            case VertexAttribute::Size::R16_G16_B16_A16:
+                return VK_FORMAT_R16G16B16A16_SFLOAT;
+            case VertexAttribute::Size::R32:
+                return VK_FORMAT_R32_SFLOAT;
+            case VertexAttribute::Size::R32_G32:
+                return VK_FORMAT_R32G32_SFLOAT;
+            case VertexAttribute::Size::R32_G32_B32:
+                return VK_FORMAT_R32G32B32_SFLOAT;
+            case VertexAttribute::Size::R32_G32_B32_A32:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
+            case VertexAttribute::Size::B10_G11_R11:
+                return VK_FORMAT_B10G11R11_UFLOAT_PACK32;
+            default:
+                break;
+            }
+            break;
+        }
+        return VK_FORMAT_UNDEFINED;
+    })()};
+    if (format == vk::Format::eUndefined) {
+        UNIMPLEMENTED_MSG(std::format("Unimplemented vertex format of type={} and size={}", static_cast<u32>(type), static_cast<u32>(size)));
+    }
+    return device.getSupportedFormat(format,  vk::FormatFeatureFlagBits::eVertexBuffer,
+                                     FormatType::Buffer);
+}
+}

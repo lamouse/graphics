@@ -89,7 +89,7 @@ class TextureCacheRuntime {
             return true;
         }
 
-        [[nodiscard]] vk::Buffer GetTemporaryBuffer(size_t needed_size);
+        [[nodiscard]] auto GetTemporaryBuffer(size_t needed_size) -> vk::Buffer;
 
         auto ViewFormats(surface::PixelFormat format) -> std::span<const vk::Format> {
             return view_formats[static_cast<std::size_t>(format)];

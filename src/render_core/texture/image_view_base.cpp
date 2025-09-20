@@ -16,9 +16,6 @@ ImageViewBase::ImageViewBase(const ImageViewInfo& info, const ImageInfo& image_i
           .height = std::max(image_info.size.height >> range.base.level, 1u),
           .depth = std::max(image_info.size.depth >> range.base.level, 1u),
       } {
-    if (image_info.forced_flushed) {
-        flags |= ImageViewFlagBits::PreemtiveDownload;
-    }
     if (image_info.type == ImageType::e3D && info.type != ImageViewType::e3D) {
         flags |= ImageViewFlagBits::Slice;
     }

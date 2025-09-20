@@ -22,7 +22,6 @@ void Image::readImage(::std::string& path) {
     imageInfo.format = render::surface::PixelFormat::A8B8G8R8_UNORM;
     imageInfo.num_samples = 1;
     imageInfo.resources.levels = 1;
-    imageInfo.layer_stride = 4;
     if (!data) {
         throw ::std::runtime_error("failed to load texture image!");
     }

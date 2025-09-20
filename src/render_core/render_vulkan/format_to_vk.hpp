@@ -1,8 +1,15 @@
 //
 // Created by ziyu on 2025/9/20.
 //
+#pragma once
 
 #ifndef GRAPHICS_FORMAT_TO_VK_HPP
 #define GRAPHICS_FORMAT_TO_VK_HPP
-
-#endif //GRAPHICS_FORMAT_TO_VK_HPP
+#include "render_core/vertex.hpp"
+#include <vulkan/vulkan.hpp>
+namespace render::vulkan {
+class Device;
+auto VertexFormat(const Device& device, VertexAttribute::Type type,
+                      VertexAttribute::Size size) -> vk::Format;
+}
+#endif  // GRAPHICS_FORMAT_TO_VK_HPP

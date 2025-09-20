@@ -21,7 +21,7 @@ constexpr ImageViewId NULL_IMAGE_VIEW_ID{0};
 /// Sampler ID for bugged sampler ids
 constexpr SamplerId NULL_SAMPLER_ID{0};
 
-enum class ImageType : u32 { e1D, e2D, e3D, Linear, Buffer };
+enum class ImageType : std::uint8_t { e1D, e2D, e3D, Linear, Buffer };
 
 enum class ImageViewType : u32 { e1D, e2D, Cube, e3D, e1DArray, e2DArray, CubeArray, Rect, Buffer };
 constexpr size_t NUM_IMAGE_VIEW_TYPES = 9;
@@ -129,7 +129,7 @@ struct SwizzleParameters {
         s32 level;
 };
 
-enum class MsaaMode : u32 {
+enum class MsaaMode : std::uint8_t {
     Msaa1x1 = 0,
     Msaa2x1 = 1,
     Msaa2x2 = 2,

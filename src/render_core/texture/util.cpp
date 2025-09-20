@@ -26,7 +26,6 @@ struct LevelInfo {
         Extent3D block;
         Extent2D tile_size;
         u32 bpp_log2;
-        u32 tile_width_spacing;
         u32 num_levels;
 };
 constexpr u32 GOB_SIZE_X = 64;
@@ -99,9 +98,9 @@ template <typename T>
            num_tiles.depth < (1U << block_depth);
 }
 
-[[nodiscard]] constexpr Extent2D GobSize(u32 bpp_log2, u32 block_height, u32 tile_width_spacing) {
+[[nodiscard]] constexpr Extent2D GobSize(u32 bpp_log2, u32 block_height) {
     return Extent2D{
-        .width = GOB_SIZE_X_SHIFT - bpp_log2 + tile_width_spacing,
+        .width = GOB_SIZE_X_SHIFT - bpp_log2,
         .height = GOB_SIZE_Y_SHIFT + block_height,
     };
 }
@@ -111,9 +110,8 @@ template <typename T>
         .width = common::DivCeilLog2(blocks.width, GOB_SIZE_X_SHIFT),
         .height = common::DivCeilLog2(blocks.height, GOB_SIZE_Y_SHIFT),
     };
-    const Extent2D gob = GobSize(info.bpp_log2, info.block.height, info.tile_width_spacing);
-    const bool is_small = IsSmallerThanGobSize(blocks, gob, info.block.depth);
-    const u32 alignment = is_small ? 0 : info.tile_width_spacing;
+    const Extent2D gob = GobSize(info.bpp_log2, info.block.height);
+    const u32 alignment = 0;
     return Extent2D{
         .width = AlignUpLog2(gobs.width, alignment),
         .height = gobs.height,
@@ -139,7 +137,7 @@ template <typename T>
 }
 
 [[nodiscard]] constexpr LevelInfo MakeLevelInfo(surface::PixelFormat format, Extent3D size,
-                                                Extent3D block, u32 tile_width_spacing,
+                                                Extent3D block,
                                                 u32 num_levels) {
     const u32 bytes_per_block = BytesPerBlock(format);
     return {
@@ -152,19 +150,18 @@ template <typename T>
         .block = block,
         .tile_size = DefaultBlockSize(format),
         .bpp_log2 = BytesPerBlockLog2(bytes_per_block),
-        .tile_width_spacing = tile_width_spacing,
         .num_levels = num_levels,
     };
 }
 
 [[nodiscard]] constexpr LevelInfo MakeLevelInfo(const ImageInfo& info) {
-    return MakeLevelInfo(info.format, info.size, info.block_or_pitch.block, info.tile_width_spacing,
+    return MakeLevelInfo(info.format, info.size, info.block_or_pitch.block,
                          info.resources.levels);
 }
 [[nodiscard]] constexpr u32 CalculateLevelOffset(surface::PixelFormat format, Extent3D size,
-                                                 Extent3D block, u32 tile_width_spacing,
+                                                 Extent3D block,
                                                  u32 level) {
-    const LevelInfo info = MakeLevelInfo(format, size, block, tile_width_spacing, level);
+    const LevelInfo info = MakeLevelInfo(format, size, block, level);
     u32 offset = 0;
     for (u32 current_level = 0; current_level < level; ++current_level) {
         offset += CalculateLevelSize(info, current_level);
@@ -180,16 +177,12 @@ auto CalculateGuestSizeInBytes(const ImageInfo& info) noexcept -> u32 {
     if (info.type == ImageType::Linear) {
         return info.block_or_pitch.pitch * common::DivCeil(info.size.height, DefaultBlockHeight(info.format));
     }
-    if (info.resources.layers > 1) {
-        assert(info.layer_stride != 0);
-        return info.layer_stride * info.resources.layers;
-    }
     return CalculateLayerSize(info);
 }
 
 auto CalculateLayerSize(const ImageInfo& info) noexcept -> u32 {
     assert(info.type != ImageType::Linear);
-    return CalculateLevelOffset(info.format, info.size, info.block_or_pitch.block, info.tile_width_spacing,
+    return CalculateLevelOffset(info.format, info.size, info.block_or_pitch.block,
                                 info.resources.levels);
 }
 

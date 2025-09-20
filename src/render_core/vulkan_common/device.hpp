@@ -67,6 +67,9 @@ class Device {
         [[nodiscard]] auto isExt4444FormatsSupported() const -> bool {
             return features_.format_a4b4g4r4.formatA4B4G4R4;
         }
+        bool mustEmulateScaledFormats() const {
+            return misc_features_.must_emulate_scaled_formats;
+        }
 
         [[nodiscard]] auto mustEmulateBGR565() const -> bool {
             return misc_features_.must_emulate_bgr565;

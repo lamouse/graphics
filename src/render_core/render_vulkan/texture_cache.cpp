@@ -583,7 +583,6 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
     }
 
     // fix moltenVK issues with some 3D games
-    // credit to Jarrod Norwell from Sudachi https://github.com/jarrodnorwell/Sudachi
     auto usage = ImageUsageFlags(format_info, info.format);
     if (is_3d) {
         flags |= vk::ImageCreateFlagBits::e2DArrayCompatible;
@@ -1013,7 +1012,7 @@ void TextureCacheRuntime::BlitImage(TextureFramebuffer* dst_framebuffer, Texture
     assert(src.format == dst.format);
     if (aspect_mask == (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) {
         const auto format = src.format;
-        const auto can_blit_depth_stencil = [this, format] {
+        const auto can_blit_depth_stencil = [this, format] ->bool {
             switch (format) {
                 case surface::PixelFormat::D24_UNORM_S8_UINT:
                 case surface::PixelFormat::S8_UINT_D24_UNORM:

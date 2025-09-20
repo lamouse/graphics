@@ -2,6 +2,7 @@
 #include "vulkan_common/device.hpp"
 #include "descriptor_pool.hpp"
 #include "scheduler.hpp"
+#include "common/assert.hpp"
 #include "shader_notify.hpp"
 #include "pipeline_statistics.hpp"
 #include <boost/container/small_vector.hpp>
@@ -121,7 +122,7 @@ auto MsaaMode(MsaaMode msaa_mode) -> VkSampleCountFlagBits {
         case MsaaMode::Msaa4x4:
             return VK_SAMPLE_COUNT_16_BIT;
         default:
-            assert(false &&
+            ASSERT(false &&
                    fmt::format("Invalid msaa_mode={}", static_cast<int>(msaa_mode)).c_str());
             return VK_SAMPLE_COUNT_1_BIT;
     }
@@ -316,7 +317,6 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
         imageInfo.type = render::texture::ImageType::e2D;
         imageInfo.num_samples = 1;
         imageInfo.resources.levels = 1;
-        imageInfo.layer_stride = 4;
 
         texture::ImageInfo depth;
         depth.size = {.width = 1920, .height = 1080, .depth = 1};
@@ -324,7 +324,6 @@ void GraphicsPipeline::configureImpl(bool is_indexed) {
         depth.type = render::texture::ImageType::e2D;
         depth.num_samples = 1;
         depth.resources.levels = 1;
-        depth.layer_stride = 4;
 
         std::array imageInfos = {imageInfo, depth};
         render_targets = texture_cache.UpdateRenderTargets(imageInfos, {1920, 1080});
@@ -383,7 +382,7 @@ void GraphicsPipeline::validate() {
         num_images += shader::NumDescriptors(info.texture_descriptors);
         num_images += shader::NumDescriptors(info.image_descriptors);
     }
-    assert(num_images <= MAX_IMAGE_ELEMENTS);
+    ASSERT(num_images <= MAX_IMAGE_ELEMENTS);
 }
 
 void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {

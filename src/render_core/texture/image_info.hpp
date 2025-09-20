@@ -13,14 +13,7 @@ struct ImageInfo {
                 u32 pitch;
         } block_or_pitch;
         void* data = nullptr;
-        u32 layer_stride = 0;
-        u32 maybe_unaligned_layer_stride = 0;
         u32 num_samples = 1;
-        u32 tile_width_spacing = 0;
-        bool rescale_able = false;
-        bool downscale_able = false;
-        bool forced_flushed = false;
-        bool dma_downloaded = false;
-        bool is_sparse = false;
+
 };
 }  // namespace render::texture
