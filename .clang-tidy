@@ -26,7 +26,6 @@ readability-avoid-unconditional-preprocessor-if,
 readability-braces-around-statements,
 readability-const-return-type,
 readability-container-contains,
-readability-container-data-pointer,
 readability-container-size-empty,
 readability-convert-member-functions-to-static,
 readability-container-data-pointer,
@@ -110,7 +109,8 @@ bugprone-compare-pointer-to-member-virtual-function,
 bugprone-copy-constructor-init,
 bugprone-dangling-handle,
 bugprone-dynamic-static-initializers,
-bugprone-empty-catch bugprone-exception-escape,
+bugprone-empty-catch,
+bugprone-exception-escape,
 bugprone-fold-init-type,
 bugprone-forward-declaration-namespace,
 bugprone-forwarding-reference-overload,
@@ -179,3 +179,7 @@ bugprone-virtual-near-miss,
 CheckOptions:
   - key: hicpp-signed-bitwise.ClassCase
     value: 1
+  - key: modernize-use-trailing-return-type.AllowedFunctions
+    value: 'none|all|non-template|non-template-non-main'
+  - key: modernize-use-trailing-return-type.TrailingReturnTypeStyle
+    value: 'semantic|left-to-right'
