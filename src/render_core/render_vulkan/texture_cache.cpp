@@ -10,6 +10,7 @@
 #include "common/settings.hpp"
 #include "texture/util.hpp"
 #include "render_core/compatible_formats.h"
+#include "common/assert.hpp"
 #undef min
 #undef max
 #undef MemoryBarrier
@@ -96,7 +97,7 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
         case surface::SurfaceType::DepthStencil:
             return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
         default:
-            assert(false && "Invalid surface type");
+            ASSERT_MSG(false , "Invalid surface type");
             return vk::ImageAspectFlags{};
     }
 }
@@ -1009,7 +1010,7 @@ void TextureCacheRuntime::BlitImage(TextureFramebuffer* dst_framebuffer, Texture
                                     dst_region, src_region, opt);
         return;
     }
-    assert(src.format == dst.format);
+    ASSERT(src.format == dst.format);
     if (aspect_mask == (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) {
         const auto format = src.format;
         const auto can_blit_depth_stencil = [this, format] ->bool {
@@ -1020,7 +1021,8 @@ void TextureCacheRuntime::BlitImage(TextureFramebuffer* dst_framebuffer, Texture
                 case surface::PixelFormat::D32_FLOAT_S8_UINT:
                     return device.isBlitDepth32Stencil8Supported();
                 default:
-                    assert(false);
+                    ASSERT(false);
+                    return false;
             }
         }();
         if (!can_blit_depth_stencil) {
