@@ -16,7 +16,8 @@ void Camera::setOrthographicProjection(float left, float right, float top, float
 
 void Camera::setPerspectiveProjection(float fovy, float aspect, float near, float far) {
     assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0F);
-    const float tanHalfFovy = tan(fovy / 2.F);
+
+    const float tanHalfFovy = std::tan(fovy / 2.F);
     projectionMatrix = glm::mat4{0.0F};
     projectionMatrix[0][0] = 1.F / (aspect * tanHalfFovy);
     projectionMatrix[1][1] = 1.F / (tanHalfFovy);
