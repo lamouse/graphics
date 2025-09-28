@@ -49,6 +49,8 @@ VulkanSDK-1.3.290.0
 ### cmake preset一个备份demo
 
 ```text
+虽然现在推荐Presets，但是配置完挺麻烦，先预留一个样本吧
+Windows还是少使用mingw
 详情查看文件CMakeUserPresets-demo.json
 $penv{path}获取系统的环境变量
 ```

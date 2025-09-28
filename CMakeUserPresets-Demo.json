@@ -1,0 +1,161 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "mingw-path",
+            "hidden": true,
+            "environment": {
+                "PATH": "D:\\Program\\msys2\\ucrt64\\bin;$penv{path}"
+            }
+        },
+        {
+            "name": "vcpkg-root",
+            "hidden": true,
+            "environment": {
+                "VCPKG_ROOT": "D:\\Program\\vcpkg"
+            }
+        },
+        {
+            "name": "mingw64",
+            "displayName": "GCC (mingw64)",
+            "description": "",
+            "hidden": true,
+            "inherits": [
+                "vcpkg",
+                "mingw-path",
+                "vcpkg-root"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc.exe",
+                "CMAKE_CXX_COMPILER": "g++.exe",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
+            }
+        },
+        {
+            "name": "mingw-gcc-debug",
+            "displayName": "GCC x86_64(mingw64 debug)",
+            "description": "",
+            "inherits": [
+                "mingw64",
+                "Debug"
+            ]
+        },
+        {
+            "name": "mingw-gcc-release",
+            "displayName": "GCC x86_64(mingw64 release)",
+            "description": "",
+            "inherits": [
+                "mingw64",
+                "Release"
+            ]
+        },
+        {
+            "name": "msvc",
+            "displayName": "Visual Studio 2022",
+            "description": "",
+            "hidden": true,
+            "inherits": [
+                "vcpkg",
+                "vcpkg-root"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            }
+        },
+        {
+            "name": "msvc-debug",
+            "displayName": "Visual Studio 2022 (debug)",
+            "description": "",
+            "inherits": [
+                "msvc",
+                "Debug"
+            ]
+        },
+        {
+            "name": "msvc-release",
+            "displayName": "Visual Studio 2022 (release)",
+            "description": "",
+            "inherits": [
+                "msvc",
+                "Release"
+            ]
+        },
+        {
+            "name": "llvm",
+            "displayName": "llvm (clang)",
+            "description": "",
+            "hidden": true,
+            "inherits": [
+                "vcpkg",
+                "vcpkg-root"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang.exe",
+                "CMAKE_CXX_COMPILER": "clang++.exe"
+            }
+        },
+        {
+            "name": "clang-debug",
+            "displayName": "Clang x86_64(Debug)",
+            "description": "",
+            "inherits": [
+                "llvm",
+                "Debug"
+            ]
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang x86_64(Release)",
+            "description": "",
+            "inherits": [
+                "llvm",
+                "Release"
+            ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "mingw-gcc-debug",
+            "inherits": [
+                "build-debug"
+            ],
+            "configurePreset": "mingw-gcc-debug"
+        },
+        {
+            "name": "mingw-gcc-release",
+            "inherits": [
+                "build-release"
+            ],
+            "configurePreset": "mingw-gcc-release"
+        },
+        {
+            "name": "msvc-debug",
+            "inherits": [
+                "build-debug"
+            ],
+            "configurePreset": "msvc-debug"
+        },
+        {
+            "name": "msvc-release",
+            "inherits": [
+                "build-release"
+            ],
+            "configurePreset": "msvc-release"
+        },
+        {
+            "name": "clang-debug",
+            "inherits": [
+                "build-debug"
+            ],
+            "configurePreset": "clang-debug"
+        },
+        {
+            "name": "clang-release",
+            "inherits": [
+                "build-release"
+            ],
+            "configurePreset": "clang-release"
+        }
+    ]
+}
