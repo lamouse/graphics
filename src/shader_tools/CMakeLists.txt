@@ -1,9 +1,14 @@
-aux_source_directory(. SHARDER_CORE_SRC)
-aux_source_directory(./fronted SHADER_FRONTED_SRC)
-aux_source_directory(./fronted/ir SHADER_IR_SRC)
+set(sources
+    profile.h
+    shader_compile.hpp
+    shader_compile.cpp
+    shader_enums.hpp
+    shader_info.h
+    stage.h
+    varying_state.hpp
+)
 
-add_library(shader STATIC ${SHARDER_CORE_SRC} ${SHADER_FRONTED_SRC}
-    ${SHADER_IR_SRC})
+add_library(shader STATIC ${sources})
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)
