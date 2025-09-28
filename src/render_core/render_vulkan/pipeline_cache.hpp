@@ -8,7 +8,6 @@
 #include "common/common_funcs.hpp"
 #include "render_core/render_vulkan/graphics_pipeline.hpp"
 #include "shader_tools/profile.h"
-#include "shader_tools/host_translate_info.h"
 #include "render_core/render_vulkan/texture_cache.hpp"
 namespace render::vulkan {
 
@@ -110,7 +109,6 @@ class PipelineCache {
         GraphicsPipeline* current_pipeline{};
 
         Shader::Profile profile;
-        Shader::HostTranslateInfo host_info;
 
         std::unordered_map<ComputePipelineCacheKey, std::unique_ptr<ComputePipeline>> compute_cache;
         std::unordered_map<GraphicsPipelineCacheKey, std::unique_ptr<GraphicsPipeline>>

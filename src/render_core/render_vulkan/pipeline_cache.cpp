@@ -132,20 +132,6 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
         .max_user_clip_distances = device.GetMaxUserClipDistances(),
     };
 
-    host_info = Shader::HostTranslateInfo{
-        .support_float64 = device.IsFloat64Supported(),
-        .support_float16 = device.IsFloat16Supported(),
-        .support_int64 = device.IsShaderInt64Supported(),
-        .needs_demote_reorder = driver_id == vk::DriverIdKHR::eAmdProprietary ||
-                                driver_id == vk::DriverIdKHR::eAmdOpenSource ||
-                                driver_id == vk::DriverIdKHR::eSamsungProprietary,
-        .support_snorm_render_buffer = true,
-        .support_viewport_index_layer = device.IsExtShaderViewportIndexLayerSupported(),
-        .min_ssbo_alignment = static_cast<u32>(device.GetStorageBufferAlignment()),
-        .support_geometry_shader_passthrough = device.IsNvGeometryShaderPassthroughSupported(),
-        .support_conditional_barrier = device.SupportsConditionalBarriers(),
-    };
-
     dynamic_features = DynamicFeatures{
         .has_extended_dynamic_state = device.IsExtExtendedDynamicStateSupported(),
         .has_extended_dynamic_state_2 = device.IsExtExtendedDynamicState2Supported(),
