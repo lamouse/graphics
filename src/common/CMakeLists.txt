@@ -1,33 +1,6 @@
 set(LIB_COMMON_NAME common)
+include(${CMAKE_CURRENT_SOURCE_DIR}/common.cmake)
 
-set (sources
-    alignment.h
-    alignment.hpp
-    assert.hpp
-    bit_cast.h
-    bit_field.hpp
-    bit_util.h
-    common_funcs.hpp
-    common_settings.hpp
-    common_types.hpp
-    div_ceil.hpp
-    literals.hpp
-    lru_cache.h
-    make_unique_for_overwrite.h
-    math_util.h
-    polyfill_thread.hpp
-    scope_exit.h
-    scratch_buffer.h
-    settings_enums.hpp
-    settings.hpp
-    settings.cpp
-    slot_vector.hpp
-    swap.h
-    thread_worker.hpp
-    thread.hpp
-    thread.cpp
-    unique_function.h
-)
 add_library(${LIB_COMMON_NAME} STATIC ${sources})
 
 if(MSVC)

@@ -1,0 +1,19 @@
+set(sources
+        src/imconfig.h
+        src/imgui_demo.cpp
+        src/imgui_draw.cpp
+        src/imgui_impl_glfw.h
+        src/imgui_impl_glfw.cpp
+        src/imgui_impl_sdl3.h
+        src/imgui_impl_sdl3.cpp
+        src/imgui_impl_vulkan.h
+        src/imgui_impl_vulkan.cpp
+        src/imgui_internal.h
+        src/imgui_tables.cpp
+        src/imgui_widgets.cpp
+        src/imgui.h
+        src/imgui.cpp
+        src/imstb_rectpack.h
+        src/imstb_textedit.h
+        src/imstb_truetype.h
+    )

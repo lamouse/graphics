@@ -1,22 +1,7 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(PROGRAM_NAME "graphics")
 
-set(sources
-    app.hpp
-    app.cpp
-    glfw_common.hpp
-    glfw_common.cpp
-    glfw_window.hpp
-    glfw_window.cpp
-    SDL_common.hpp
-    SDL_common.cpp
-    SDL_window.hpp
-    SDL_window.cpp
-    ui.hpp
-    ui.cpp
-    main.cpp
-)
-
+include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
 aux_source_directory(. MAIN_SRC)
 aux_source_directory(${CMAKE_BINARY_DIR}/generated/config GENERATED_SRC)
 set(SRC ${sources} ${GENERATED_SRC})
