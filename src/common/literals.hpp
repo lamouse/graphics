@@ -2,14 +2,14 @@
 #include <cstdint>
 namespace common::literals {
 
-constexpr uint64_t operator""_KiB(unsigned long long int x) { return 1024ULL * x; }
+constexpr auto operator""_KiB(unsigned long long int x) -> uint64_t { return 1024ULL * x; }
 
-constexpr uint64_t operator""_MiB(unsigned long long int x) { return 1024_KiB * x; }
+constexpr auto operator""_MiB(unsigned long long int x) -> uint64_t { return 1024_KiB * x; }
 
-constexpr uint64_t operator""_GiB(unsigned long long int x) { return 1024_MiB * x; }
+constexpr auto operator""_GiB(unsigned long long int x) -> uint64_t { return 1024_MiB * x; }
 
-constexpr uint64_t operator""_TiB(unsigned long long int x) { return 1024_GiB * x; }
+constexpr auto operator""_TiB(unsigned long long int x) -> uint64_t { return 1024_GiB * x; }
 
-constexpr uint64_t operator""_PiB(unsigned long long int x) { return 1024_TiB * x; }
+constexpr auto operator""_PiB(unsigned long long int x) -> uint64_t { return 1024_TiB * x; }
 
 }  // namespace common::literals
