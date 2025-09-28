@@ -20,8 +20,26 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-aux_source_directory(./src IMGUI_SRC)
-add_library(imgui STATIC ${IMGUI_SRC})
+set(sources
+        src/imconfig.h
+        src/imgui_demo.cpp
+        src/imgui_draw.cpp
+        src/imgui_impl_glfw.h
+        src/imgui_impl_glfw.cpp
+        src/imgui_impl_sdl3.h
+        src/imgui_impl_sdl3.cpp
+        src/imgui_impl_vulkan.h
+        src/imgui_impl_vulkan.cpp
+        src/imgui_internal.h
+        src/imgui_tables.cpp
+        src/imgui_widgets.cpp
+        src/imgui.h
+        src/imgui.cpp
+        src/imstb_rectpack.h
+        src/imstb_textedit.h
+        src/imstb_truetype.h
+    )
+add_library(imgui STATIC ${sources})
 if(MSVC)
     target_compile_options(imgui PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
