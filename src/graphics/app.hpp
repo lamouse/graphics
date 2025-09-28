@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "../config.hpp"
+#include "resource/config.hpp"
 #include "render_core/render_base.hpp"
 #include "common/common_funcs.hpp"
 namespace graphics {

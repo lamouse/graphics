@@ -5,7 +5,6 @@
 #include <string>
 
 #include "core/frontend/window.hpp"
-#include "g_defines.hpp"
 namespace graphics {
 class ScreenWindow : public core::frontend::BaseWindow {
     private:
@@ -14,7 +13,7 @@ class ScreenWindow : public core::frontend::BaseWindow {
         ::std::string title_;
 
     public:
-        ScreenWindow(ScreenExtent extent, ::std::string title);
+        ScreenWindow(int width, int height, ::std::string title);
         ScreenWindow(const ScreenWindow &) = delete;
         auto operator=(const ScreenWindow &) -> ScreenWindow & = delete;
         ScreenWindow(ScreenWindow &&) noexcept;
@@ -38,6 +37,5 @@ class ScreenWindow : public core::frontend::BaseWindow {
         void pullEvents() override { glfwPollEvents(); }
         [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
         auto getSurface(VkInstance instance) -> VkSurfaceKHR;
-        auto getExtent() -> ScreenExtent;
 };
 }  // namespace graphics

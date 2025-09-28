@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace g {
+namespace resource {
 
 class Camera {
     public:
@@ -11,9 +11,9 @@ class Camera {
         void setPerspectiveProjection(float fovy, float aspect, float near, float far);
 
         void setViewDirection(glm::vec3 position, glm::vec3 direction,
-                              glm::vec3 up = glm::vec3{0.f, -1.f, 0.f});
+                              glm::vec3 up = glm::vec3{0.F, -1.F, 0.F});
         void setViewTarget(glm::vec3 position, glm::vec3 target,
-                           glm::vec3 up = glm::vec3{0.f, -1.f, 0.f});
+                           glm::vec3 up = glm::vec3{0.F, -1.F, 0.F});
         void setViewYXZ(glm::vec3 position, glm::vec3 rotation);
 
         [[nodiscard]] auto getProjection() const -> const glm::mat4& { return projectionMatrix; }
@@ -22,9 +22,9 @@ class Camera {
         auto getPosition() -> glm::vec3 { return {inverseViewMatrix[3]}; }
 
     private:
-        glm::mat4 projectionMatrix{1.f};
-        glm::mat4 viewMatrix{1.f};
-        glm::mat4 inverseViewMatrix{1.f};
+        glm::mat4 projectionMatrix{1.F};
+        glm::mat4 viewMatrix{1.F};
+        glm::mat4 inverseViewMatrix{1.F};
 };
 
 }  // namespace g

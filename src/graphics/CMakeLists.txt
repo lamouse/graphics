@@ -1,15 +1,29 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-aux_source_directory(. MAIN_SRC)
-aux_source_directory(../resource RESOURCE_SRC)
-aux_source_directory(../system SYSTEM_SRC)
-aux_source_directory(../ OTHER_SRC)
-aux_source_directory(${CMAKE_BINARY_DIR}/generated/config GENERATED_SRC)
-set(SRC ${MAIN_SRC} ${RESOURCE_SRC} ${SYSTEM_SRC} ${GENERATED_SRC} ${OTHER_SRC})
 set(PROGRAM_NAME "graphics")
+
+set(sources
+    app.hpp
+    app.cpp
+    glfw_common.hpp
+    glfw_common.cpp
+    glfw_window.hpp
+    glfw_window.cpp
+    SDL_common.hpp
+    SDL_common.cpp
+    SDL_window.hpp
+    SDL_window.cpp
+    ui.hpp
+    ui.cpp
+    main.cpp
+)
+
+aux_source_directory(. MAIN_SRC)
+aux_source_directory(${CMAKE_BINARY_DIR}/generated/config GENERATED_SRC)
+set(SRC ${sources} ${GENERATED_SRC})
 
 add_executable(${PROGRAM_NAME} ${SRC})
 
-target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core)
+target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core resource)
 target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
 target_link_libraries(${PROGRAM_NAME} PRIVATE yaml-cpp::yaml-cpp)
 target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3)

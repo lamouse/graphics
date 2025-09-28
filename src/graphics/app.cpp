@@ -1,16 +1,21 @@
 #include "app.hpp"
 
 #include "config/window.h"
-#include "g_defines.hpp"
-#include "resource/image.hpp"
+#include "resource/texture/image.hpp"
+#include "resource/obj/model.hpp"
+
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
+#if defined(USE_GLFW)
 #include "glfw_window.hpp"
+#endif
 #include "sdl_window.hpp"
 #include <thread>
-#include "model.hpp"
 #include "render_core/framebufferConfig.hpp"
 #include "ui.hpp"
+#define image_path ::std::string{"./images/"}
+#define shader_path ::std::string{"./shader/"}
+#define models_path ::std::string{"./models/"}
 
 namespace graphics {
 namespace {

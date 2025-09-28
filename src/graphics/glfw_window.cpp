@@ -12,7 +12,7 @@
 
 namespace graphics {
 
-ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{std::move(title)} {
+ScreenWindow::ScreenWindow(int width, int height, ::std::string title) : title_{std::move(title)} {
     ::glfwInit();
     ::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     ::glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -27,8 +27,8 @@ ScreenWindow::ScreenWindow(ScreenExtent extent, ::std::string title) : title_{st
     window_info.render_surface_scale = x_scale;
 #endif
     core::frontend::BaseWindow::WindowConfig conf;
-    conf.extent.width = extent.width;
-    conf.extent.height = extent.height;
+    conf.extent.width = width;
+    conf.extent.height = height;
     conf.fullscreen = false;
     setWindowConfig(conf);
     window =
@@ -63,16 +63,6 @@ auto ScreenWindow::getSurface(VkInstance instance) -> VkSurfaceKHR {
         throw ::std::runtime_error("createWindowSurface Fail ");
     }
     return surface;
-}
-
-auto ScreenWindow::getExtent() -> ScreenExtent {
-    int width{}, height{};
-    glfwGetFramebufferSize(window, &width, &height);
-    while (width == 0 || height == 0) {
-        glfwWaitEvents();
-        glfwGetFramebufferSize(window, &width, &height);
-    }
-    return {width, height};
 }
 
 ScreenWindow::~ScreenWindow() {

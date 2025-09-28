@@ -5,7 +5,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #endif
-#include "../config.hpp"
+#include "resource/config.hpp"
 #include "config/log.h"
 #include "app.hpp"
 #include "utils/log_util.hpp"

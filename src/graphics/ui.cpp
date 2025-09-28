@@ -2,6 +2,8 @@
 #include "ui.hpp"
 
 #include "common/settings.hpp"
+#include "resource/camera.hpp"
+#include "resource/model_instance.hpp"
 #include <ranges>
 #include <chrono>
 
@@ -51,7 +53,7 @@ auto calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) -> ImVec2
 void HelpMarker(const char* desc) {
     ImGui::TextDisabled("(?)");
     if (ImGui::BeginItemTooltip()) {
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0F);
         ImGui::TextUnformatted(desc);
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
@@ -81,11 +83,11 @@ namespace graphics::ui {
 auto init_debug_info() -> ImguiDebugInfo {
     ImguiDebugInfo debugInfo;
     debugInfo.speed = 90.0F;
-    debugInfo.look_x = 2.0f;
-    debugInfo.look_y = 2.0f;
-    debugInfo.look_z = 2.0F;
-    debugInfo.up_z = 1.f;
-    debugInfo.up_y = 0.f;
+    debugInfo.look_x = 0.0F;
+    debugInfo.look_y = 0.0F;
+    debugInfo.look_z = 5.0F;
+    debugInfo.up_z = 0.f;
+    debugInfo.up_y = 1.f;
     debugInfo.up_x = 0.f;
     debugInfo.rotate_x = .0f;
     debugInfo.rotate_y = .0f;
@@ -164,16 +166,18 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
     float time =
         ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
             .count();
-    render::UniformBufferObject ubo;
-    ubo.model =
-        ::glm::rotate(glm::mat4(1.0f), time * glm::radians(debugInfo.speed),
-                      glm::vec3(debugInfo.rotate_x, debugInfo.rotate_y, debugInfo.rotate_z));
-    ubo.view = ::glm::lookAt(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
-                             glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
-                             glm::vec3(debugInfo.up_x, debugInfo.center_y, debugInfo.up_z));
-    ubo.proj = ::glm::perspective(glm::radians(debugInfo.radians), extentAspectRation,
-                                  debugInfo.z_far, debugInfo.z_near);
-    ubo.proj[1][1] *= -1;
+    render::UniformBufferObject ubo{};
+    resource::Camera camera;
+    camera.setPerspectiveProjection(glm::radians(debugInfo.radians), extentAspectRation,
+                                    debugInfo.z_far, debugInfo.z_near);
+    camera.setViewTarget(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
+                         glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
+                         glm::vec3(debugInfo.up_x, debugInfo.up_y, debugInfo.up_z));
+    static ModelInstance modelInstance = ModelInstance::createGameObject();
+    modelInstance.transform.rotation = glm::vec3(.0f, time * glm::radians(debugInfo.speed), .0f);
+    ubo.model = modelInstance.transform.mat4();
+    ubo.view = camera.getView();
+    ubo.proj = camera.getProjection();
     return ubo;
 }
 
@@ -276,8 +280,7 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     const float textPosY = textSize.y + 10;                 // 20 是上边距
     // // 设置文本绘制位置为右上角
     ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
-    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, text,
-                       1000.0f / io.Framerate, io.Framerate);
+    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, text, 1000.0f / io.Framerate, io.Framerate);
     ImGui::PopStyleVar();
     ImGui::End();
 }
@@ -316,4 +319,3 @@ void draw_docked_window() {
 }
 
 }  // namespace graphics::ui
-

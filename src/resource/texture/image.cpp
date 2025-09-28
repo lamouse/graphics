@@ -1,7 +1,6 @@
 #include "image.hpp"
 
 #include <cmath>
-#include <cstddef>
 #include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
 #if _MSC_VER or __APPLE__
