@@ -1,6 +1,13 @@
-aux_source_directory(. CORE_SRC)
-aux_source_directory(./frontend FRONTEND_SRC)
-add_library(core STATIC ${CORE_SRC} ${FRONTEND_SRC})
+
+set(LIB_CORE_NAME core)
+
+set (sources
+    frontend/framebuffer_layout.hpp
+    frontend/framebuffer_layout.cpp
+    frontend/window.hpp
+    frontend/window.cpp
+)
+add_library(${LIB_CORE_NAME} STATIC ${sources})
 if (MSVC)
     target_compile_options(core PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
@@ -10,7 +17,7 @@ if (MSVC)
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
 else()
-    target_compile_options(core PRIVATE
+    target_compile_options(${LIB_CORE_NAME} PRIVATE
         -Werror=conversion
 
         -Wno-sign-conversion
@@ -20,7 +27,7 @@ else()
     )
 endif()
 
-target_link_libraries(core PRIVATE Vulkan::Vulkan spdlog::spdlog)
+target_link_libraries(${LIB_CORE_NAME} PRIVATE Vulkan::Vulkan spdlog::spdlog)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(core PROPERTIES VERSION 0.0.1 SOVERSION 0)
