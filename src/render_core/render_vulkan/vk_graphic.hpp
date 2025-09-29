@@ -33,6 +33,11 @@ struct RenderTargetInfo {
 struct FramebufferTextureInfo;
 class Device;
 
+struct ModelResource{
+    texture::ImageViewId image_view;
+    texture::SamplerId sample_id;
+};
+
 class VulkanGraphics : public render::Graphic {
     public:
         explicit VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
@@ -47,7 +52,7 @@ class VulkanGraphics : public render::Graphic {
         void drawImgui(vk::CommandBuffer cmd_buf);
         auto addGraphicContext(const GraphicsContext& context) -> GraphicsId override;
         void bindUniformBuffer(GraphicsId id, void* data, size_t size) override;
-        void uploadModel(const graphics::ModelInstance& instance) override;
+        auto uploadModel(const graphics::ModelInstance& instance) -> ModelId override;
         void draw(GraphicsId id) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;
@@ -116,6 +121,7 @@ class VulkanGraphics : public render::Graphic {
         u32 draw_counter = 0;
         std::unordered_map<GraphicsId, RenderTargetInfo> draw_indices;
         common::SlotVector<RenderTargetInfo> slot_graphics;
+        common::SlotVector<ModelResource> modelResource;
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <span>
 #include <string_view>
 #include "render_core/texture/image_base.hpp"
 
@@ -8,16 +9,22 @@ namespace resource::image {
 
 class Image {
     private:
-        unsigned char* data;
+        unsigned char* data_{nullptr};
+        std::span<unsigned char> map_data;
         render::texture::ImageInfo imageInfo;
-
+        int width{};
+        int height{};
+        int channels = 0;
     public:
-        void readImage(::std::string& path);
-        explicit Image(::std::string& path);
+        void readImage(const ::std::string& path);
+        explicit Image(const ::std::string& path);
         auto getData() -> unsigned char*;
         auto getImageInfo() -> render::texture::ImageInfo&;
+        [[nodiscard]] auto getWidth() const->int{return width;}
+        [[nodiscard]] auto getheight() const->int{return height;}
         [[nodiscard]] auto getMipLevels() const -> uint32_t;
         [[nodiscard]] auto size() const -> unsigned long long;
+        auto data() ->std::span<unsigned char> {return map_data;}
         ~Image();
 };
 

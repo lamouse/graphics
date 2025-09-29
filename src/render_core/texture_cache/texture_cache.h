@@ -263,6 +263,45 @@ void TextureCache<P>::SynchronizeGraphicsDescriptors() {
 }
 
 template <class P>
+auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char> data)
+    -> std::pair<ImageViewId, SamplerId> {
+    ImageInfo info;
+    info.size.width = extent.width;
+    info.size.height = extent.height;
+    info.type = render::texture::ImageType::e2D;
+    info.num_samples = 1;
+    info.resources.levels = 1;
+    info.format = PixelFormat::A8B8G8R8_UNORM;
+    const ImageId new_image_id = slot_images.insert(runtime, info);
+    Image& new_image = slot_images[new_image_id];
+    auto staging = runtime.UploadStagingBuffer(data.size());
+    std::memcpy(staging.mapped_span.data(), data.data(), data.size());
+
+    BufferImageCopy copys[1];
+    copys[0].image_offset = {.x=0, .y=0, .z=0};
+    copys[0].image_extent = info.size;
+    copys[0].buffer_offset = 0;
+    copys[0].buffer_size = data.size();
+    copys[0].buffer_row_length = 0;
+    copys[0].buffer_image_height = 0;
+    new_image.UploadMemory(staging, copys);
+
+    AddImageAlias(new_image, new_image, new_image_id, new_image_id);
+    ImageBase& image = slot_images[new_image_id];
+    const ImageViewInfo view_info(info);
+    const ImageViewId image_view_id = FindOrEmplaceImageView(new_image_id, view_info);
+    ImageViewBase& image_view = slot_image_views[image_view_id];
+    image_view.flags |= ImageViewFlagBits::Strong;
+    image.flags |= ImageFlagBits::Strong;
+    graphics_image_view_ids.push_back(image_view_id);
+
+    auto slot_id = slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,
+                                        image_view.range.extent.levels);
+    graphics_sampler_ids.push_back(slot_id);
+    return std::make_pair(image_view_id, slot_id);
+}
+
+template <class P>
 auto TextureCache<P>::addGraphics(const ImageInfo& info) -> std::pair<ImageViewId, SamplerId> {
     ImageInfo new_info = info;
     const size_t size_bytes = utils::CalculateGuestSizeInBytes(new_info);
@@ -274,7 +313,7 @@ auto TextureCache<P>::addGraphics(const ImageInfo& info) -> std::pair<ImageViewI
 
     std::memcpy(staging.mapped_span.data(), info.data, size_bytes);
     BufferImageCopy copys[1];
-    copys[0].image_offset = {0, 0, 0};
+    copys[0].image_offset = {.x=0, .y=0, .z=0};
     copys[0].image_extent = new_info.size;
     copys[0].buffer_offset = 0;
     copys[0].buffer_size = size_bytes;

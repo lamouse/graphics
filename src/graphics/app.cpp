@@ -58,7 +58,8 @@ void App::run() {
     pipeline_state.scissors.height = layout.screen.GetHeight();
     auto graphicId = addGraphics(graphics);
     world::World world;
-    ModelInstance modelInstance = ModelInstance::createGameObject();
+    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj");
+    graphics->uploadModel(modelInstance);
     auto& camera =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();

@@ -7,7 +7,6 @@ namespace render::texture {
 constexpr size_t NUM_RT = 8;
 constexpr size_t MAX_MIP_LEVELS = 14;
 constexpr common::SlotId CORRUPT_ID{0xfffffffe};
-using ImageViewId = common::SlotId;
 using ImageId = common::SlotId;
 using ImageMapId = common::SlotId;
 using ImageViewId = common::SlotId;

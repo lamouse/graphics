@@ -435,8 +435,17 @@ void VulkanGraphics::bindUniformBuffer(GraphicsId id, void* data, size_t size) {
     buffer_cache.BindUniformBuffers(draw_info.uniform_buffer_id, data, size);
 }
 
-void VulkanGraphics::uploadModel(const graphics::ModelInstance& instance){
-
+auto VulkanGraphics::uploadModel(const graphics::ModelInstance& instance) -> ModelId {
+    ModelResource resource;
+    if (auto imageData = instance.getImageData()) {
+        auto [viewId, samplerId] =
+            texture_cache.addTexture({.width = static_cast<u32>(imageData->getWidth()),
+                                      .height = static_cast<u32>(imageData->getheight())},
+                                     imageData->data());
+        resource.image_view = viewId;
+        resource.sample_id = samplerId;
+    }
+    return modelResource.insert(resource);
 }
 
 void VulkanGraphics::draw(GraphicsId id) {

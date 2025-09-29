@@ -123,6 +123,10 @@ class TextureCache : public TextureCacheInfo {
         auto GetGraphicsSamplerId(u32 index) -> SamplerId;
         // 添加一个图像
         auto addGraphics(const ImageInfo& info) -> std::pair<ImageViewId, SamplerId>;
+
+        //添加一个纹理
+        auto addTexture(const Extent2D& extent, std::span<unsigned char> data) -> std::pair<ImageViewId, SamplerId>;
+
         /// Get the sampler id from the compute descriptor table in the specified index
         auto GetComputeSamplerId(u32 index) -> SamplerId;
 

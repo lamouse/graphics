@@ -2,7 +2,7 @@
 #include "ecs/ui/transformUI.hpp"
 #include <imgui.h>
 namespace graphics {
-void  ModelInstance::drawUI(){
+void ModelInstance::drawUI() {
     ImGui::Begin("Detail");
     if (ImGui::TreeNode("TransformComponent")) {
         if (entity_.hasComponent<ecs::TransformComponent>()) {
@@ -13,4 +13,12 @@ void  ModelInstance::drawUI(){
     }
     ImGui::End();
 }
+
+auto ModelInstance::getImageData() const -> std::unique_ptr<resource::image::Image> {
+    if(image_path.empty()){
+        return nullptr;
+    }
+    return std::make_unique<resource::image::Image>(image_path);
 }
+
+}  // namespace graphics
