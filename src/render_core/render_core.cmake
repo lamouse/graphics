@@ -96,6 +96,7 @@ set(sources
     texture/image_view_info.hpp
     texture/render_targets.h
     texture/samples_helper.h
+    texture/texture.hpp
     texture/types.hpp
     texture/util.cpp
     texture/util.hpp

@@ -71,7 +71,6 @@ struct FixedPipelineState {
         surface::PixelFormat depth_format;
         u32 alpha_test_ref;
         u32 point_size;
-        std::array<u16, 16> viewport_swizzles;
         int depth_enabled;
         MsaaMode msaa_mode;
         int xfb_state;

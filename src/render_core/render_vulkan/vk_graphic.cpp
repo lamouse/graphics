@@ -434,6 +434,11 @@ void VulkanGraphics::bindUniformBuffer(GraphicsId id, void* data, size_t size) {
     auto draw_info = draw_indices[id];
     buffer_cache.BindUniformBuffers(draw_info.uniform_buffer_id, data, size);
 }
+
+void VulkanGraphics::uploadModel(const graphics::ModelInstance& instance){
+
+}
+
 void VulkanGraphics::draw(GraphicsId id) {
     const auto drawInfo = draw_indices[id];
     buffer_cache.setCurrentUniformBuffer(drawInfo.uniform_buffer_id, drawInfo.uniform_buffer_size);

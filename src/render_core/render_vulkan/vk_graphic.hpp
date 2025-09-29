@@ -47,6 +47,7 @@ class VulkanGraphics : public render::Graphic {
         void drawImgui(vk::CommandBuffer cmd_buf);
         auto addGraphicContext(const GraphicsContext& context) -> GraphicsId override;
         void bindUniformBuffer(GraphicsId id, void* data, size_t size) override;
+        void uploadModel(const graphics::ModelInstance& instance) override;
         void draw(GraphicsId id) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;

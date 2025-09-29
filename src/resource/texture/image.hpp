@@ -13,7 +13,7 @@ class Image {
 
     public:
         void readImage(::std::string& path);
-       explicit Image(::std::string& path);
+        explicit Image(::std::string& path);
         auto getData() -> unsigned char*;
         auto getImageInfo() -> render::texture::ImageInfo&;
         [[nodiscard]] auto getMipLevels() const -> uint32_t;

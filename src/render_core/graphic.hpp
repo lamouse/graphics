@@ -2,6 +2,7 @@
 #include "render_core/fixed_pipeline_state.h"
 #include "common/common_funcs.hpp"
 #include "render_core/texture/image_info.hpp"
+#include "resource/model_instance.hpp"
 #include <span>
 #include <imgui.h>
 namespace render {
@@ -22,6 +23,7 @@ class Graphic {
         virtual auto addGraphicContext(const GraphicsContext& context) -> GraphicsId = 0;
         virtual auto getDrawImage() -> ImTextureID = 0;
         virtual void draw(GraphicsId id) = 0;
+        virtual void uploadModel(const graphics::ModelInstance& instance) = 0;
         virtual void start() = 0;
         virtual void end() = 0;
         Graphic() = default;

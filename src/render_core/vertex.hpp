@@ -53,7 +53,7 @@ namespace render {
                 u32 hex;
             };
 
-            u32 ComponentCount() const {
+            [[nodiscard]] auto ComponentCount() const -> u32 {
                 switch (size) {
                 case Size::R32_G32_B32_A32:
                     return 4;
@@ -92,7 +92,7 @@ namespace render {
                 }
             }
 
-            u32 SizeInBytes() const {
+            [[nodiscard]] auto SizeInBytes() const -> u32 {
                 switch (size) {
                 case Size::R32_G32_B32_A32:
                     return 16;
@@ -131,7 +131,7 @@ namespace render {
                 }
             }
 
-            std::string SizeString() const {
+            [[nodiscard]] auto SizeString() const -> std::string {
                 switch (size) {
                 case Size::R32_G32_B32_A32:
                     return "32_32_32_32";
@@ -169,7 +169,7 @@ namespace render {
                 }
             }
 
-            std::string TypeString() const {
+            [[nodiscard]] auto TypeString() const -> std::string {
                 switch (type) {
                 case Type::UnusedEnumDoNotUseBecauseItWillGoAway:
                     return "Unused";
@@ -192,15 +192,15 @@ namespace render {
                 return {};
             }
 
-            bool IsNormalized() const {
+            auto IsNormalized() const -> bool {
                 return (type == Type::SNorm) || (type == Type::UNorm);
             }
 
-            bool IsValid() const {
+            auto IsValid() const -> bool {
                 return size != Size::Invalid;
             }
 
-            bool operator<(const VertexAttribute& other) const {
+            auto operator<(const VertexAttribute& other) const -> bool {
                 return hex < other.hex;
             }
         };
