@@ -11,7 +11,7 @@ add_executable(${PROGRAM_NAME} ${SRC})
 target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core resource)
 target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)
 target_link_libraries(${PROGRAM_NAME} PRIVATE yaml-cpp::yaml-cpp)
-target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3)
+target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3 world)
 
 target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 

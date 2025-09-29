@@ -11,7 +11,7 @@ class Scene {
         CLASS_DEFAULT_MOVEABLE(Scene);
         CLASS_NON_COPYABLE(Scene);
         auto createEntity() -> Entity;
-        auto createEntity(std::string tag) -> Entity;
+        auto createEntity(const std::string& tag) -> Entity;
     private:
         entt::registry registry_;
         friend class Entity;

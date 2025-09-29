@@ -11,6 +11,9 @@ set (sources
     components/camera_component.hpp
     components/tag_component.hpp
     components/transform_component.hpp
+    ui/cameraUI.hpp
+    ui/tagUI.hpp
+    ui/transformUI.hpp
     component.hpp
 )
 add_library(${LIB_NAME} STATIC ${sources})
@@ -32,8 +35,8 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
-
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog EnTT::EnTT)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog EnTT::EnTT imgui)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)

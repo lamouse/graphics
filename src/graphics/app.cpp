@@ -3,7 +3,7 @@
 #include "config/window.h"
 #include "resource/texture/image.hpp"
 #include "resource/obj/model.hpp"
-
+#include "world/world.hpp"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
 #if defined(USE_GLFW)
@@ -49,6 +49,7 @@ void App::run() {
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
     auto graphicId = addGraphics(graphics);
+    world::World world;
     while (!window->shouldClose()) {
         window->pullEvents();
         if (window->IsMinimized()) {
@@ -79,6 +80,7 @@ void App::run() {
             graphics::ui::uniform_ui(debugInfo);
             graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::draw_setting();
+            world.drawUI();
             graphics::ui::end();
         });
 #endif

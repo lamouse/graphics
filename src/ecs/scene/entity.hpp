@@ -10,10 +10,11 @@
 namespace ecs {
 
 class Entity {
+    friend class Scene;
     public:
-        Entity(entt::entity handle, Scene* scene) : handle_(handle), scene_(scene) {};
         CLASS_DEFAULT_COPYABLE(Entity);
         CLASS_DEFAULT_MOVEABLE(Entity);
+        Entity() = default;
         ~Entity() = default;
         template<typename  T>
         [[nodiscard]] auto hasComponent()const -> bool {
@@ -29,7 +30,7 @@ class Entity {
         template<typename T>
         auto getComponent() -> T& {
             // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-            ASSERT_MSG(!hasComponent<T>(), "Entity dose not has component");
+            ASSERT_MSG(hasComponent<T>(), "Entity dose not has component");
             return scene_->registry_.get<T>(handle_);
         }
 
@@ -40,8 +41,8 @@ class Entity {
             scene_->registry_.remove<T>(handle_);
         }
 
-
     private:
+        Entity(entt::entity handle, Scene* scene) : handle_(handle), scene_(scene) {};
         entt::entity handle_;
         Scene* scene_;
 };

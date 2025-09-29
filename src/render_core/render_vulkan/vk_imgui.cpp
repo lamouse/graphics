@@ -103,8 +103,15 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device,
     ImFontConfig fontConfig;
     fontConfig.OversampleH = 2;  // 水平方向抗锯齿
     fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
-    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0f, &fontConfig,
+    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
                                  io.Fonts->GetGlyphRangesChineseFull());
+
+                                 // 加载图标字体（例如 Font Awesome）
+
+    ImFontConfig iconConfig;
+    iconConfig.MergeMode = true;
+    iconConfig.PixelSnapH = true;
+    io.Fonts->AddFontFromFileTTF("fronts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
 }
 
 void ImguiCore::imgui_predraw() {
