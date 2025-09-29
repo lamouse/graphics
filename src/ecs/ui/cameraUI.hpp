@@ -10,9 +10,8 @@ inline void DrawCameraUI(CameraComponent& cam) {
     DrawVec3ColorControl("LookAt", cam.lookAt, DEFAULT_LOOK_AT, 0.1F);
     DrawVec3ColorControl("Center", cam.center, DEFAULT_CENTER, 0.1F);
     DrawVec3ColorControl("Up", cam.up, DEFAULT_UP, 0.1F);
-
-    DrawFloatControl("Near",cam.near, 0.1F, DEFAULT_NEAR);
-    DrawFloatControl("Far",cam.near, 0.1F, DEFAULT_FAR);
-    DrawFloatControl("FOV",cam.near, 0.1F, DEFAULT_FOVY);
+    DrawFloatControl("Near", cam.near, 0.01F, DEFAULT_NEAR, 0.01F, 1.F);
+    DrawFloatControl("Far", cam.far, 0.1F, DEFAULT_FAR, 1000.0, 100000.F);
+    DrawFloatControl("FOV", cam.fovy, 0.1F, DEFAULT_FOVY);
 }
-}
+}  // namespace ecs

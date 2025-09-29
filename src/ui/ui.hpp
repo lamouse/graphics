@@ -89,7 +89,7 @@ inline void DrawVec3ColorControl(const std::string& label, glm::vec3& value, con
 }
 
 inline void DrawFloatControl(const std::string& label, float& value, float speed = 0.1F,
-                             float resetValue = 45.0F, float labelWidth = 120.0F) {
+                             float resetValue = 45.0F, float minValue = .0F, float maxValue = 0.F, float labelWidth = 120.0F) {
     ImGui::PushID(label.c_str());
 
     if (ImGui::BeginTable("FloatControlTable", 2, ImGuiTableFlags_SizingFixedFit)) {
@@ -118,7 +118,7 @@ inline void DrawFloatControl(const std::string& label, float& value, float speed
 
         // DragFloat
         ImGui::SetNextItemWidth(dragSize.x);
-        ImGui::DragFloat("##Value", &value, speed, 0.0F, 0.0F, format.c_str());
+        ImGui::DragFloat("##Value", &value, speed, minValue, maxValue, format.c_str());
         ImGui::SameLine();
 
         // Reset button
