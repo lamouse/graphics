@@ -3,13 +3,19 @@
 #include "common/common_funcs.hpp"
 #include "ecs/camera/camera.hpp"
 namespace ecs {
+constexpr auto DEFAULT_FOVY = 45.F;
+constexpr auto DEFAULT_NEAR = 0.1F;
+constexpr auto DEFAULT_FAR = 10.F;
+constexpr glm::vec3 DEFAULT_UP{.0F, .0F, 1.F};
+constexpr glm::vec3 DEFAULT_LOOK_AT{2.F, 2.F, 2.F};
+constexpr glm::vec3 DEFAULT_CENTER{.0F, .0F, .0F};
 struct CameraComponent {
-        ::glm::vec3 lookAt{0.F, 0.F, -5.F};
-        ::glm::vec3 center{0.F, 0.F, 0.F};
-        ::glm::vec3 up{0.F, 0.F, 0.F};
-        float near{10.F};
-        float far{.1F};
-        float fovy{45.F};
+        ::glm::vec3 lookAt{DEFAULT_LOOK_AT};
+        ::glm::vec3 center{DEFAULT_CENTER};
+        ::glm::vec3 up{DEFAULT_UP};
+        float near{DEFAULT_NEAR};
+        float far{DEFAULT_FAR};
+        float fovy{DEFAULT_FOVY};
         float extentAspectRation{};
         CameraComponent() = default;
         ~CameraComponent() = default;
@@ -51,7 +57,7 @@ struct CameraComponent {
         }
         [[nodiscard]] auto getCamera() const -> Camera {
             Camera camera;
-            camera.setPerspectiveProjection(glm::radians(fovy), extentAspectRation, far, near);
+            camera.setPerspectiveProjection(glm::radians(fovy), extentAspectRation, near, far);
             camera.setViewTarget(lookAt, center, up);
             return camera;
         }

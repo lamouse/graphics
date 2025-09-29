@@ -1,10 +1,11 @@
 #pragma once
 #include <imgui.h>
 #include "ecs/components/transform_component.hpp"
+#include "ui/ui.hpp"
 namespace ecs {
 inline void DrawTransformUI(TransformComponent& tc) {
-    ImGui::DragFloat3("Translation", &tc.translation.x, 1.F);
-    ImGui::DragFloat3("Rotation", &tc.rotation.x, 1.F);
-    ImGui::DragFloat3("Scale", &tc.scale.x, .0025F);
+    DrawVec3ColorControl("Translation", tc.translation, glm::vec3{.0F, .0F, .0F}, 1.F);
+    DrawVec3ColorControl("Rotation", tc.rotation, glm::vec3{.0F, .0F, 1.F}, 1.F);
+    DrawVec3ColorControl("Scale", tc.scale, glm::vec3{1.F, 1.0F, 1.F}, .0025F);
 }
 }  // namespace ecs

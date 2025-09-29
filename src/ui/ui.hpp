@@ -87,3 +87,48 @@ inline void DrawVec3ColorControl(const std::string& label, glm::vec3& value, con
 
     ImGui::PopID();
 }
+
+inline void DrawFloatControl(const std::string& label, float& value, float speed = 0.1F,
+                             float resetValue = 45.0F, float labelWidth = 120.0F) {
+    ImGui::PushID(label.c_str());
+
+    if (ImGui::BeginTable("FloatControlTable", 2, ImGuiTableFlags_SizingFixedFit)) {
+        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, labelWidth);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableNextRow();
+
+        // Label column
+        ImGui::TableNextColumn();
+        ImGui::AlignTextToFramePadding();
+        float cellWidth = ImGui::GetContentRegionAvail().x;
+        float textWidth = ImGui::CalcTextSize(label.c_str()).x;
+        float offsetX = (cellWidth - textWidth) * 0.5F;
+         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offsetX);
+        // NOLINTNEXTLINE(hicpp-vararg)
+        ImGui::Text("%s", label.c_str());
+
+        // Value column
+        ImGui::TableNextColumn();
+        std::string format = GetFloatFormatFromSpeed(speed);
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{4, 1});
+
+        float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0F;
+        ImVec2 dragSize = {ImGui::CalcItemWidth() - lineHeight - 4.0F, lineHeight};
+
+        // DragFloat
+        ImGui::SetNextItemWidth(dragSize.x);
+        ImGui::DragFloat("##Value", &value, speed, 0.0F, 0.0F, format.c_str());
+        ImGui::SameLine();
+
+        // Reset button
+        if (ImGui::Button("⟳", ImVec2{lineHeight, lineHeight})) {
+            value = resetValue;
+        }
+
+        ImGui::PopStyleVar();
+        ImGui::EndTable();
+    }
+
+    ImGui::PopID();
+}

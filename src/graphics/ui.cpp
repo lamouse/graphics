@@ -83,12 +83,12 @@ namespace graphics::ui {
 auto init_debug_info() -> ImguiDebugInfo {
     ImguiDebugInfo debugInfo;
     debugInfo.speed = 90.0F;
-    debugInfo.look_x = 0.0F;
-    debugInfo.look_y = 0.0F;
-    debugInfo.look_z = 5.0F;
+    debugInfo.look_x = 2.0F;
+    debugInfo.look_y = 2.0F;
+    debugInfo.look_z = 2.0F;
     debugInfo.up_z = 0.f;
-    debugInfo.up_y = 1.f;
-    debugInfo.up_x = 0.f;
+    debugInfo.up_y = 0.0f;
+    debugInfo.up_x = 1.f;
     debugInfo.rotate_x = .0f;
     debugInfo.rotate_y = .0f;
     debugInfo.rotate_z = .1f;
@@ -159,20 +159,6 @@ void uniform_ui(ImguiDebugInfo& debugInfo) {
     }
 }
 
-auto TransformEditorWidget(TransformComponent& transform) {
-    ImGui::Begin("Detail");
-    if (ImGui::TreeNode("TransformComponent")) {
-    std::array<float, 3> position = {transform.translation.x, transform.translation.y, transform.translation.z};
-    std::array<float, 3> rotation = {transform.rotation.x, transform.rotation.y, transform.rotation.z};
-    std::array<float, 3> scale = {transform.scale.x, transform.scale.y, transform.scale.z};
-    ImGui::DragFloat3("Position", position.data(), 1.0F);
-    ImGui::DragFloat3("Rotation", rotation.data(), 1.0F);  // 以度为单位
-    ImGui::DragFloat3("Scale", scale.data(), .0025F);
-        ImGui::TreePop();
-    }
-    ImGui::End();
-}
-
 auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
     -> render::UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
@@ -188,8 +174,8 @@ auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
                          glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
                          glm::vec3(debugInfo.up_x, debugInfo.up_y, debugInfo.up_z));
     static ModelInstance modelInstance = ModelInstance::createGameObject();
-    modelInstance.transform.rotation = glm::vec3(.0f, time * glm::radians(debugInfo.speed), .0f);
-    ubo.model = modelInstance.transform.mat4();
+    // modelInstance.transform.rotation = glm::vec3(.0f, time * glm::radians(debugInfo.speed), .0f);
+    // ubo.model = modelInstance.transform.mat4();
     ubo.view = camera.getView();
     ubo.proj = camera.getProjection();
     return ubo;

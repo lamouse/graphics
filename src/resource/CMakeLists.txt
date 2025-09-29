@@ -9,6 +9,8 @@ set (sources
     config.hpp
     camera.hpp
     camera.cpp
+    model_instance.hpp
+    model_instance.cpp
 )
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 if (MSVC)
@@ -29,8 +31,8 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
-
-target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE Vulkan::Vulkan spdlog::spdlog glm::glm)
+target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
+target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE Vulkan::Vulkan spdlog::spdlog glm::glm ecs imgui)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_RESOURCE_NAME}/lib)
 set_target_properties(${LIB_RESOURCE_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)
