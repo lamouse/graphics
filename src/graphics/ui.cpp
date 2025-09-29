@@ -2,10 +2,8 @@
 #include "ui.hpp"
 
 #include "common/settings.hpp"
-#include "resource/camera.hpp"
-#include "resource/model_instance.hpp"
 #include <ranges>
-#include <chrono>
+#include <format>
 
 namespace {
 constexpr auto MAIN_WINDOW_NAME = "Main Window";
@@ -80,107 +78,6 @@ void vsync_setting() {
 }
 }  // namespace
 namespace graphics::ui {
-auto init_debug_info() -> ImguiDebugInfo {
-    ImguiDebugInfo debugInfo;
-    debugInfo.speed = 90.0F;
-    debugInfo.look_x = 2.0F;
-    debugInfo.look_y = 2.0F;
-    debugInfo.look_z = 2.0F;
-    debugInfo.up_z = 0.f;
-    debugInfo.up_y = 0.0f;
-    debugInfo.up_x = 1.f;
-    debugInfo.rotate_x = .0f;
-    debugInfo.rotate_y = .0f;
-    debugInfo.rotate_z = .1f;
-    debugInfo.radians = 45.f;
-    debugInfo.z_far = .1f;
-    debugInfo.z_near = 10.f;
-    debugInfo.center_x = 0;
-    debugInfo.center_y = 0;
-    debugInfo.center_z = 0;
-    return debugInfo;
-}
-void uniform_ui(ImguiDebugInfo& debugInfo) {
-    {
-        {
-            bool show = true;
-            ImGui::ShowDemoWindow(&show);
-            ImGuiWindowFlags window_flags = 0;
-            // window_flags |= ImGuiWindowFlags_NoBackground;
-            // window_flags |= ImGuiWindowFlags_NoTitleBar;
-            // etc.
-            bool open_ptr = true;
-            ImGui::SetNextWindowBgAlpha(1.0f);
-
-            ImGui::Begin(
-                "debug window", &open_ptr,
-                window_flags);  // Create a window called "Hello, world!" and append into it.
-            float center_x = debugInfo.look_x + 0.3f;
-            float center_y = debugInfo.look_y + 0.3f;
-            float center_z = debugInfo.look_z + 0.3f;
-
-            ImGui::SliderFloat("speed", &debugInfo.speed, .0f, 180.0f);
-            if (ImGui::TreeNode("look at")) {
-                ImGui::SliderFloat("x", &debugInfo.look_x, .0f, 8.f);
-                ImGui::SliderFloat("y", &debugInfo.look_y, .0f, 8.f);
-                ImGui::SliderFloat("z", &debugInfo.look_z, .0f, 8.f);
-                ImGui::TreePop();
-            }
-            if (ImGui::TreeNode("center")) {
-                ImGui::SliderFloat("x", &debugInfo.center_x, .0f, center_x);
-                ImGui::SliderFloat("y", &debugInfo.center_y, .0f, center_y);
-                ImGui::SliderFloat("z", &debugInfo.center_z, .0f, center_z);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("up")) {
-                ImGui::SliderFloat("x", &debugInfo.up_x, .0f, 2.f);
-                ImGui::SliderFloat("y", &debugInfo.up_y, .0f, 2.f);
-                ImGui::SliderFloat("z", &debugInfo.up_z, .0f, 2.f);
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode("rotate")) {
-                ImGui::SliderFloat("x", &debugInfo.rotate_x, .0f, 10.f);
-                ImGui::SliderFloat("y", &debugInfo.rotate_y, .0f, 10.f);
-                ImGui::SliderFloat("z", &debugInfo.rotate_z, .1f, 10.f);
-                ImGui::TreePop();
-            }
-            ImGui::SliderFloat("radians z", &debugInfo.radians, 10.f, 180.f);
-            ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
-            ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
-
-            // 添加恢复默认值的按钮
-            if (ImGui::Button("Restore Default")) {
-                debugInfo = init_debug_info();
-            }
-            ImGui::End();
-        }
-    }
-}
-
-auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
-    -> render::UniformBufferObject {
-    static auto startTime = ::std::chrono::high_resolution_clock::now();
-    auto currentTime = ::std::chrono::high_resolution_clock::now();
-    float time =
-        ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
-            .count();
-    render::UniformBufferObject ubo{};
-    resource::Camera camera;
-    camera.setPerspectiveProjection(glm::radians(debugInfo.radians), extentAspectRation,
-                                    debugInfo.z_far, debugInfo.z_near);
-    camera.setViewTarget(glm::vec3(debugInfo.look_x, debugInfo.look_y, debugInfo.look_z),
-                         glm::vec3(debugInfo.center_x, debugInfo.center_y, debugInfo.center_z),
-                         glm::vec3(debugInfo.up_x, debugInfo.up_y, debugInfo.up_z));
-    static ModelInstance modelInstance = ModelInstance::createGameObject();
-    // modelInstance.transform.rotation = glm::vec3(.0f, time * glm::radians(debugInfo.speed), .0f);
-    // ubo.model = modelInstance.transform.mat4();
-    ubo.view = camera.getView();
-    ubo.proj = camera.getProjection();
-    return ubo;
-}
-
 void begin() {}
 void end() { ImGui::Render(); }
 

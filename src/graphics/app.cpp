@@ -48,7 +48,6 @@ auto getRuntime() -> float {
 void App::run() {
     auto* graphics = render_base->getGraphics();
 
-    auto debugInfo = graphics::ui::init_debug_info();
     render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     render::PipelineState pipeline_state;

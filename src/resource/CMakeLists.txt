@@ -7,8 +7,6 @@ set (sources
     obj/model.hpp
     obj/model.cpp
     config.hpp
-    camera.hpp
-    camera.cpp
     model_instance.hpp
     model_instance.cpp
 )
