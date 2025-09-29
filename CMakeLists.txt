@@ -95,6 +95,7 @@ find_package(spirv_cross_glsl CONFIG REQUIRED)
 find_package(spirv_cross_cpp CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 FIND_PACKAGE(farmhash REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 # need vcpkg end
 find_package(Vulkan REQUIRED)
 

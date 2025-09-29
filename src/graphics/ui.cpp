@@ -159,6 +159,20 @@ void uniform_ui(ImguiDebugInfo& debugInfo) {
     }
 }
 
+auto TransformEditorWidget(TransformComponent& transform) {
+    ImGui::Begin("Detail");
+    if (ImGui::TreeNode("TransformComponent")) {
+    std::array<float, 3> position = {transform.translation.x, transform.translation.y, transform.translation.z};
+    std::array<float, 3> rotation = {transform.rotation.x, transform.rotation.y, transform.rotation.z};
+    std::array<float, 3> scale = {transform.scale.x, transform.scale.y, transform.scale.z};
+    ImGui::DragFloat3("Position", position.data(), 1.0F);
+    ImGui::DragFloat3("Rotation", rotation.data(), 1.0F);  // 以度为单位
+    ImGui::DragFloat3("Scale", scale.data(), .0025F);
+        ImGui::TreePop();
+    }
+    ImGui::End();
+}
+
 auto get_uniform_buffer(ImguiDebugInfo& debugInfo, float extentAspectRation)
     -> render::UniformBufferObject {
     static auto startTime = ::std::chrono::high_resolution_clock::now();

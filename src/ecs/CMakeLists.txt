@@ -1,18 +1,21 @@
 
-set(LIB_RESOURCE_NAME resource)
+set(LIB_NAME ecs)
 
 set (sources
-    texture/image.hpp
-    texture/image.cpp
-    obj/model.hpp
-    obj/model.cpp
-    config.hpp
-    camera.hpp
-    camera.cpp
+    scene/scene.hpp
+    scene/scene.cpp
+    scene/entity.hpp
+    scene/entity.cpp
+    camera/camera.hpp
+    camera/camera.cpp
+    components/camera_component.hpp
+    components/tag_component.hpp
+    components/transform_component.hpp
+    component.hpp
 )
-add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
+add_library(${LIB_NAME} STATIC ${sources})
 if (MSVC)
-    target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
+    target_compile_options(${LIB_NAME} PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
@@ -20,7 +23,7 @@ if (MSVC)
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
 else()
-    target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
+    target_compile_options(${LIB_NAME} PRIVATE
         -Werror=conversion
 
         -Wno-sign-conversion
@@ -30,8 +33,8 @@ else()
     )
 endif()
 
-target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE Vulkan::Vulkan spdlog::spdlog glm::glm)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog EnTT::EnTT)
 # 设置动态库/静态库生成路径
-set(LIBRARY_OUTPUT_PATH ${LIB_RESOURCE_NAME}/lib)
-set_target_properties(${LIB_RESOURCE_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)
-create_target_directory_groups(${LIB_RESOURCE_NAME})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)
+create_target_directory_groups(${LIB_NAME})
