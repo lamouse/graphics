@@ -7,6 +7,7 @@
 #include <charconv>
 #include <array>
 
+
 inline auto GetFloatFormatFromSpeed(float speed) -> std::string {
     std::string str;
     std::array<char, 32> buffer{};
@@ -131,4 +132,8 @@ inline void DrawFloatControl(const std::string& label, float& value, float speed
     }
 
     ImGui::PopID();
+}
+
+namespace graphics {
+
 }

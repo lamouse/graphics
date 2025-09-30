@@ -58,6 +58,7 @@ void App::run() {
     pipeline_state.scissors.height = layout.screen.GetHeight();
     auto graphicId = addGraphics(graphics);
     world::World world;
+    bool show_console_logger = false;
     ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj");
     graphics->uploadModel(modelInstance);
     auto& camera =
@@ -99,6 +100,7 @@ void App::run() {
             graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::draw_setting();
+            logger.drawUi(show_console_logger);
             world.drawUI();
             modelInstance.drawUI();
             graphics::ui::end();
@@ -108,7 +110,7 @@ void App::run() {
     }
 }
 
-App::App(const g::Config& config) {
+App::App(const g::Config& config):logger(config) {
     auto [width, height, title] = config.getConfig<config::window::Window>();
 
 #if defined(USE_GLFW)

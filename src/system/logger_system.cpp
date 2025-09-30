@@ -1,0 +1,55 @@
+#include "logger_system.hpp"
+#include <spdlog/pattern_formatter.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/async.h>
+#include "config/log.h"
+#include "utils/log_util.hpp"
+#include <memory>
+namespace sys {
+
+LoggerSystem::LoggerSystem(const g::Config& config){
+    auto logConfig = config.getConfig<config::log::Log>();
+    auto level = utils::get_log_level_from_string(logConfig.level);
+    // 初始化线程池
+    std::size_t queue_size = 8192;  // 队列大小
+    std::size_t thread_count = 1;   // 线程数量
+    spdlog::init_thread_pool(queue_size, thread_count);
+    // 创建多接收器日志器
+    std::vector<spdlog::sink_ptr> sinks;
+    if (logConfig.console.enabled) {
+        // 创建控制台接收器
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        console_sink->set_level(level);
+        console_sink->set_pattern(logConfig.pattern);
+        sinks.push_back(console_sink);
+    }
+    if (logConfig.file.enabled) {
+        // 创建文件接收器
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+            logConfig.file.path, !logConfig.file.append);
+        sinks.push_back(file_sink);
+    }
+    imgui_sink = std::make_shared<ImGuiLogSink_mt>();
+    sinks.push_back(imgui_sink);
+    auto logger = std::make_shared<spdlog::async_logger>("multi_sink", sinks.begin(), sinks.end(),
+                                                         spdlog::thread_pool(),
+                                                         spdlog::async_overflow_policy::block);
+
+    // 设置默认日志器
+    spdlog::set_default_logger(logger);
+    // 设置日志级别和格式
+    spdlog::set_pattern(logConfig.pattern);
+    spdlog::set_level(level);
+
+    // 刷新日志器
+    spdlog::flush_on(level);
+}
+
+void LoggerSystem::drawUi(bool show){
+    if(show){
+        imgui_sink->draw("Console");
+    }
+}
+
+}

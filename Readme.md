@@ -64,6 +64,14 @@ $penv{path}获取系统的环境变量
     3. 支持vector
 ```
 
+### 编译器问题
+
+```text
+在windows上使用clang的时候会提示unknown argument: '-ignore:4221'
+解决办法是去vcpkg的installed\x64-windows\share\absl把abslTargets.cmake “;-ignore:4221”替换为空
+去掉以后就可以正常用clang编译了，如果懒得改用clang-cl编译也可以，不行就用msvc
+```
+
 ```yaml
 vulkan:  #{type:struct}
   validation_layers: true    #{type:bool}

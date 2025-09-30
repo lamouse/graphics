@@ -13,6 +13,7 @@
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
+#include <span>
 namespace render::vulkan {
 struct RenderTargetInfo {
         u32 indices_size;
@@ -36,6 +37,8 @@ class Device;
 struct ModelResource{
     texture::ImageViewId image_view;
     texture::SamplerId sample_id;
+    std::span<std::uint8_t> uniform_map;
+    buffer::BufferId uniform_buffer_id;
 };
 
 class VulkanGraphics : public render::Graphic {

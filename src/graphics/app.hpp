@@ -4,6 +4,7 @@
 #include "resource/config.hpp"
 #include "render_core/render_base.hpp"
 #include "common/common_funcs.hpp"
+#include "system/logger_system.hpp"
 namespace graphics {
 class App {
     public:
@@ -16,5 +17,6 @@ class App {
     private:
         std::unique_ptr<core::frontend::BaseWindow> window;
         std::unique_ptr<render::RenderBase> render_base;
+        sys::LoggerSystem logger;
 };
 }  // namespace graphics
