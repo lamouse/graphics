@@ -35,11 +35,11 @@ constexpr auto ConvertBorderColor(const std::array<float, 4>& color) -> vk::Bord
     if (color == std::array<float, 4>{1, 1, 1, 1}) {
         return vk::BorderColor::eFloatOpaqueWhite;
     }
-    if (color[0] + color[1] + color[2] > 1.35f) {
+    if (color[0] + color[1] + color[2] > 1.35F) {
         // If color elements are brighter than roughly 0.5 average, use white border
         return vk::BorderColor::eFloatOpaqueWhite;
     }
-    if (color[3] > 0.5f) {
+    if (color[3] > 0.5F) {
         return vk::BorderColor::eFloatOpaqueBlack;
     }
     return vk::BorderColor::eFloatTransparentBlack;
@@ -97,7 +97,7 @@ auto samplerReduction(SamplerReduction reduction) -> vk::SamplerReductionMode {
         case surface::SurfaceType::DepthStencil:
             return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
         default:
-            ASSERT_MSG(false , "Invalid surface type");
+            ASSERT_MSG(false, "Invalid surface type");
             return vk::ImageAspectFlags{};
     }
 }
@@ -1013,7 +1013,7 @@ void TextureCacheRuntime::BlitImage(TextureFramebuffer* dst_framebuffer, Texture
     ASSERT(src.format == dst.format);
     if (aspect_mask == (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) {
         const auto format = src.format;
-        const auto can_blit_depth_stencil = [this, format] ->bool {
+        const auto can_blit_depth_stencil = [this, format] -> bool {
             switch (format) {
                 case surface::PixelFormat::D24_UNORM_S8_UINT:
                 case surface::PixelFormat::S8_UINT_D24_UNORM:
@@ -1816,7 +1816,7 @@ TextureSampler::TextureSampler(TextureCacheRuntime& runtime, SamplerReduction re
         SPDLOG_WARN("VK_EXT_sampler_filter_minmax is required");
     }
     // Some games have samplers with garbage. Sanitize them here.
-    const f32 max_anisotropy = std::clamp(device.getMaxAnisotropy(), 1.0f, 16.0f);
+    const f32 max_anisotropy = std::clamp(device.getMaxAnisotropy(), 1.0F, 16.0F);
 
     const auto create_sampler = [&](const f32 anisotropy) {
         ;
@@ -1832,7 +1832,7 @@ TextureSampler::TextureSampler(TextureCacheRuntime& runtime, SamplerReduction re
                 .setAnisotropyEnable(static_cast<VkBool32>(anisotropy > 1.0f ? VK_TRUE : VK_FALSE))
                 .setMaxAnisotropy(anisotropy)
                 .setCompareEnable(VK_FALSE)
-                .setCompareOp(::vk::CompareOp::eAlways)
+                .setCompareOp(::vk::CompareOp::eLessOrEqual)
                 .setMinLod(.0f)
                 .setMaxLod(static_cast<float>(imageMipLevels))
                 .setBorderColor(arbitrary_borders ? vk::BorderColor::eFloatCustomEXT

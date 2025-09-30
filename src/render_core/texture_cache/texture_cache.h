@@ -13,7 +13,13 @@ using surface::SurfaceType;
 using namespace common::literals;
 
 template <class P>
-TextureCache<P>::TextureCache(Runtime& runtime_) : runtime{runtime_} {}
+TextureCache<P>::TextureCache(Runtime& runtime_) : runtime{runtime_} {
+    // Make sure the first index is reserved for the null resources
+    // This way the null resource becomes a compile time constant
+    void(slot_images.insert(NullImageParams{}));
+    void(slot_image_views.insert(runtime_, NullImageViewParams{}));
+    void(slot_samplers.insert(runtime_, SamplerReduction::WeightedAverage, 1.F));
+}
 template <class P>
 void TextureCache<P>::TickFrame() {
     runtime.TickFrame();
