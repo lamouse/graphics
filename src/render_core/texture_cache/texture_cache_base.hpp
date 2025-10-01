@@ -4,7 +4,6 @@
 #include "common/slot_vector.hpp"
 #include "common/thread_worker.hpp"
 #include "common/literals.hpp"
-#include "render_core/surface.hpp"
 
 #include <boost/container/small_vector.hpp>
 #include "render_core/texture/types.hpp"

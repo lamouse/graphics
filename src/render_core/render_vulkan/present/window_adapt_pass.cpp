@@ -68,7 +68,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                            std::span<const frame::FramebufferConfig> configs,
                            const layout::FrameBufferLayout& layout, Frame* dst) {
     const vk::Framebuffer host_framebuffer{*dst->framebuffer};
-    const vk::RenderPass renderpass{*render_pass};
+    const vk::RenderPass renderPass{*render_pass};
     const vk::PipelineLayout graphics_pipeline_layout{*pipeline_layout};
     const vk::Extent2D render_area{
         dst->width,
@@ -100,15 +100,15 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
         layer_it++;
     }
     scheduler.record([=, &rasterizer](vk::CommandBuffer cmdbuf) {
-        const f32 bg_red = 255.0f;
-        const f32 bg_green = 255.0f;
-        const f32 bg_blue = 255.0f;
+        const f32 bg_red = 255.0F;
+        const f32 bg_green = 255.0F;
+        const f32 bg_blue = 255.0F;
         const vk::ClearAttachment clear_attachment =
             vk::ClearAttachment()
                 .setAspectMask(vk::ImageAspectFlagBits::eColor)
                 .setColorAttachment(0)
                 .setClearValue(vk::ClearValue().setColor(
-                    vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f})));
+                    vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0F})));
 
         const vk::ClearRect clear_rect =
             vk::ClearRect()
@@ -117,7 +117,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 .setBaseArrayLayer(0)
                 .setLayerCount(1);
 
-        utils::BeginRenderPass(cmdbuf, renderpass, host_framebuffer, render_area);
+        utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, render_area);
         cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
 
         for (size_t i = 0; i < layer_count; i++) {

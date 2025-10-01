@@ -129,7 +129,7 @@ auto TextureCache<P>::RenderTargetFromImage(ImageId image_id, const ImageViewInf
     render_targets = RenderTargets{
         .color_buffer_ids = {color_view_id},
         .depth_buffer_id = depth_view_id,
-        .size = {extent.width >> samples_x, extent.height >> samples_y},
+        .size = {.width=extent.width >> samples_x, .height=extent.height >> samples_y},
         .is_rescaled = is_rescaled,
     };
     const FramebufferId framebuffer_id = GetFramebufferId(render_targets);
