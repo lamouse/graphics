@@ -71,13 +71,6 @@ class TextureCache : public TextureCacheInfo {
         using AsyncBuffer = typename P::AsyncBuffer;
         using BufferType = typename P::BufferType;
 
-        struct BlitImages {
-                ImageId dst_id;
-                ImageId src_id;
-                surface::PixelFormat dst_format;
-                surface::PixelFormat src_format;
-        };
-
     public:
         explicit TextureCache(Runtime&);
         ~TextureCache() = default;
