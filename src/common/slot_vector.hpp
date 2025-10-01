@@ -8,6 +8,7 @@
 #include <cassert>
 
 #include "common_types.hpp"
+#include "common/common_funcs.hpp"
 
 namespace common {
 struct SlotId {
@@ -24,19 +25,23 @@ template <class T>
     requires std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible_v<T>
 class SlotVector {
     public:
+        CLASS_NON_COPYABLE(SlotVector);
+        CLASS_NON_MOVEABLE(SlotVector);
+        SlotVector() = default;
         class Iterator {
                 friend class SlotVector<T>;
 
             public:
                 constexpr Iterator() = default;
 
-                Iterator& operator++() noexcept {
+                auto operator++() noexcept -> Iterator& {
                     const u64* const bitset = slot_vector->stored_bitset.data();
                     const u32 size = static_cast<u32>(slot_vector->stored_bitset.size()) * 64;
                     if (id.index < size) {
-                        do {
+                        ++id.index;
+                        while (id.index < size && !IsValid(bitset)) {
                             ++id.index;
-                        } while (id.index < size && !IsValid(bitset));
+                        }
                         if (id.index == size) {
                             id.index = SlotId::INVALID_INDEX;
                         }
@@ -44,32 +49,32 @@ class SlotVector {
                     return *this;
                 }
 
-                Iterator operator++(int) noexcept {
+                auto operator++(int) noexcept -> Iterator {
                     const Iterator copy{*this};
                     ++*this;
                     return copy;
                 }
 
-                bool operator==(const Iterator& other) const noexcept {
+                auto operator==(const Iterator& other) const noexcept -> bool {
                     return id.index == other.id.index;
                 }
 
-                bool operator!=(const Iterator& other) const noexcept {
+                auto operator!=(const Iterator& other) const noexcept -> bool {
                     return id.index != other.id.index;
                 }
 
-                std::pair<SlotId, T*> operator*() const noexcept {
+                auto operator*() const noexcept -> std::pair<SlotId, T*> {
                     return {id, std::addressof((*slot_vector)[id])};
                 }
 
-                T* operator->() const noexcept { return std::addressof((*slot_vector)[id]); }
+                auto operator->() const noexcept -> T* { return std::addressof((*slot_vector)[id]); }
 
             private:
                 Iterator(SlotVector<T>* slot_vector_, SlotId id_) noexcept
                     : slot_vector{slot_vector_}, id{id_} {}
 
-                bool IsValid(const u64* bitset) const noexcept {
-                    return ((bitset[id.index / 64] >> (id.index % 64)) & 1) != 0;
+                auto IsValid(const u64* bitset) const noexcept -> bool {
+                    return ((bitset[id.index / 64] >> (id.index % 64)) & 1U) != 0;
                 }
 
                 SlotVector<T>* slot_vector;
@@ -79,8 +84,8 @@ class SlotVector {
         ~SlotVector() noexcept {
             size_t index = 0;
             for (u64 bits : stored_bitset) {
-                for (size_t bit = 0; bits; ++bit, bits >>= 1) {
-                    if ((bits & 1) != 0) {
+                for (size_t bit = 0; bits; ++bit, bits >>= 1U) {
+                    if ((bits & 1U) != 0) {
                         values[index + bit].object.~T();
                     }
                 }
@@ -89,12 +94,12 @@ class SlotVector {
             delete[] values;
         }
 
-        [[nodiscard]] T& operator[](SlotId id) noexcept {
+        [[nodiscard]] auto operator[](SlotId id) noexcept -> T& {
             ValidateIndex(id);
             return values[id.index].object;
         }
 
-        [[nodiscard]] const T& operator[](SlotId id) const noexcept {
+        [[nodiscard]] auto operator[](SlotId id) const noexcept -> const T& {
             ValidateIndex(id);
             return values[id.index].object;
         }
@@ -114,7 +119,7 @@ class SlotVector {
             ResetStorageBit(id.index);
         }
 
-        [[nodiscard]] Iterator begin() noexcept {
+        [[nodiscard]] auto begin() noexcept -> Iterator {
             const auto it =
                 std::ranges::find_if(stored_bitset, [](u64 value) { return value != 0; });
             if (it == stored_bitset.end()) {
@@ -125,19 +130,21 @@ class SlotVector {
             return Iterator(this, first_id);
         }
 
-        [[nodiscard]] Iterator end() noexcept {
+        [[nodiscard]] auto end() noexcept -> Iterator {
             return Iterator(this, SlotId{SlotId::INVALID_INDEX});
         }
 
-        [[nodiscard]] size_t size() const noexcept { return values_capacity - free_list.size(); }
+        [[nodiscard]] auto size() const noexcept -> size_t { return values_capacity - free_list.size(); }
 
     private:
         struct NonTrivialDummy {
-                NonTrivialDummy() noexcept {}
+                NonTrivialDummy() noexcept = default;
         };
 
         union Entry {
                 Entry() noexcept : dummy{} {}
+                CLASS_DEFAULT_COPYABLE(Entry);
+                CLASS_DEFAULT_MOVEABLE(Entry);
                 ~Entry() noexcept {}
 
                 NonTrivialDummy dummy;
@@ -152,20 +159,20 @@ class SlotVector {
             stored_bitset[index / 64] &= ~(u64(1) << (index % 64));
         }
 
-        bool ReadStorageBit(u32 index) noexcept {
-            return ((stored_bitset[index / 64] >> (index % 64)) & 1) != 0;
+        auto ReadStorageBit(u32 index) noexcept -> bool {
+            return ((stored_bitset[index / 64] >> (index % 64)) & 1U) != 0;
         }
 
         void ValidateIndex(SlotId id) const noexcept {
             assert(id && "id");
             assert(id.index / 64 < stored_bitset.size() && "id.index / 64 < stored_bitset.size()");
-            assert(((stored_bitset[id.index / 64] >> (id.index % 64)) & 1) != 0 &&
+            assert(((stored_bitset[id.index / 64] >> (id.index % 64)) & 1U) != 0 &&
                    "((stored_bitset[id.index / 64] >> (id.index % 64)) & 1) != 0");
         }
 
-        [[nodiscard]] u32 FreeValueIndex() noexcept {
+        [[nodiscard]] auto FreeValueIndex() noexcept -> u32 {
             if (free_list.empty()) {
-                Reserve(values_capacity ? (values_capacity << 1) : 1);
+                Reserve(values_capacity ? (values_capacity << 1U) : 1);
             }
             const u32 free_index = free_list.back();
             free_list.pop_back();
@@ -173,17 +180,18 @@ class SlotVector {
         }
 
         void Reserve(size_t new_capacity) noexcept {
-            Entry* const new_values = new Entry[new_capacity];
+            auto* const new_values = new Entry[new_capacity]; //NOLINT(cppcoreguidelines-owning-memory)
             size_t index = 0;
             for (u64 bits : stored_bitset) {
-                for (size_t bit = 0; bits; ++bit, bits >>= 1) {
-                    const size_t i = index + bit;
-                    if ((bits & 1) == 0) {
-                        continue;
-                    }
+
+                u64 temp = bits;
+                while (temp) {
+                    const size_t bit = std::countr_zero(temp);
+                    const std::size_t i = index + bit;
                     T& old_value = values[i].object;
                     new (&new_values[i].object) T(std::move(old_value));
                     old_value.~T();
+                    temp &= temp - 1;
                 }
                 index += 64;
             }
@@ -211,7 +219,7 @@ class SlotVector {
 
 template <>
 struct std::hash<common::SlotId> {
-        size_t operator()(const common::SlotId& id) const noexcept {
+        auto operator()(const common::SlotId& id) const noexcept -> size_t {
             return std::hash<u32>{}(id.index);
         }
 };
