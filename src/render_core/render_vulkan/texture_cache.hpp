@@ -153,12 +153,6 @@ class TextureImage : public render::texture::ImageBase {
 
         auto StorageImageView(s32 level) noexcept -> vk::ImageView;
 
-        [[nodiscard]] auto IsRescaled() const noexcept -> bool;
-
-        auto ScaleUp(bool ignore = false) -> bool;
-
-        auto ScaleDown(bool ignore = false) -> bool;
-
     private:
         auto BlitScaleHelper(bool scale_up) -> bool;
 
@@ -207,7 +201,6 @@ class TextureImageView : public render::texture::ImageViewBase {
         [[nodiscard]] auto StorageView(shader::TextureType texture_type,
                                        shader::ImageFormat image_format) -> vk::ImageView;
 
-        [[nodiscard]] auto IsRescaled() const noexcept -> bool;
 
         [[nodiscard]] auto Handle(shader::TextureType texture_type) const noexcept
             -> vk::ImageView {
@@ -276,8 +269,7 @@ class TextureFramebuffer {
                                     const texture::RenderTargets& key);
 
         explicit TextureFramebuffer(TextureCacheRuntime& runtime, TextureImageView* color_buffer,
-                                    TextureImageView* depth_buffer, vk::Extent2D extent,
-                                    bool is_rescaled);
+                                    TextureImageView* depth_buffer, vk::Extent2D extent);
 
         ~TextureFramebuffer();
         CLASS_NON_COPYABLE(TextureFramebuffer);
@@ -285,7 +277,7 @@ class TextureFramebuffer {
 
         void CreateFramebuffer(TextureCacheRuntime& runtime,
                                std::span<TextureImageView*, texture::NUM_RT> color_buffers,
-                               TextureImageView* depth_buffer, bool is_rescaled = false);
+                               TextureImageView* depth_buffer);
 
         [[nodiscard]] auto Handle() const noexcept -> vk::Framebuffer { return *framebuffer; }
 

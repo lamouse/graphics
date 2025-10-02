@@ -278,17 +278,6 @@ void BindBlitState(vk::CommandBuffer cmdbuf, vk::PipelineLayout layout, const Re
                          static_cast<u32>(sizeof(push_constants)), &push_constants);
 }
 
-VkExtent2D GetConversionExtent(const TextureImageView& src_image_view) {
-    auto resolution = common::settings::get<settings::ResolutionScalingInfo>();
-    const bool is_rescaled = src_image_view.IsRescaled();
-    u32 width = src_image_view.size.width;
-    u32 height = src_image_view.size.height;
-    return VkExtent2D{
-        .width = is_rescaled ? resolution.ScaleUp(width) : width,
-        .height = is_rescaled ? resolution.ScaleUp(height) : height,
-    };
-}
-
 void TransitionImageLayout(vk::CommandBuffer& cmdbuf, vk::Image image,
                            vk::ImageLayout target_layout,
                            vk::ImageLayout source_layout = vk::ImageLayout::eGeneral) {
@@ -585,7 +574,7 @@ void BlitImageHelper::Convert(VkPipeline pipeline, const TextureFramebuffer* dst
     const VkPipelineLayout layout = *one_texture_pipeline_layout;
     const VkImageView src_view = src_image_view.Handle(shader::TextureType::Color2D);
     const VkSampler sampler = *nearest_sampler;
-    const VkExtent2D extent = GetConversionExtent(src_image_view);
+    const VkExtent2D extent = {.width = src_image_view.size.width, .height = src_image_view.size.height};
 
     scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([pipeline, layout, sampler, src_view, extent, this](vk::CommandBuffer cmdbuf) {
@@ -628,7 +617,7 @@ void BlitImageHelper::ConvertDepthStencil(VkPipeline pipeline,
     const VkImageView src_depth_view = src_image_view.DepthView();
     const VkImageView src_stencil_view = src_image_view.StencilView();
     const VkSampler sampler = *nearest_sampler;
-    const VkExtent2D extent = GetConversionExtent(src_image_view);
+    const VkExtent2D extent = {.width = src_image_view.size.width, .height = src_image_view.size.height};
 
     scheduler.requestRenderPass(dst_framebuffer);
     scheduler.record([pipeline, layout, sampler, src_depth_view, src_stencil_view, extent,

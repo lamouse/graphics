@@ -1285,28 +1285,7 @@ TextureImage::TextureImage(TextureCacheRuntime& runtime_, const texture::ImageIn
       original_image(MakeImage(runtime_.device, runtime_.memory_allocator, info,
                                runtime->ViewFormats(info.format))),
       aspect_mask(ImageAspectMask(info.format)) {
-    if (IsPixelFormatASTC(info.format) && !runtime->device.isOptimalAstcSupported()) {
-        switch (common::settings::get<settings::Graphics>().astc_decodeMode) {
-            case settings::enums::AstcDecodeMode::Gpu:
-                if (common::settings::get<settings::Graphics>().astc_recompression ==
-                        settings::enums::AstcRecompression::Uncompressed &&
-                    info.size.depth == 1) {
-                    flags |= texture::ImageFlagBits::AcceleratedUpload;
-                }
-                break;
-            case settings::enums::AstcDecodeMode::CpuAsynchronous:
-                flags |= texture::ImageFlagBits::AsynchronousDecode;
-                break;
-            default:
-                break;
-        }
-        flags |= texture::ImageFlagBits::Converted;
-        flags |= texture::ImageFlagBits::CostlyLoad;
-    }
-    if (IsPixelFormatBCn(info.format) && !runtime->device.isOptimalBcnSupported()) {
-        flags |= texture::ImageFlagBits::Converted;
-        flags |= texture::ImageFlagBits::CostlyLoad;
-    }
+
     if (runtime->device.hasDebuggingToolAttached()) {
         original_image.SetObjectNameEXT(texture::Name(*this).c_str());
     }
@@ -1327,11 +1306,7 @@ TextureImage::TextureImage(const texture::NullImageParams& params) : texture::Im
 TextureImage::~TextureImage() = default;
 void TextureImage::UploadMemory(vk::Buffer buffer, vk::DeviceSize offset,
                                 std::span<const render::texture::BufferImageCopy> copies) {
-    // TODO: Move this to another API
-    const bool is_rescaled = True(flags & texture::ImageFlagBits::Rescaled);
-    if (is_rescaled) {
-        ScaleDown(true);
-    }
+
     scheduler->requestOutsideRenderPassOperationContext();
     auto vk_copies = TransformBufferImageCopies(copies, offset, aspect_mask);
     const vk::Buffer src_buffer = buffer;
@@ -1342,9 +1317,6 @@ void TextureImage::UploadMemory(vk::Buffer buffer, vk::DeviceSize offset,
                        vk_copies](vk::CommandBuffer cmdbuf) {
         CopyBufferToImage(cmdbuf, src_buffer, vk_image, vk_aspect_mask, is_initialized, vk_copies);
     });
-    if (is_rescaled) {
-        ScaleUp();
-    }
 }
 
 void TextureImage::UploadMemory(const StagingBufferRef& map,
@@ -1376,10 +1348,6 @@ auto TextureImage::StorageImageView(s32 level) noexcept -> vk::ImageView {
 void TextureImage::DownloadMemory(std::span<vk::Buffer> buffers_span,
                                   std::span<size_t> offsets_span,
                                   std::span<const texture::BufferImageCopy> copies) {
-    const bool is_rescaled = True(flags & texture::ImageFlagBits::Rescaled);
-    if (is_rescaled) {
-        ScaleDown();
-    }
     boost::container::small_vector<vk::Buffer, 8> buffers_vector{};
     boost::container::small_vector<boost::container::small_vector<vk::BufferImageCopy, 16>, 8>
         vk_copies;
@@ -1439,9 +1407,6 @@ void TextureImage::DownloadMemory(std::span<vk::Buffer> buffers_span,
                                vk::PipelineStageFlagBits::eAllCommands, {}, memory_write_barrier,
                                {}, image_write_barrier);
     });
-    if (is_rescaled) {
-        ScaleUp(true);
-    }
 }
 
 void TextureImage::DownloadMemory(const StagingBufferRef& map,
@@ -1453,72 +1418,6 @@ void TextureImage::DownloadMemory(const StagingBufferRef& map,
         static_cast<size_t>(map.offset),
     };
     DownloadMemory(buffers, offsets, copies);
-}
-
-auto TextureImage::IsRescaled() const noexcept -> bool {
-    return True(flags & texture::ImageFlagBits::Rescaled);
-}
-
-auto TextureImage::ScaleUp(bool ignore) -> bool {
-    const auto& resolution = runtime->resolution;
-    if (!resolution.active) {
-        return false;
-    }
-    if (True(flags & texture::ImageFlagBits::Rescaled)) {
-        return false;
-    }
-    assert(info.type != texture::ImageType::Linear);
-    flags |= texture::ImageFlagBits::Rescaled;
-    has_scaled = true;
-    if (!scaled_image) {
-        const bool is_2d = (info.type == texture::ImageType::e2D);
-        const u32 scaled_width = resolution.ScaleUp(info.size.width);
-        const u32 scaled_height = is_2d ? resolution.ScaleUp(info.size.height) : info.size.height;
-        auto scaled_info = info;
-        scaled_info.size.width = scaled_width;
-        scaled_info.size.height = scaled_height;
-        scaled_image = MakeImage(runtime->device, runtime->memory_allocator, scaled_info,
-                                 runtime->ViewFormats(info.format));
-        ignore = false;
-    }
-    current_image = &TextureImage::scaled_image;
-    if (ignore) {
-        return true;
-    }
-    if (aspect_mask == vk::ImageAspectFlags{}) {
-        aspect_mask = ImageAspectMask(info.format);
-    }
-    if (NeedsScaleHelper()) {
-        return BlitScaleHelper(true);
-    } else {
-        BlitScale(*scheduler, *original_image, *scaled_image, info, aspect_mask, resolution);
-    }
-    return true;
-}
-
-auto TextureImage::ScaleDown(bool ignore) -> bool {
-    const auto& resolution = runtime->resolution;
-    if (!resolution.active) {
-        return false;
-    }
-    if (False(flags & texture::ImageFlagBits::Rescaled)) {
-        return false;
-    }
-    assert(info.type != texture::ImageType::Linear);
-    flags &= ~texture::ImageFlagBits::Rescaled;
-    current_image = &TextureImage::original_image;
-    if (ignore) {
-        return true;
-    }
-    if (aspect_mask == vk::ImageAspectFlags{}) {
-        aspect_mask = ImageAspectMask(info.format);
-    }
-    if (NeedsScaleHelper()) {
-        return BlitScaleHelper(false);
-    } else {
-        BlitScale(*scheduler, *scaled_image, *original_image, info, aspect_mask, resolution, false);
-    }
-    return true;
 }
 
 auto TextureImage::BlitScaleHelper(bool scale_up) -> bool {
@@ -1545,12 +1444,12 @@ auto TextureImage::BlitScaleHelper(bool scale_up) -> bool {
     const u32 dst_width = scale_up ? scaled_width : info.size.width;
     const u32 dst_height = scale_up ? scaled_height : info.size.height;
     const Region2D src_region{
-        .start = {0, 0},
-        .end = {static_cast<s32>(src_width), static_cast<s32>(src_height)},
+        .start = {.x=0, .y=0},
+        .end = {.x=static_cast<s32>(src_width), .y=static_cast<s32>(src_height)},
     };
     const Region2D dst_region{
         .start = {0, 0},
-        .end = {static_cast<s32>(dst_width), static_cast<s32>(dst_height)},
+        .end = {.x=static_cast<s32>(dst_width), .y=static_cast<s32>(dst_height)},
     };
     const vk::Extent2D extent{
         std::max(scaled_width, info.size.width),
@@ -1561,7 +1460,7 @@ auto TextureImage::BlitScaleHelper(bool scale_up) -> bool {
     if (aspect_mask == vk::ImageAspectFlagBits::eColor) {
         if (!blit_framebuffer) {
             blit_framebuffer =
-                std::make_unique<TextureFramebuffer>(*runtime, view_ptr, nullptr, extent, scale_up);
+                std::make_unique<TextureFramebuffer>(*runtime, view_ptr, nullptr, extent);
         }
         const auto color_view = blit_view->Handle(shader::TextureType::Color2D);
 
@@ -1572,15 +1471,13 @@ auto TextureImage::BlitScaleHelper(bool scale_up) -> bool {
                (vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)) {
         if (!blit_framebuffer) {
             blit_framebuffer =
-                std::make_unique<TextureFramebuffer>(*runtime, nullptr, view_ptr, extent, scale_up);
+                std::make_unique<TextureFramebuffer>(*runtime, nullptr, view_ptr, extent);
         }
         runtime->blit_image_helper.BlitDepthStencil(
             blit_framebuffer.get(), static_cast<VkImageView>(blit_view->DepthView()),
             static_cast<VkImageView>(blit_view->StencilView()), dst_region, src_region,
             BLIT_OPERATION);  // BLIT_OPERATION
     } else {
-        // TODO: Use helper blits where applicable
-        flags &= ~ImageFlagBits::Rescaled;
         SPDLOG_ERROR("Device does not support scaling format {}", info.format);
         return false;
     }
@@ -1708,15 +1605,6 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime,
         image_views[i] =
             MakeView(vk::Format::eA8B8G8R8UnormPack32, vk::ImageAspectFlagBits::eColor);
     }
-}
-
-auto TextureImageView::IsRescaled() const noexcept -> bool {
-    if (!slot_images) {
-        return false;
-    }
-    const auto& slots = *slot_images;
-    const auto& src_image = slots[image_id];
-    return src_image.IsRescaled();
 }
 
 auto TextureImageView::MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask)
@@ -1855,30 +1743,28 @@ TextureFramebuffer::TextureFramebuffer(TextureCacheRuntime& runtime,
                                        TextureImageView* depth_buffer,
                                        const texture::RenderTargets& key)
     : render_area{vk::Extent2D{key.size.width, key.size.height}} {
-    CreateFramebuffer(runtime, color_buffers, depth_buffer, key.is_rescaled);
+    CreateFramebuffer(runtime, color_buffers, depth_buffer);
     if (runtime.device.hasDebuggingToolAttached()) {
         framebuffer.SetObjectNameEXT(texture::Name(key).c_str());
     }
 }
 
 TextureFramebuffer::TextureFramebuffer(TextureCacheRuntime& runtime, TextureImageView* color_buffer,
-                                       TextureImageView* depth_buffer, vk::Extent2D extent,
-                                       bool is_rescaled)
+                                       TextureImageView* depth_buffer, vk::Extent2D extent)
     : render_area{extent} {
     std::array<TextureImageView*, texture::NUM_RT> color_buffers{color_buffer};
-    CreateFramebuffer(runtime, color_buffers, depth_buffer, is_rescaled);
+    CreateFramebuffer(runtime, color_buffers, depth_buffer);
 }
 
 TextureFramebuffer::~TextureFramebuffer() = default;
 
 void TextureFramebuffer::CreateFramebuffer(
     TextureCacheRuntime& runtime, std::span<TextureImageView*, texture::NUM_RT> color_buffers,
-    TextureImageView* depth_buffer, bool is_rescaled_) {
+    TextureImageView* depth_buffer) {
     boost::container::small_vector<vk::ImageView, texture::NUM_RT + 1> attachments;
     RenderPassKey render_pass_key{};
     s32 num_layers = 1;
 
-    is_rescaled = is_rescaled_;
     const auto& resolution = runtime.resolution;
 
     u32 width = std::numeric_limits<u32>::max();

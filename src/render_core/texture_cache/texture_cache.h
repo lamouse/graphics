@@ -44,7 +44,6 @@ auto TextureCache<P>::JoinImages(const ImageInfo& info) -> ImageId {
     const ImageId new_image_id = slot_images.insert(runtime, new_info);
     Image& new_image = slot_images[new_image_id];
     runtime.TransitionImageLayout(new_image);
-    AddImageAlias(new_image, new_image, new_image_id, new_image_id);
     return new_image_id;
 }
 
@@ -119,7 +118,6 @@ auto TextureCache<P>::RenderTargetFromImage(ImageId image_id, const ImageViewInf
     -> std::pair<FramebufferId, ImageViewId> {
     const ImageViewId view_id = FindOrEmplaceImageView(image_id, view_info);
     const ImageBase& image = slot_images[image_id];
-    const bool is_rescaled = True(image.flags & ImageFlagBits::Rescaled);
     const bool is_color = GetFormatType(image.info.format) == SurfaceType::ColorTexture;
     const ImageViewId color_view_id = is_color ? view_id : ImageViewId{};
     const ImageViewId depth_view_id = is_color ? ImageViewId{} : view_id;
@@ -130,7 +128,6 @@ auto TextureCache<P>::RenderTargetFromImage(ImageId image_id, const ImageViewInf
         .color_buffer_ids = {color_view_id},
         .depth_buffer_id = depth_view_id,
         .size = {.width=extent.width >> samples_x, .height=extent.height >> samples_y},
-        .is_rescaled = is_rescaled,
     };
     const FramebufferId framebuffer_id = GetFramebufferId(render_targets);
 
@@ -217,12 +214,10 @@ auto TextureCache<P>::CreateImageView(const ImageInfo& info) -> ImageViewId {
     if (!image_id) {
         return NULL_IMAGE_VIEW_ID;
     }
-    ImageBase& image = slot_images[image_id];
     const ImageViewInfo view_info(info);
     const ImageViewId image_view_id = FindOrEmplaceImageView(image_id, view_info);
     ImageViewBase& image_view = slot_image_views[image_view_id];
     image_view.flags |= ImageViewFlagBits::Strong;
-    image.flags |= ImageFlagBits::Strong;
     return image_view_id;
 }
 
@@ -292,13 +287,10 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
     copys[0].buffer_image_height = 0;
     new_image.UploadMemory(staging, copys);
 
-    AddImageAlias(new_image, new_image, new_image_id, new_image_id);
-    ImageBase& image = slot_images[new_image_id];
     const ImageViewInfo view_info(info);
     const ImageViewId image_view_id = FindOrEmplaceImageView(new_image_id, view_info);
     ImageViewBase& image_view = slot_image_views[image_view_id];
     image_view.flags |= ImageViewFlagBits::Strong;
-    image.flags |= ImageFlagBits::Strong;
     graphics_image_view_ids.push_back(image_view_id);
 
     auto slot_id = slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,
@@ -326,13 +318,10 @@ auto TextureCache<P>::addGraphics(const ImageInfo& info) -> std::pair<ImageViewI
     copys[0].buffer_row_length = 0;
     copys[0].buffer_image_height = 0;
     new_image.UploadMemory(staging, copys);
-    AddImageAlias(new_image, new_image, new_image_id, new_image_id);
-    ImageBase& image = slot_images[new_image_id];
     const ImageViewInfo view_info(info);
     const ImageViewId image_view_id = FindOrEmplaceImageView(new_image_id, view_info);
     ImageViewBase& image_view = slot_image_views[image_view_id];
     image_view.flags |= ImageViewFlagBits::Strong;
-    image.flags |= ImageFlagBits::Strong;
     graphics_image_view_ids.push_back(image_view_id);
 
     auto slot_id = slot_samplers.insert(runtime, SamplerReduction::WeightedAverage,

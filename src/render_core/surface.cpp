@@ -98,7 +98,7 @@ bool IsPixelFormatASTC(PixelFormat format) {
     }
 }
 
-bool IsPixelFormatBCn(PixelFormat format) {
+auto IsPixelFormatBCn(PixelFormat format) -> bool {
     switch (format) {
         case PixelFormat::BC1_RGBA_UNORM:
         case PixelFormat::BC2_UNORM:

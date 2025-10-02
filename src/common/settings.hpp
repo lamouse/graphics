@@ -58,7 +58,7 @@ struct ResolutionScalingInfo {
                             1);
         }
 
-        uint32_t ScaleUp(uint32_t value) const {
+        auto ScaleUp(uint32_t value) const -> uint32_t {
             if (value == 0U) {
                 return 0U;
             }
