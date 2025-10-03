@@ -4,47 +4,31 @@
 #include <algorithm>
 #include <string>
 
-#include <ranges>
-#include "formatter.h"
-#include "image_base.hpp"
 #include "image_info.hpp"
+#include "formatter.h"
 #include "image_view_base.hpp"
 #include "render_targets.h"
 #include "samples_helper.h"
 
 namespace render::texture {
 
-std::string Name(const ImageBase& image) {
-    const ImageInfo& info = image.info;
-    u32 width = info.size.width;
-    u32 height = info.size.height;
-    const u32 depth = info.size.depth;
-    const u32 num_layers = image.info.resources.layers;
-    const u32 num_levels = image.info.resources.levels;
+auto Name(const ImageInfo& image) -> std::string {
+    u32 width = image.size.width;
+    u32 height = image.size.height;
+    const u32 depth = image.size.depth;
+
     std::string resource;
-    if (image.info.num_samples > 1) {
-        const auto [samples_x, samples_y] = render::texture::SamplesLog2(image.info.num_samples);
+    if (image.num_samples > 1) {
+        const auto [samples_x, samples_y] = render::texture::SamplesLog2(image.num_samples);
         width >>= samples_x;
         height >>= samples_y;
-        resource += fmt::format(":{}xMSAA", image.info.num_samples);
+        resource += fmt::format(":{}xMSAA", image.num_samples);
     }
-    if (num_layers > 1) {
-        resource += fmt::format(":L{}", num_layers);
-    }
-    if (num_levels > 1) {
-        resource += fmt::format(":M{}", num_levels);
-    }
-    switch (image.info.type) {
-        case ImageType::e1D:
-            return fmt::format("Image 1D  {}{}", width, resource);
+    switch (image.type) {
         case ImageType::e2D:
             return fmt::format("Image 2D  {}x{}{}", width, height, resource);
         case ImageType::e3D:
             return fmt::format("Image 2D  {}x{}x{}{}", width, height, depth, resource);
-        case ImageType::Linear:
-            return fmt::format("Image Linear  {}x{}", width, height);
-        case ImageType::Buffer:
-            return fmt::format("Buffer {}", image.info.size.width);
     }
     return "Invalid";
 }
@@ -58,24 +42,16 @@ std::string Name(const ImageViewBase& image_view) {
 
     const std::string level = num_levels > 1 ? fmt::format(":{}", num_levels) : "";
     switch (image_view.type) {
-        case ImageViewType::e1D:
-            return fmt::format("ImageView 1D  {}{}", width, level);
         case ImageViewType::e2D:
             return fmt::format("ImageView 2D  {}x{}{}", width, height, level);
         case ImageViewType::Cube:
             return fmt::format("ImageView Cube  {}x{}{}", width, height, level);
         case ImageViewType::e3D:
             return fmt::format("ImageView 3D  {}x{}x{}{}", width, height, depth, level);
-        case ImageViewType::e1DArray:
-            return fmt::format("ImageView 1DArray  {}{}|{}", width, level, num_layers);
         case ImageViewType::e2DArray:
             return fmt::format("ImageView 2DArray {}x{}{}|{}", width, height, level, num_layers);
         case ImageViewType::CubeArray:
             return fmt::format("ImageView CubeArray  {}x{}{}|{}", width, height, level, num_layers);
-        case ImageViewType::Rect:
-            return fmt::format("ImageView Rect  {}x{}{}", width, height, level);
-        case ImageViewType::Buffer:
-            return fmt::format("BufferView  {}", width);
     }
     return "Invalid";
 }

@@ -88,9 +88,11 @@ void Scheduler::workerThread(std::stop_token stop_token) {
 
 void Scheduler::allocateWorkerCommandBuffer() {
     current_cmd_buf_ = command_pool_->commit();
-    current_cmd_buf_.begin(::vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+    current_cmd_buf_.begin(
+        ::vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
     current_upload_cmd_buf_ = command_pool_->commit();
-    current_upload_cmd_buf_.begin(vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+    current_upload_cmd_buf_.begin(
+        vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 }
 
 void Scheduler::acquireNewChunk() {
@@ -141,15 +143,6 @@ auto Scheduler::updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool {
     return true;
 }
 
-auto Scheduler::updateRescaling(bool is_rescaling) -> bool {
-    if (state_.rescaling_defined_ && is_rescaling == state_.is_rescaling_) {
-        return false;
-    }
-    state_.rescaling_defined_ = true;
-    state_.is_rescaling_ = is_rescaling;
-    return true;
-}
-
 void Scheduler::endRenderPass() {
     if (!state_.render_pass_) {
         return;
@@ -185,10 +178,7 @@ void Scheduler::endRenderPass() {
     num_render_pass_images_ = 0;
 }
 
-void Scheduler::invalidateState() {
-    state_.graphics_pipeline_ = nullptr;
-    state_.rescaling_defined_ = false;
-}
+void Scheduler::invalidateState() { state_.graphics_pipeline_ = nullptr; }
 #undef MemoryBarrier
 
 /**

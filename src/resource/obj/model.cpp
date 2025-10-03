@@ -11,20 +11,29 @@
 namespace graphics {
 
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
-    : vertices_(vertices),
-      indices_(indices),
-      vertexCount(static_cast<uint32_t>(vertices.size())),
-      indicesSize(static_cast<uint32_t>(indices.size())) {
+    : vertexCount(static_cast<uint32_t>(vertices.size())),
+      indicesSize(static_cast<uint32_t>(indices.size())),
+      vertices_(vertices),
+      u16_indices_(indices) {
+    assert(vertexCount >= 3 && "Vertex count must be at least 3");
+}
+
+Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices)
+    : vertexCount(static_cast<uint32_t>(vertices.size())),
+      indicesSize(static_cast<uint32_t>(indices.size())),
+      vertices_(vertices),
+      u32_indices_(indices),
+      use32BitIndices(true) {
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
 auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model> {
     std::vector<Model::Vertex> vertices;
-    std::vector<uint16_t> indices;
-
+    std::vector<uint16_t> u32_indices;
     ::std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
 
     Assimp::Importer importer;
+    // NOLINTNEXTLINE
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene) {
         throw std::runtime_error(
@@ -42,19 +51,45 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
                 model_vertex.texCoord = {mesh->mTextureCoords[0][j].x,
                                          mesh->mTextureCoords[0][j].y};
             } else {
-                model_vertex.texCoord = {0.0f, 0.0f};
+                model_vertex.texCoord = {0.0F, 0.0F};
             }
-            model_vertex.color = {1.0f, 1.0f, 1.0f};
+            model_vertex.color = {1.0F, 1.0F, 1.0F};
             if (!uniqueVertices.contains(model_vertex)) {
                 uniqueVertices[model_vertex] = static_cast<uint32_t>(vertices.size());
                 vertices.push_back(model_vertex);
             }
 
-            indices.push_back(
-                static_cast<decltype(indices)::value_type>(uniqueVertices[model_vertex]));
+            u32_indices.push_back(
+                static_cast<decltype(u32_indices)::value_type>(uniqueVertices[model_vertex]));
         }
     }
-    return std::make_unique<Model>(vertices, indices);
+    // 判断是否需要使用 32 位索引
+    if (vertices.size() > std::numeric_limits<uint16_t>::max()) {
+        // 使用 32 位索引
+        return std::make_unique<Model>(vertices,
+                                       u32_indices);  // 你需要添加一个支持 uint32_t 的构造函数
+    }
+    // 转换为 16 位索引
+    std::vector<uint16_t> u16_indices;
+    u16_indices.resize(u32_indices.size());
+    std::ranges::transform(u32_indices, u16_indices.begin(),
+                           [](uint32_t idx) { return static_cast<uint16_t>(idx); });
+    return std::make_unique<Model>(vertices, u16_indices);
+}
+
+// 返回顶点坐标（仅 position），展平为 float 数组
+[[nodiscard]] auto Model::getMesh() const -> std::span<const float> {
+
+    return std::span<const float>(reinterpret_cast<const float*>(vertices_.data()),
+                                  vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+}
+
+// 返回索引数据（16位或32位）
+[[nodiscard]] auto Model::getIndices16() const -> std::span<const uint16_t> {
+    return std::span<const uint16_t>(u16_indices_);
+}
+[[nodiscard]] auto Model::getIndices32() const -> std::span<const uint32_t> {
+    return std::span<const uint32_t>(u32_indices_);
 }
 
 }  // namespace graphics

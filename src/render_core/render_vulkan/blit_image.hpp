@@ -100,10 +100,7 @@ class BlitImageHelper {
         void Convert(VkPipeline pipeline, const TextureFramebuffer* dst_framebuffer,
                      const TextureImageView& src_image_view);
 
-        void ConvertDepthStencil(VkPipeline pipeline, const TextureFramebuffer* dst_framebuffer,
-                                 TextureImageView& src_image_view);
-
-        [[nodiscard]] VkPipeline FindOrEmplaceColorPipeline(const BlitImagePipelineKey& key);
+        [[nodiscard]] auto FindOrEmplaceColorPipeline(const BlitImagePipelineKey& key) -> VkPipeline;
 
         [[nodiscard]] VkPipeline FindOrEmplaceDepthStencilPipeline(const BlitImagePipelineKey& key);
 

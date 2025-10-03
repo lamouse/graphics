@@ -142,9 +142,9 @@ auto MakeRenderPassKey(const FixedPipelineState& state) -> RenderPassKey {
 }
 
 template <typename Spec>
-auto Passes(const std::array<ShaderModule, NUM_STAGES>& modules,
-            const std::array<shader::Info, NUM_STAGES>& stage_infos) -> bool {
-    for (size_t stage = 0; stage < NUM_STAGES; ++stage) {
+auto Passes(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
+            const std::array<shader::Info, buffer::NUM_STAGES>& stage_infos) -> bool {
+    for (size_t stage = 0; stage < buffer::NUM_STAGES; ++stage) {
         if (!Spec::enabled_stages[stage] && modules[stage]) {
             return false;
         }
@@ -175,8 +175,8 @@ auto Passes(const std::array<ShaderModule, NUM_STAGES>& modules,
 
 using ConfigureFuncPtr = void (*)(GraphicsPipeline*, bool);
 template <typename Spec, typename... Specs>
-ConfigureFuncPtr FindSpec(const std::array<ShaderModule, NUM_STAGES>& modules,
-                          const std::array<shader::Info, NUM_STAGES>& stage_infos) {
+ConfigureFuncPtr FindSpec(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
+                          const std::array<shader::Info, buffer::NUM_STAGES>& stage_infos) {
     if constexpr (sizeof...(Specs) > 0) {
         if (!Passes<Spec>(modules, stage_infos)) {
             return FindSpec<Specs...>(modules, stage_infos);
@@ -224,8 +224,8 @@ struct DefaultSpec {
         static constexpr bool has_images = true;
 };
 
-ConfigureFuncPtr ConfigureFunc(const std::array<ShaderModule, NUM_STAGES>& modules,
-                               const std::array<shader::Info, NUM_STAGES>& infos) {
+ConfigureFuncPtr ConfigureFunc(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
+                               const std::array<shader::Info, buffer::NUM_STAGES>& infos) {
     return FindSpec<SimpleVertexSpec, SimpleVertexFragmentSpec, SimpleStorageSpec, SimpleImageSpec,
                     DefaultSpec>(modules, infos);
 }
@@ -310,38 +310,13 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 
 template <typename Spec>
 void GraphicsPipeline::configureImpl(bool is_indexed) {
-    const auto prepare_stage{[&](int count) LAMBDA_FORCEINLINE {
-        texture::ImageInfo imageInfo;
-        imageInfo.size = {.width = 1920, .height = 1080, .depth = 1};
-        imageInfo.format = surface::PixelFormat::B8G8R8A8_UNORM;
-        imageInfo.type = render::texture::ImageType::e2D;
-        imageInfo.num_samples = 1;
-        imageInfo.resources.levels = 1;
 
-        texture::ImageInfo depth;
-        depth.size = {.width = 1920, .height = 1080, .depth = 1};
-        depth.format = surface::PixelFormat::D32_FLOAT;
-        depth.type = render::texture::ImageType::e2D;
-        depth.num_samples = 1;
-        depth.resources.levels = 1;
 
-        std::array imageInfos = {imageInfo, depth};
-        render_targets = texture_cache.UpdateRenderTargets(imageInfos, {1920, 1080});
-    }};
-    if (!is_set_render_target) {
-        prepare_stage(1);
-        is_set_render_target = true;
-    }
-    guest_descriptor_queue_.Acquire();
-    buffer_cache.BindCurrentUniformBuffers();
-    auto [view, sample] = texture_cache.getCurrentImage();
-    guest_descriptor_queue_.AddSampledImage(view->Handle(shader::TextureType::Color2D),
-                                            sample->Handle());
     ConfigureDraw();
 }
 
 void GraphicsPipeline::ConfigureDraw() {
-    scheduler_.requestRenderPass(texture_cache.GetFramebuffer(render_targets));
+    scheduler_.requestRenderPass(texture_cache.getFramebuffer());
 
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built
@@ -350,7 +325,6 @@ void GraphicsPipeline::ConfigureDraw() {
             build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
         });
     }
-    const bool update_rescaling{scheduler_.updateRescaling(false)};
     const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
     scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {

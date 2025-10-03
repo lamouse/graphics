@@ -2,6 +2,7 @@
 #include "uniforms.hpp"
 #include "blit_screen.hpp"
 #include <imgui_impl_vulkan.h>
+#include <algorithm>
 #include <tracy/Tracy.hpp>
 namespace render::vulkan {
 
@@ -16,7 +17,6 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       descriptor_pool(device, scheduler),
       guest_descriptor_queue(device, scheduler),
       compute_pass_descriptor_queue(device, scheduler),
-      blit_image(device, scheduler, descriptor_pool),
       render_pass_cache(device),
       emu_window(emu_window_),
       texture_cache_runtime{device,
@@ -25,11 +25,10 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
                             staging_pool,
                             render_pass_cache,
                             descriptor_pool,
-                            compute_pass_descriptor_queue,
-                            blit_image},
+                            compute_pass_descriptor_queue},
       texture_cache(texture_cache_runtime),
       buffer_cache_runtime(device, memory_allocator, scheduler, staging_pool,
-                           guest_descriptor_queue, compute_pass_descriptor_queue, descriptor_pool),
+                           guest_descriptor_queue, compute_pass_descriptor_queue),
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
@@ -38,22 +37,52 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::start() {
-    // TODO 这里是一个临时策略
     std::scoped_lock lock{texture_cache.mutex};
     static bool is_new_frame = true;
     if (is_new_frame) {
         is_new_frame = false;
         return;
     }
-    scheduler.requestRenderPass(texture_cache.GetFramebuffer());
+    scheduler.requestRenderPass(texture_cache.getFramebuffer());
     clear();
+}
+void VulkanGraphics::clear() {
+    const vk::Extent2D render_area{static_cast<uint32_t>(pipeline_state.viewport.width),
+                                   static_cast<uint32_t>(pipeline_state.viewport.height)};
+    const f32 bg_red = pipeline_state.clearColor.r;
+    const f32 bg_green = pipeline_state.clearColor.g;
+    const f32 bg_blue = pipeline_state.clearColor.b;
+    auto clear_value = vk::ClearValue().setColor(
+        vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
+    const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
+                                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                                                     .setColorAttachment(0)
+                                                     .setClearValue(clear_value);
+
+    auto clear_depth = vk::ClearDepthStencilValue()
+                           .setDepth(pipeline_state.clearColor.depth)
+                           .setStencil(pipeline_state.clearColor.stencil);
+    auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
+    const vk::ClearAttachment depth_attachment = vk::ClearAttachment()
+                                                     .setAspectMask(vk::ImageAspectFlagBits::eDepth)
+                                                     .setColorAttachment(0)
+                                                     .setClearValue(clear_depth_value);
+
+    const vk::ClearRect clear_rect =
+        vk::ClearRect()
+            .setRect(vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
+            .setBaseArrayLayer(0)
+            .setLayerCount(1);
+    scheduler.record([clear_attachment, depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
+        cmdbuf.clearAttachments({clear_attachment, depth_attachment}, {clear_rect});
+    });
 }
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
 #if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
-    // 将 Vulkan 纹理绑定到 ImGui
-    const auto& image_view = texture_cache.TryFindFramebufferImageView({});
+    //将 Vulkan 纹理绑定到 ImGui
+    const auto& image_view = texture_cache.TryFindFramebufferImageView();
     if (!sampler) {
         ::vk::SamplerCreateInfo samplerInfo =
             ::vk::SamplerCreateInfo()
@@ -69,8 +98,8 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
                 .setCompareEnable(VK_FALSE)
                 .setCompareOp(::vk::CompareOp::eAlways)
                 .setMipmapMode(::vk::SamplerMipmapMode::eLinear)
-                .setMipLodBias(0.0f)
-                .setMinLod(0.0f)
+                .setMipLodBias(0.0F)
+                .setMinLod(0.0F)
                 .setMaxLod(1);
         sampler = device.logical().CreateSampler(samplerInfo);
     }
@@ -82,9 +111,11 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
     ImTextureID imguiTextureID_{};
 
     imguiTextureID_ = (ImTextureID)ImGui_ImplVulkan_AddTexture(
-        *sampler, image_view.first->Handle(shader::TextureType::Color2D), VK_IMAGE_LAYOUT_GENERAL);
+        *sampler, image_view.first->Handle(shader::TextureType::Color2D),
+        VK_IMAGE_LAYOUT_GENERAL);
     pair->second = imguiTextureID_;
     return imguiTextureID_;
+    return 0;
 }
 #else
 auto VulkanGraphics::getDrawImage() -> ImTextureID { return 0; }
@@ -328,10 +359,8 @@ void VulkanGraphics::UpdateScissorsState() {
 auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
     -> std::optional<FramebufferTextureInfo> {
     std::scoped_lock lock{texture_cache.mutex};
-    const auto& image_view = texture_cache.TryFindFramebufferImageView(config);
-    if (!image_view.first) {
-        return std::nullopt;
-    }
+    const auto& image_view = texture_cache.TryFindFramebufferImageView();
+
     FramebufferTextureInfo info{};
     info.image = image_view.first->ImageHandle();
     info.image_view = image_view.first->Handle(shader::TextureType::Color2D);
@@ -376,86 +405,53 @@ void VulkanGraphics::UpdateStencilFaces() {
 void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
-void VulkanGraphics::clear() {
-    const vk::Extent2D render_area{static_cast<uint32_t>(pipeline_state.viewport.width),
-                                   static_cast<uint32_t>(pipeline_state.viewport.height)};
-    const f32 bg_red = pipeline_state.clearColor.r;
-    const f32 bg_green = pipeline_state.clearColor.g;
-    const f32 bg_blue = pipeline_state.clearColor.b;
-    auto clear_value = vk::ClearValue().setColor(
-        vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
-    const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
-                                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                                                     .setColorAttachment(0)
-                                                     .setClearValue(clear_value);
-
-    auto clear_depth = vk::ClearDepthStencilValue()
-                           .setDepth(pipeline_state.clearColor.depth)
-                           .setStencil(pipeline_state.clearColor.stencil);
-    auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
-    const vk::ClearAttachment depth_attachment = vk::ClearAttachment()
-                                                     .setAspectMask(vk::ImageAspectFlagBits::eDepth)
-                                                     .setColorAttachment(0)
-                                                     .setClearValue(clear_depth_value);
-
-    const vk::ClearRect clear_rect =
-        vk::ClearRect()
-            .setRect(vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
-            .setBaseArrayLayer(0)
-            .setLayerCount(1);
-    scheduler.record([clear_attachment, depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
-        cmdbuf.clearAttachments({clear_attachment, depth_attachment}, {clear_rect});
-    });
-}
 
 void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
 #if defined(USE_DEBUG_UI)
     imgui->draw(cmd_buf);
 #endif
 }
-auto VulkanGraphics::addGraphicContext(const GraphicsContext& context) -> GraphicsId {
-    auto [viewId, samplerId] = texture_cache.addGraphics(context.image);
-    RenderTargetInfo info{};
-    info.vertex_size = static_cast<u32>(context.vertex.size() * sizeof(float));
-    info.indices_size = context.indices_size;
-    info.image_view_id = viewId;
-    info.sampler_id = samplerId;
-    info.vertex_buffer_id = buffer_cache.addVertexBuffer(context.vertex.data(), info.vertex_size);
 
-    info.indices_buffer_id = buffer_cache.addIndexBuffer(
-        context.indices.data(), static_cast<u32>(context.indices.size() * sizeof(uint16_t)));
-    info.uniform_buffer_size = context.uniform_size;
-    info.uniform_buffer_id = buffer_cache.addUniformBuffer(info.uniform_buffer_size);
-    auto graphicsId = slot_graphics.insert();
-    draw_indices[graphicsId] = info;
-    return graphicsId;
-}
-void VulkanGraphics::bindUniformBuffer(GraphicsId id, void* data, size_t size) {
-    auto draw_info = draw_indices[id];
-    buffer_cache.BindUniformBuffers(draw_info.uniform_buffer_id, data, size);
-}
-
-auto VulkanGraphics::uploadModel(const graphics::ModelInstance& instance) -> ModelId {
+auto VulkanGraphics::uploadModel(const graphics::ImodelInstance& instance) -> ModelId {
     ModelResource resource;
     if (auto imageData = instance.getImageData()) {
-        auto [viewId, samplerId] =
-            texture_cache.addTexture({.width = static_cast<u32>(imageData->getWidth()),
-                                      .height = static_cast<u32>(imageData->getheight())},
-                                     imageData->data());
+        auto viewId = texture_cache.addTexture({.width = static_cast<u32>(imageData->getWidth()),
+                                                .height = static_cast<u32>(imageData->getheight())},
+                                               imageData->data());
         resource.image_view = viewId;
-        resource.sample_id = samplerId;
     }
+    auto meshData = instance.getMeshData();
+    resource.vertex_size = static_cast<u32>(meshData->getMesh().size() * sizeof(float));
+    resource.vertex_buffer_id =
+        buffer_cache.addVertexBuffer(meshData->getMesh().data(), resource.vertex_size);
+    resource.indices_buffer_id = buffer_cache.addIndexBuffer(
+        meshData->getIndices16().data(),
+        static_cast<u32>(meshData->getIndices16().size() * sizeof(uint16_t)));
+    resource.indices_size = meshData->getIndicesSize();
     return modelResource.insert(resource);
 }
 
-void VulkanGraphics::draw(GraphicsId id) {
-    const auto drawInfo = draw_indices[id];
-    buffer_cache.setCurrentUniformBuffer(drawInfo.uniform_buffer_id, drawInfo.uniform_buffer_size);
-    texture_cache.setCurrentImage(drawInfo.image_view_id, drawInfo.sampler_id);
-    PrepareDraw(true, [drawInfo, this] {
-        buffer_cache.BindVertexBuffers(drawInfo.vertex_buffer_id, drawInfo.vertex_size);
-        buffer_cache.BindIndexBuffer(drawInfo.indices_buffer_id);
-        scheduler.record([indices_size = drawInfo.indices_size](vk::CommandBuffer cmdbuf) {
+
+void VulkanGraphics::draw(const graphics::ImodelInstance& instance) {
+    const auto resource = modelResource[instance.getModelId()];
+    texture_cache.setCurrentTexture(resource.image_view, SamplerPreset::Linear);
+    guest_descriptor_queue.Acquire();
+    buffer_cache.BindUniformBuffer(instance.getUBOData());
+    auto [view, sample] = texture_cache.getCurrentTexture();
+    guest_descriptor_queue.AddSampledImage(view->Handle(shader::TextureType::Color2D),
+                                           sample->Handle());
+    texture::FramebufferKey key;
+    key.size.width = emu_window->getFramebufferLayout().width;
+    key.size.height = emu_window->getFramebufferLayout().height;
+    key.size.depth = 1;
+    std::ranges::fill(key.color_formats, render::surface::PixelFormat::Invalid);
+    key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
+    key.depth_format = surface::PixelFormat::D32_FLOAT;
+    texture_cache.setCurrentFrameBuffer(key);
+    PrepareDraw(true, [resource, this] -> void {
+        buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size);
+        buffer_cache.BindIndexBuffer(resource.indices_buffer_id);
+        scheduler.record([indices_size = resource.indices_size](vk::CommandBuffer cmdbuf) {
             cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
         });
     });
@@ -496,7 +492,7 @@ void VulkanGraphics::FlushWork() {
 
     // Only check multiples of 8 draws
     static_assert(DRAWS_TO_DISPATCH % 8 == 0);
-    if ((++draw_counter & 7) != 7) {
+    if ((++draw_counter & 7U) != 7) {
         return;
     }
     if (draw_counter < DRAWS_TO_DISPATCH) {

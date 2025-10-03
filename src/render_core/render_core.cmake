@@ -1,6 +1,4 @@
 set(sources
-  compatible_formats.cpp
-    compatible_formats.h
     delayed_destruction_ring.h
     fixed_pipeline_state.cpp
     fixed_pipeline_state.h
@@ -22,16 +20,12 @@ set(sources
     buffer_cache/buffer_cache.h
     buffer_cache/buffer_cache_base.hpp
     buffer_cache/usage_tracker.hpp
-    render_vulkan/blit_image.cpp
-    render_vulkan/blit_image.hpp
     render_vulkan/blit_screen.cpp
     render_vulkan/blit_screen.hpp
     render_vulkan/buffer_cache.cpp
     render_vulkan/buffer_cache.h
     render_vulkan/command_pool.cpp
     render_vulkan/command_pool.hpp
-    render_vulkan/compute_pass.cpp
-    render_vulkan/compute_pass.hpp
     render_vulkan/compute_pipeline.cpp
     render_vulkan/compute_pipeline.hpp
     render_vulkan/descriptor_pool.cpp
@@ -87,8 +81,6 @@ set(sources
     texture/accelerated_swizzle.h
     texture/formatter.cpp
     texture/formatter.h
-    texture/image_base.cpp
-    texture/image_base.hpp
     texture/image_info.hpp
     texture/image_view_base.cpp
     texture/image_view_base.hpp
@@ -98,8 +90,6 @@ set(sources
     texture/samples_helper.h
     texture/texture.hpp
     texture/types.hpp
-    texture/util.cpp
-    texture/util.hpp
     texture_cache/texture_cache.h
     texture_cache/texture_cache_base.hpp
     texture_cache/utils.cpp

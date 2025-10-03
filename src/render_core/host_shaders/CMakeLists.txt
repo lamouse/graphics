@@ -12,23 +12,13 @@ set(GLSL_INCLUDES
 )
 
 set(SHADER_FILES
-    astc_decoder.comp
     vulkan_present.frag
     vulkan_present.vert
     vulkan_present_scaleforce_fp16.frag
     vulkan_present_scaleforce_fp32.frag
     vulkan_compute.comp
     vulkan_turbo_mode.comp
-    convert_msaa_to_non_msaa.comp
-    convert_non_msaa_to_msaa.comp
     blit_color_float.frag
-    convert_abgr8_to_d24s8.frag
-    convert_abgr8_to_d32f.frag
-    convert_d24s8_to_abgr8.frag
-    convert_d32f_to_abgr8.frag
-    convert_depth_to_float.frag
-    convert_float_to_depth.frag
-    convert_s8d24_to_abgr8.frag
     full_screen_triangle.vert
     vulkan_blit_depth_stencil.frag
     vulkan_color_clear.frag
@@ -39,8 +29,6 @@ set(SHADER_FILES
     vulkan_fidelityfx_fsr_easu_fp32.frag
     vulkan_fidelityfx_fsr_rcas_fp16.frag
     vulkan_fidelityfx_fsr_rcas_fp32.frag
-    vulkan_quad_indexed.comp
-    vulkan_uint8.comp
     vulkan_fidelityfx_fsr.vert
     vulkan_fidelityfx_fsr_easu_fp16.frag
     vulkan_fidelityfx_fsr_easu_fp32.frag

@@ -1,38 +1,22 @@
 #pragma once
 
-#include <type_traits>
 #include "render_core/surface.hpp"
 #include "render_core/texture/types.hpp"
-#include "render_core/texture.hpp"
 #include "render_core/texture/image_info.hpp"
 
 namespace render::texture {
 
 struct ImageViewInfo {
         explicit ImageViewInfo() noexcept = default;
-        explicit ImageViewInfo(const ImageInfo& info) noexcept;
+        explicit ImageViewInfo(const ImageInfo& info, ImageViewType type = ImageViewType::e2D) noexcept;
         explicit ImageViewInfo(ImageViewType type, surface::PixelFormat format,
-                               SubresourceRange range = {}) noexcept;
+                               SubresourceRange range = {}) noexcept :type(type),format(format), range(range) {}
 
         auto operator<=>(const ImageViewInfo&) const noexcept = default;
-
-        [[nodiscard]] auto IsRenderTarget() const noexcept -> bool;
-        [[nodiscard]] auto Swizzle() const noexcept -> std::array<SwizzleSource, 4> {
-            return std::array{
-                static_cast<SwizzleSource>(x_source),
-                static_cast<SwizzleSource>(y_source),
-                static_cast<SwizzleSource>(z_source),
-                static_cast<SwizzleSource>(w_source),
-            };
-        }
 
         ImageViewType type{};
         surface::PixelFormat format{};
         SubresourceRange range;
-        u8 x_source = static_cast<u8>(SwizzleSource::R);
-        u8 y_source = static_cast<u8>(SwizzleSource::G);
-        u8 z_source = static_cast<u8>(SwizzleSource::B);
-        u8 w_source = static_cast<u8>(SwizzleSource::A);
+
 };
-static_assert(std::has_unique_object_representations_v<ImageViewInfo>);
 }  // namespace render::texture

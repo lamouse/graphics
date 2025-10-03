@@ -1,21 +1,17 @@
 #pragma once
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
-#include "common/slot_vector.hpp"
 #include "render_core/surface.hpp"
-#include "render_core/texture/image_base.hpp"
 #include "render_core/texture/image_info.hpp"
 #include "common/common_funcs.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/render_vulkan/render_pass.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
-#include "render_core/render_vulkan/compute_pass.hpp"
 #include "render_core/texture/image_view_base.hpp"
 #include "render_core/texture/render_targets.h"
-#include "common/settings.hpp"
+#include "render_core/texture.hpp"
 #include "render_core/texture_cache/texture_cache.h"
-
 namespace render::vulkan {
 class BlitImageHelper;
 class Device;
@@ -35,8 +31,7 @@ class TextureCacheRuntime {
                                      StagingBufferPool& staging_buffer_pool_,
                                      RenderPassCache& render_pass_cache_,
                                      resource::DescriptorPool& descriptor_pool,
-                                     ComputePassDescriptorQueue& compute_pass_descriptor_queue,
-                                     BlitImageHelper& blit_image_helper_);
+                                     ComputePassDescriptorQueue& compute_pass_descriptor_queue);
 
         void Finish();
 
@@ -45,6 +40,7 @@ class TextureCacheRuntime {
         auto DownloadStagingBuffer(size_t size, bool deferred = false) -> StagingBufferRef;
 
         void FreeDeferredStagingBuffer(StagingBufferRef& ref);
+        void TransitionImageLayout(TextureImage& image);
 
         void TickFrame();
 
@@ -54,66 +50,19 @@ class TextureCacheRuntime {
 
         [[nodiscard]] auto CanReportMemoryUsage() const -> bool;
 
-        void BlitImage(TextureFramebuffer* dst_framebuffer, TextureImageView& dst,
-                       TextureImageView& src, const render::texture::Region2D& dst_region,
-                       const render::texture::Region2D& src_region);
-
-        void CopyImage(TextureImage& dst, TextureImage& src,
-                       std::span<const render::texture::ImageCopy> copies);
-
-        void CopyImageMSAA(TextureImage& dst, TextureImage& src,
-                           std::span<const render::texture::ImageCopy> copies);
-
-        auto ShouldReinterpret(TextureImage& dst, TextureImage& src) -> bool;
-
-        void ReinterpretImage(TextureImage& dst, TextureImage& src,
-                              std::span<const render::texture::ImageCopy> copies);
-
-        void ConvertImage(TextureFramebuffer* dst, TextureImageView& dst_view,
-                          TextureImageView& src_view);
-
-        void AccelerateImageUpload(TextureImage&, const StagingBufferRef&,
-                                   std::span<const render::texture::SwizzleParameters>);
-
-        void InsertUploadMemoryBarrier() {}
-
-        void TransitionImageLayout(TextureImage& image);
-
-        static auto HasBrokenTextureViewFormats() noexcept -> bool {
-            // No known Vulkan driver has broken image views
-            return false;
-        }
-
-        static auto HasNativeBgr() noexcept -> bool {
-            // All known Vulkan drivers can natively handle BGR textures
-            return true;
-        }
-
-        [[nodiscard]] auto GetTemporaryBuffer(size_t needed_size) -> vk::Buffer;
-
-        auto ViewFormats(surface::PixelFormat format) -> std::span<const vk::Format> {
-            return view_formats[static_cast<std::size_t>(format)];
-        }
-        const settings::ResolutionScalingInfo resolution;
-        void BarrierFeedbackLoop();
-        BlitImageHelper& blit_image_helper;
         const Device& device;
         scheduler::Scheduler& scheduler;
         MemoryAllocator& memory_allocator;
         StagingBufferPool& staging_buffer_pool;
         RenderPassCache& render_pass_cache;
-        std::optional<ASTCDecoderPass> astc_decoder_pass;
-        std::unique_ptr<MSAACopyPass> msaa_copy_pass;
         std::array<std::vector<vk::Format>, surface::MaxPixelFormat> view_formats;
-        static constexpr size_t indexing_slots = 8 * sizeof(size_t);
-        std::array<Buffer, indexing_slots> buffers{};
 };
 
-class TextureImage : public render::texture::ImageBase {
+class TextureImage {
     public:
         explicit TextureImage(TextureCacheRuntime& runtime_,
-                              const render::texture::ImageInfo& info);
-        explicit TextureImage(const render::texture::NullImageParams&);
+                              const render::texture::ImageInfo& info_);
+        explicit TextureImage();
 
         ~TextureImage();
 
@@ -127,80 +76,39 @@ class TextureImage : public render::texture::ImageBase {
         void UploadMemory(const StagingBufferRef& map,
                           std::span<const render::texture::BufferImageCopy> copies);
 
-        void DownloadMemory(vk::Buffer buffer, size_t offset,
-                            std::span<const render::texture::BufferImageCopy> copies);
-
-        void DownloadMemory(std::span<vk::Buffer> buffers, std::span<size_t> offsets,
-                            std::span<const render::texture::BufferImageCopy> copies);
-
-        void DownloadMemory(const StagingBufferRef& map,
-                            std::span<const render::texture::BufferImageCopy> copies);
-
-        [[nodiscard]] auto Handle() const noexcept -> vk::Image { return *(this->*current_image); }
+        [[nodiscard]] auto Handle() const noexcept -> vk::Image { return *image; }
 
         [[nodiscard]] auto AspectMask() const noexcept -> vk::ImageAspectFlags {
             return aspect_mask;
         }
 
         [[nodiscard]] auto UsageFlags() const noexcept -> vk::ImageUsageFlags {
-            return (this->*current_image).usageFlags();
+            return image.usageFlags();
         }
-
+        auto getImageInfo() -> render::texture::ImageInfo { return info; }
         /// Returns true when the image is already initialized and mark it as initialized
         [[nodiscard]] auto ExchangeInitialization() noexcept -> bool {
             return std::exchange(initialized, true);
         }
 
-        auto StorageImageView(s32 level) noexcept -> vk::ImageView;
-
     private:
-        auto BlitScaleHelper(bool scale_up) -> bool;
-
-        [[nodiscard]] auto NeedsScaleHelper() const -> bool;
-
         scheduler::Scheduler* scheduler{};
         TextureCacheRuntime* runtime{};
-        Image original_image;
-        Image scaled_image;
-
-        // Use a pointer to field because it is relative, so that the object can be
-        // moved without breaking the reference.
-        Image TextureImage::* current_image{};
-
-        std::vector<ImageView> storage_image_views;
+        render::texture::ImageInfo info;
+        Image image;
         vk::ImageAspectFlags aspect_mask;
         bool initialized = false;
-
-        std::unique_ptr<TextureFramebuffer> scale_framebuffer;
-        std::unique_ptr<TextureImageView> scale_view;
-
-        std::unique_ptr<TextureFramebuffer> normal_framebuffer;
-        std::unique_ptr<TextureImageView> normal_view;
 };
 
 class TextureImageView : public render::texture::ImageViewBase {
     public:
         explicit TextureImageView(TextureCacheRuntime&, const texture::ImageViewInfo&,
                                   texture::ImageId, TextureImage&);
-        explicit TextureImageView(TextureCacheRuntime&, const texture::ImageViewInfo&,
-                                  texture::ImageId, TextureImage&,
-                                  const common::SlotVector<TextureImage>&);
-        explicit TextureImageView(TextureCacheRuntime&, const texture::ImageInfo&,
-                                  const texture::ImageViewInfo&);
         explicit TextureImageView(TextureCacheRuntime&, const texture::NullImageViewParams&);
 
         ~TextureImageView();
         CLASS_NON_COPYABLE(TextureImageView);
         CLASS_DEFAULT_MOVEABLE(TextureImageView);
-        [[nodiscard]] auto DepthView() -> vk::ImageView;
-
-        [[nodiscard]] auto StencilView() -> vk::ImageView;
-
-        [[nodiscard]] auto ColorView() -> vk::ImageView;
-
-        [[nodiscard]] auto StorageView(shader::TextureType texture_type,
-                                       shader::ImageFormat image_format) -> vk::ImageView;
-
 
         [[nodiscard]] auto Handle(shader::TextureType texture_type) const noexcept
             -> vk::ImageView {
@@ -213,52 +121,24 @@ class TextureImageView : public render::texture::ImageViewBase {
 
         [[nodiscard]] auto Samples() const noexcept -> vk::SampleCountFlagBits { return samples; }
 
-        [[nodiscard]] auto BufferSize() const noexcept -> u32 { return buffer_size; }
-
     private:
-        struct StorageViews {
-                std::array<ImageView, shader::NUM_TEXTURE_TYPES> signeds;
-                std::array<ImageView, shader::NUM_TEXTURE_TYPES> unsigneds;
-        };
-
-        [[nodiscard]] auto MakeView(vk::Format vk_format, vk::ImageAspectFlags aspect_mask)
-            -> ImageView;
-
         const Device* device = nullptr;
-        const common::SlotVector<TextureImage>* slot_images = nullptr;
 
         std::array<ImageView, shader::NUM_TEXTURE_TYPES> image_views;
-        std::unique_ptr<StorageViews> storage_views;
-        ImageView depth_view;
-        ImageView stencil_view;
-        ImageView color_view;
-        Image null_image;
         vk::Image image_handle = VK_NULL_HANDLE;
         vk::ImageView render_target = VK_NULL_HANDLE;
         vk::SampleCountFlagBits samples = vk::SampleCountFlagBits::e1;
-        u32 buffer_size = 0;
 };
-
-class TextureImageAlloc : public texture::ImageAllocBase {};
 
 class TextureSampler {
     public:
         explicit TextureSampler(TextureCacheRuntime&, SamplerReduction reduction,
                                 int32_t imageMipLevels);
-
+        explicit TextureSampler(TextureCacheRuntime& runtime, SamplerPreset preset);
         [[nodiscard]] auto Handle() const noexcept -> vk::Sampler { return *sampler; }
-
-        [[nodiscard]] auto HandleWithDefaultAnisotropy() const noexcept -> vk::Sampler {
-            return *sampler_default_anisotropy;
-        }
-
-        [[nodiscard]] auto HasAddedAnisotropy() const noexcept -> bool {
-            return static_cast<bool>(sampler_default_anisotropy);
-        }
 
     private:
         Sampler sampler;
-        Sampler sampler_default_anisotropy;
 };
 
 class TextureFramebuffer {
@@ -335,7 +215,6 @@ struct TextureCacheParams {
 
         using Runtime = render::vulkan::TextureCacheRuntime;
         using Image = render::vulkan::TextureImage;
-        using ImageAlloc = render::vulkan::TextureImageAlloc;
         using ImageView = render::vulkan::TextureImageView;
         using Sampler = render::vulkan::TextureSampler;
         using Framebuffer = render::vulkan::TextureFramebuffer;

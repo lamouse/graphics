@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
+#include <span>
 namespace render {
 struct Vertex {
         ::glm::vec3 position;
@@ -28,6 +29,11 @@ struct UniformBufferObject {
         glm::mat4 model;
         glm::mat4 view;
         glm::mat4 proj;
+        // 转换为 std::span<std::byte>
+        auto as_byte_span() -> std::span<const std::byte> {
+            return std::span<const std::byte>{reinterpret_cast<const std::byte*>(this),
+                                              sizeof(UniformBufferObject)};
+        }
 };
 
 }  // namespace render

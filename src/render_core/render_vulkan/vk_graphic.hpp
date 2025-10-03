@@ -8,37 +8,23 @@
 #include "render_core/texture/types.hpp"
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/render_vulkan/buffer_cache.h"
-#include "render_core/render_vulkan/blit_image.hpp"
 #include "render_core/render_vulkan/vk_imgui.hpp"
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
-#include <span>
+#include "render_core/framebufferConfig.hpp"
 namespace render::vulkan {
-struct RenderTargetInfo {
-        u32 indices_size;
-        buffer::BufferId indices_buffer_id;
-        buffer::BufferId vertex_buffer_id;
-        u32 vertex_size;
-        buffer::BufferId uniform_buffer_id;
-        u32 uniform_buffer_size;
-        texture::ImageViewId image_view_id;
-        texture::SamplerId sampler_id;
-        RenderTargetInfo() = default;
-        RenderTargetInfo(u32 indices_size, buffer::BufferId indices_buffer_id,
-                         buffer::BufferId vertex_buffer_id, buffer::BufferId uniform_buffer_id,
-                         texture::ImageViewId image_view_id, texture::SamplerId sampler_id);
-        CLASS_DEFAULT_MOVEABLE(RenderTargetInfo);
-        CLASS_DEFAULT_COPYABLE(RenderTargetInfo);
-};
 struct FramebufferTextureInfo;
 class Device;
 
-struct ModelResource{
-    texture::ImageViewId image_view;
-    texture::SamplerId sample_id;
-    std::span<std::uint8_t> uniform_map;
-    buffer::BufferId uniform_buffer_id;
+struct ModelResource {
+        texture::ImageViewId image_view;
+
+        buffer::BufferId vertex_buffer_id;
+        u32 vertex_size;
+
+        u32 indices_size;
+        buffer::BufferId indices_buffer_id;
 };
 
 class VulkanGraphics : public render::Graphic {
@@ -53,10 +39,8 @@ class VulkanGraphics : public render::Graphic {
         void start() override;
         void setPipelineState(const PipelineState& state) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
-        auto addGraphicContext(const GraphicsContext& context) -> GraphicsId override;
-        void bindUniformBuffer(GraphicsId id, void* data, size_t size) override;
-        auto uploadModel(const graphics::ModelInstance& instance) -> ModelId override;
-        void draw(GraphicsId id) override;
+        auto uploadModel(const graphics::ImodelInstance& instance) -> ModelId override;
+        void draw(const graphics::ImodelInstance& instance) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;
         ~VulkanGraphics() override;
@@ -110,7 +94,6 @@ class VulkanGraphics : public render::Graphic {
         resource::DescriptorPool descriptor_pool;
         GuestDescriptorQueue guest_descriptor_queue;
         ComputePassDescriptorQueue compute_pass_descriptor_queue;
-        BlitImageHelper blit_image;
         RenderPassCache render_pass_cache;
         core::frontend::BaseWindow* emu_window;
         TextureCacheRuntime texture_cache_runtime;
@@ -122,8 +105,6 @@ class VulkanGraphics : public render::Graphic {
         Event wfi_event;
         PipelineState pipeline_state;
         u32 draw_counter = 0;
-        std::unordered_map<GraphicsId, RenderTargetInfo> draw_indices;
-        common::SlotVector<RenderTargetInfo> slot_graphics;
         common::SlotVector<ModelResource> modelResource;
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
 };

@@ -3,7 +3,6 @@
 #include "render_core/buffer_cache/buffer_base.hpp"
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "common/slot_vector.hpp"
-#include "compute_pass.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/buffer_cache/usage_tracker.hpp"
@@ -62,8 +61,7 @@ class BufferCacheRuntime {
                                     scheduler::Scheduler& scheduler_,
                                     StagingBufferPool& staging_pool_,
                                     GuestDescriptorQueue& guest_descriptor_queue,
-                                    ComputePassDescriptorQueue& compute_pass_descriptor_queue,
-                                    resource::DescriptorPool& descriptor_pool);
+                                    ComputePassDescriptorQueue& compute_pass_descriptor_queue);
 
         void TickFrame(common::SlotVector<BaseBufferCache>& slot_buffers) noexcept;
 
@@ -141,9 +139,6 @@ class BufferCacheRuntime {
         GuestDescriptorQueue& guest_descriptor_queue;
 
         Buffer null_buffer;
-
-        std::unique_ptr<Uint8Pass> uint8_pass;
-        QuadIndexedPass quad_index_pass;
 };
 
 struct BufferCacheParams {

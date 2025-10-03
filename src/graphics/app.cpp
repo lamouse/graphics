@@ -1,8 +1,6 @@
 #include "app.hpp"
 
 #include "config/window.h"
-#include "resource/texture/image.hpp"
-#include "resource/obj/model.hpp"
 #include "resource/model_instance.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
@@ -22,21 +20,6 @@
 
 namespace graphics {
 namespace {
-auto addGraphics(render::Graphic* graphics) -> render::GraphicsId {
-    ::std::string s(image_path + "viking_room.png");
-    resource::image::Image img(s);
-    const auto model = graphics::Model::createFromFile("models/viking_room.obj");
-    std::span<float> verticesSpan(reinterpret_cast<float*>(model->vertices_.data()),
-                                  model->vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
-    render::GraphicsContext graphics_ctx{};
-    graphics_ctx.image = img.getImageInfo();
-    graphics_ctx.vertex = verticesSpan;
-    graphics_ctx.indices = model->indices_;
-    graphics_ctx.indices_size = model->indices_.size();
-    graphics_ctx.index_format = render::IndexFormat::UnsignedShort;
-    graphics_ctx.uniform_size = sizeof(render::UniformBufferObject);
-    return graphics->addGraphicContext(graphics_ctx);
-}
 auto getRuntime() -> float {
     static auto startTime = ::std::chrono::high_resolution_clock::now();
     auto currentTime = ::std::chrono::high_resolution_clock::now();
@@ -56,11 +39,12 @@ void App::run() {
     pipeline_state.viewport.height = layout.screen.GetHeight();
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
-    auto graphicId = addGraphics(graphics);
+
     world::World world;
     bool show_console_logger = false;
-    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj");
-    graphics->uploadModel(modelInstance);
+    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj", sizeof(render::UniformBufferObject));
+     auto graphicId = graphics->uploadModel(modelInstance);
+     modelInstance.setModelId(graphicId);
     auto& camera =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();
@@ -77,13 +61,22 @@ void App::run() {
 
         graphics->start();
         render::UniformBufferObject ubo1{};
+        render::UniformBufferObject ubo2{};
         ubo1.model = modelInstance.getModelMatrix();
         ubo1.view = camera.getCamera().getView();
         ubo1.proj = camera.getCamera().getProjection();
-        graphics->bindUniformBuffer(graphicId, &ubo1, sizeof(ubo1));
+        modelInstance.writeToUBOMapData(ubo1.as_byte_span());
         graphics->setPipelineState(pipeline_state);
-        graphics->draw(graphicId);
-
+        graphics->draw(modelInstance);
+        ubo2 = ubo1;
+        auto model2 = modelComponent;
+        model2.translation.x = modelComponent.translation.x + 1.8F;
+        model2.scale.x = modelComponent.scale.x * 0.5F;
+        model2.scale.y = modelComponent.scale.y * 0.5F;
+        model2.scale.z = modelComponent.scale.z * 0.5F;
+        ubo2.model = model2.mat4();
+        modelInstance.writeToUBOMapData(ubo2.as_byte_span());
+        graphics->draw(modelInstance);
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();

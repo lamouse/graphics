@@ -43,22 +43,22 @@ void SetNext(void**& next, T& data) {
     *next = &data;
     next = &data.pNext;
 }
-constexpr u32 Attachable = 1 << 0;
-constexpr u32 Storage = 1 << 1;
+constexpr u32 Attachable = 1U << 0U;
+constexpr u32 Storage = 1U << 1U;
 struct FormatTuple {
         VkFormat format;  ///< Vulkan format
         int usage = 0;    ///< Describes image format usage
 } constexpr tex_format_tuples[] = {
-    {VK_FORMAT_A8B8G8R8_UNORM_PACK32, Attachable | Storage},     // A8B8G8R8_UNORM
-    {VK_FORMAT_A8B8G8R8_SNORM_PACK32, Attachable | Storage},     // A8B8G8R8_SNORM
-    {VK_FORMAT_A8B8G8R8_SINT_PACK32, Attachable | Storage},      // A8B8G8R8_SINT
-    {VK_FORMAT_A8B8G8R8_UINT_PACK32, Attachable | Storage},      // A8B8G8R8_UINT
-    {VK_FORMAT_R5G6B5_UNORM_PACK16, Attachable},                 // R5G6B5_UNORM
-    {VK_FORMAT_B5G6R5_UNORM_PACK16},                             // B5G6R5_UNORM
-    {VK_FORMAT_A1R5G5B5_UNORM_PACK16, Attachable},               // A1R5G5B5_UNORM
-    {VK_FORMAT_A2B10G10R10_UNORM_PACK32, Attachable | Storage},  // A2B10G10R10_UNORM
-    {VK_FORMAT_A2B10G10R10_UINT_PACK32, Attachable | Storage},   // A2B10G10R10_UINT
-    {VK_FORMAT_A2R10G10B10_UNORM_PACK32, Attachable},            // A2R10G10B10_UNORM
+    {.format=VK_FORMAT_A8B8G8R8_UNORM_PACK32, .usage=Attachable | Storage},     // A8B8G8R8_UNORM
+    {.format=VK_FORMAT_A8B8G8R8_SNORM_PACK32, .usage=Attachable | Storage},     // A8B8G8R8_SNORM
+    {.format=VK_FORMAT_A8B8G8R8_SINT_PACK32, .usage=Attachable | Storage},      // A8B8G8R8_SINT
+    {.format=VK_FORMAT_A8B8G8R8_UINT_PACK32, .usage=Attachable | Storage},      // A8B8G8R8_UINT
+    {.format=VK_FORMAT_R5G6B5_UNORM_PACK16, .usage=Attachable},                 // R5G6B5_UNORM
+    {.format=VK_FORMAT_B5G6R5_UNORM_PACK16},                             // B5G6R5_UNORM
+    {.format=VK_FORMAT_A1R5G5B5_UNORM_PACK16, .usage=Attachable},               // A1R5G5B5_UNORM
+    {.format=VK_FORMAT_A2B10G10R10_UNORM_PACK32, .usage=Attachable | Storage},  // A2B10G10R10_UNORM
+    {.format=VK_FORMAT_A2B10G10R10_UINT_PACK32, .usage=Attachable | Storage},   // A2B10G10R10_UINT
+    {.format=VK_FORMAT_A2R10G10B10_UNORM_PACK32, .usage=Attachable},            // A2R10G10B10_UNORM
     {VK_FORMAT_A1R5G5B5_UNORM_PACK16, Attachable},          // A1B5G5R5_UNORM (flipped with swizzle)
     {VK_FORMAT_R5G5B5A1_UNORM_PACK16},                      // A5B5G5R1_UNORM (specially swizzled)
     {VK_FORMAT_R8_UNORM, Attachable | Storage},             // R8_UNORM

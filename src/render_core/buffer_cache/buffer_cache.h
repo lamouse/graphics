@@ -19,7 +19,7 @@ auto BufferCache<P>::CreateBuffer(u32 wanted_size) -> BufferId {
     return new_buffer_id;
 }
 template <class P>
-auto BufferCache<P>::addIndexBuffer(void* data, u32 size) -> BufferId {
+auto BufferCache<P>::addIndexBuffer(const void* data, u32 size) -> BufferId {
     auto buffer_id = CreateBuffer(size);
     auto& buffer = slot_buffers[buffer_id];
     auto upload_staging = runtime.UploadStagingBuffer(size);
@@ -63,7 +63,7 @@ void BufferCache<P>::TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept {
 }
 
 template <class P>
-auto BufferCache<P>::addVertexBuffer(void* data, u32 size) -> BufferId {
+auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
     auto buffer_id = CreateBuffer(size);
     auto& buffer = slot_buffers[buffer_id];
     auto upload_staging = runtime.UploadStagingBuffer(size);
@@ -179,5 +179,10 @@ template <class P>
 void BufferCache<P>::setCurrentUniformBuffer(BufferId id, u32 size) {
     current_uniform_buffer.buffer_id = id;
     current_uniform_buffer.size = size;
+}
+template <class P>
+void BufferCache<P>::BindUniformBuffer(std::span<const std::byte> data) {
+    auto map = runtime.BindMappedUniformBuffer(0, 0, data.size());
+    std::memcpy(map.data(), data.data(), data.size());
 }
 }  // namespace render::buffer

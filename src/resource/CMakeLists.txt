@@ -4,6 +4,7 @@ set(LIB_RESOURCE_NAME resource)
 set (sources
     texture/image.hpp
     texture/image.cpp
+    obj/mesh.hpp
     obj/model.hpp
     obj/model.cpp
     config.hpp

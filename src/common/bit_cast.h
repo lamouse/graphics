@@ -12,7 +12,7 @@
 namespace common {
 
 template <typename To, typename From>
-constexpr inline To BitCast(const From& from) {
+constexpr inline auto BitCast(const From& from) -> To {
 #ifdef __cpp_lib_bit_cast
     return std::bit_cast<To>(from);
 #else

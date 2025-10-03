@@ -10,7 +10,7 @@
 
 namespace render::texture {
 
-[[nodiscard]] inline auto SamplesLog2(int num_samples) -> std::pair<int, int> {
+[[nodiscard]] inline auto SamplesLog2(int num_samples) -> std::pair<std::uint8_t, std::uint8_t> {
     switch (num_samples) {
         case 1:
             return {0, 0};
@@ -22,9 +22,10 @@ namespace render::texture {
             return {2, 1};
         case 16:
             return {2, 2};
+        default:
+            assert(false && "Invalid number of samples");
+            return {0, 0};
     }
-    assert(false && "Invalid number of samples");
-    return {0, 0};
 }
 
 [[nodiscard]] inline int NumSamples(MsaaMode msaa_mode) {

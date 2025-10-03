@@ -1,8 +1,8 @@
 #pragma once
-#include "common/common_types.hpp"
+#include <cstdint>
 namespace render {
 
-enum class SwizzleSource : u32 {
+enum class SwizzleSource :  std::uint8_t {
     Zero = 0,
 
     R = 2,
@@ -13,10 +13,17 @@ enum class SwizzleSource : u32 {
     OneFloat = 7,
 };
 
-enum class SamplerReduction : u32 {
+enum class SamplerReduction : std::uint8_t {
     WeightedAverage = 0,
     Min = 1,
     Max = 2,
+};
+
+enum class SamplerPreset : std::uint8_t{
+    Linear,
+    Nearest,
+    ShadowMin,
+    HDRMax,
 };
 
 }  // namespace render

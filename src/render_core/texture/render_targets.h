@@ -39,7 +39,9 @@ struct hash<render::texture::RenderTargets> {
             using render::texture::ImageViewId;
             size_t value = std::hash<ImageViewId>{}(rt.depth_buffer_id);
             for (const ImageViewId color_buffer_id : rt.color_buffer_ids) {
-                value ^= std::hash<ImageViewId>{}(color_buffer_id);
+                if(color_buffer_id){
+                    value ^= std::hash<ImageViewId>{}(color_buffer_id);
+                }
             }
             value ^= common::BitCast<u64>(rt.draw_buffers);
             value ^= common::BitCast<u64>(rt.size);

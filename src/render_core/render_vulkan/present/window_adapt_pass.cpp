@@ -117,9 +117,9 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 .setBaseArrayLayer(0)
                 .setLayerCount(1);
 
+
         utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, render_area);
         cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
-
         for (size_t i = 0; i < layer_count; i++) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipelines[i]);
             cmdbuf.pushConstants(graphics_pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0,
@@ -129,7 +129,6 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
             cmdbuf.draw(4, 1, 0, 0);
         }
         rasterizer.drawImgui(cmdbuf);
-
         cmdbuf.endRenderPass();
     });
 }

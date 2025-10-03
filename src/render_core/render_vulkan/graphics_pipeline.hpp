@@ -8,7 +8,6 @@
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "shader_tools/shader_info.h"
 #include <condition_variable>
-#include "render_core/framebufferConfig.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "common/thread_worker.hpp"
@@ -66,6 +65,9 @@ class PipelineStatistics;
 class RescalingPushConstant;
 class RenderAreaPushConstant;
 }  // namespace pipeline
+
+
+
 class GraphicsPipeline {
         static constexpr size_t NUM_STAGES = 5;
 
@@ -140,8 +142,6 @@ class GraphicsPipeline {
         BufferCache& buffer_cache;
         std::condition_variable build_condvar;
         std::mutex build_mutex;
-        texture::RenderTargets render_targets;
-        bool is_set_render_target{false};
         std::atomic_bool is_built{false};
         bool uses_push_descriptor{false};
 };

@@ -3,30 +3,31 @@
   "name": "graphics",
   "builtin-baseline": "4bb07a326d9b9bce3703272a509e5bc25dd9cfd5",
   "version": "1.0",
-  "dependencies": [
-    "glfw3",
-    "fmt",
-    "spdlog",
-    "assimp",
-    "stb",
-    "glm",
-    "ms-gsl",
-    "gtest",
-    "yaml-cpp",
-    "boost-container",
-    "glslang",
-    "spirv-cross",
-    "farmhash",
-    {
-      "name": "sdl3",
-      "features": [
-        "vulkan"
-      ]
-    },
-    "tracy",
-    {
-      "name": "entt",
-      "version>=": "3.15.0"
-    }
-  ]
+    "dependencies": [
+        "abseil",
+        "glfw3",
+        "fmt",
+        "spdlog",
+        "assimp",
+        "stb",
+        "glm",
+        "ms-gsl",
+        "gtest",
+        "yaml-cpp",
+        "boost-container",
+        "glslang",
+        "spirv-cross",
+        "farmhash",
+        {
+            "name": "sdl3",
+            "features": [
+                "vulkan"
+            ]
+        },
+        "tracy",
+        {
+            "name": "entt",
+            "version>=": "3.15.0"
+        }
+    ]
 }

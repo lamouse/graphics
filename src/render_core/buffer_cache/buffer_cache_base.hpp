@@ -155,11 +155,12 @@ class BufferCache : public BufferCacheInfo {
     public:
         explicit BufferCache(Runtime& runtime_);
         void TickFrame();
-        auto addVertexBuffer(void* data, u32 size) -> BufferId;
-        auto addIndexBuffer(void* data, u32 size) -> BufferId;
+        auto addVertexBuffer(const void* data, u32 size) -> BufferId;
+        auto addIndexBuffer(const void* data, u32 size) -> BufferId;
         auto addUniformBuffer(u32 size) -> BufferId;
         void BindIndexBuffer(BufferId id);
         void BindVertexBuffers(BufferId id, u32 size);
+        void BindUniformBuffer(std::span<const std::byte> data);
         void BindUniformBuffers(BufferId id, void* data, size_t size);
         auto BindUniformBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
         void BindStageBuffers(size_t stage);

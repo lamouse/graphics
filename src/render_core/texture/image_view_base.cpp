@@ -12,28 +12,13 @@ ImageViewBase::ImageViewBase(const ImageViewInfo& info, const ImageInfo& image_i
       type{info.type},
       range{info.range},
       size{
-          .width = std::max(image_info.size.width >> range.base.level, 1u),
-          .height = std::max(image_info.size.height >> range.base.level, 1u),
-          .depth = std::max(image_info.size.depth >> range.base.level, 1u),
-      } {
-    if (image_info.type == ImageType::e3D && info.type != ImageViewType::e3D) {
-        flags |= ImageViewFlagBits::Slice;
-    }
-}
+          .width = image_info.size.width,
+          .height = image_info.size.height,
+          .depth = image_info.size.depth,
+      } {}
 
-ImageViewBase::ImageViewBase(const ImageInfo& info, const ImageViewInfo& view_info)
-    : image_id{NULL_IMAGE_ID},
-      format{info.format},
-      type{ImageViewType::Buffer},
-      size{
-          .width = info.size.width,
-          .height = 1,
-          .depth = 1,
-      } {
-    assert(view_info.type == ImageViewType::Buffer && "Expected texture buffer");
-}
 
-ImageViewBase::ImageViewBase(const NullImageViewParams&) : image_id{NULL_IMAGE_ID} {}
+ImageViewBase::ImageViewBase(const NullImageViewParams& /*unused*/) : image_id{NULL_IMAGE_ID} {}
 
 auto ImageViewBase::SupportsAnisotropy() const noexcept -> bool {
     const bool has_mips = range.extent.levels > 1;

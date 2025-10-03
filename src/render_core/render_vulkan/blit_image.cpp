@@ -505,21 +505,18 @@ void BlitImageHelper::ConvertD32FToABGR8(const TextureFramebuffer* dst_framebuff
                                          TextureImageView& src_image_view) {
     ConvertPipelineColorTargetEx(convert_d32f_to_abgr8_pipeline, dst_framebuffer->RenderPass(),
                                  convert_d32f_to_abgr8_frag);
-    ConvertDepthStencil(*convert_d32f_to_abgr8_pipeline, dst_framebuffer, src_image_view);
 }
 
 void BlitImageHelper::ConvertD24S8ToABGR8(const TextureFramebuffer* dst_framebuffer,
                                           TextureImageView& src_image_view) {
     ConvertPipelineColorTargetEx(convert_d24s8_to_abgr8_pipeline, dst_framebuffer->RenderPass(),
                                  convert_d24s8_to_abgr8_frag);
-    ConvertDepthStencil(*convert_d24s8_to_abgr8_pipeline, dst_framebuffer, src_image_view);
 }
 
 void BlitImageHelper::ConvertS8D24ToABGR8(const TextureFramebuffer* dst_framebuffer,
                                           TextureImageView& src_image_view) {
     ConvertPipelineColorTargetEx(convert_s8d24_to_abgr8_pipeline, dst_framebuffer->RenderPass(),
                                  convert_s8d24_to_abgr8_frag);
-    ConvertDepthStencil(*convert_s8d24_to_abgr8_pipeline, dst_framebuffer, src_image_view);
 }
 
 void BlitImageHelper::ClearColor(const TextureFramebuffer* dst_framebuffer, u8 color_mask,
@@ -599,50 +596,6 @@ void BlitImageHelper::Convert(VkPipeline pipeline, const TextureFramebuffer* dst
 
         // TODO: Barriers
         cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, static_cast<vk::Pipeline>(pipeline));
-        cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, descriptor_set,
-                                  nullptr);
-        cmdbuf.setViewport(0, viewport);
-        cmdbuf.setScissor(0, scissor);
-        cmdbuf.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(push_constants),
-                             &push_constants);
-        cmdbuf.draw(3, 1, 0, 0);
-    });
-    scheduler.invalidateState();
-}
-
-void BlitImageHelper::ConvertDepthStencil(VkPipeline pipeline,
-                                          const TextureFramebuffer* dst_framebuffer,
-                                          TextureImageView& src_image_view) {
-    const VkPipelineLayout layout = *two_textures_pipeline_layout;
-    const VkImageView src_depth_view = src_image_view.DepthView();
-    const VkImageView src_stencil_view = src_image_view.StencilView();
-    const VkSampler sampler = *nearest_sampler;
-    const VkExtent2D extent = {.width = src_image_view.size.width, .height = src_image_view.size.height};
-
-    scheduler.requestRenderPass(dst_framebuffer);
-    scheduler.record([pipeline, layout, sampler, src_depth_view, src_stencil_view, extent,
-                      this](vk::CommandBuffer cmdbuf) {
-        const VkOffset2D offset{
-            .x = 0,
-            .y = 0,
-        };
-        const vk::Viewport viewport{
-            0.0f, 0.0f, static_cast<float>(extent.width), static_cast<float>(extent.height),
-            0.0f, 0.0f,
-        };
-        const vk::Rect2D scissor{
-            offset,
-            extent,
-        };
-        const PushConstants push_constants{
-            .tex_scale = {viewport.width, viewport.height},
-            .tex_offset = {0.0f, 0.0f},
-        };
-        const vk::DescriptorSet descriptor_set = two_textures_descriptor_allocator.commit();
-        UpdateTwoTexturesDescriptorSet(device, descriptor_set, sampler, src_depth_view,
-                                       src_stencil_view);
-        // TODO: Barriers
-        cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
         cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 0, descriptor_set,
                                   nullptr);
         cmdbuf.setViewport(0, viewport);

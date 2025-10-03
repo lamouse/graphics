@@ -22,6 +22,14 @@ swapchain重新创建时需要传入旧的swachain
 clang-format version 16.0.5
 ```
 
+## clang-tidy
+
+```text
+因为一些原因clang-tidy检查有些问题，或者确认是没有问题的地方需要屏蔽
+在行后    //NOLINT(modernize-use-trailing-return-type)
+下一行 // NOLINTNEXTLINE(clang-analyzer-core.NullDereference)
+```
+
 ## 依赖
 
 ```text

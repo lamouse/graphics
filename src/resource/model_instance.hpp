@@ -9,18 +9,35 @@
 #include "resource/obj/model.hpp"
 #include "resource/texture/image.hpp"
 #include "common/slot_vector.hpp"
+#include "obj/model.hpp"
 using ModelId = common::SlotId;
 
 namespace graphics {
 
-class ModelInstance {
+class ImodelInstance {
+    public:
+        ImodelInstance() = default;
+        virtual ~ImodelInstance() = default;
+        CLASS_DEFAULT_COPYABLE(ImodelInstance);
+        CLASS_DEFAULT_MOVEABLE(ImodelInstance);
+        void setModelId(ModelId id) { modelId = id; }
+        [[nodiscard]] auto getModelId() const -> ModelId { return modelId; }
+        [[nodiscard]] virtual auto getImageData() const -> std::unique_ptr<resource::image::Image> = 0;
+        [[nodiscard]] virtual auto getMeshData() const -> std::unique_ptr<IMeshData> = 0;
+        [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
+    private:
+        ModelId modelId;
+};
+
+class ModelInstance : public ImodelInstance {
     public:
         using id_t = unsigned int;
         using Map = std::unordered_map<id_t, ModelInstance>;
-        static auto createGameObject(std::string image_path, std::string mode_path)
-            -> ModelInstance {
+        static auto createGameObject(std::string image_path, std::string mode_path,
+                                     std::uint32_t ubo_size) -> ModelInstance {
             static id_t currentId = 0;
-            return ModelInstance{currentId++, std::move(image_path), std::move(mode_path)};
+            return ModelInstance{currentId++, std::move(image_path), std::move(mode_path),
+                                 ubo_size};
         }
         [[nodiscard]] auto getModelMatrix() -> glm::mat4 {
             if (entity_.hasComponent<ecs::TransformComponent>()) {
@@ -30,7 +47,8 @@ class ModelInstance {
         }
 
         [[nodiscard]] auto getId() const -> id_t { return id; }
-        [[nodiscard]] auto getImageData() const -> std::unique_ptr<resource::image::Image>;
+        [[nodiscard]] auto getImageData() const -> std::unique_ptr<resource::image::Image> override;
+        [[nodiscard]] auto getMeshData() const -> std::unique_ptr<IMeshData> override;
         ModelInstance(const ModelInstance&) = delete;
         ModelInstance(ModelInstance&&) = default;
         auto operator=(const ModelInstance&) -> ModelInstance& = delete;
@@ -40,15 +58,26 @@ class ModelInstance {
         ::std::shared_ptr<Model> model;
         ::glm::vec3 color{};
         ecs::Entity entity_;
-        ~ModelInstance() = default;
-
+        ~ModelInstance() override = default;
+        [[nodiscard]] auto getUBOSize() const -> std::uint32_t { return ubo_size; }
+        void writeToUBOMapData(std::span<const std::byte> data);
+        [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
+            // NOLINTNEXTLINE
+            ASSERT_MSG(ubo_data.size() == ubo_size, "UBO size not match");
+            return ubo_data;
+        };
     private:
         id_t id;
-        ModelId modelId;
+        std::span<const std::byte> ubo_data;
+        std::uint32_t ubo_size;
         std::string image_path;
         std::string mode_path;
-        explicit ModelInstance(id_t id, std::string image_path, std::string mode_path)
-            : id(id), image_path(std::move(image_path)), mode_path(std::move(mode_path)) {
+        explicit ModelInstance(id_t id, std::string image_path, std::string mode_path,
+                               std::uint32_t ubo_size)
+            : id(id),
+              ubo_size(ubo_size),
+              image_path(std::move(image_path)),
+              mode_path(std::move(mode_path)) {
             static ecs::Scene scene;
             entity_ = scene.createEntity("ModelInstance");
             entity_.addComponent<ecs::TransformComponent>();

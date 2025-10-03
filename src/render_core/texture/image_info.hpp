@@ -5,15 +5,9 @@ namespace render::texture {
 struct ImageInfo {
         ImageInfo() = default;
         surface::PixelFormat format = surface::PixelFormat::Invalid;
-        ImageType type = ImageType::e1D;
         SubresourceExtent resources;
-        Extent3D size{0, 0, 1};
-        union {
-                Extent3D block{0, 0, 0};
-                u32 pitch;
-        } block_or_pitch;
-        void* data = nullptr;
-        u32 num_samples = 1;
-
+        ImageType type = ImageType::e2D;
+        Extent3D size{.width=0, .height=0, .depth=1};
+        std::uint8_t num_samples = 1;
 };
 }  // namespace render::texture

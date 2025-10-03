@@ -163,39 +163,8 @@ class RescalingPushConstant {
         std::array<u32, NUM_TEXTURE_AND_IMAGE_SCALING_WORDS> words{};
         u32* texture_ptr{words.data()};
         u32* image_ptr{words.data() + 4};
-        u32 texture_bit{1u};
-        u32 image_bit{1u};
+        u32 texture_bit{1U};
+        u32 image_bit{1U};
 };
-
-inline void PushImageDescriptors(TextureCache& texture_cache,
-                                 GuestDescriptorQueue& guest_descriptor_queue,
-                                 const shader::Info& info, const texture::SamplerId*& samplers,
-                                 const texture::ImageViewInOut*& views) {
-    const u32 num_texture_buffers = shader::NumDescriptors(info.texture_buffer_descriptors);
-    const u32 num_image_buffers = shader::NumDescriptors(info.image_buffer_descriptors);
-    views += num_texture_buffers;
-    views += num_image_buffers;
-    for (const auto& desc : info.texture_descriptors) {
-        for (u32 index = 0; index < desc.count; ++index) {
-            const texture::ImageViewId image_view_id{(views++)->id};
-            const texture::SamplerId sampler_id{*(samplers++)};
-            TextureImageView& image_view{texture_cache.GetImageView(image_view_id)};
-            const vk::ImageView vk_image_view{image_view.Handle(desc.type)};
-            const TextureSampler& sampler{texture_cache.GetSampler(sampler_id)};
-            const bool use_fallback_sampler{sampler.HasAddedAnisotropy() &&
-                                            !image_view.SupportsAnisotropy()};
-            const vk::Sampler vk_sampler{
-                use_fallback_sampler ? sampler.HandleWithDefaultAnisotropy() : sampler.Handle()};
-            guest_descriptor_queue.AddSampledImage(vk_image_view, vk_sampler);
-        }
-    }
-    for (const auto& desc : info.image_descriptors) {
-        for (u32 index = 0; index < desc.count; ++index) {
-            TextureImageView& image_view{texture_cache.GetImageView((views++)->id)};
-            const vk::ImageView vk_image_view{image_view.StorageView(desc.type, desc.format)};
-            guest_descriptor_queue.AddImage(vk_image_view);
-        }
-    }
-}
 
 }  // namespace render::vulkan::pipeline

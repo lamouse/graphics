@@ -82,8 +82,6 @@ class Scheduler {
 
         // Registers a callback to perform on queue submission.
         void registerOnSubmit(std::function<void()>&& func) { on_submit_ = std::move(func); }
-        /// Update the rescaling state. Returns true if the state has to be updated.
-        auto updateRescaling(bool is_rescaling) -> bool;
 
         // Update the pipeline to the current execution context.
         auto updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool;
@@ -174,8 +172,6 @@ class Scheduler {
                 vk::Framebuffer framebuffer_;
                 vk::Extent2D render_area_ = {0, 0};
                 GraphicsPipeline* graphics_pipeline_ = nullptr;
-                bool is_rescaling_ = false;
-                bool rescaling_defined_ = false;
         };
 
         const Device& device_;

@@ -238,16 +238,10 @@ struct fmt::formatter<render::texture::ImageType> : fmt::formatter<fmt::string_v
             const string_view name = [type] {
                 using render::texture::ImageType;
                 switch (type) {
-                    case ImageType::e1D:
-                        return "1D";
                     case ImageType::e2D:
                         return "2D";
                     case ImageType::e3D:
                         return "3D";
-                    case ImageType::Linear:
-                        return "Linear";
-                    case ImageType::Buffer:
-                        return "Buffer";
                 }
                 return "Invalid";
             }();
@@ -268,14 +262,14 @@ struct fmt::formatter<render::texture::Extent3D> {
 
 namespace render::texture {
 
-struct ImageBase;
+struct ImageInfo;
 struct ImageViewBase;
 struct RenderTargets;
 
-[[nodiscard]] std::string Name(const ImageBase& image);
+[[nodiscard]] auto Name(const ImageInfo& image) -> std::string;
 
-[[nodiscard]] std::string Name(const ImageViewBase& image_view);
+[[nodiscard]] auto Name(const ImageViewBase& image_view) -> std::string;
 
-[[nodiscard]] std::string Name(const RenderTargets& render_targets);
+[[nodiscard]] auto Name(const RenderTargets& render_targets) -> std::string;
 
 }  // namespace render::texture

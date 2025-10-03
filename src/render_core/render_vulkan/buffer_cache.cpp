@@ -140,21 +140,12 @@ BufferCacheRuntime::BufferCacheRuntime(const Device& device_, MemoryAllocator& m
                                        scheduler::Scheduler& scheduler_,
                                        StagingBufferPool& staging_pool_,
                                        GuestDescriptorQueue& guest_descriptor_queue_,
-                                       ComputePassDescriptorQueue& compute_pass_descriptor_queue,
-                                       resource::DescriptorPool& descriptor_pool)
+                                       ComputePassDescriptorQueue& compute_pass_descriptor_queue)
     : device{device_},
       memory_allocator{memory_allocator_},
       scheduler{scheduler_},
       staging_pool{staging_pool_},
-      guest_descriptor_queue{guest_descriptor_queue_},
-      quad_index_pass(device, scheduler, descriptor_pool, staging_pool,
-                      compute_pass_descriptor_queue) {
-    if (device.getDriverID() != vk::DriverId::eQualcommProprietary) {
-        // TODO: FixMe: Uint8Pass compute shader does not build on some Qualcomm drivers.
-        uint8_pass = std::make_unique<Uint8Pass>(device, scheduler, descriptor_pool, staging_pool,
-                                                 compute_pass_descriptor_queue);
-    }
-}
+      guest_descriptor_queue{guest_descriptor_queue_} {}
 
 auto BufferCacheRuntime::UploadStagingBuffer(size_t size) -> StagingBufferRef {
     return staging_pool.Request(size, MemoryUsage::Upload);
@@ -269,18 +260,6 @@ void BufferCacheRuntime::BindIndexBuffer(PrimitiveTopology topology, IndexFormat
     vk::IndexType vk_index_type = ToIndexFormat(index_format);
     vk::DeviceSize vk_offset = offset;
     vk::Buffer vk_buffer = buffer;
-    if (topology == PrimitiveTopology::Quads || topology == PrimitiveTopology::QuadStrip) {
-        vk_index_type = vk::IndexType::eUint32;
-        std::tie(vk_buffer, vk_offset) =
-            quad_index_pass.Assemble(index_format, num_indices, base_vertex, buffer, offset,
-                                     topology == PrimitiveTopology::QuadStrip);
-    } else if (vk_index_type == vk::IndexType::eUint8EXT &&
-               !device.IsExtIndexTypeUint8Supported()) {
-        vk_index_type = vk::IndexType::eUint16;
-        if (uint8_pass) {
-            std::tie(vk_buffer, vk_offset) = uint8_pass->Assemble(num_indices, buffer, offset);
-        }
-    }
     if (vk_buffer == VK_NULL_HANDLE) {
         // Vulkan doesn't support null index buffers. Replace it with our own null buffer.
         ReserveNullBuffer();
