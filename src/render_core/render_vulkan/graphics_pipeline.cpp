@@ -129,7 +129,7 @@ auto MsaaMode(MsaaMode msaa_mode) -> VkSampleCountFlagBits {
 }
 
 auto MakeRenderPassKey(const FixedPipelineState& state) -> RenderPassKey {
-    RenderPassKey key;
+    RenderPassKey key{};
     std::ranges::transform(state.color_formats, key.color_formats.begin(),
                            [](auto format) { return format; });
     if (state.depth_enabled != 0) {

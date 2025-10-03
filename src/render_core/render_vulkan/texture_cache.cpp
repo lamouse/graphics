@@ -419,7 +419,8 @@ void TextureImage::UploadMemory(vk::Buffer buffer, vk::DeviceSize offset,
     const vk::Image vk_image = *image;
     const vk::ImageAspectFlags vk_aspect_mask = aspect_mask;
     const bool is_initialized = std::exchange(initialized, true);
-    scheduler->record([src_buffer, vk_image, vk_aspect_mask, is_initialized, vk_copies](vk::CommandBuffer cmdbuf) {
+    scheduler->record([src_buffer, vk_image, vk_aspect_mask, is_initialized, vk_copies ](
+                          vk::CommandBuffer cmdbuf) {
         CopyBufferToImage(cmdbuf, src_buffer, vk_image, vk_aspect_mask, is_initialized, vk_copies);
     });
 }

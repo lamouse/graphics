@@ -338,9 +338,11 @@ class Device {
             return extensions_.transform_feedback;
         }
         /// Returns true if the device supports VK_EXT_extended_dynamic_state2.
-        auto IsExtExtendedDynamicState2Supported() const -> bool {
+        [[nodiscard]] auto IsExtExtendedDynamicState2Supported() const -> bool {
             return extensions_.extended_dynamic_state2;
         }
+
+        [[nodiscard]] auto IsFormatSupport(vk::Format format, vk::FormatFeatureFlagBits feature) const -> bool;
 
         [[nodiscard]] auto IsExtExtendedDynamicState2ExtrasSupported() const -> bool {
             return features_.extended_dynamic_state2.extendedDynamicState2LogicOp;

@@ -49,16 +49,18 @@ struct FormatTuple {
         VkFormat format;  ///< Vulkan format
         int usage = 0;    ///< Describes image format usage
 } constexpr tex_format_tuples[] = {
-    {.format=VK_FORMAT_A8B8G8R8_UNORM_PACK32, .usage=Attachable | Storage},     // A8B8G8R8_UNORM
-    {.format=VK_FORMAT_A8B8G8R8_SNORM_PACK32, .usage=Attachable | Storage},     // A8B8G8R8_SNORM
-    {.format=VK_FORMAT_A8B8G8R8_SINT_PACK32, .usage=Attachable | Storage},      // A8B8G8R8_SINT
-    {.format=VK_FORMAT_A8B8G8R8_UINT_PACK32, .usage=Attachable | Storage},      // A8B8G8R8_UINT
-    {.format=VK_FORMAT_R5G6B5_UNORM_PACK16, .usage=Attachable},                 // R5G6B5_UNORM
-    {.format=VK_FORMAT_B5G6R5_UNORM_PACK16},                             // B5G6R5_UNORM
-    {.format=VK_FORMAT_A1R5G5B5_UNORM_PACK16, .usage=Attachable},               // A1R5G5B5_UNORM
-    {.format=VK_FORMAT_A2B10G10R10_UNORM_PACK32, .usage=Attachable | Storage},  // A2B10G10R10_UNORM
-    {.format=VK_FORMAT_A2B10G10R10_UINT_PACK32, .usage=Attachable | Storage},   // A2B10G10R10_UINT
-    {.format=VK_FORMAT_A2R10G10B10_UNORM_PACK32, .usage=Attachable},            // A2R10G10B10_UNORM
+    {.format = VK_FORMAT_A8B8G8R8_UNORM_PACK32, .usage = Attachable | Storage},  // A8B8G8R8_UNORM
+    {.format = VK_FORMAT_A8B8G8R8_SNORM_PACK32, .usage = Attachable | Storage},  // A8B8G8R8_SNORM
+    {.format = VK_FORMAT_A8B8G8R8_SINT_PACK32, .usage = Attachable | Storage},   // A8B8G8R8_SINT
+    {.format = VK_FORMAT_A8B8G8R8_UINT_PACK32, .usage = Attachable | Storage},   // A8B8G8R8_UINT
+    {.format = VK_FORMAT_R5G6B5_UNORM_PACK16, .usage = Attachable},              // R5G6B5_UNORM
+    {.format = VK_FORMAT_B5G6R5_UNORM_PACK16},                                   // B5G6R5_UNORM
+    {.format = VK_FORMAT_A1R5G5B5_UNORM_PACK16, .usage = Attachable},            // A1R5G5B5_UNORM
+    {.format = VK_FORMAT_A2B10G10R10_UNORM_PACK32,
+     .usage = Attachable | Storage},  // A2B10G10R10_UNORM
+    {.format = VK_FORMAT_A2B10G10R10_UINT_PACK32,
+     .usage = Attachable | Storage},                                      // A2B10G10R10_UINT
+    {.format = VK_FORMAT_A2R10G10B10_UNORM_PACK32, .usage = Attachable},  // A2R10G10B10_UNORM
     {VK_FORMAT_A1R5G5B5_UNORM_PACK16, Attachable},          // A1B5G5R5_UNORM (flipped with swizzle)
     {VK_FORMAT_R5G5B5A1_UNORM_PACK16},                      // A5B5G5R1_UNORM (specially swizzled)
     {VK_FORMAT_R8_UNORM, Attachable | Storage},             // R8_UNORM
@@ -744,10 +746,12 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 
     const vk::PhysicalDeviceLimits& limits{properties_.properties_.limits};
     const std::array limits_report{
-        Limit{.minimum=65536, .value=limits.maxUniformBufferRange, .name="maxUniformBufferRange"},
-        Limit{.minimum=16, .value=limits.maxViewports, .name="maxViewports"},
-        Limit{.minimum=8, .value=limits.maxColorAttachments, .name="maxColorAttachments"},
-        Limit{.minimum=8, .value=limits.maxClipDistances, .name="maxClipDistances"},
+        Limit{.minimum = 65536,
+              .value = limits.maxUniformBufferRange,
+              .name = "maxUniformBufferRange"},
+        Limit{.minimum = 16, .value = limits.maxViewports, .name = "maxViewports"},
+        Limit{.minimum = 8, .value = limits.maxColorAttachments, .name = "maxColorAttachments"},
+        Limit{.minimum = 8, .value = limits.maxClipDistances, .name = "maxClipDistances"},
     };
 
     for (const auto& [min, value, name] : limits_report) {
@@ -1339,6 +1343,14 @@ auto Device::shouldBoostClocks() const -> bool {
 
 void Device::initDispatchLoaderDynamic(vk::Instance instance) {
     logical_.initDispatchLoaderDynamic(instance);
+}
+
+auto Device::IsFormatSupport(vk::Format format, vk::FormatFeatureFlagBits feature) const -> bool {
+    auto properties = format_properties_.find(format)->second;
+    if (!(properties.optimalTilingFeatures & feature)) {
+        return false;
+    }
+    return true;
 }
 
 }  // namespace render::vulkan
