@@ -20,10 +20,15 @@ namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
 struct NoOwner {
         NoOwner() = default;
+        CLASS_DEFAULT_COPYABLE(NoOwner);
+        CLASS_DEFAULT_MOVEABLE(NoOwner);
+        ~NoOwner() = default;
+        // NOLINTNEXTLINE
         NoOwner(std::nullptr_t) {}
-        auto operator=(std::nullptr_t) -> NoOwner { return {}; }
-        auto operator=(NoOwner) -> NoOwner { return {}; }
-        operator bool() const { return false; }
+
+        auto operator=(std::nullptr_t) -> NoOwner { return {}; }  // NOLINT
+        auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
+        operator bool() const { return false; }                   // NOLINT
 };
 inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::Image handle) noexcept { owner.destroy(handle); }
@@ -56,12 +61,12 @@ inline void destroy(vk::Device owner, vk::DescriptorUpdateTemplate handle) noexc
 inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.destroy(val); }
 inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
 inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
-    owner.destroyDebugUtilsMessengerEXT(handle, nullptr,
-                                        vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+    owner.destroyDebugUtilsMessengerEXT(
+        handle, nullptr, vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
 }
 inline void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle) noexcept {
-    owner.destroyDebugReportCallbackEXT(handle, nullptr,
-                                        vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+    owner.destroyDebugReportCallbackEXT(
+        handle, nullptr, vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
 }
 
 template <typename Type, typename OwnerType>
@@ -74,6 +79,7 @@ class Handle {
         Handle() = default;
 
         /// Construct an empty handle.
+        // NOLINTNEXTLINE
         Handle(std::nullptr_t) {}
 
         /// Copying Vulkan objects is not supported and will never be.
@@ -134,6 +140,7 @@ class PoolAllocations {
     public:
         /// Construct an empty allocation.
         PoolAllocations() = default;
+        ~PoolAllocations() = default;
         CLASS_NON_COPYABLE(PoolAllocations);
         /// Construct an allocation. Errors are reported through IsOutOfPoolMemory().
         explicit PoolAllocations(std::vector<AllocationType> allocations_, vk::Device device_,
@@ -218,6 +225,8 @@ class VulkanException final : public std::exception {
     public:
         /// Construct the exception with a result.
         /// @pre result != VK_SUCCESS
+        CLASS_DEFAULT_COPYABLE(VulkanException);
+        CLASS_DEFAULT_MOVEABLE(VulkanException);
         explicit VulkanException(vk::Result result_) : result{result_} {}
         explicit VulkanException(VkResult result_) : result{static_cast<vk::Result>(result_)} {}
         ~VulkanException() override = default;
@@ -618,7 +627,9 @@ class Semaphore : public wrapper::Handle<vk::Semaphore, vk::Device> {
         /// Set object name.
         void SetObjectNameEXT(const char* name) const;
 
-        [[nodiscard]] u64 GetCounter() const { return owner.getSemaphoreCounterValue(handle); }
+        [[nodiscard]] auto GetCounter() const -> u64 {
+            return owner.getSemaphoreCounterValue(handle);
+        }
 
         /**
          * Waits for a timeline semaphore on the host.
@@ -698,7 +709,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
         void UpdateDescriptorSet(vk::DescriptorSet set,
                                  vk::DescriptorUpdateTemplate update_template,
                                  const void* data) const noexcept;
-        [[nodiscard]] auto getDispatchLoaderDynamic() const noexcept -> vk::detail::DispatchLoaderDynamic {
+        [[nodiscard]] auto getDispatchLoaderDynamic() const noexcept
+            -> vk::detail::DispatchLoaderDynamic {
             return dld;
         };
 
