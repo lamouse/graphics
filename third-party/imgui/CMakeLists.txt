@@ -80,6 +80,11 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 target_link_libraries(imgui PRIVATE Vulkan::Vulkan glfw SDL3::SDL3)
 
+add_library(Imgui INTERFACE)
+add_library(Imgui::Imgui ALIAS Imgui)
+target_include_directories(Imgui INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+target_link_libraries(Imgui INTERFACE imgui)
+
 set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
 #
 # Install

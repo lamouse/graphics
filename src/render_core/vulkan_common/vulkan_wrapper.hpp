@@ -26,8 +26,8 @@ struct NoOwner {
         // NOLINTNEXTLINE
         NoOwner(std::nullptr_t) {}
 
-        auto operator=(std::nullptr_t) -> NoOwner { return {}; }  // NOLINT
-        auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
+        //auto operator=(std::nullptr_t) -> NoOwner { return {}; }  // NOLINT
+        //auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
         operator bool() const { return false; }                   // NOLINT
 };
 inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }

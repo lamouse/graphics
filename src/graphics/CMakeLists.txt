@@ -18,8 +18,6 @@ target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 # 添加生成的代码目录
 include_directories(${CMAKE_BINARY_DIR}/generated)
 
-target_include_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
-
 if(MSVC)
     set_target_properties(${PROGRAM_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 elseif(MINGW)
