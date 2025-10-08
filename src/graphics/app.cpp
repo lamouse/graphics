@@ -14,6 +14,7 @@
 #include <thread>
 #include "render_core/framebufferConfig.hpp"
 #include "ui.hpp"
+#include "ui/ui.hpp"
 #define image_path ::std::string{"./images/"}
 #define shader_path ::std::string{"./shader/"}
 #define models_path ::std::string{"./models/"}
@@ -89,7 +90,7 @@ void App::run() {
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
             graphics::ui::begin();
-            graphics::ui::draw_docked_window();
+            //graphics::ui::draw_docked_window();
             graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::draw_setting();

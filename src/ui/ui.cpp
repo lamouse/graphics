@@ -1,5 +1,9 @@
 ﻿#include "ui.hpp"
 #include <imgui.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <format>
+#include <charconv>
+#include <array>
 namespace {
     inline auto GetFloatFormatFromSpeed(float speed) -> std::string {
         std::string str;
@@ -131,5 +135,8 @@ void DrawFloatControl(const std::string& label, float& value, float speed,
 }
 
 namespace graphics {
-
+    namespace ui {
+        void begin() {}
+        void end() { ImGui::Render(); }
+    }
 }  // namespace graphics

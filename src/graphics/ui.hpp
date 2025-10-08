@@ -11,7 +11,4 @@ void pipeline_state(render::PipelineState& state);
 
 void draw_result(ImTextureID imguiTextureID, float aspectRatio);
 void draw_setting();
-void draw_docked_window();
-void begin();
-void end();
 }  // namespace graphics::ui

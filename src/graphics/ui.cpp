@@ -78,8 +78,7 @@ void vsync_setting() {
 }
 }  // namespace
 namespace graphics::ui {
-void begin() {}
-void end() { ImGui::Render(); }
+
 
 void pipeline_state(render::PipelineState& state) {
     ImGui::Begin("pipeline 状态");
@@ -193,26 +192,6 @@ void draw_setting() {
         vsync_setting();
         ImGui::End();
     }
-}
-
-void draw_docked_window() {
-    // 设置窗口标志
-    constexpr ImGuiWindowFlags window_flags =
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
-        ImGuiWindowFlags_NoNavFocus;
-
-    // 获取主窗口的尺寸
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-    ImGui::SetNextWindowPos(viewport->Pos);
-    ImGui::SetNextWindowSize(viewport->Size);
-    ImGui::SetNextWindowViewport(viewport->ID);
-
-    // 创建一个大小跟随主窗口的窗口
-    ImGui::Begin(MAIN_WINDOW_NAME, nullptr, window_flags);
-
-    ImGui::End();
 }
 
 }  // namespace graphics::ui
