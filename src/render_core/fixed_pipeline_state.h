@@ -137,7 +137,7 @@ struct PipelineState {
         ViewPort viewport;
         Scissors scissors;
 
-        // 主要影响render pass的clear vlue或者command buffer的clearAttachments
+        // 主要影响render pass的clear value或者command buffer的clearAttachments
         struct ClearColor {
                 float r{};
                 float g{};

@@ -35,7 +35,7 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog EnTT::EnTT Imgui::Imgui)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog EnTT::EnTT Imgui::Imgui ui)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)
