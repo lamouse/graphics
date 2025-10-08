@@ -2,7 +2,6 @@
 
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
 #include "render_core/texture/types.hpp"
-#include "render_core/fixed_pipeline_state.h"
 #include <algorithm>
 #undef min
 #undef max
@@ -31,9 +30,9 @@ auto BufferCache<P>::addIndexBuffer(const void* data, u32 size) -> BufferId {
 }
 
 template <class P>
-void BufferCache<P>::BindIndexBuffer(BufferId id) {
-    runtime.BindIndexBuffer(PrimitiveTopology::Triangles, IndexFormat::UnsignedShort, 0, 1,
-                            slot_buffers[id], 0, 0);
+void BufferCache<P>::BindIndexBuffer(IndexFormat format, BufferId id) {
+    runtime.BindIndexBuffer(format,
+                            slot_buffers[id]);
 }
 
 template <class P>

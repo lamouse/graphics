@@ -91,8 +91,8 @@ class BufferCacheRuntime {
 
         void ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value);
 
-        void BindIndexBuffer(PrimitiveTopology topology, IndexFormat index_format, u32 num_indices,
-                             u32 base_vertex, vk::Buffer buffer, u32 offset, u32 size);
+        void BindIndexBuffer(IndexFormat index_format,
+                             vk::Buffer buffer);
 
         void BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offset, u32 size, u32 stride);
 

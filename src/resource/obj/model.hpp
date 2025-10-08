@@ -22,8 +22,7 @@ class Model : public IMeshData {
         [[nodiscard]] auto getMesh() const -> std::span<const float> override;
 
         // 返回索引数据（16位或32位）
-        [[nodiscard]] auto getIndices16() const -> std::span<const uint16_t> override;
-        [[nodiscard]] auto getIndices32() const -> std::span<const uint32_t> override;
+        [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override;
 
         // 判断是否使用 32 位索引
         [[nodiscard]] auto uses32BitIndices() const -> bool override { return use32BitIndices; };

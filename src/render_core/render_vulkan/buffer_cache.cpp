@@ -254,19 +254,17 @@ void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t 
     });
 }
 
-void BufferCacheRuntime::BindIndexBuffer(PrimitiveTopology topology, IndexFormat index_format,
-                                         u32 base_vertex, u32 num_indices, vk::Buffer buffer,
-                                         u32 offset, [[maybe_unused]] u32 size) {
+void BufferCacheRuntime::BindIndexBuffer(IndexFormat index_format,
+                                         vk::Buffer buffer) {
     vk::IndexType vk_index_type = ToIndexFormat(index_format);
-    vk::DeviceSize vk_offset = offset;
     vk::Buffer vk_buffer = buffer;
     if (vk_buffer == VK_NULL_HANDLE) {
         // Vulkan doesn't support null index buffers. Replace it with our own null buffer.
         ReserveNullBuffer();
         vk_buffer = *null_buffer;
     }
-    scheduler.record([vk_buffer, vk_offset, vk_index_type](vk::CommandBuffer cmdbuf) {
-        cmdbuf.bindIndexBuffer(vk_buffer, vk_offset, vk_index_type);
+    scheduler.record([vk_buffer, vk_index_type](vk::CommandBuffer cmdbuf) {
+        cmdbuf.bindIndexBuffer(vk_buffer, 0, vk_index_type);
     });
 }
 

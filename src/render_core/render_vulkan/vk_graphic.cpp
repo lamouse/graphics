@@ -424,10 +424,9 @@ auto VulkanGraphics::uploadModel(const graphics::ImodelInstance& instance) -> Mo
     resource.vertex_size = static_cast<u32>(meshData->getMesh().size() * sizeof(float));
     resource.vertex_buffer_id =
         buffer_cache.addVertexBuffer(meshData->getMesh().data(), resource.vertex_size);
-    resource.indices_buffer_id = buffer_cache.addIndexBuffer(
-        meshData->getIndices16().data(),
-        static_cast<u32>(meshData->getIndices16().size() * sizeof(uint16_t)));
-    resource.indices_size = meshData->getIndicesSize();
+    resource.indices_buffer_id = buffer_cache.addIndexBuffer(meshData->getIndices().data(),
+        meshData->getIndices().size());
+    resource.indices_count = meshData->getIndicesSize();
     return modelResource.insert(resource);
 }
 
@@ -449,9 +448,13 @@ void VulkanGraphics::draw(const graphics::ImodelInstance& instance) {
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
     PrepareDraw(true, [resource, this] -> void {
+        IndexFormat index_format{IndexFormat::UnsignedShort};
+        if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
+            index_format = IndexFormat::UnsignedInt;
+        }
         buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size);
-        buffer_cache.BindIndexBuffer(resource.indices_buffer_id);
-        scheduler.record([indices_size = resource.indices_size](vk::CommandBuffer cmdbuf) {
+        buffer_cache.BindIndexBuffer(index_format,resource.indices_buffer_id);
+        scheduler.record([indices_size = resource.indices_count](vk::CommandBuffer cmdbuf) {
             cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
         });
     });

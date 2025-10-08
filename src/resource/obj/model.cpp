@@ -8,6 +8,17 @@
 #include <format>
 #include <unordered_map>
 
+namespace {
+    template <typename T>
+    std::span<const std::byte> as_bytes(std::span<const T> s) {
+        // 将 T* 指针 reinterpret_cast 为 const std::byte* 指针
+        auto ptr = reinterpret_cast<const std::byte*>(s.data());
+        // 第二个参数是 span 的“元素”数量，即字节数
+        return std::span<const std::byte>(ptr, s.size() * sizeof(T));
+    }
+
+}
+
 namespace graphics {
 
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
@@ -84,12 +95,12 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
                                   vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
 }
 
-// 返回索引数据（16位或32位）
-[[nodiscard]] auto Model::getIndices16() const -> std::span<const uint16_t> {
-    return std::span<const uint16_t>(u16_indices_);
-}
-[[nodiscard]] auto Model::getIndices32() const -> std::span<const uint32_t> {
-    return std::span<const uint32_t>(u32_indices_);
+auto Model::getIndices() const -> std::span<const std::byte> {
+    if (use32BitIndices) {
+        return as_bytes(std::span(u32_indices_));
+    }
+
+    return as_bytes(std::span(u16_indices_));
 }
 
 }  // namespace graphics

@@ -23,7 +23,7 @@ struct ModelResource {
         buffer::BufferId vertex_buffer_id;
         u32 vertex_size;
 
-        u32 indices_size;
+        u32 indices_count;
         buffer::BufferId indices_buffer_id;
 };
 

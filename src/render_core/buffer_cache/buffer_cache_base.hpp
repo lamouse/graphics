@@ -9,6 +9,7 @@
 #include "render_core/texture/types.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/delayed_destruction_ring.h"
+#include "render_core/fixed_pipeline_state.h"
 #include <boost/container/small_vector.hpp>
 #include <deque>
 #include <mutex>
@@ -158,7 +159,7 @@ class BufferCache : public BufferCacheInfo {
         auto addVertexBuffer(const void* data, u32 size) -> BufferId;
         auto addIndexBuffer(const void* data, u32 size) -> BufferId;
         auto addUniformBuffer(u32 size) -> BufferId;
-        void BindIndexBuffer(BufferId id);
+        void BindIndexBuffer(IndexFormat format, BufferId id);
         void BindVertexBuffers(BufferId id, u32 size);
         void BindUniformBuffer(std::span<const std::byte> data);
         void BindUniformBuffers(BufferId id, void* data, size_t size);
