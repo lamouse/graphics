@@ -51,7 +51,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     }
 
     RenderAppletCaptureLayer(frame_buffers);
-    SCOPE_EXIT { window_->OnFrameDisplayed(); };
+    SCOPE_EXIT -> void { window_->OnFrameDisplayed(); };
     if (!window_->IsShown()) {
         return;
     }
@@ -69,7 +69,10 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     } else {
         imgui->imgui_predraw();
     }
-    imgui->endFrame();
+    {
+        std::scoped_lock submit_lock{scheduler.submit_mutex_};
+        imgui->endFrame();
+    }
 #endif
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);

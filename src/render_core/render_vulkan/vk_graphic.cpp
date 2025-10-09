@@ -71,7 +71,6 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::clean() {
-    std::scoped_lock lock{texture_cache.mutex};
     scheduler.requestRenderPass(texture_cache.getFramebuffer());
     clear();
 }
