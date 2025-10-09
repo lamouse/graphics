@@ -40,7 +40,7 @@ class VulkanGraphics : public render::Graphic {
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
-        void start() override;
+        void clean() override;
         void setPipelineState(const PipelineState& state) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
         auto uploadModel(const graphics::IModelInstance& instance) -> ModelId override;

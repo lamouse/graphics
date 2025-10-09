@@ -70,13 +70,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 
 VulkanGraphics::~VulkanGraphics() = default;
 
-void VulkanGraphics::start() {
-    std::scoped_lock lock{texture_cache.mutex};
-    static bool is_new_frame = true;
-    if (is_new_frame) {
-        is_new_frame = false;
-        return;
-    }
+void VulkanGraphics::clean() {
     scheduler.requestRenderPass(texture_cache.getFramebuffer());
     clear();
 }
@@ -87,7 +81,7 @@ void VulkanGraphics::clear() {
     const f32 bg_green = pipeline_state.clearColor.g;
     const f32 bg_blue = pipeline_state.clearColor.b;
     auto clear_value = vk::ClearValue().setColor(
-        vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0f}));
+        vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0F}));
     const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
                                                      .setAspectMask(vk::ImageAspectFlagBits::eColor)
                                                      .setColorAttachment(0)

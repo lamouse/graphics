@@ -12,7 +12,7 @@ class Graphic {
         virtual auto getDrawImage() -> ImTextureID = 0;
         virtual auto uploadModel(const graphics::IModelInstance& instance) -> ModelId = 0;
         virtual void draw(const graphics::IModelInstance& instance) = 0;
-        virtual void start() = 0;
+        virtual void clean() = 0;
         virtual void end() = 0;
         Graphic() = default;
         CLASS_DEFAULT_COPYABLE(Graphic);
