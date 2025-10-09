@@ -16,6 +16,40 @@ class Model : public IMeshData {
                     return position == other.position && color == other.color &&
                            texCoord == other.texCoord;
                 }
+
+                static auto getVertexBinding() -> std::vector<render::VertexBinding> {
+                    std::vector<render::VertexBinding> bindings;
+                    bindings.push_back(render::VertexBinding{ .binding = 0, .stride = sizeof(Vertex)});
+                    return bindings;
+                }
+                static auto getVertexAttribute() -> std::vector<render::VertexAttribute> {
+                    std::vector<render::VertexAttribute> vertex_attributes;
+
+                    render::VertexAttribute position;
+                    position.hex = 0;
+                    position.binding.Assign(0);
+                    position.type.Assign(render::VertexAttribute::Type::Float);
+                    position.offset.Assign(offsetof(Vertex, position));
+                    position.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
+                    vertex_attributes.push_back(position);
+
+                    render::VertexAttribute color;
+                    color.hex = 0;
+                    color.binding.Assign(0);
+                    color.type.Assign(render::VertexAttribute::Type::Float);
+                    color.offset.Assign(offsetof(Vertex, color));
+                    color.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
+    
+                    vertex_attributes.push_back(color);
+                    render::VertexAttribute texCoord;
+                    texCoord.hex = 0;
+                    texCoord.binding.Assign(0);
+                    texCoord.type.Assign(render::VertexAttribute::Type::Float);
+                    texCoord.offset.Assign(offsetof(Vertex, texCoord));
+                    texCoord.size.Assign(render::VertexAttribute::Size::R32_G32);
+                    vertex_attributes.push_back(texCoord);
+                    return vertex_attributes;
+                }
         };
 
         // 返回顶点坐标（仅 position），展平为 float 数组
@@ -25,7 +59,13 @@ class Model : public IMeshData {
         [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override;
 
         // 判断是否使用 32 位索引
-        [[nodiscard]] auto uses32BitIndices() const -> bool override { return use32BitIndices; };
+        [[nodiscard]] auto uses32BitIndices() const -> bool override { return use32BitIndices; }
+        [[nodiscard]] auto getVertexAttribute() const -> std::vector<render::VertexAttribute> override {
+            return Vertex::getVertexAttribute();
+        }
+        [[nodiscard]] auto getVertexBinding() -> std::vector<render::VertexBinding> override {
+            return Vertex::getVertexBinding();
+        }
         static auto createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model>;
         CLASS_NON_COPYABLE(Model);
         CLASS_NON_MOVEABLE(Model);

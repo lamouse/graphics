@@ -31,8 +31,7 @@ auto BufferCache<P>::addIndexBuffer(const void* data, u32 size) -> BufferId {
 
 template <class P>
 void BufferCache<P>::BindIndexBuffer(IndexFormat format, BufferId id) {
-    runtime.BindIndexBuffer(format,
-                            slot_buffers[id]);
+    runtime.BindIndexBuffer(format, slot_buffers[id]);
 }
 
 template <class P>

@@ -7,7 +7,6 @@
 #pragma once
 #include "render_core/vulkan_common/device.hpp"
 #include "core/frontend/window.hpp"
-#include "render_core/uniforms.hpp"
 namespace render::vulkan {
 class ImguiCore {
     private:
@@ -17,8 +16,6 @@ class ImguiCore {
         core::frontend::BaseWindow* window;
 
     public:
-        [[nodiscard]] auto get_uniform_buffer(float extentAspectRation) const
-            -> UniformBufferObject;
         void draw(const vk::CommandBuffer& commandBuffer);
         void imgui_predraw();
         explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,

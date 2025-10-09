@@ -11,6 +11,11 @@
 #include "common/assert.hpp"
 #include <string>
 namespace render {
+    struct VertexBinding {
+        std::uint32_t binding;
+        std::uint32_t stride;
+    };
+
         struct VertexAttribute {
             enum class Size : u32 {
                 Invalid = 0x0,
@@ -44,12 +49,10 @@ namespace render {
                 Float = 7,
             };
             union {
-                BitField<0, 5, u32> bing;
-                BitField<6, 1, u32> constant;
-                BitField<7, 14, u32> offset;
+                BitField<0, 5, u32> binding;
+                BitField<6, 14, u32> offset;
                 BitField<21, 6, Size> size;
-                BitField<27, 3, Type> type;
-                BitField<31, 1, u32> bgra;
+                BitField<28, 3, Type> type;
                 u32 hex;
             };
 

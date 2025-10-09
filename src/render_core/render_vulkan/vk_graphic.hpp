@@ -16,7 +16,8 @@
 namespace render::vulkan {
 struct FramebufferTextureInfo;
 class Device;
-
+using VertexAttributeId = common::SlotId;
+using VertexBindingsId = common::SlotId;
 struct ModelResource {
         texture::ImageViewId image_view;
 
@@ -25,6 +26,9 @@ struct ModelResource {
 
         u32 indices_count;
         buffer::BufferId indices_buffer_id;
+
+        VertexAttributeId vertex_attribute_id;
+        VertexBindingsId vertex_binding_id;
 };
 
 class VulkanGraphics : public render::Graphic {
@@ -39,8 +43,8 @@ class VulkanGraphics : public render::Graphic {
         void start() override;
         void setPipelineState(const PipelineState& state) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
-        auto uploadModel(const graphics::ImodelInstance& instance) -> ModelId override;
-        void draw(const graphics::ImodelInstance& instance) override;
+        auto uploadModel(const graphics::IModelInstance& instance) -> ModelId override;
+        void draw(const graphics::IModelInstance& instance) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;
         ~VulkanGraphics() override;
@@ -105,7 +109,11 @@ class VulkanGraphics : public render::Graphic {
         Event wfi_event;
         PipelineState pipeline_state;
         u32 draw_counter = 0;
+        ModelId current_modelId;
         common::SlotVector<ModelResource> modelResource;
+        common::SlotVector<boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32>> vertex_attributes;
+        common::SlotVector<boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32>> vertex_bindings;
+        
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
 };
 

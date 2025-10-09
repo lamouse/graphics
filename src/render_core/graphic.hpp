@@ -10,8 +10,8 @@ class Graphic {
         virtual ~Graphic() = default;
         virtual void setPipelineState(const PipelineState& state) = 0;
         virtual auto getDrawImage() -> ImTextureID = 0;
-        virtual auto uploadModel(const graphics::ImodelInstance& instance) -> ModelId = 0;
-        virtual void draw(const graphics::ImodelInstance& instance) = 0;
+        virtual auto uploadModel(const graphics::IModelInstance& instance) -> ModelId = 0;
+        virtual void draw(const graphics::IModelInstance& instance) = 0;
         virtual void start() = 0;
         virtual void end() = 0;
         Graphic() = default;

@@ -43,7 +43,7 @@ void App::run() {
 
     world::World world;
     bool show_console_logger = false;
-    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj", sizeof(render::UniformBufferObject));
+    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj", sizeof(UniformBufferObject));
      auto graphicId = graphics->uploadModel(modelInstance);
      modelInstance.setModelId(graphicId);
     auto& camera =
@@ -61,8 +61,8 @@ void App::run() {
         modelComponent.rotation.z = getRuntime() * glm::radians(90.0F);
 
         graphics->start();
-        render::UniformBufferObject ubo1{};
-        render::UniformBufferObject ubo2{};
+        UniformBufferObject ubo1{};
+        UniformBufferObject ubo2{};
         ubo1.model = modelInstance.getModelMatrix();
         ubo1.view = camera.getCamera().getView();
         ubo1.proj = camera.getCamera().getProjection();

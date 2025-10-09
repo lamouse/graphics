@@ -1,9 +1,43 @@
 #include "vk_graphic.hpp"
-#include "uniforms.hpp"
 #include "blit_screen.hpp"
+#include "render_core/render_vulkan/format_to_vk.hpp"
 #include <imgui_impl_vulkan.h>
 #include <algorithm>
 #include <tracy/Tracy.hpp>
+
+namespace {
+auto buildVertexAttribute(const render::vulkan::Device& device,
+                          std::span<render::VertexAttribute> attributes)
+    -> boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32> {
+    boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32> attrs;
+    for (size_t i = 0; i < attributes.size(); i++) {
+        auto attribute = attributes[i];
+        attrs.push_back(
+            vk::VertexInputAttributeDescription2EXT()
+                .setBinding(attribute.binding)
+                .setLocation(i)
+                .setFormat(render::vulkan::VertexFormat(device, attribute.type, attribute.size))
+                .setOffset(attribute.offset));
+    }
+
+    return attrs;
+}
+
+auto buildVertexBinding(std::span<render::VertexBinding> bindings)
+    -> boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> {
+    boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> vertex_bindings;
+    for (auto binding : bindings) {
+        vertex_bindings.push_back(vk::VertexInputBindingDescription2EXT()
+                                      .setBinding(binding.binding)
+                                      .setStride(binding.stride)
+                                      .setInputRate(vk::VertexInputRate::eVertex)
+                                      .setDivisor(1));
+    }
+
+    return vertex_bindings;
+}
+}  // namespace
+
 namespace render::vulkan {
 
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
@@ -81,7 +115,7 @@ void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_sta
 
 #if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
-    //将 Vulkan 纹理绑定到 ImGui
+    // 将 Vulkan 纹理绑定到 ImGui
     const auto& image_view = texture_cache.TryFindFramebufferImageView();
     if (!sampler) {
         ::vk::SamplerCreateInfo samplerInfo =
@@ -111,8 +145,7 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
     ImTextureID imguiTextureID_{};
 
     imguiTextureID_ = (ImTextureID)ImGui_ImplVulkan_AddTexture(
-        *sampler, image_view.first->Handle(shader::TextureType::Color2D),
-        VK_IMAGE_LAYOUT_GENERAL);
+        *sampler, image_view.first->Handle(shader::TextureType::Color2D), VK_IMAGE_LAYOUT_GENERAL);
     pair->second = imguiTextureID_;
     return imguiTextureID_;
     return 0;
@@ -187,32 +220,11 @@ void VulkanGraphics::UpdateDepthBiasEnable() {
 }
 
 void VulkanGraphics::UpdateVertexInput() {
-    boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> bindings;
-    boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32> attributes;
-
-    attributes.push_back(vk::VertexInputAttributeDescription2EXT()
-                             .setBinding(0)
-                             .setLocation(0)
-                             .setFormat(vk::Format::eR32G32B32Sfloat)
-                             .setOffset(offsetof(Vertex, position)));
-    attributes.push_back(vk::VertexInputAttributeDescription2EXT()
-                             .setBinding(0)
-                             .setLocation(1)
-                             .setFormat(vk::Format::eR32G32B32Sfloat)
-                             .setOffset(offsetof(Vertex, color)));
-    attributes.push_back(vk::VertexInputAttributeDescription2EXT()
-                             .setBinding(0)
-                             .setLocation(2)
-                             .setFormat(vk::Format::eR32G32Sfloat)
-                             .setOffset(offsetof(Vertex, texCoord)));
-    bindings.push_back(vk::VertexInputBindingDescription2EXT()
-                           .setBinding(0)
-                           .setStride(sizeof(Vertex))
-                           .setInputRate(vk::VertexInputRate::eVertex)
-                           .setDivisor(1));
-
-    scheduler.record([this, bindings, attributes](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setVertexInputEXT(bindings, attributes, device.logical().getDispatchLoaderDynamic());
+    auto resource = modelResource[current_modelId];
+    auto attrs = vertex_attributes[resource.vertex_attribute_id];
+    auto bindings = vertex_bindings[resource.vertex_binding_id];
+    scheduler.record([this, bindings, attrs](vk::CommandBuffer cmdbuf) -> void {
+        cmdbuf.setVertexInputEXT(bindings, attrs, device.logical().getDispatchLoaderDynamic());
     });
 }
 
@@ -412,7 +424,7 @@ void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
 #endif
 }
 
-auto VulkanGraphics::uploadModel(const graphics::ImodelInstance& instance) -> ModelId {
+auto VulkanGraphics::uploadModel(const graphics::IModelInstance& instance) -> ModelId {
     ModelResource resource;
     if (auto imageData = instance.getImageData()) {
         auto viewId = texture_cache.addTexture({.width = static_cast<u32>(imageData->getWidth()),
@@ -424,15 +436,22 @@ auto VulkanGraphics::uploadModel(const graphics::ImodelInstance& instance) -> Mo
     resource.vertex_size = static_cast<u32>(meshData->getMesh().size() * sizeof(float));
     resource.vertex_buffer_id =
         buffer_cache.addVertexBuffer(meshData->getMesh().data(), resource.vertex_size);
-    resource.indices_buffer_id = buffer_cache.addIndexBuffer(meshData->getIndices().data(),
-        meshData->getIndices().size());
+    resource.indices_buffer_id =
+        buffer_cache.addIndexBuffer(meshData->getIndices().data(), meshData->getIndices().size());
     resource.indices_count = meshData->getIndicesSize();
+
+    auto vertexAttribute = meshData->getVertexAttribute();
+    resource.vertex_attribute_id =
+        vertex_attributes.insert(buildVertexAttribute(device, std::span(vertexAttribute)));
+    auto vertexBinding = meshData->getVertexBinding();
+    resource.vertex_binding_id =
+        vertex_bindings.insert(buildVertexBinding(std::span(vertexBinding)));
     return modelResource.insert(resource);
 }
 
-
-void VulkanGraphics::draw(const graphics::ImodelInstance& instance) {
-    const auto resource = modelResource[instance.getModelId()];
+void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
+    current_modelId = instance.getModelId();
+    const auto resource = modelResource[current_modelId];
     texture_cache.setCurrentTexture(resource.image_view, SamplerPreset::Linear);
     guest_descriptor_queue.Acquire();
     buffer_cache.BindUniformBuffer(instance.getUBOData());
@@ -453,7 +472,7 @@ void VulkanGraphics::draw(const graphics::ImodelInstance& instance) {
             index_format = IndexFormat::UnsignedInt;
         }
         buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size);
-        buffer_cache.BindIndexBuffer(index_format,resource.indices_buffer_id);
+        buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
         scheduler.record([indices_size = resource.indices_count](vk::CommandBuffer cmdbuf) {
             cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
         });

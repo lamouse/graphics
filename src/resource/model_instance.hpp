@@ -9,27 +9,39 @@
 #include "resource/obj/model.hpp"
 #include "resource/texture/image.hpp"
 #include "common/slot_vector.hpp"
-#include "obj/model.hpp"
 using ModelId = common::SlotId;
 
 namespace graphics {
 
-class ImodelInstance {
+struct UniformBufferObject {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+        // 转换为 std::span<std::byte>
+        auto as_byte_span() -> std::span<const std::byte> {
+            return std::span<const std::byte>{reinterpret_cast<const std::byte*>(this),
+                                              sizeof(UniformBufferObject)};
+        }
+};
+
+class IModelInstance {
     public:
-        ImodelInstance() = default;
-        virtual ~ImodelInstance() = default;
-        CLASS_DEFAULT_COPYABLE(ImodelInstance);
-        CLASS_DEFAULT_MOVEABLE(ImodelInstance);
+        IModelInstance() = default;
+        virtual ~IModelInstance() = default;
+        CLASS_DEFAULT_COPYABLE(IModelInstance);
+        CLASS_DEFAULT_MOVEABLE(IModelInstance);
         void setModelId(ModelId id) { modelId = id; }
         [[nodiscard]] auto getModelId() const -> ModelId { return modelId; }
-        [[nodiscard]] virtual auto getImageData() const -> std::unique_ptr<resource::image::Image> = 0;
+        [[nodiscard]] virtual auto getImageData() const
+            -> std::unique_ptr<resource::image::Image> = 0;
         [[nodiscard]] virtual auto getMeshData() const -> std::unique_ptr<IMeshData> = 0;
         [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
+
     private:
         ModelId modelId;
 };
 
-class ModelInstance : public ImodelInstance {
+class ModelInstance : public IModelInstance {
     public:
         using id_t = unsigned int;
         using Map = std::unordered_map<id_t, ModelInstance>;
@@ -66,6 +78,7 @@ class ModelInstance : public ImodelInstance {
             ASSERT_MSG(ubo_data.size() == ubo_size, "UBO size not match");
             return ubo_data;
         };
+
     private:
         id_t id;
         std::span<const std::byte> ubo_data;
