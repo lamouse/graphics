@@ -71,12 +71,13 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::clean() {
+    std::scoped_lock lock{texture_cache.mutex};
     scheduler.requestRenderPass(texture_cache.getFramebuffer());
     clear();
 }
 void VulkanGraphics::clear() {
-    auto layout = emu_window->getFramebufferLayout();
-    const vk::Extent2D render_area{layout.width, layout.height};
+    auto config = emu_window->getActiveConfig();
+    const vk::Extent2D render_area{ static_cast<std::uint32_t>(config.extent.width), static_cast<std::uint32_t>(config.extent.height)};
     const f32 bg_red = pipeline_state.clearColor.r;
     const f32 bg_green = pipeline_state.clearColor.g;
     const f32 bg_blue = pipeline_state.clearColor.b;
@@ -453,8 +454,8 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     guest_descriptor_queue.AddSampledImage(view->Handle(shader::TextureType::Color2D),
                                            sample->Handle());
     texture::FramebufferKey key;
-    key.size.width = emu_window->getFramebufferLayout().width;
-    key.size.height = emu_window->getFramebufferLayout().height;
+    key.size.width = emu_window->getActiveConfig().extent.width;
+    key.size.height = emu_window->getActiveConfig().extent.height;
     key.size.depth = 1;
     std::ranges::fill(key.color_formats, render::surface::PixelFormat::Invalid);
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
