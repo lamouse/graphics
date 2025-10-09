@@ -139,10 +139,11 @@ void ImguiCore::newFrame() {
     ImGui::NewFrame();
 }
 
+//NOLINTNEXTLINE
 void ImguiCore::endFrame() {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {//NOLINT
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }

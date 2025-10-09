@@ -75,8 +75,8 @@ void VulkanGraphics::clean() {
     clear();
 }
 void VulkanGraphics::clear() {
-    const vk::Extent2D render_area{static_cast<uint32_t>(pipeline_state.viewport.width),
-                                   static_cast<uint32_t>(pipeline_state.viewport.height)};
+    auto layout = emu_window->getFramebufferLayout();
+    const vk::Extent2D render_area{layout.width, layout.height};
     const f32 bg_red = pipeline_state.clearColor.r;
     const f32 bg_green = pipeline_state.clearColor.g;
     const f32 bg_blue = pipeline_state.clearColor.b;

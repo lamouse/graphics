@@ -19,7 +19,7 @@ class ImguiCore {
         void draw(const vk::CommandBuffer& commandBuffer);
         void imgui_predraw();
         explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,
-                           vk::PhysicalDevice physical, vk::Instance instance, float scale = 1.0f);
+                           vk::PhysicalDevice physical, vk::Instance instance, float scale = 1.0F);
         ImguiCore(const ImguiCore&) = delete;
         auto operator=(const ImguiCore&) -> ImguiCore = delete;
         auto operator=(ImguiCore&&) -> ImguiCore = delete;

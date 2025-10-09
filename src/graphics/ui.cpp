@@ -101,8 +101,8 @@ void pipeline_state(render::PipelineState& state) {
     if (ImGui::TreeNode("set viewport")) {
         ImGui::SliderFloat("x", &state.viewport.x, .0f, 2048.f);
         ImGui::SliderFloat("y", &state.viewport.y, .0f, 2048.f);
-        ImGui::SliderFloat("width", &state.viewport.width, 1.0f, 2048.f);
-        ImGui::SliderFloat("height", &state.viewport.height, 1.0f, 2048.f);
+        ImGui::SliderFloat("width", &state.viewport.width, 1.0f, 12048.f);
+        ImGui::SliderFloat("height", &state.viewport.height, 1.0f, 12048.f);
         ImGui::SliderFloat("minDepth", &state.viewport.minDepth, .0f, 1.f);
         ImGui::SliderFloat("maxDepth", &state.viewport.maxDepth, .0, 1.f);
         ImGui::TreePop();
@@ -110,8 +110,8 @@ void pipeline_state(render::PipelineState& state) {
     if (ImGui::TreeNode("set scissors")) {
         ImGui::SliderInt("x", &state.scissors.x, 0, 2048);
         ImGui::SliderInt("y", &state.scissors.y, 0, 2048);
-        ImGui::SliderInt("width", &state.scissors.width, 1, 2048);
-        ImGui::SliderInt("height", &state.scissors.height, 1, 2048);
+        ImGui::SliderInt("width", &state.scissors.width, 1, 12048);
+        ImGui::SliderInt("height", &state.scissors.height, 1, 12048);
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("set clear value")) {
