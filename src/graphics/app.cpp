@@ -43,9 +43,15 @@ void App::run() {
 
     world::World world;
     bool show_console_logger = false;
-    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj");
-     auto graphicId = graphics->uploadModel(modelInstance);
-     modelInstance.setModelId(graphicId);
+    std::string viking_room_path = image_path + "viking_room.png";
+    resourceManager.addTexture(viking_room_path,
+                               [&](const resource::image::ITexture& texture) -> render::TextureId {
+                                    return graphics->uploadTexture(texture);
+                               });
+    ModelInstance modelInstance =
+        ModelInstance::createGameObject(resourceManager.getTexture(viking_room_path), "models/viking_room.obj");
+    auto graphicId = graphics->uploadModel(modelInstance);
+    modelInstance.setModelId(graphicId);
     auto& camera =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();
@@ -102,7 +108,7 @@ void App::run() {
     }
 }
 
-App::App(const g::Config& config):logger(config) {
+App::App(const g::Config& config) : logger(config) {
     auto [width, height, title] = config.getConfig<config::window::Window>();
 
 #if defined(USE_GLFW)

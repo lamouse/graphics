@@ -10,6 +10,8 @@ set (sources
     config.hpp
     model_instance.hpp
     model_instance.cpp
+    resource.hpp
+    resource.cpp
 )
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 if (MSVC)

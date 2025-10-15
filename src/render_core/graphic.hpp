@@ -1,7 +1,9 @@
 #pragma once
 #include "render_core/fixed_pipeline_state.h"
+#include "render_core/types.hpp"
 #include "common/common_funcs.hpp"
 #include "resource/model_instance.hpp"
+#include "resource/texture/image.hpp"
 #include <imgui.h>
 namespace render {
 using GraphicsId = common::SlotId;
@@ -11,6 +13,7 @@ class Graphic {
         virtual void setPipelineState(const PipelineState& state) = 0;
         virtual auto getDrawImage() -> ImTextureID = 0;
         virtual auto uploadModel(const graphics::IModelInstance& instance) -> ModelId = 0;
+        virtual auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId = 0;
         virtual void draw(const graphics::IModelInstance& instance) = 0;
         virtual void clean() = 0;
         virtual void end() = 0;

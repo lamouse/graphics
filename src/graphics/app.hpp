@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "resource/config.hpp"
+#include "resource/resource.hpp"
 #include "render_core/render_base.hpp"
 #include "common/common_funcs.hpp"
 #include "system/logger_system.hpp"
@@ -18,5 +19,6 @@ class App {
         std::unique_ptr<core::frontend::BaseWindow> window;
         std::unique_ptr<render::RenderBase> render_base;
         sys::LoggerSystem logger;
+        ResourceManager resourceManager;
 };
 }  // namespace graphics

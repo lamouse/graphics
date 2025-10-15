@@ -14,13 +14,6 @@ void ModelInstance::drawUI() {
     ImGui::End();
 }
 
-auto ModelInstance::getImageData() const -> std::unique_ptr<resource::image::Image> {
-    if (image_path.empty()) {
-        return nullptr;
-    }
-    return std::make_unique<resource::image::Image>(image_path);
-}
-
 auto ModelInstance::getMeshData() const -> std::unique_ptr<IMeshData> {
     return graphics::Model::createFromFile(mode_path);
 }

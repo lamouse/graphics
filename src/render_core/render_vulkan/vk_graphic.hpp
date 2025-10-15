@@ -18,8 +18,6 @@ struct FramebufferTextureInfo;
 class Device;
 
 struct ModelResource {
-        texture::ImageViewId image_view;
-
         BufferId vertex_buffer_id;
         u32 vertex_size;
 
@@ -43,6 +41,7 @@ class VulkanGraphics : public render::Graphic {
         void setPipelineState(const PipelineState& state) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
         auto uploadModel(const graphics::IModelInstance& instance) -> ModelId override;
+        auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId override;
         void draw(const graphics::IModelInstance& instance) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;

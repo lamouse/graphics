@@ -207,8 +207,7 @@ void VulkanGraphics::UpdateRasterizerDiscardEnable() {
 
 void VulkanGraphics::UpdateDepthBiasEnable() {
     const bool enable = pipeline_state.depthBiasEnable;
-    scheduler.record(
-        [enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnableEXT(enable); });
+    scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnableEXT(enable); });
 }
 
 void VulkanGraphics::UpdateVertexInput() {
@@ -227,15 +226,13 @@ void VulkanGraphics::UpdateCullMode() {
 }
 
 void VulkanGraphics::UpdateDepthCompareOp() {
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthCompareOpEXT(vk::CompareOp::eLessOrEqual);
-    });
+    scheduler.record(
+        [](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthCompareOpEXT(vk::CompareOp::eLessOrEqual); });
 }
 
 void VulkanGraphics::UpdateFrontFace() {
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setFrontFaceEXT(vk::FrontFace::eCounterClockwise);
-    });
+    scheduler.record(
+        [](vk::CommandBuffer cmdbuf) { cmdbuf.setFrontFaceEXT(vk::FrontFace::eCounterClockwise); });
 }
 
 void VulkanGraphics::UpdateStencilOp() {
@@ -286,8 +283,9 @@ void VulkanGraphics::UpdateLogicOpEnable() {
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    scheduler.record([is_enabled = pipeline_state.depthClampEnable](
-                         vk::CommandBuffer cmdbuf) { cmdbuf.setDepthClampEnableEXT(is_enabled); });
+    scheduler.record([is_enabled = pipeline_state.depthClampEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthClampEnableEXT(is_enabled);
+    });
 }
 
 void VulkanGraphics::UpdateLogicOp() {
@@ -408,12 +406,6 @@ void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
 
 auto VulkanGraphics::uploadModel(const graphics::IModelInstance& instance) -> ModelId {
     ModelResource resource;
-    if (auto imageData = instance.getImageData()) {
-        auto viewId = texture_cache.addTexture({.width = static_cast<u32>(imageData->getWidth()),
-                                                .height = static_cast<u32>(imageData->getheight())},
-                                               imageData->data());
-        resource.image_view = viewId;
-    }
     auto meshData = instance.getMeshData();
     resource.vertex_size = static_cast<u32>(meshData->getMesh().size() * sizeof(float));
     resource.vertex_buffer_id =
@@ -431,10 +423,16 @@ auto VulkanGraphics::uploadModel(const graphics::IModelInstance& instance) -> Mo
     return modelResource.insert(resource);
 }
 
+auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -> TextureId {
+    return texture_cache.addTexture({.width = static_cast<u32>(texture.getWidth()),
+                                     .height = static_cast<u32>(texture.getheight())},
+                                    texture.data());
+}
+
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     current_modelId = instance.getModelId();
     const auto resource = modelResource[current_modelId];
-    texture_cache.setCurrentTexture(resource.image_view, SamplerPreset::Linear);
+    texture_cache.setCurrentTexture(instance.getTextureId(), SamplerPreset::Linear);
     guest_descriptor_queue.Acquire();
     buffer_cache.BindUniformBuffer(instance.getUBOData());
     auto [view, sample] = texture_cache.getCurrentTexture();
