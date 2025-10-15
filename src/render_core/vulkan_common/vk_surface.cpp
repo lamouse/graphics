@@ -1,9 +1,12 @@
+#if defined(__linux__)
+#include <spdlog/spdlog.h>
+#endif
+#include "vulkan_common.hpp"
 #include "vk_surface.hpp"
 
-#include "vulkan_common.hpp"
 namespace render::vulkan {
-auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi)
-    -> SurfaceKHR {
+auto createSurface(vk::Instance instance,
+                   const core::frontend::BaseWindow::WindowSystemInfo& wsi) -> SurfaceKHR {
     VkSurfaceKHR unsafe_surface = nullptr;
 
 #ifdef _WIN32
@@ -48,35 +51,30 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
         }
     }
 #else
-    if (window_info.type == Core::Frontend::WindowSystemType::X11) {
-        const VkXlibSurfaceCreateInfoKHR xlib_ci{
-            VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR, nullptr, 0,
-            static_cast<Display*>(window_info.display_connection),
-            reinterpret_cast<Window>(window_info.render_surface)};
-        const auto vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
-            dld.vkGetInstanceProcAddr(*instance, "vkCreateXlibSurfaceKHR"));
-        if (!vkCreateXlibSurfaceKHR ||
-            vkCreateXlibSurfaceKHR(*instance, &xlib_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
-            LOG_ERROR(Render_Vulkan, "Failed to initialize Xlib surface");
-            throw vk::Exception(VK_ERROR_INITIALIZATION_FAILED);
+    if (wsi.type == core::frontend::WindowSystemType::X11) {
+        const VkXlibSurfaceCreateInfoKHR xlib_ci{VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR,
+                                                 nullptr, 0,
+                                                 static_cast<Display*>(wsi.display_connection),
+                                                 reinterpret_cast<Window>(wsi.render_surface)};
+
+        if (vkCreateXlibSurfaceKHR(instance, &xlib_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+            SPDLOG_ERROR("Failed to initialize Xlib surface");
+            throw utils::VulkanException(VK_ERROR_INITIALIZATION_FAILED);
         }
     }
-    if (window_info.type == Core::Frontend::WindowSystemType::Wayland) {
+    if (wsi.type == core::frontend::WindowSystemType::Wayland) {
         const VkWaylandSurfaceCreateInfoKHR wayland_ci{
             VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR, nullptr, 0,
-            static_cast<wl_display*>(window_info.display_connection),
-            static_cast<wl_surface*>(window_info.render_surface)};
-        const auto vkCreateWaylandSurfaceKHR = reinterpret_cast<PFN_vkCreateWaylandSurfaceKHR>(
-            dld.vkGetInstanceProcAddr(*instance, "vkCreateWaylandSurfaceKHR"));
-        if (!vkCreateWaylandSurfaceKHR ||
-            vkCreateWaylandSurfaceKHR(*instance, &wayland_ci, nullptr, &unsafe_surface) !=
-                VK_SUCCESS) {
-            LOG_ERROR(Render_Vulkan, "Failed to initialize Wayland surface");
-            throw vk::Exception(VK_ERROR_INITIALIZATION_FAILED);
+            static_cast<wl_display*>(wsi.display_connection),
+            static_cast<wl_surface*>(wsi.render_surface)};
+
+        if (vkCreateWaylandSurfaceKHR(instance, &wayland_ci, nullptr, &unsafe_surface) !=
+            VK_SUCCESS) {
+            SPDLOG_ERROR("Failed to initialize Wayland surface");
+            throw utils::VulkanException(VK_ERROR_INITIALIZATION_FAILED);
         }
     }
 #endif
     return SurfaceKHR{unsafe_surface, instance};
-    ;
 }
 }  // namespace render::vulkan

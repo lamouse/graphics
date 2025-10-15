@@ -9,6 +9,7 @@
 #if defined(USE_DEBUG_UI)
 #include "imgui_impl_glfw.h"
 #endif
+#include <GLFW/glfw3native.h>
 
 namespace graphics {
 
@@ -38,6 +39,17 @@ ScreenWindow::ScreenWindow(int width, int height, ::std::string title) : title_{
     }
     window_info.type = GLFWCommon::get_window_system_info();
     window_info.render_surface = GLFWCommon::get_windows_handles(window);
+#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+    if (window_info.type == core::frontend::WindowSystemType::Wayland) {
+        //window_info.display_connection = glfwGetWaylandDisplay();
+    }
+#endif
+#if defined(GLFW_EXPOSE_NATIVE_X11)
+    if (window_info.type == core::frontend::WindowSystemType::X11) {
+        window_info.display_connection = glfwGetX11Display();
+    }
+#endif
+
     initWindow();
 }
 void ScreenWindow::initWindow() {

@@ -1,3 +1,4 @@
+
 #include "vulkan_wrapper.hpp"
 #include "common/common_types.hpp"
 #include <vulkan/vk_enum_string_helper.h>
@@ -154,7 +155,6 @@ auto Instance::Create(u32 version, std::span<const char*> layers, std::span<cons
 auto Instance::EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevice> {
 
     auto physical_devices = handle.enumeratePhysicalDevices();
-    ;
     SortPhysicalDevices(physical_devices);
     return physical_devices;
 }

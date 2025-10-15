@@ -1,8 +1,6 @@
 #include "glfw_common.hpp"
-#include "imgui_impl_glfw.h"
 
 #if !defined(_WIN32) && !defined(__APPLE__)
-#include <qpa/qplatformnativeinterface.h>
 #elif defined(__APPLE__)
 #define GLFW_EXPOSE_NATIVE_COCOA
 #include <QuartzCore/CAMetalLayer.h>
@@ -22,6 +20,10 @@ auto get_window_system_info() -> core::frontend::WindowSystemType {
             return core::frontend::WindowSystemType::Windows;
         case GLFW_PLATFORM_COCOA:
             return core::frontend::WindowSystemType::Cocoa;
+        case GLFW_PLATFORM_X11:
+            return core::frontend::WindowSystemType::X11;
+        case GLFW_PLATFORM_WAYLAND:
+            return core::frontend::WindowSystemType::Wayland;
         default:
             return core::frontend::WindowSystemType::Headless;
     }
@@ -83,6 +85,14 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
 #elif defined(GLFW_EXPOSE_NATIVE_WIN32)
         case sys_type_enum::Windows:
             return glfwGetWin32Window(window);
+#elif defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+        case sys_type_enum::Wayland: {
+            return glfwGetWaylandWindow(window);
+        }
+#elif defined(GLFW_EXPOSE_NATIVE_X11)
+        case sys_type_enum::X11: {
+            return reinterpret_cast<void *>(glfwGetX11Window(window));  // 返回 Window
+        }
 #endif
         default:
             return nullptr;

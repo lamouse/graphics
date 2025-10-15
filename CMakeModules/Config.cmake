@@ -17,6 +17,9 @@ else()
     add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
 
 endif()
+if(LINUX)
+    add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
+endif()
 #设置使用的库
 add_definitions(-DUSE_SDL)
 #add_definitions(-DUSE_GLFW)

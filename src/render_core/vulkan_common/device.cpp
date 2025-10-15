@@ -909,7 +909,7 @@ void Device::removeExtensionFeature(bool& extension, Feature& feature,
     auto* current = static_cast<VkBaseOutStructure*>(features2_.pNext);
     // Clear feature struct and restore chain.
     while (current) {
-        if (current->pNext->sType == sType) {
+        if (current->pNext && current->pNext->sType == sType) {
             current->pNext = static_cast<VkBaseOutStructure*>(pNext);
             break;
         }

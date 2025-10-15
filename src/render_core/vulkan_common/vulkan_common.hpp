@@ -10,7 +10,10 @@
 #define VK_USE_PLATFORM_ANDROID_KHR
 #else
 #define VK_USE_PLATFORM_XLIB_KHR
+#include <X11/Xlib.h>
+#include <vulkan/vulkan_xlib.h>
 #define VK_USE_PLATFORM_WAYLAND_KHR
+#include <vulkan/vulkan_wayland.h>
 #endif
 
 #ifdef __APPLE__

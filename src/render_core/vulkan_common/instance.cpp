@@ -52,8 +52,8 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
     return true;
 }
 
-[[nodiscard]] auto requiredExtensions(core::frontend::WindowSystemType wst, bool enable_validation)
-    -> std::vector<const char*> {
+[[nodiscard]] auto requiredExtensions(core::frontend::WindowSystemType wst,
+                                      bool enable_validation) -> std::vector<const char*> {
     std::vector<const char*> extensions;
     switch (wst) {
         case core::frontend::WindowSystemType::Headless:
@@ -65,6 +65,13 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
 #elif defined(__APPLE__)
         case Core::Frontend::WindowSystemType::Cocoa:
             extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+            break;
+#else
+        case core::frontend::WindowSystemType::X11:
+            extensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+            break;
+        case core::frontend::WindowSystemType::Wayland:
+            extensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
             break;
 #endif
         default:

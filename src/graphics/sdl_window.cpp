@@ -39,6 +39,9 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
     }
     window_info.type = get_window_system_info();
     window_info.render_surface = get_windows_handles(window_);
+#ifdef __linux__
+    window_info.display_connection = get_windows_display(window_);
+#endif
     // 添加事件监视器
     SDL_AddEventWatch(
         [](void* userdata, SDL_Event* event) -> bool {

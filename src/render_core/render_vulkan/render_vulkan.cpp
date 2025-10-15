@@ -10,7 +10,31 @@
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
     auto physical = instance.EnumeratePhysicalDevices();
-    return Device(*instance, physical[0], surface);
+    if (physical.size() == 1) {
+        return Device(*instance, physical[0], surface);
+    }
+    for (auto device : physical) {
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(device, &properties);
+        switch (properties.deviceType) {
+            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+                SPDLOG_INFO("设备类型：离散 GPU（独立显卡）, 设备名称：{}", properties.deviceName);
+                return Device(*instance, device, surface);
+                break;
+            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+                SPDLOG_INFO("设备类型：集成 GPU（如 Intel UHD）设备名称：{}", properties.deviceName);
+                break;
+            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+                SPDLOG_INFO("设备类型：虚拟 GPU（如远程渲染）设备名称：{}", properties.deviceName);
+                break;
+            case VK_PHYSICAL_DEVICE_TYPE_CPU:
+                SPDLOG_INFO("设备类型：CPU（软件模拟）设备名称：{}", properties.deviceName);
+                break;
+            default:
+                SPDLOG_INFO("设备类型：未知");
+                break;
+        }
+    }
 }
 
 RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
@@ -50,7 +74,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     }
 
     RenderAppletCaptureLayer(frame_buffers);
-    SCOPE_EXIT -> void { window_->OnFrameDisplayed(); };
+    SCOPE_EXIT->void { window_->OnFrameDisplayed(); };
     if (!window_->IsShown()) {
         return;
     }

@@ -106,7 +106,7 @@ App::App(const g::Config& config):logger(config) {
     auto [width, height, title] = config.getConfig<config::window::Window>();
 
 #if defined(USE_GLFW)
-    window = std::make_unique<ScreenWindow>(ScreenExtent{.width = width, .height = height}, title);
+    window = std::make_unique<ScreenWindow>(width, height, title);
 #endif
 #if defined(USE_SDL)
     window = std::make_unique<graphics::SDLWindow>(width, height, title);
