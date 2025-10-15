@@ -62,11 +62,11 @@ inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.des
 inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
 inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
     owner.destroyDebugUtilsMessengerEXT(
-        handle, nullptr, vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+        handle, nullptr);
 }
 inline void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle) noexcept {
     owner.destroyDebugReportCallbackEXT(
-        handle, nullptr, vk::detail::DispatchLoaderDynamic{owner, vkGetInstanceProcAddr});
+        handle, nullptr);
 }
 
 template <typename Type, typename OwnerType>
