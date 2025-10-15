@@ -18,7 +18,12 @@
 #ifdef __FreeBSD__
 #define cpu_set_t cpuset_t
 #endif
-
+#include <string>
+#include <cstring>
+#ifdef __linux__
+#include "common/error.hpp"
+#include <spdlog/spdlog.h>
+#endif
 namespace common::thread {
 #ifdef _WIN32
 
@@ -71,7 +76,7 @@ void SetCurrentThreadPriority(ThreadPriority new_priority) {
 #endif
 
 #ifdef _MSC_VER
-namespace{
+namespace {
 auto UTF8ToUTF16W(const std::string& str) -> std::wstring {
     if (str.empty()) {
         return {};
@@ -81,7 +86,7 @@ auto UTF8ToUTF16W(const std::string& str) -> std::wstring {
     MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), wstr.data(), len);
     return wstr;
 }
-}
+}  // namespace
 
 // Sets the debugger-visible name of the current thread.
 void SetCurrentThreadName(const char* name) {
@@ -102,10 +107,10 @@ void SetCurrentThreadName(const char* name) {
 #elif defined(__linux__)
     // Linux limits thread names to 15 characters and will outright reject any
     // attempt to set a longer name with ERANGE.
-    std::string truncated(name, std::min(strlen(name), static_cast<size_t>(15)));
+    std::string truncated(name, std::min(std::strlen(name), static_cast<size_t>(15)));
     if (int e = pthread_setname_np(pthread_self(), truncated.c_str())) {
         errno = e;
-        LOG_ERROR(Common, "Failed to set thread name to '{}': {}", truncated, GetLastErrorMsg());
+        SPDLOG_ERROR("Failed to set thread name to '{}': {}", truncated, common::GetLastErrorMsg());
     }
 #else
     pthread_setname_np(pthread_self(), name);
