@@ -73,72 +73,10 @@ auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
 }
 
 template <class P>
-auto BufferCache<P>::BindUniformBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId {
-    Binding bind = uniform_buffers[stage][index];
-    if (!bind.buffer_id || bind.size != size) {
-        bind.buffer_id = CreateBuffer(size);
-        bind.size = size;
-    }
-    auto& buffer = slot_buffers[bind.buffer_id];
-    auto upload_staging = runtime.UploadStagingBuffer(size);
-    std::array<texture::BufferCopy, 1> copies{
-        {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
-    std::memcpy(upload_staging.mapped_span.data(), data, size);
-    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true);
-
-    uniform_buffers[stage][index] = bind;
-    // runtime.FreeDeferredStagingBuffer(upload_staging);
-    return bind.buffer_id;
-}
-template <class P>
-auto BufferCache<P>::addUniformBuffer(u32 size) -> BufferId {
-    return CreateBuffer(size);
-}
-template <class P>
-void BufferCache<P>::BindUniformBuffers(BufferId id, void* data, size_t size) {
-    auto& buffer = slot_buffers[id];
-    auto upload_staging = runtime.UploadStagingBuffer(size);
-    std::array<texture::BufferCopy, 1> copies{
-        {texture::BufferCopy{.src_offset = upload_staging.offset, .dst_offset = 0, .size = size}}};
-    std::memcpy(upload_staging.mapped_span.data(), data, size);
-    runtime.CopyBuffer(buffer, upload_staging.buffer, copies, true, true);
-}
-
-template <class P>
-auto BufferCache<P>::GetDrawIndirectCount() -> std::pair<typename BufferCache<P>::Buffer*, u32> {
-    auto& buffer = slot_buffers[count_buffer_binding.buffer_id];
-    return std::make_pair(&buffer, 0);
-}
-
-template <class P>
-auto BufferCache<P>::GetDrawIndirectBuffer() -> std::pair<typename BufferCache<P>::Buffer*, u32> {
-    auto& buffer = slot_buffers[indirect_buffer_binding.buffer_id];
-    return std::make_pair(&buffer, 0);
-}
-
-template <class P>
 void BufferCache<P>::BindStageBuffers(size_t stage) {
     BindGraphicsUniformBuffers(stage);
     // BindHostGraphicsStorageBuffers(stage);
     // BindHostGraphicsTextureBuffers(stage);
-}
-
-template <class P>
-void BufferCache<P>::BindCurrentUniformBuffers() {
-    Buffer& buffer = slot_buffers[current_uniform_buffer.buffer_id];
-    runtime.BindUniformBuffer(buffer, 0, current_uniform_buffer.size);
-}
-
-template <class P>
-void BufferCache<P>::BindGraphicsUniformBuffers(size_t stage) {
-    BindGraphicsUniformBuffer(stage, 0, false);
-}
-
-template <class P>
-void BufferCache<P>::BindGraphicsUniformBuffer(size_t stage, u32 index, bool needs_bind) {
-    const Binding& binding = uniform_buffers[0][index];
-    Buffer& buffer = slot_buffers[binding.buffer_id];
-    runtime.BindUniformBuffer(buffer, 0, binding.size);
 }
 
 template <class P>
@@ -173,11 +111,7 @@ void BufferCache<P>::TickFrame() {
     }
     async_buffers_death_ring.clear();
 }
-template <class P>
-void BufferCache<P>::setCurrentUniformBuffer(BufferId id, u32 size) {
-    current_uniform_buffer.buffer_id = id;
-    current_uniform_buffer.size = size;
-}
+
 template <class P>
 void BufferCache<P>::BindUniformBuffer(std::span<const std::byte> data) {
     auto map = runtime.BindMappedUniformBuffer(0, 0, data.size());

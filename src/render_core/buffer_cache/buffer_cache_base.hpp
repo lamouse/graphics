@@ -158,18 +158,12 @@ class BufferCache : public BufferCacheInfo {
         void TickFrame();
         auto addVertexBuffer(const void* data, u32 size) -> BufferId;
         auto addIndexBuffer(const void* data, u32 size) -> BufferId;
-        auto addUniformBuffer(u32 size) -> BufferId;
         void BindIndexBuffer(IndexFormat format, BufferId id);
         void BindVertexBuffers(BufferId id, u32 size);
         void BindUniformBuffer(std::span<const std::byte> data);
-        void BindUniformBuffers(BufferId id, void* data, size_t size);
-        auto BindUniformBuffers(size_t stage, u32 index, void* data, u32 size) -> BufferId;
         void BindStageBuffers(size_t stage);
-        void BindCurrentUniformBuffers();
-        void setCurrentUniformBuffer(BufferId id, u32 size);
         [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
 
-        [[nodiscard]] auto GetDrawIndirectBuffer() -> std::pair<Buffer*, u32>;
 
         [[nodiscard]] auto CreateBuffer(u32 wanted_size) -> BufferId;
         ~BufferCache() = default;
@@ -188,15 +182,11 @@ class BufferCache : public BufferCacheInfo {
 
         void TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept;
 
-        void BindGraphicsUniformBuffers(size_t stage);
-        void BindGraphicsUniformBuffer(size_t stage, u32 index, bool needs_bind);
-
         Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;
         DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
 
         IndirectParams* current_draw_indirect{};
-        Binding current_uniform_buffer{};
         u32 last_index_count = 0;
 
         // Async Buffers
@@ -205,7 +195,6 @@ class BufferCache : public BufferCacheInfo {
         std::deque<Async_Buffer> async_buffers_death_ring;
 
         size_t immediate_buffer_capacity = 0;
-
         struct LRUItemParams {
                 using ObjectType = BufferId;
                 using TickType = u64;
