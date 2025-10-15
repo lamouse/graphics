@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Common {
+namespace common {
 
 // Generic function to get last error message.
 // Call directly after the command or use the error num.
