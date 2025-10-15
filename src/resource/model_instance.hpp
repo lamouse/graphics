@@ -45,11 +45,9 @@ class ModelInstance : public IModelInstance {
     public:
         using id_t = unsigned int;
         using Map = std::unordered_map<id_t, ModelInstance>;
-        static auto createGameObject(std::string image_path, std::string mode_path,
-                                     std::uint32_t ubo_size) -> ModelInstance {
+        static auto createGameObject(std::string image_path, std::string mode_path) -> ModelInstance {
             static id_t currentId = 0;
-            return ModelInstance{currentId++, std::move(image_path), std::move(mode_path),
-                                 ubo_size};
+            return ModelInstance{currentId++, std::move(image_path), std::move(mode_path)};
         }
         [[nodiscard]] auto getModelMatrix() -> glm::mat4 {
             if (entity_.hasComponent<ecs::TransformComponent>()) {
@@ -71,24 +69,20 @@ class ModelInstance : public IModelInstance {
         ::glm::vec3 color{};
         ecs::Entity entity_;
         ~ModelInstance() override = default;
-        [[nodiscard]] auto getUBOSize() const -> std::uint32_t { return ubo_size; }
         void writeToUBOMapData(std::span<const std::byte> data);
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             // NOLINTNEXTLINE
-            ASSERT_MSG(ubo_data.size() == ubo_size, "UBO size not match");
+            ASSERT_MSG(!ubo_data.empty(), "UBO size not match");
             return ubo_data;
         };
 
     private:
         id_t id;
         std::span<const std::byte> ubo_data;
-        std::uint32_t ubo_size;
         std::string image_path;
         std::string mode_path;
-        explicit ModelInstance(id_t id, std::string image_path, std::string mode_path,
-                               std::uint32_t ubo_size)
+        explicit ModelInstance(id_t id, std::string image_path, std::string mode_path)
             : id(id),
-              ubo_size(ubo_size),
               image_path(std::move(image_path)),
               mode_path(std::move(mode_path)) {
             static ecs::Scene scene;

@@ -43,7 +43,7 @@ void App::run() {
 
     world::World world;
     bool show_console_logger = false;
-    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj", sizeof(UniformBufferObject));
+    ModelInstance modelInstance = ModelInstance::createGameObject(image_path + "viking_room.png", "models/viking_room.obj");
      auto graphicId = graphics->uploadModel(modelInstance);
      modelInstance.setModelId(graphicId);
     auto& camera =
