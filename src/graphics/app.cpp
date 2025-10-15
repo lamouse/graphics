@@ -44,16 +44,24 @@ void App::run() {
     world::World world;
     bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
+    std::string other_image = image_path + "p1.jpg";
     std::string viking_obj_path = "models/viking_room.obj";
     resourceManager.addTexture(viking_room_path,
                                [&](const resource::image::ITexture& texture) -> render::TextureId {
                                    return graphics->uploadTexture(texture);
                                });
+    resourceManager.addTexture(other_image,
+                               [&](const resource::image::ITexture& texture) -> render::TextureId {
+                                   return graphics->uploadTexture(texture);
+                               });
 
-    resourceManager.addMesh(
-        viking_obj_path, [&](const auto& mesh) -> render::MeshId { return graphics->uploadModel(mesh); });
+    resourceManager.addMesh(viking_obj_path, [&](const auto& mesh) -> render::MeshId {
+        return graphics->uploadModel(mesh);
+    });
     ModelInstance modelInstance = ModelInstance::createGameObject(
         resourceManager.getTexture(viking_room_path), resourceManager.getMesh(viking_obj_path));
+    ModelInstance modelInstance2 = ModelInstance::createGameObject(
+        resourceManager.getTexture(other_image), resourceManager.getMesh(viking_obj_path));
     auto& camera =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();
@@ -67,6 +75,13 @@ void App::run() {
             camera.extentAspectRation = window->getAspectRatio();
         }
         modelComponent.rotation.z = getRuntime() * glm::radians(90.0F);
+        if ((static_cast<int>(modelComponent.rotation.z) % 10) > 5) {
+            modelInstance.setTextureId(resourceManager.getTexture(other_image));
+            modelInstance2.setTextureId(resourceManager.getTexture(viking_room_path));
+        }else{
+            modelInstance.setTextureId(resourceManager.getTexture(viking_room_path));
+            modelInstance2.setTextureId(resourceManager.getTexture(other_image));
+        }
         UniformBufferObject ubo1{};
         UniformBufferObject ubo2{};
         ubo1.model = modelInstance.getModelMatrix();
@@ -78,12 +93,12 @@ void App::run() {
         ubo2 = ubo1;
         auto model2 = modelComponent;
         model2.translation.x = modelComponent.translation.x + 1.8F;
-        model2.scale.x = modelComponent.scale.x * 0.5F;
-        model2.scale.y = modelComponent.scale.y * 0.5F;
-        model2.scale.z = modelComponent.scale.z * 0.5F;
+        model2.scale.x = modelComponent.scale.x * 0.4F;
+        model2.scale.y = modelComponent.scale.y * 0.4F;
+        model2.scale.z = modelComponent.scale.z * 0.4F;
         ubo2.model = model2.mat4();
-        modelInstance.writeToUBOMapData(ubo2.as_byte_span());
-        graphics->draw(modelInstance);
+        modelInstance2.writeToUBOMapData(ubo2.as_byte_span());
+        graphics->draw(modelInstance2);
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();

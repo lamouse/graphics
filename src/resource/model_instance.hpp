@@ -30,6 +30,7 @@ class IModelInstance {
         CLASS_DEFAULT_COPYABLE(IModelInstance);
         CLASS_DEFAULT_MOVEABLE(IModelInstance);
         [[nodiscard]] virtual auto getTextureId() const -> render::TextureId = 0;
+        virtual void setTextureId(render::TextureId) = 0;
         [[nodiscard]] virtual auto getMeshId() const -> render::MeshId = 0;
         [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
 };
@@ -69,6 +70,7 @@ class ModelInstance : public IModelInstance {
         };
         [[nodiscard]] auto getTextureId() const -> render::TextureId override { return textureId; }
         [[nodiscard]] auto getMeshId() const -> render::MeshId override { return meshId; }
+        void setTextureId(render::TextureId textureId_) override { textureId = textureId_; }
 
     private:
         id_t id;
