@@ -3,11 +3,7 @@
 #include <cmath>
 #include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
-#if _MSC_VER or __APPLE__
 #include <stb_image.h>
-#else
-#include <stb/stb_image.h>
-#endif
 namespace resource::image {
 
 void Image::readImage(const ::std::string& path) {
