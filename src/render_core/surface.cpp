@@ -192,7 +192,7 @@ bool IsPixelFormatSignedInteger(PixelFormat format) {
     }
 }
 
-auto PixelComponentSizeBitsInteger(PixelFormat format) -> size_t {
+auto PixelComponentSizeBitsInteger(PixelFormat format) -> std::size_t {
     switch (format) {
         case PixelFormat::A8B8G8R8_SINT:
         case PixelFormat::A8B8G8R8_UINT:

@@ -20,6 +20,7 @@ endif()
 #设置使用的库
 add_definitions(-DUSE_SDL)
 #add_definitions(-DUSE_GLFW)
+add_definitions(-DVULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
 set(WINDOW_TITLE "${PROJECT_NAME}")
 # 使用 configure_file 生成最终的 config.yaml

@@ -76,7 +76,8 @@ void VulkanGraphics::clean() {
 }
 void VulkanGraphics::clear() {
     auto config = emu_window->getActiveConfig();
-    const vk::Extent2D render_area{ static_cast<std::uint32_t>(config.extent.width), static_cast<std::uint32_t>(config.extent.height)};
+    const vk::Extent2D render_area{static_cast<std::uint32_t>(config.extent.width),
+                                   static_cast<std::uint32_t>(config.extent.height)};
     const f32 bg_red = pipeline_state.clearColor.r;
     const f32 bg_green = pipeline_state.clearColor.g;
     const f32 bg_blue = pipeline_state.clearColor.b;
@@ -192,63 +193,57 @@ void VulkanGraphics::UpdateDynamicStates() {
 // Restart）功能。图元重启功能主要用于在绘制图元（如三角形、线条等）时，
 // 允许在索引缓冲区中插入一个特殊值（称为“重启索引”），以分隔不同的图元序列。
 void VulkanGraphics::UpdatePrimitiveRestartEnable() {
-    scheduler.record([this,
-                      enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setPrimitiveRestartEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setPrimitiveRestartEnableEXT(enable);
     });
 }
 
 // 用于启用或禁用 光栅化丢弃
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
-    scheduler.record([this,
-                      enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setRasterizerDiscardEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setRasterizerDiscardEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateDepthBiasEnable() {
     const bool enable = pipeline_state.depthBiasEnable;
-    scheduler.record([enable, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthBiasEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
-    });
+    scheduler.record(
+        [enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnableEXT(enable); });
 }
 
 void VulkanGraphics::UpdateVertexInput() {
     auto resource = modelResource[current_modelId];
     auto attrs = vertex_attributes[resource.vertex_attribute_id];
     auto bindings = vertex_bindings[resource.vertex_binding_id];
-    scheduler.record([this, bindings, attrs](vk::CommandBuffer cmdbuf) -> void {
-        cmdbuf.setVertexInputEXT(bindings, attrs, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([bindings, attrs](vk::CommandBuffer cmdbuf) -> void {
+        cmdbuf.setVertexInputEXT(bindings, attrs);
     });
 }
 
 void VulkanGraphics::UpdateCullMode() {
-    scheduler.record([enabled = pipeline_state.cullMode, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setCullModeEXT(enabled ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone,
-                              device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enabled = pipeline_state.cullMode](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setCullModeEXT(enabled ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone);
     });
 }
 
 void VulkanGraphics::UpdateDepthCompareOp() {
-    scheduler.record([this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthCompareOpEXT(vk::CompareOp::eLessOrEqual,
-                                    device.logical().getDispatchLoaderDynamic());
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthCompareOpEXT(vk::CompareOp::eLessOrEqual);
     });
 }
 
 void VulkanGraphics::UpdateFrontFace() {
-    scheduler.record([this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setFrontFaceEXT(vk::FrontFace::eCounterClockwise,
-                               device.logical().getDispatchLoaderDynamic());
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setFrontFaceEXT(vk::FrontFace::eCounterClockwise);
     });
 }
 
 void VulkanGraphics::UpdateStencilOp() {
     // Front face defines the stencil op of both faces
-    scheduler.record([this](vk::CommandBuffer cmdbuf) {
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
         cmdbuf.setStencilOpEXT(vk::StencilFaceFlagBits::eFront, vk::StencilOp::eReplace,
                                vk::StencilOp::eReplace, vk::StencilOp::eReplace,
-                               vk::CompareOp::eAlways, device.logical().getDispatchLoaderDynamic());
+                               vk::CompareOp::eAlways);
     });
 }
 
@@ -258,14 +253,14 @@ void VulkanGraphics::UpdateDepthBoundsTestEnable() {
         SPDLOG_WARN("Depth bounds is enabled but not supported");
         enabled = false;
     }
-    scheduler.record([enable = enabled, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthBoundsTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = enabled](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthBoundsTestEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateDepthTestEnable() {
-    scheduler.record([enable = pipeline_state.depthTestEnable, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.depthTestEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthTestEnableEXT(enable);
     });
 }
 /**
@@ -273,34 +268,30 @@ void VulkanGraphics::UpdateDepthTestEnable() {
  *
  */
 void VulkanGraphics::UpdateDepthWriteEnable() {
-    scheduler.record([enable = pipeline_state.depthWriteEnable, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthWriteEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.depthWriteEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthWriteEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateStencilTestEnable() {
-    scheduler.record([enable = pipeline_state.stencilTestEnable, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setStencilTestEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.stencilTestEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setStencilTestEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateLogicOpEnable() {
-    scheduler.record([enable = pipeline_state.logicOpEnable, this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setLogicOpEnableEXT(enable, device.logical().getDispatchLoaderDynamic());
+    scheduler.record([enable = pipeline_state.logicOpEnable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setLogicOpEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    scheduler.record(
-        [is_enabled = pipeline_state.depthClampEnable, this](vk::CommandBuffer cmdbuf) {
-            cmdbuf.setDepthClampEnableEXT(is_enabled, device.logical().getDispatchLoaderDynamic());
-        });
+    scheduler.record([is_enabled = pipeline_state.depthClampEnable](
+                         vk::CommandBuffer cmdbuf) { cmdbuf.setDepthClampEnableEXT(is_enabled); });
 }
 
 void VulkanGraphics::UpdateLogicOp() {
-    scheduler.record([this](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setLogicOpEXT(vk::LogicOp::eAnd, device.logical().getDispatchLoaderDynamic());
-    });
+    scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLogicOpEXT(vk::LogicOp::eAnd); });
 }
 
 void VulkanGraphics::UpdateBlending() {
@@ -311,16 +302,14 @@ void VulkanGraphics::UpdateBlending() {
         current |= vk::ColorComponentFlagBits::eB;
         current |= vk::ColorComponentFlagBits::eA;
     }
-    scheduler.record([this, setup_masks](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setColorWriteMaskEXT(0, setup_masks, device.logical().getDispatchLoaderDynamic());
-    });
+    scheduler.record(
+        [setup_masks](vk::CommandBuffer cmdbuf) { cmdbuf.setColorWriteMaskEXT(0, setup_masks); });
     std::array<VkBool32, 1> setup_enables{VK_FALSE};
     if (pipeline_state.colorBlendEnable) {
         setup_enables[0] = VK_TRUE;
     }
-    scheduler.record([this, setup_enables](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setColorBlendEnableEXT(0, setup_enables,
-                                      device.logical().getDispatchLoaderDynamic());
+    scheduler.record([setup_enables](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setColorBlendEnableEXT(0, setup_enables);
     });
 
     std::array<vk::ColorBlendEquationEXT, 1> setup_blends{};
@@ -332,9 +321,8 @@ void VulkanGraphics::UpdateBlending() {
         host_blend.dstAlphaBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
         host_blend.alphaBlendOp = vk::BlendOp::eAdd;
     }
-    scheduler.record([this, setup_blends](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setColorBlendEquationEXT(0, setup_blends,
-                                        device.logical().getDispatchLoaderDynamic());
+    scheduler.record([setup_blends](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setColorBlendEquationEXT(0, setup_blends);
     });
 }
 

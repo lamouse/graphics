@@ -502,7 +502,7 @@ auto IsPixelFormatInteger(PixelFormat format) -> bool;
 
 auto IsPixelFormatSignedInteger(PixelFormat format) -> bool;
 
-auto PixelComponentSizeBitsInteger(PixelFormat format) -> size_t;
+auto PixelComponentSizeBitsInteger(PixelFormat format) -> std::size_t;
 
 std::pair<u32, u32> GetASTCBlockSize(PixelFormat format);
 

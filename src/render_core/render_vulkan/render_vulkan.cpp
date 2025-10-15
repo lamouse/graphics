@@ -34,7 +34,6 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
                                         window->getWindowSystemInfo().render_surface_scale)),
 #endif
       vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify(), imgui.get()) {
-    device.initDispatchLoaderDynamic(*instance);
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("Vulkan initialization failed with error: {}", exception.what());
     throw std::runtime_error{fmt::format("Vulkan initialization error {}", exception.what())};

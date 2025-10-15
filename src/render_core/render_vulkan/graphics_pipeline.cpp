@@ -336,8 +336,7 @@ void GraphicsPipeline::ConfigureDraw() {
         }
         if (uses_push_descriptor) {
             cmdbuf.pushDescriptorSetWithTemplateKHR(*descriptor_update_template, *pipeline_layout,
-                                                    0, descriptor_data,
-                                                    device_.logical().getDispatchLoaderDynamic());
+                                                    0, descriptor_data);
         } else {
             const vk::DescriptorSet descriptor_set{descriptor_allocator.commit()};
             device_.getLogical().updateDescriptorSetWithTemplate(

@@ -26,14 +26,13 @@ PipelineStatistics::PipelineStatistics(const Device& device_) : device{device_} 
 
 void PipelineStatistics::Collect(vk::Pipeline pipeline) {
     const auto dev = device.getLogical();
-    auto f = device.logical().getDispatchLoaderDynamic().vkGetPipelineExecutablePropertiesKHR;
     const auto properties = dev.getPipelineExecutablePropertiesKHR(
-        pipeline, device.logical().getDispatchLoaderDynamic());
+        pipeline);
     const u32 num_executables{static_cast<u32>(properties.size())};
     using namespace std::literals;
     for (u32 executable = 0; executable < num_executables; ++executable) {
         const auto statistics{dev.getPipelineExecutableStatisticsKHR(
-            pipeline, device.logical().getDispatchLoaderDynamic())};
+            pipeline)};
         if (statistics.empty()) {
             continue;
         }

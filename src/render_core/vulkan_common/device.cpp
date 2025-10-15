@@ -1341,10 +1341,6 @@ auto Device::shouldBoostClocks() const -> bool {
     return validated_driver && !is_steam_deck && !is_debugging;
 }
 
-void Device::initDispatchLoaderDynamic(vk::Instance instance) {
-    logical_.initDispatchLoaderDynamic(instance);
-}
-
 auto Device::IsFormatSupport(vk::Format format, vk::FormatFeatureFlagBits feature) const -> bool {
     auto properties = format_properties_.find(format)->second;
     if (!(properties.optimalTilingFeatures & feature)) {

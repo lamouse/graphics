@@ -417,7 +417,6 @@ class Device {
         [[nodiscard]] auto isFloat16Supported() const -> bool {
             return features_.shader_float16_int8.shaderFloat16;
         }
-        void initDispatchLoaderDynamic(vk::Instance instance);
 
     private:
         vk::Instance instance_;

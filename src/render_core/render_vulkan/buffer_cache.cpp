@@ -278,8 +278,7 @@ void BufferCacheRuntime::BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offs
             const vk::DeviceSize vk_offset = buffer != VK_NULL_HANDLE ? offset : 0;
             const vk::DeviceSize vk_size = buffer != VK_NULL_HANDLE ? size : VK_WHOLE_SIZE;
             const vk::DeviceSize vk_stride = stride;
-            cmdbuf.bindVertexBuffers2EXT(index, 1, &buffer, &vk_offset, &vk_size, &vk_stride,
-                                         device.logical().getDispatchLoaderDynamic());
+            cmdbuf.bindVertexBuffers2EXT(index, 1, &buffer, &vk_offset, &vk_size, &vk_stride);
         });
     } else {
         if (!device.HasNullDescriptor() && buffer == VK_NULL_HANDLE) {
@@ -320,8 +319,7 @@ void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>
                           binding_count](vk::CommandBuffer cmdbuf) {
             cmdbuf.bindVertexBuffers2EXT(bindings_.min_index, binding_count, buffer_handles_.data(),
                                          bindings_.offsets.data(), bindings_.sizes.data(),
-                                         bindings_.strides.data(),
-                                         device.logical().getDispatchLoaderDynamic());
+                                         bindings_.strides.data());
         });
     } else {
         scheduler.record([bindings_ = std::move(bindings),
@@ -350,8 +348,7 @@ void BufferCacheRuntime::BindTransformFeedbackBuffer(u32 index, vk::Buffer buffe
     scheduler.record([this, index, buffer, offset, size](vk::CommandBuffer cmdbuf) {
         const vk::DeviceSize vk_offset = offset;
         const vk::DeviceSize vk_size = size;
-        cmdbuf.bindTransformFeedbackBuffersEXT(index, 1, &buffer, &vk_offset, &vk_size,
-                                               device.logical().getDispatchLoaderDynamic());
+        cmdbuf.bindTransformFeedbackBuffersEXT(index, 1, &buffer, &vk_offset, &vk_size);
     });
 }
 
@@ -369,8 +366,7 @@ void BufferCacheRuntime::BindTransformFeedbackBuffers(
                       buffer_handles_ = std::move(buffer_handles)](vk::CommandBuffer cmdbuf) {
         cmdbuf.bindTransformFeedbackBuffersEXT(0, static_cast<u32>(buffer_handles_.size()),
                                                buffer_handles_.data(), bindings_.offsets.data(),
-                                               bindings_.sizes.data(),
-                                               device.logical().getDispatchLoaderDynamic());
+                                               bindings_.sizes.data());
     });
 }
 

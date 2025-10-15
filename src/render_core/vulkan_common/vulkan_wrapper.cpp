@@ -3,6 +3,7 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include "vulkan_common.hpp"
 #include "vk_mem_alloc.h"
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace render::vulkan {
 namespace utils {
@@ -58,18 +59,13 @@ void SortPhysicalDevices(std::vector<vk::PhysicalDevice>& devices) {
 
 template <typename T>
 void SetObjectName(vk::Device device, T handle, vk::ObjectType type, const char* name) {
-    const VkDebugUtilsObjectNameInfoEXT name_info{
-        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
-        .pNext = nullptr,
-        .objectType = static_cast<VkObjectType>(type),
-        .objectHandle = reinterpret_cast<u64>(handle),
-        .pObjectName = name,
-    };
-    auto fun = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetDeviceProcAddr(
-        device, "vkSetDebugUtilsObjectNameEXT"));
-    if (fun) {
-        utils::check(fun(device, &name_info));
-    }
+    vk::DebugUtilsObjectNameInfoEXT nameInfoExt =
+        vk::DebugUtilsObjectNameInfoEXT()
+            .setObjectType(type)
+            .setObjectHandle(reinterpret_cast<u64>(handle))
+            .setPObjectName(name);
+
+    device.setDebugUtilsObjectNameEXT(nameInfoExt);
 }
 }  // namespace
 void Image::SetObjectNameEXT(const char* name) const {
@@ -136,15 +132,14 @@ void Buffer::Release() const noexcept {
     }
 }
 
-auto Instance::Create(u32 version, std::span<const char*> layers,
-                          std::span<const char*> extensions) -> Instance {
+auto Instance::Create(u32 version, std::span<const char*> layers, std::span<const char*> extensions)
+    -> Instance {
 #ifdef __APPLE__
     constexpr vk::InstanceCreateFlags ci_flags{
         vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR};
 #else
     constexpr vk::InstanceCreateFlags ci_flags{};
 #endif
-
     const vk::ApplicationInfo application_info{
 
         "graphics engine",        VK_MAKE_VERSION(0, 1, 0), "graphics engine",
@@ -152,12 +147,12 @@ auto Instance::Create(u32 version, std::span<const char*> layers,
     };
     vk::InstanceCreateInfo ci{ci_flags, &application_info, layers, extensions};
     vk::Instance instance = ::vk::createInstance(ci);
-
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
     return Instance(instance, wrapper::NoOwner{});
 }
 
 auto Instance::EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevice> {
-    u32 num;
+
     auto physical_devices = handle.enumeratePhysicalDevices();
     ;
     SortPhysicalDevices(physical_devices);
@@ -167,14 +162,14 @@ auto Instance::EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevic
 auto Instance::CreateDebugUtilsMessenger(
     const vk::DebugUtilsMessengerCreateInfoEXT& create_info) const -> DebugUtilsMessenger {
     vk::DebugUtilsMessengerEXT object = handle.createDebugUtilsMessengerEXT(
-        create_info, nullptr, vk::detail::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
+        create_info, nullptr);
     return DebugUtilsMessenger(object, handle);
 }
 
 auto Instance::CreateDebugReportCallback(
     const vk::DebugReportCallbackCreateInfoEXT& create_info) const -> DebugReportCallback {
     vk::DebugReportCallbackEXT object = handle.createDebugReportCallbackEXT(
-        create_info, nullptr, vk::detail::DispatchLoaderDynamic{handle, vkGetInstanceProcAddr});
+        create_info, nullptr);
     return DebugReportCallback(object, handle);
 }
 
@@ -238,12 +233,14 @@ void Semaphore::SetObjectNameEXT(const char* name) const {
 }
 
 auto LogicDevice::Create(vk::PhysicalDevice physical_device,
-                                const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
-                                const std::vector<const char*>& enabled_extensions,
-                                const void* next) -> LogicDevice {
+                         const std::vector<vk::DeviceQueueCreateInfo>& queues_ci,
+                         const std::vector<const char*>& enabled_extensions, const void* next)
+    -> LogicDevice {
     vk::DeviceCreateInfo ci{};
     ci.setQueueCreateInfos(queues_ci).setPEnabledExtensionNames(enabled_extensions).setPNext(next);
-    return LogicDevice(physical_device.createDevice(ci), wrapper::NoOwner{});
+    auto device = physical_device.createDevice(ci);
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(device);
+    return LogicDevice(device, wrapper::NoOwner{});
 }
 
 auto LogicDevice::createPipelineLayout(const vk::PipelineLayoutCreateInfo& ci) const
@@ -362,10 +359,6 @@ void LogicDevice::UpdateDescriptorSet(vk::DescriptorSet set,
 
     auto object = handle.createEvent(ci);
     return Event(object, handle);
-}
-
-void LogicDevice::initDispatchLoaderDynamic(vk::Instance instance) noexcept {
-    dld = vk::detail::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr, handle, vkGetDeviceProcAddr};
 }
 
 }  // namespace render::vulkan

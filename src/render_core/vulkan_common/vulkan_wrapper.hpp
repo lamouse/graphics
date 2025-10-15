@@ -709,15 +709,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
         void UpdateDescriptorSet(vk::DescriptorSet set,
                                  vk::DescriptorUpdateTemplate update_template,
                                  const void* data) const noexcept;
-        [[nodiscard]] auto getDispatchLoaderDynamic() const noexcept
-            -> vk::detail::DispatchLoaderDynamic {
-            return dld;
-        };
-
-        void initDispatchLoaderDynamic(vk::Instance instance) noexcept;
 
     private:
-        vk::detail::DispatchLoaderDynamic dld;
 };
 
 }  // namespace render::vulkan
