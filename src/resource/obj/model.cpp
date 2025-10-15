@@ -9,15 +9,15 @@
 #include <unordered_map>
 
 namespace {
-    template <typename T>
-    std::span<const std::byte> as_bytes(std::span<const T> s) {
-        // 将 T* 指针 reinterpret_cast 为 const std::byte* 指针
-        auto ptr = reinterpret_cast<const std::byte*>(s.data());
-        // 第二个参数是 span 的“元素”数量，即字节数
-        return std::span<const std::byte>(ptr, s.size() * sizeof(T));
-    }
-
+template <typename T>
+std::span<const std::byte> as_bytes(std::span<const T> s) {
+    // 将 T* 指针 reinterpret_cast 为 const std::byte* 指针
+    auto ptr = reinterpret_cast<const std::byte*>(s.data());
+    // 第二个参数是 span 的“元素”数量，即字节数
+    return std::span<const std::byte>(ptr, s.size() * sizeof(T));
 }
+
+}  // namespace
 
 namespace graphics {
 
@@ -38,7 +38,7 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
-auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model> {
+auto Model::createFromFile(const ::std::string& path) -> Model {
     std::vector<Model::Vertex> vertices;
     std::vector<uint16_t> u32_indices;
     ::std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
@@ -77,20 +77,19 @@ auto Model::createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model
     // 判断是否需要使用 32 位索引
     if (vertices.size() > std::numeric_limits<uint16_t>::max()) {
         // 使用 32 位索引
-        return std::make_unique<Model>(vertices,
-                                       u32_indices);  // 你需要添加一个支持 uint32_t 的构造函数
+        return Model(vertices,
+                     u32_indices);  // 你需要添加一个支持 uint32_t 的构造函数
     }
     // 转换为 16 位索引
     std::vector<uint16_t> u16_indices;
     u16_indices.resize(u32_indices.size());
     std::ranges::transform(u32_indices, u16_indices.begin(),
                            [](uint32_t idx) { return static_cast<uint16_t>(idx); });
-    return std::make_unique<Model>(vertices, u16_indices);
+    return Model(vertices, u16_indices);
 }
 
 // 返回顶点坐标（仅 position），展平为 float 数组
 [[nodiscard]] auto Model::getMesh() const -> std::span<const float> {
-
     return std::span<const float>(reinterpret_cast<const float*>(vertices_.data()),
                                   vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
 }

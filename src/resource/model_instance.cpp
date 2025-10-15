@@ -14,10 +14,6 @@ void ModelInstance::drawUI() {
     ImGui::End();
 }
 
-auto ModelInstance::getMeshData() const -> std::unique_ptr<IMeshData> {
-    return graphics::Model::createFromFile(mode_path);
-}
-
 void ModelInstance::writeToUBOMapData(std::span<const std::byte> data) {
     // NOLINTNEXTLINE
     ASSERT_MSG(!data.empty(), "ubo data size is empty");

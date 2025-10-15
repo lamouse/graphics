@@ -40,7 +40,7 @@ class VulkanGraphics : public render::Graphic {
         void clean() override;
         void setPipelineState(const PipelineState& state) override;
         void drawImgui(vk::CommandBuffer cmd_buf);
-        auto uploadModel(const graphics::IModelInstance& instance) -> ModelId override;
+        auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId override;
         void draw(const graphics::IModelInstance& instance) override;
         void end() override {};

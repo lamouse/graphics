@@ -39,7 +39,7 @@ class Model : public IMeshData {
                     color.type.Assign(render::VertexAttribute::Type::Float);
                     color.offset.Assign(offsetof(Vertex, color));
                     color.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
-    
+
                     vertex_attributes.push_back(color);
                     render::VertexAttribute texCoord;
                     texCoord.hex = 0;
@@ -63,10 +63,10 @@ class Model : public IMeshData {
         [[nodiscard]] auto getVertexAttribute() const -> std::vector<render::VertexAttribute> override {
             return Vertex::getVertexAttribute();
         }
-        [[nodiscard]] auto getVertexBinding() -> std::vector<render::VertexBinding> override {
+        [[nodiscard]] auto getVertexBinding() const -> std::vector<render::VertexBinding> override {
             return Vertex::getVertexBinding();
         }
-        static auto createFromFile(const ::std::string& path) -> ::std::unique_ptr<Model>;
+        static auto createFromFile(const ::std::string& path) -> Model;
         CLASS_NON_COPYABLE(Model);
         CLASS_NON_MOVEABLE(Model);
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices);

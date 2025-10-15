@@ -404,20 +404,19 @@ void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
 #endif
 }
 
-auto VulkanGraphics::uploadModel(const graphics::IModelInstance& instance) -> ModelId {
+auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
     ModelResource resource;
-    auto meshData = instance.getMeshData();
-    resource.vertex_size = static_cast<u32>(meshData->getMesh().size() * sizeof(float));
+    resource.vertex_size = static_cast<u32>(meshData.getMesh().size() * sizeof(float));
     resource.vertex_buffer_id =
-        buffer_cache.addVertexBuffer(meshData->getMesh().data(), resource.vertex_size);
+        buffer_cache.addVertexBuffer(meshData.getMesh().data(), resource.vertex_size);
     resource.indices_buffer_id =
-        buffer_cache.addIndexBuffer(meshData->getIndices().data(), meshData->getIndices().size());
-    resource.indices_count = meshData->getIndicesSize();
+        buffer_cache.addIndexBuffer(meshData.getIndices().data(), meshData.getIndices().size());
+    resource.indices_count = meshData.getIndicesSize();
 
-    auto vertexAttribute = meshData->getVertexAttribute();
+    auto vertexAttribute = meshData.getVertexAttribute();
     resource.vertex_attribute_id =
         vertex_attributes.insert(buildVertexAttribute(device, std::span(vertexAttribute)));
-    auto vertexBinding = meshData->getVertexBinding();
+    auto vertexBinding = meshData.getVertexBinding();
     resource.vertex_binding_id =
         vertex_bindings.insert(buildVertexBinding(std::span(vertexBinding)));
     return modelResource.insert(resource);
@@ -430,7 +429,7 @@ auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -
 }
 
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
-    current_modelId = instance.getModelId();
+    current_modelId = instance.getMeshId();
     const auto resource = modelResource[current_modelId];
     texture_cache.setCurrentTexture(instance.getTextureId(), SamplerPreset::Linear);
     guest_descriptor_queue.Acquire();

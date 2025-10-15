@@ -44,14 +44,16 @@ void App::run() {
     world::World world;
     bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
+    std::string viking_obj_path = "models/viking_room.obj";
     resourceManager.addTexture(viking_room_path,
                                [&](const resource::image::ITexture& texture) -> render::TextureId {
-                                    return graphics->uploadTexture(texture);
+                                   return graphics->uploadTexture(texture);
                                });
-    ModelInstance modelInstance =
-        ModelInstance::createGameObject(resourceManager.getTexture(viking_room_path), "models/viking_room.obj");
-    auto graphicId = graphics->uploadModel(modelInstance);
-    modelInstance.setModelId(graphicId);
+
+    resourceManager.addMesh(
+        viking_obj_path, [&](const auto& mesh) -> render::MeshId { return graphics->uploadModel(mesh); });
+    ModelInstance modelInstance = ModelInstance::createGameObject(
+        resourceManager.getTexture(viking_room_path), resourceManager.getMesh(viking_obj_path));
     auto& camera =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();

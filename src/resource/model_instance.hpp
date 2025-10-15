@@ -2,12 +2,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <unordered_map>
-#include <utility>
 #include "ecs/scene/entity.hpp"
 #include "ecs/scene/scene.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "resource/obj/model.hpp"
-#include "resource/texture/image.hpp"
 #include "common/slot_vector.hpp"
 #include "render_core/types.hpp"
 using ModelId = common::SlotId;
@@ -31,24 +29,19 @@ class IModelInstance {
         virtual ~IModelInstance() = default;
         CLASS_DEFAULT_COPYABLE(IModelInstance);
         CLASS_DEFAULT_MOVEABLE(IModelInstance);
-        void setModelId(ModelId id) { modelId = id; }
-        [[nodiscard]] auto getModelId() const -> ModelId { return modelId; }
         [[nodiscard]] virtual auto getTextureId() const -> render::TextureId = 0;
-        [[nodiscard]] virtual auto getMeshData() const -> std::unique_ptr<IMeshData> = 0;
+        [[nodiscard]] virtual auto getMeshId() const -> render::MeshId = 0;
         [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
-
-    private:
-        ModelId modelId;
 };
 
 class ModelInstance : public IModelInstance {
     public:
         using id_t = unsigned int;
         using Map = std::unordered_map<id_t, ModelInstance>;
-        static auto createGameObject(render::TextureId textureId, std::string mode_path)
+        static auto createGameObject(render::TextureId textureId, render::MeshId meshId)
             -> ModelInstance {
             static id_t currentId = 0;
-            return ModelInstance{currentId++, textureId, std::move(mode_path)};
+            return ModelInstance{currentId++, textureId, meshId};
         }
         [[nodiscard]] auto getModelMatrix() -> glm::mat4 {
             if (entity_.hasComponent<ecs::TransformComponent>()) {
@@ -58,7 +51,6 @@ class ModelInstance : public IModelInstance {
         }
 
         [[nodiscard]] auto getId() const -> id_t { return id; }
-        [[nodiscard]] auto getMeshData() const -> std::unique_ptr<IMeshData> override;
         ModelInstance(const ModelInstance&) = delete;
         ModelInstance(ModelInstance&&) = default;
         auto operator=(const ModelInstance&) -> ModelInstance& = delete;
@@ -76,14 +68,15 @@ class ModelInstance : public IModelInstance {
             return ubo_data;
         };
         [[nodiscard]] auto getTextureId() const -> render::TextureId override { return textureId; }
+        [[nodiscard]] auto getMeshId() const -> render::MeshId override { return meshId; }
 
     private:
         id_t id;
         std::span<const std::byte> ubo_data;
         render::TextureId textureId;
-        std::string mode_path;
-        explicit ModelInstance(id_t id, render::TextureId textureId_, std::string mode_path)
-            : id(id), textureId(textureId_), mode_path(std::move(mode_path)) {
+        render::MeshId meshId;
+        explicit ModelInstance(id_t id, render::TextureId textureId_, render::MeshId meshId_)
+            : id(id), textureId(textureId_), meshId(meshId_) {
             static ecs::Scene scene;
             entity_ = scene.createEntity("ModelInstance");
             entity_.addComponent<ecs::TransformComponent>();
