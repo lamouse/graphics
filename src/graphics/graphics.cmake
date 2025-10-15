@@ -7,8 +7,8 @@ set(sources
     glfw_window.cpp
     SDL_common.hpp
     SDL_common.cpp
-    SDL_window.hpp
-    SDL_window.cpp
+    sdl_window.hpp
+    sdl_window.cpp
     ui.hpp
     ui.cpp
     main.cpp

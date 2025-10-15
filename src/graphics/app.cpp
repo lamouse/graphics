@@ -88,7 +88,7 @@ void App::run() {
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
             graphics::ui::begin();
-            //graphics::ui::draw_result(imageId, window->getAspectRatio());
+            graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
             graphics::ui::draw_setting();
             logger.drawUi(show_console_logger);

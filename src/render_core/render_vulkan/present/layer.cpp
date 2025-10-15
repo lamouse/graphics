@@ -209,10 +209,10 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     RefreshResources(framebuffer);
     SetAntiAliasPass();
 
-    // Finish any pending renderpass
+    // Finish any pending render pass
     scheduler.requestOutsideRenderPassOperationContext();
     scheduler.wait(resource_ticks[image_index]);
-    SCOPE_EXIT { resource_ticks[image_index] = scheduler.currentTick(); };
+    SCOPE_EXIT -> void { resource_ticks[image_index] = scheduler.currentTick(); };
 
     vk::Image source_image = texture_info ? texture_info->image : *raw_images[image_index];
     vk::ImageView source_image_view =
