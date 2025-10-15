@@ -14,6 +14,7 @@ set(sources
     surface.cpp
     surface.hpp
     texture.hpp
+    types.hpp
     vertex.hpp
     buffer_cache/buffer_base.hpp
     buffer_cache/buffer_cache.h

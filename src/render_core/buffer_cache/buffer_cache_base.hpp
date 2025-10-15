@@ -9,6 +9,7 @@
 #include "render_core/texture/types.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/delayed_destruction_ring.h"
+#include "render_core/types.hpp"
 #include "render_core/fixed_pipeline_state.h"
 #include <boost/container/small_vector.hpp>
 #include <deque>
@@ -17,7 +18,6 @@
 
 namespace render::buffer {
 
-using BufferId = common::SlotId;
 using namespace common::literals;
 using namespace surface;
 #ifdef __APPLE__

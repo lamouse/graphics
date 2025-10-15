@@ -16,16 +16,15 @@
 namespace render::vulkan {
 struct FramebufferTextureInfo;
 class Device;
-using VertexAttributeId = common::SlotId;
-using VertexBindingsId = common::SlotId;
+
 struct ModelResource {
         texture::ImageViewId image_view;
 
-        buffer::BufferId vertex_buffer_id;
+        BufferId vertex_buffer_id;
         u32 vertex_size;
 
         u32 indices_count;
-        buffer::BufferId indices_buffer_id;
+        BufferId indices_buffer_id;
 
         VertexAttributeId vertex_attribute_id;
         VertexBindingsId vertex_binding_id;
@@ -104,7 +103,6 @@ class VulkanGraphics : public render::Graphic {
         TextureCache texture_cache;
         BufferCacheRuntime buffer_cache_runtime;
         BufferCache buffer_cache;
-        buffer::BufferId uniform_buffer_id;
         PipelineCache pipeline_cache;
         Event wfi_event;
         PipelineState pipeline_state;
@@ -113,7 +111,7 @@ class VulkanGraphics : public render::Graphic {
         common::SlotVector<ModelResource> modelResource;
         common::SlotVector<boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32>> vertex_attributes;
         common::SlotVector<boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32>> vertex_bindings;
-        
+
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
 };
 
