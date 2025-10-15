@@ -9,6 +9,8 @@ set (sources
     common_settings.hpp
     common_types.hpp
     div_ceil.hpp
+    error.hpp
+    error.cpp
     literals.hpp
     lru_cache.h
     make_unique_for_overwrite.h
