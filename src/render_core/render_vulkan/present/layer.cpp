@@ -17,20 +17,6 @@
 
 namespace render::vulkan {
 namespace {
-// TODO 这里也需要修复
-constexpr u32 GOB_SIZE_X_SHIFT = 6;
-constexpr u32 GOB_SIZE_Y_SHIFT = 3;
-constexpr u32 GOB_SIZE_Z_SHIFT = 0;
-auto CalculateSize(bool tiled, u32 bytes_per_pixel, u32 width, u32 height, u32 depth,
-                   u32 block_height, u32 block_depth) -> std::size_t {
-    if (tiled) {
-        const u32 aligned_width = common::AlignUpLog2(width * bytes_per_pixel, GOB_SIZE_X_SHIFT);
-        const u32 aligned_height = common::AlignUpLog2(height, GOB_SIZE_Y_SHIFT + block_height);
-        const u32 aligned_depth = common::AlignUpLog2(depth, GOB_SIZE_Z_SHIFT + block_depth);
-        return aligned_width * aligned_height * aligned_depth;
-    }
-    return width * height * depth * bytes_per_pixel;
-}
 
 auto GetBytesPerPixel() -> u32 {
     using namespace surface;

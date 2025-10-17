@@ -8,5 +8,3 @@ set(BUILD_SHARED_LIBS OFF)
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
 
 add_subdirectory(imgui)
-add_subdirectory(VulkanMemoryAllocator)
-add_subdirectory(stb)

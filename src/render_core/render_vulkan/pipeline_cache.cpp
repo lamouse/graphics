@@ -307,9 +307,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
                                            pipeline::PipelineStatistics* statistics,
                                            bool build_in_parallel)
     -> std::unique_ptr<GraphicsPipeline> try {
-    auto hash = key.Hash();
-    SPDLOG_INFO("0x{:016x}", hash);
-    size_t env_index{0};
+    SPDLOG_INFO("0x{:016x}", key.Hash());
     std::array<ShaderModule, 5> modules;
     modules[0] = utils::buildShader(device.getLogical(), MODEL_VERT_SPV);
     modules[4] = utils::buildShader(device.getLogical(), MODEL_FRAG_SPV);
@@ -346,7 +344,7 @@ auto PipelineCache::LoadVulkanPipelineCache(const std::filesystem::path& filenam
 auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline> {
     GraphicsPipelineCacheKey key;
     key.state.color_formats[0] = surface::PixelFormat::B8G8R8A8_UNORM;
-    for (int i = 1; i < key.state.color_formats.size(); i++) {
+    for (size_t i = 1; i < key.state.color_formats.size(); i++) {
         key.state.color_formats[i] = surface::PixelFormat::Invalid;
     }
     key.state.depth_format = surface::PixelFormat::D32_FLOAT;

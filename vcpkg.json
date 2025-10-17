@@ -18,6 +18,8 @@
         "glslang",
         "spirv-cross",
         "farmhash",
+        "vulkan-memory-allocator",
+        "vulkan-utility-libraries",
         {
             "name": "sdl3",
             "features": [
@@ -28,6 +30,10 @@
         {
             "name": "entt",
             "version>=": "3.15.0"
+        },
+        {
+            "name": "vulkan-headers",
+            "version>=": "1.4.309.0"
         }
     ]
 }

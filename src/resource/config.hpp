@@ -3,7 +3,6 @@
 #define CONFIG_HPP
 #define YAML_CPP_API
 #include <yaml-cpp/yaml.h>
-
 #include <string_view>
 namespace g {
 class Config {

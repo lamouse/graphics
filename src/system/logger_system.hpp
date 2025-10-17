@@ -79,7 +79,7 @@ class LoggerSystem {
         CLASS_NON_COPYABLE(LoggerSystem);
         CLASS_DEFAULT_MOVEABLE(LoggerSystem);
         ~LoggerSystem() = default;
-        void drawUi(bool show);
+        void drawUi(bool show = false);
 
     private:
         std::shared_ptr<ImGuiLogSink_mt> imgui_sink;

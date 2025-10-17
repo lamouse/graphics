@@ -22,31 +22,6 @@ auto MakeBufferCopy(const texture::BufferCopy& copy) -> vk::BufferCopy {
     };
 }
 
-auto IndexTypeFromNumElements(const Device& device, u32 num_elements) -> vk::IndexType {
-    if (num_elements <= 0xff && device.IsExtIndexTypeUint8Supported()) {
-        return vk::IndexType::eUint8EXT;
-    }
-    if (num_elements <= 0xffff) {
-        return vk::IndexType::eUint16;
-    }
-    return vk::IndexType::eUint32;
-}
-
-auto BytesPerIndex(vk::IndexType index_type) -> size_t {
-    switch (index_type) {
-        case vk::IndexType::eUint8EXT:
-            return 1;
-        case vk::IndexType::eUint16:
-            return 2;
-        case vk::IndexType::eUint32:
-            return 4;
-        default:
-            assert(false &&
-                   std::format("Invalid index type={}", vk::to_string(index_type)).c_str());
-            return 1;
-    }
-}
-
 auto ToIndexFormat(IndexFormat index_format) -> vk::IndexType {
     switch (index_format) {
         case IndexFormat::UnsignedByte:
@@ -274,7 +249,7 @@ void BufferCacheRuntime::BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offs
         return;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
-        scheduler.record([this, index, buffer, offset, size, stride](vk::CommandBuffer cmdbuf) {
+        scheduler.record([index, buffer, offset, size, stride](vk::CommandBuffer cmdbuf) {
             const vk::DeviceSize vk_offset = buffer != VK_NULL_HANDLE ? offset : 0;
             const vk::DeviceSize vk_size = buffer != VK_NULL_HANDLE ? size : VK_WHOLE_SIZE;
             const vk::DeviceSize vk_stride = stride;
@@ -314,7 +289,7 @@ void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>
         return;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
-        scheduler.record([this, bindings_ = std::move(bindings),
+        scheduler.record([ bindings_ = std::move(bindings),
                           buffer_handles_ = std::move(buffer_handles),
                           binding_count](vk::CommandBuffer cmdbuf) {
             cmdbuf.bindVertexBuffers2EXT(bindings_.min_index, binding_count, buffer_handles_.data(),
@@ -345,7 +320,7 @@ void BufferCacheRuntime::BindTransformFeedbackBuffer(u32 index, vk::Buffer buffe
         offset = 0;
         size = 0;
     }
-    scheduler.record([this, index, buffer, offset, size](vk::CommandBuffer cmdbuf) {
+    scheduler.record([index, buffer, offset, size](vk::CommandBuffer cmdbuf) {
         const vk::DeviceSize vk_offset = offset;
         const vk::DeviceSize vk_size = size;
         cmdbuf.bindTransformFeedbackBuffersEXT(index, 1, &buffer, &vk_offset, &vk_size);
@@ -362,7 +337,7 @@ void BufferCacheRuntime::BindTransformFeedbackBuffers(
     for (u32 index = 0; index < bindings.buffers.size(); ++index) {
         buffer_handles.push_back(bindings.buffers[index]->Handle());
     }
-    scheduler.record([this, bindings_ = std::move(bindings),
+    scheduler.record([bindings_ = std::move(bindings),
                       buffer_handles_ = std::move(buffer_handles)](vk::CommandBuffer cmdbuf) {
         cmdbuf.bindTransformFeedbackBuffersEXT(0, static_cast<u32>(buffer_handles_.size()),
                                                buffer_handles_.data(), bindings_.offsets.data(),

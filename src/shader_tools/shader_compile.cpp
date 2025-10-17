@@ -178,7 +178,6 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     const spirv_cross::CompilerGLSL compiler(spirv.data(), spirv.size());
     auto resources = compiler.get_shader_resources();
     for (const auto& input : resources.stage_inputs) {
-        const uint32_t location = compiler.get_decoration(input.id, spv::DecorationLocation);
         spirv_cross::SPIRType type = compiler.get_type(input.type_id);
 
         std::string typeName;
@@ -211,16 +210,11 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     }
 
     // 打印绑定信息
-    for (uint32_t index = 0; const auto& uniform_buffer : resources.uniform_buffers) {
-        uint32_t binding = compiler.get_decoration(uniform_buffer.id, spv::DecorationBinding);
-        uint32_t set = compiler.get_decoration(uniform_buffer.id, spv::DecorationDescriptorSet);
-
-        info.constant_buffer_descriptors.push_back({index++, 1});
+    for (size_t index = 0; index < resources.uniform_buffers.size();) {
+        info.constant_buffer_descriptors.push_back({static_cast<uint32_t>(index++), 1});
     }
 
-    for (const auto& sampled_image : resources.sampled_images) {
-        uint32_t binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
-        uint32_t set = compiler.get_decoration(sampled_image.id, spv::DecorationDescriptorSet);
+    for (size_t i = 0; i < resources.sampled_images.size(); i++) {
         TextureDescriptor td;
         td.count = 1;
         info.texture_descriptors.push_back(td);

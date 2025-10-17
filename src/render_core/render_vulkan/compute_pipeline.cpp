@@ -71,11 +71,7 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
 
 void ComputePipeline::Configure(scheduler::Scheduler& scheduler) {
     guest_descriptor_queue.Acquire();
-    size_t ssbo_index = 0;
-    for (const auto& desc : info.storage_buffers_descriptors) {
-        assert(desc.count == 1);
-        ++ssbo_index;
-    }
+
 
     static constexpr size_t max_elements = 64;
     boost::container::static_vector<texture::ImageViewInOut, max_elements> views;

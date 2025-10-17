@@ -29,7 +29,7 @@ endif()
 
 
 
-target_link_libraries(${LIB_COMMON_NAME} PUBLIC Vulkan::Vulkan spdlog::spdlog)
+target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)

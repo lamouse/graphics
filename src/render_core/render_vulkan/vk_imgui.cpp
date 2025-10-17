@@ -99,15 +99,16 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device,
     init_info.CheckVkResultFn = check_vk_result;
     // init_info.UseDynamicRendering = true;
     init_info.RenderPass = *render_pass;
+    ImGui_ImplVulkan_LoadFunctions(0,    [](const char* name, void* userData) -> PFN_vkVoidFunction {
+        return vk::Instance(static_cast<VkInstance>(userData)).getProcAddr(name);
+    },
+    instance);
     ImGui_ImplVulkan_Init(&init_info);
     ImFontConfig fontConfig;
     fontConfig.OversampleH = 2;  // 水平方向抗锯齿
     fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
     io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
                                  io.Fonts->GetGlyphRangesChineseFull());
-
-                                 // 加载图标字体（例如 Font Awesome）
-
     ImFontConfig iconConfig;
     iconConfig.MergeMode = true;
     iconConfig.PixelSnapH = true;

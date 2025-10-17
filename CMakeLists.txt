@@ -97,11 +97,12 @@ find_package(SDL3 CONFIG REQUIRED)
 FIND_PACKAGE(farmhash REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
-
-# need vcpkg end
-find_package(Vulkan REQUIRED)
+find_package(VulkanHeaders CONFIG)
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 
 find_package(Tracy CONFIG REQUIRED)
+# need vcpkg end
 
 add_subdirectory(third-party)
 

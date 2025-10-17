@@ -564,8 +564,8 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     compute_queue_ = (*logical_).getQueue(compute_family_, 0);
 
     VmaVulkanFunctions functions{};
-    functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-    functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+    functions.vkGetInstanceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr;
+    functions.vkGetDeviceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetDeviceProcAddr;
 // 设置自定义内存分配回调
 #if defined(USE_TRACY)
     VkAllocationCallbacks allocationCallbacks = {};
@@ -586,7 +586,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
 #endif
         .pDeviceMemoryCallbacks = nullptr,
         .pHeapSizeLimit = nullptr,
-        //.pVulkanFunctions = &functions,
+        .pVulkanFunctions = &functions,
         .instance = instance,
         .vulkanApiVersion = VK_API_VERSION_1_1,
         .pTypeExternalMemoryHandleTypes = nullptr,
@@ -662,7 +662,6 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 #undef LOG_EXTENSION
 #undef CHECK_EXTENSION
     // Generate the linked list of features to test.
-    features2_.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     // Set next pointer.
     void** next = &features2_.pNext;
 
@@ -695,7 +694,7 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 
 #undef EXT_FEATURE
 #undef FEATURE
-    vkGetPhysicalDeviceFeatures2(physical_, &features2_);
+    physical_.getFeatures2(&features2_);
     features_.features = features2_.features;
 
     // Some features are mandatory. Check those.
@@ -1307,13 +1306,10 @@ auto Device::getDriverName() const -> std::string {
 }
 
 auto Device::getDeviceMemoryUsage() const -> u64 {
-    VkPhysicalDeviceMemoryBudgetPropertiesEXT budget;
-    budget.pNext = nullptr;
-    budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
-    VkPhysicalDeviceMemoryProperties2 propertie;
-    propertie.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
+    vk::PhysicalDeviceMemoryBudgetPropertiesEXT budget;
+    vk::PhysicalDeviceMemoryProperties2 propertie;
     propertie.pNext = &budget;
-    vkGetPhysicalDeviceMemoryProperties2(physical_, &propertie);
+    physical_.getMemoryProperties2(&propertie);
     u64 result{};
     for (const size_t heap : valid_heap_memory_) {
         result += budget.heapUsage[heap];

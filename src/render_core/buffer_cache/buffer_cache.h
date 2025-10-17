@@ -38,7 +38,6 @@ template <class P>
 void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size) {
     HostBindings<typename P::Buffer> host_bindings;
     for (u32 index = 0; index < 1; ++index) {
-        Buffer& buffer = slot_buffers[id];
         // TouchBuffer(buffer, id);
         host_bindings.min_index = std::min(host_bindings.min_index, index);
         host_bindings.max_index = std::max(host_bindings.max_index, static_cast<u32>(1));  // 待修复
@@ -74,7 +73,6 @@ auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
 
 template <class P>
 void BufferCache<P>::BindStageBuffers(size_t stage) {
-    BindGraphicsUniformBuffers(stage);
     // BindHostGraphicsStorageBuffers(stage);
     // BindHostGraphicsTextureBuffers(stage);
 }

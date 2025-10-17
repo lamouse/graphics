@@ -7,6 +7,8 @@
 #include "resource/config.hpp"
 #include "app.hpp"
 
+
+
 using namespace std;
 using namespace g;
 auto main(int /*argc*/, char** /*argv*/) -> int {
@@ -25,3 +27,8 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
     return EXIT_SUCCESS;
 }
 
+#if defined (_WIN32)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    return main(1, nullptr);
+}
+#endif

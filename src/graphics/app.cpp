@@ -42,7 +42,7 @@ void App::run() {
     pipeline_state.scissors.height = layout.screen.GetHeight();
 
     world::World world;
-    bool show_console_logger = false;
+    [[maybe_unused]] bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
     std::string other_image = image_path + "p1.jpg";
     std::string viking_obj_path = "models/viking_room.obj";

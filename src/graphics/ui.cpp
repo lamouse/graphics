@@ -159,7 +159,7 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
         first_time = false;
     }
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("绘制结果");
+    ImGui::Begin("绘制结果", nullptr, window_flags);
     // 获取当前 ImGui 窗口的尺寸
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 

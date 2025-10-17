@@ -501,7 +501,7 @@ class Device {
         Extensions extensions_{};
         Properties properties_;
         Features features_{};
-        VkPhysicalDeviceFeatures2 features2_{};
+        vk::PhysicalDeviceFeatures2 features2_;
         VkPhysicalDeviceProperties2 properties2_{};
 };
 

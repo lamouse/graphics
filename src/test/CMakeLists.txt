@@ -16,7 +16,7 @@ if(MINGW)
 endif()
 
 target_link_libraries(
-  hello_test PRIVATE Vulkan::Vulkan render-core
+  hello_test PRIVATE render-core
 )
 target_include_directories(
   hello_test PRIVATE ${CMAKE_SOURCE_DIR}/src

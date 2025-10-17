@@ -18,6 +18,7 @@ auto createSurface(vk::Instance instance,
             .flags = 0,
             .hinstance = GetModuleHandle(nullptr),
             .hwnd = hWnd};
+            const auto vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(instance.getProcAddr("vkCreateWin32SurfaceKHR"));
         if (vkCreateWin32SurfaceKHR(instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }

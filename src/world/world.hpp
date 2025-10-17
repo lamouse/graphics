@@ -18,6 +18,6 @@ namespace world {
             CLASS_NON_COPYABLE(World);
         private:
             ecs::Scene scene_;
-            ecs::Entity cameraEntity_{};
+            ecs::Entity cameraEntity_;
     };
 }  // namespace world

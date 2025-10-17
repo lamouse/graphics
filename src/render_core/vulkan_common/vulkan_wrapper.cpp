@@ -80,10 +80,13 @@ void Image::Release() const noexcept {
 }
 
 auto DeviceMemory::getMemoryFdKHR() const -> int {
-    auto fun = (PFN_vkGetMemoryFdKHR)vkGetDeviceProcAddr(owner, "vkGetMemoryFdKHR");
+    auto fun = reinterpret_cast<PFN_vkGetMemoryFdKHR>(owner.getProcAddr("vkGetMemoryFdKHR"));
     const VkMemoryGetFdInfoKHR get_fd_info{
-        .memory = handle, .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR};
-    int fd;
+        .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
+        .pNext = nullptr,
+        .memory = handle,
+        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR};
+    int fd{-1};
     if (!fun) {
         throw utils::VulkanException(VK_ERROR_EXTENSION_NOT_PRESENT);
     }
@@ -93,8 +96,8 @@ auto DeviceMemory::getMemoryFdKHR() const -> int {
 
 #ifdef _WIN32
 auto DeviceMemory::getMemoryWin32HandleKHR() const -> HANDLE {
-    auto fun =
-        (PFN_vkGetMemoryWin32HandleKHR)vkGetDeviceProcAddr(owner, "vkGetMemoryWin32HandleKHR");
+    auto fun = reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>(
+        owner.getProcAddr("vkGetMemoryWin32HandleKHR"));
     const VkMemoryGetWin32HandleInfoKHR get_win32_handle_info{
         .sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
         .pNext = nullptr,
@@ -153,7 +156,6 @@ auto Instance::Create(u32 version, std::span<const char*> layers, std::span<cons
 }
 
 auto Instance::EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevice> {
-
     auto physical_devices = handle.enumeratePhysicalDevices();
     SortPhysicalDevices(physical_devices);
     return physical_devices;
@@ -161,15 +163,13 @@ auto Instance::EnumeratePhysicalDevices() const -> std::vector<vk::PhysicalDevic
 
 auto Instance::CreateDebugUtilsMessenger(
     const vk::DebugUtilsMessengerCreateInfoEXT& create_info) const -> DebugUtilsMessenger {
-    vk::DebugUtilsMessengerEXT object = handle.createDebugUtilsMessengerEXT(
-        create_info, nullptr);
+    vk::DebugUtilsMessengerEXT object = handle.createDebugUtilsMessengerEXT(create_info, nullptr);
     return DebugUtilsMessenger(object, handle);
 }
 
 auto Instance::CreateDebugReportCallback(
     const vk::DebugReportCallbackCreateInfoEXT& create_info) const -> DebugReportCallback {
-    vk::DebugReportCallbackEXT object = handle.createDebugReportCallbackEXT(
-        create_info, nullptr);
+    vk::DebugReportCallbackEXT object = handle.createDebugReportCallbackEXT(create_info, nullptr);
     return DebugReportCallback(object, handle);
 }
 

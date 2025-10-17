@@ -34,7 +34,7 @@ auto createDebugMessenger(::vk::Instance instance) -> DebugUtilsMessenger {
         ::vk::DebugUtilsMessengerCreateInfoEXT()
             .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
                                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                // vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+                                vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
                                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eError)
             .setMessageType(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
                             vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
@@ -42,7 +42,7 @@ auto createDebugMessenger(::vk::Instance instance) -> DebugUtilsMessenger {
                             createInfo.pfnUserCallback = debugCallback;
     return DebugUtilsMessenger{
         instance.createDebugUtilsMessengerEXT(
-            createInfo, nullptr, vk::detail::DispatchLoaderDynamic{instance, vkGetInstanceProcAddr}),
+            createInfo, nullptr),
         instance};
 }
 }  // namespace render::vulkan

@@ -21,19 +21,6 @@ constexpr size_t MAX_IMAGE_ELEMENTS = 64;
 namespace render::vulkan {
 namespace {
 
-auto SupportsPrimitiveRestart(VkPrimitiveTopology topology) -> bool {
-    static constexpr std::array unsupported_topologies{
-        VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
-        VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
-        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY,
-        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY,
-        VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
-        // VK_PRIMITIVE_TOPOLOGY_QUAD_LIST_EXT,
-    };
-    return std::ranges::find(unsupported_topologies, topology) == unsupported_topologies.end();
-}
-
 auto ShaderStage(uint32_t stage) -> VkShaderStageFlagBits {
     auto shader_stage = shader::StageFromIndex(stage);
     switch (shader_stage) {
@@ -381,7 +368,6 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     if (!vertex_binding_divisors.empty()) {
         // vertex_input_ci.pNext = &input_divisor_ci;
     }
-    const bool has_tess_stages = spv_modules_[1] || spv_modules_[2];
     auto input_assembly_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     const VkPipelineInputAssemblyStateCreateInfo input_assembly_ci{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -391,7 +377,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .primitiveRestartEnable =
             (input_assembly_topology != VK_PRIMITIVE_TOPOLOGY_PATCH_LIST &&
              device_.IsTopologyListPrimitiveRestartSupported()) ||
-                    SupportsPrimitiveRestart(input_assembly_topology) ||
+                    SupportsPrimitiveRestart(static_cast<vk::PrimitiveTopology>(input_assembly_topology)) ||
                     (input_assembly_topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST &&
                      device_.IsPatchListPrimitiveRestartSupported())
                 ? VK_TRUE
