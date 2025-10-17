@@ -19,7 +19,7 @@ auto createSurface(vk::Instance instance,
             .hinstance = GetModuleHandle(nullptr),
             .hwnd = hWnd};
             const auto vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(instance.getProcAddr("vkCreateWin32SurfaceKHR"));
-        if (vkCreateWin32SurfaceKHR(instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+        if (!vkCreateWin32SurfaceKHR || vkCreateWin32SurfaceKHR(instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
         return SurfaceKHR{unsafe_surface, instance};
@@ -57,8 +57,8 @@ auto createSurface(vk::Instance instance,
                                                  nullptr, 0,
                                                  static_cast<Display*>(wsi.display_connection),
                                                  reinterpret_cast<Window>(wsi.render_surface)};
-
-        if (vkCreateXlibSurfaceKHR(instance, &xlib_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+        const auto vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(instance.getProcAddr("vkCreateXlibSurfaceKHR"));
+        if (!vkCreateXlibSurfaceKHR || vkCreateXlibSurfaceKHR(instance, &xlib_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
             SPDLOG_ERROR("Failed to initialize Xlib surface");
             throw utils::VulkanException(VK_ERROR_INITIALIZATION_FAILED);
         }
@@ -68,8 +68,8 @@ auto createSurface(vk::Instance instance,
             VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR, nullptr, 0,
             static_cast<wl_display*>(wsi.display_connection),
             static_cast<wl_surface*>(wsi.render_surface)};
-
-        if (vkCreateWaylandSurfaceKHR(instance, &wayland_ci, nullptr, &unsafe_surface) !=
+        const auto vkCreateWaylandSurfaceKHR = reinterpret_cast<PFN_vkCreateWaylandSurfaceKHR>(instance.getProcAddr("vkCreateWaylandSurfaceKHR"));
+        if (!vkCreateWaylandSurfaceKHR || vkCreateWaylandSurfaceKHR(instance, &wayland_ci, nullptr, &unsafe_surface) !=
             VK_SUCCESS) {
             SPDLOG_ERROR("Failed to initialize Wayland surface");
             throw utils::VulkanException(VK_ERROR_INITIALIZATION_FAILED);
