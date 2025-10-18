@@ -9,6 +9,8 @@ set(sources
     graphic.hpp
     render_base.cpp
     render_base.hpp
+    shader_cache.hpp
+    shader_cache.cpp
     shader_notify.cpp
     shader_notify.hpp
     surface.cpp

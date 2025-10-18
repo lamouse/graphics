@@ -9,15 +9,12 @@
 #include "render_core/vulkan_common/device.hpp"
 #include "common/settings.hpp"
 #include "render_core/render_vulkan/compute_pipeline.hpp"
-#include "render_core/host_shaders/model_vert_spv.h"
-#include "render_core/host_shaders/model_frag_spv.h"
 #include "render_core/render_vulkan/vk_shader_util.hpp"
 #include "shader_tools/shader_compile.hpp"
 #include <farmhash.h>
 namespace render::vulkan {
 
 namespace {
-
 
 constexpr u32 CACHE_VERSION = 11;
 constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'e', 'n', 'g', 'e', 'v', 'k', 'c', 'h'};
@@ -39,7 +36,8 @@ auto GetTotalPipelineWorkers() -> size_t {
 }  // namespace
 
 auto ComputePipelineCacheKey::Hash() const noexcept -> size_t {
-    const u64 hash = NAMESPACE_FOR_HASH_FUNCTIONS::Fingerprint64(reinterpret_cast<const char*>(this), sizeof *this);
+    const u64 hash = NAMESPACE_FOR_HASH_FUNCTIONS::Fingerprint64(
+        reinterpret_cast<const char*>(this), sizeof *this);
     return static_cast<size_t>(hash);
 }
 
@@ -141,7 +139,6 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
         .has_dynamic_vertex_input = device.IsExtVertexInputDynamicStateSupported(),
     };
 
-    createGraphicsPipeline();  // TODO 临时设置一下后续使用
 }
 
 PipelineCache::~PipelineCache() {
@@ -155,6 +152,8 @@ auto PipelineCache::currentGraphicsPipeline() -> GraphicsPipeline* {
     if (current_pipeline) {
         return current_pipeline;
     }
+    createGraphicsPipeline();  // TODO 临时设置一下后续使用
+
     return nullptr;
 
     // if (current_pipeline) {
@@ -309,11 +308,18 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     -> std::unique_ptr<GraphicsPipeline> try {
     SPDLOG_INFO("0x{:016x}", key.Hash());
     std::array<ShaderModule, 5> modules;
-    modules[0] = utils::buildShader(device.getLogical(), MODEL_VERT_SPV);
-    modules[4] = utils::buildShader(device.getLogical(), MODEL_FRAG_SPV);
+
+    modules[0] = utils::buildShader(
+        device.getLogical(),
+        getShaderData(shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash));
+    modules[4] = utils::buildShader(
+        device.getLogical(),
+        getShaderData(shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash));
     std::array<const shader::Info*, 5> infos{};
-    shader::Info frag_info = shader::compile::getShaderInfo(MODEL_FRAG_SPV);
-    shader::Info vertex_info = shader::compile::getShaderInfo(MODEL_VERT_SPV);
+    shader::Info frag_info = shader::compile::getShaderInfo(
+        getShaderData(shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash));
+    shader::Info vertex_info = shader::compile::getShaderInfo(
+        getShaderData(shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash));
 
     infos[0] = &vertex_info;
     infos[4] = &frag_info;
@@ -326,6 +332,8 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     if (pipeline) {
         graphics_cache.emplace(key, std::move(pipeline));
     }
+
+    mark_loaded(shader_infos);
     return nullptr;
 
 } catch (const std::exception& exception) {

@@ -117,12 +117,12 @@ struct PipelineState {
         bool rasterizerDiscardEnable = false;
         bool primitiveRestartEnable = false;
         struct ViewPort {
-                f32 x = 0.0f;
-                f32 y = 0.0f;
-                f32 width = 0.0f;
-                f32 height = 0.0f;
-                f32 minDepth = 0.0f;
-                f32 maxDepth = 1.0f;
+                f32 x{};
+                f32 y{};
+                f32 width{};
+                f32 height{};
+                f32 minDepth{};
+                f32 maxDepth{};
         };
         struct Scissors {
                 int32_t x = 0;

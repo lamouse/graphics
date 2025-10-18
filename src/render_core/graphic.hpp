@@ -1,6 +1,7 @@
 #pragma once
 #include "render_core/fixed_pipeline_state.h"
 #include "render_core/types.hpp"
+#include "render_core/shader_cache.hpp"
 #include "common/common_funcs.hpp"
 #include "resource/model_instance.hpp"
 #include "resource/texture/image.hpp"
@@ -16,6 +17,8 @@ class Graphic {
         virtual auto uploadModel(const graphics::IMeshData& instance) -> MeshId = 0;
         virtual auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId = 0;
         virtual void draw(const graphics::IModelInstance& instance) = 0;
+        virtual auto getShaderCache() ->ShaderCache* = 0;
+
         virtual void clean() = 0;
         virtual void end() = 0;
         Graphic() = default;

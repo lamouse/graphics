@@ -9,6 +9,7 @@
 #include "render_core/render_vulkan/graphics_pipeline.hpp"
 #include "shader_tools/profile.h"
 #include "render_core/render_vulkan/texture_cache.hpp"
+#include "render_core/shader_cache.hpp"
 namespace render::vulkan {
 
 struct ComputePipelineCacheKey {
@@ -56,7 +57,7 @@ namespace resource {
 class DescriptorPool;
 }
 
-class PipelineCache {
+class PipelineCache : public ShaderCache{
     public:
         PipelineCache(const Device& device, scheduler::Scheduler& scheduler,
                       resource::DescriptorPool& descriptor_pool,

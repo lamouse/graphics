@@ -100,7 +100,7 @@ find_package(absl CONFIG REQUIRED)
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(VulkanUtilityLibraries CONFIG REQUIRED)
-
+find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
 # need vcpkg end
 

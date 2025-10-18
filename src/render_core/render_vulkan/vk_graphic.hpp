@@ -45,6 +45,7 @@ class VulkanGraphics : public render::Graphic {
         void draw(const graphics::IModelInstance& instance) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;
+        auto getShaderCache() ->ShaderCache* override {return &pipeline_cache;};
         ~VulkanGraphics() override;
 
         auto AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
