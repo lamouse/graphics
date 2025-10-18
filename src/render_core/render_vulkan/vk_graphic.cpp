@@ -14,8 +14,8 @@ auto buildVertexAttribute(const render::vulkan::Device& device,
         auto attribute = attributes[i];
         attrs.push_back(
             vk::VertexInputAttributeDescription2EXT()
-                .setBinding(attribute.binding)
-                .setLocation(i)
+                .setBinding(0)
+                .setLocation(attribute.location)
                 .setFormat(render::vulkan::VertexFormat(device, attribute.type, attribute.size))
                 .setOffset(attribute.offset));
     }

@@ -86,7 +86,7 @@ class DescriptorLayoutBuilder {
             is_compute |=
                 (stage & vk::ShaderStageFlagBits::eCompute) == vk::ShaderStageFlagBits::eCompute;
 
-            Add(vk::DescriptorType::eUniformBuffer, stage, info.constant_buffer_descriptors);
+            Add(vk::DescriptorType::eUniformBuffer, stage, info.uniform_buffer_descriptors);
             Add(vk::DescriptorType::eStorageBuffer, stage, info.storage_buffers_descriptors);
             Add(vk::DescriptorType::eUniformTexelBuffer, stage, info.texture_buffer_descriptors);
             Add(vk::DescriptorType::eStorageTexelBuffer, stage, info.image_buffer_descriptors);
@@ -105,19 +105,18 @@ class DescriptorLayoutBuilder {
             }
             for (size_t i = 0; i < num; ++i) {
                 bindings.push_back(vk::DescriptorSetLayoutBinding()
-                                       .setBinding(binding)
+                                       .setBinding(descriptors[i].binding)
                                        .setDescriptorType(type)
                                        .setDescriptorCount(descriptors[i].count)
                                        .setStageFlags(stage));
                 entries.push_back(vk::DescriptorUpdateTemplateEntry{
-                    binding,
+                    descriptors[i].binding,
                     0,
                     descriptors[i].count,
                     type,
                     offset,
                     sizeof(DescriptorUpdateEntry),
                 });
-                ++binding;
                 num_descriptors += descriptors[i].count;
                 offset += sizeof(DescriptorUpdateEntry);
             }
@@ -127,7 +126,6 @@ class DescriptorLayoutBuilder {
         bool is_compute{};
         boost::container::small_vector<vk::DescriptorSetLayoutBinding, 32> bindings;
         boost::container::small_vector<vk::DescriptorUpdateTemplateEntry, 32> entries;
-        u32 binding{};
         u32 num_descriptors{};
         size_t offset{};
 };

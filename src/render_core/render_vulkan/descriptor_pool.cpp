@@ -26,7 +26,7 @@ static auto accumulate(const Descriptors& descriptors) -> uint32_t {
 static auto makeBankInfo(std::span<const shader::Info> infos) -> DescriptorBankInfo {
     DescriptorBankInfo bank;
     for (const shader::Info& info : infos) {
-        bank.uniform_buffers_ += accumulate(info.constant_buffer_descriptors);
+        bank.uniform_buffers_ += accumulate(info.uniform_buffer_descriptors);
         bank.storage_buffers_ += accumulate(info.storage_buffers_descriptors);
         bank.texture_buffers_ += accumulate(info.texture_buffer_descriptors);
         bank.image_buffers_ += accumulate(info.image_buffer_descriptors);

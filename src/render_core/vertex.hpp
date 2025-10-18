@@ -49,7 +49,7 @@ namespace render {
                 Float = 7,
             };
             union {
-                BitField<0, 5, u32> binding;
+                BitField<0, 5, u32> location;
                 BitField<6, 14, u32> offset;
                 BitField<21, 6, Size> size;
                 BitField<28, 3, Type> type;

@@ -27,7 +27,7 @@ class Model : public IMeshData {
 
                     render::VertexAttribute position;
                     position.hex = 0;
-                    position.binding.Assign(0);
+                    position.location.Assign(0);
                     position.type.Assign(render::VertexAttribute::Type::Float);
                     position.offset.Assign(offsetof(Vertex, position));
                     position.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
@@ -35,7 +35,7 @@ class Model : public IMeshData {
 
                     render::VertexAttribute color;
                     color.hex = 0;
-                    color.binding.Assign(0);
+                    color.location.Assign(1);
                     color.type.Assign(render::VertexAttribute::Type::Float);
                     color.offset.Assign(offsetof(Vertex, color));
                     color.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
@@ -43,7 +43,7 @@ class Model : public IMeshData {
                     vertex_attributes.push_back(color);
                     render::VertexAttribute texCoord;
                     texCoord.hex = 0;
-                    texCoord.binding.Assign(0);
+                    texCoord.location.Assign(2);
                     texCoord.type.Assign(render::VertexAttribute::Type::Float);
                     texCoord.offset.Assign(offsetof(Vertex, texCoord));
                     texCoord.size.Assign(render::VertexAttribute::Size::R32_G32);

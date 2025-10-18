@@ -117,7 +117,9 @@ enum class TexturePixelFormat {
     S8_UINT,
     D24_UNORM_S8_UINT,
     S8_UINT_D24_UNORM,
-    D32_FLOAT_S8_UINT
+    D32_FLOAT_S8_UINT,
+    R32G32B32_UINT,
+    R32G32B32_SINT
 };
 enum class ImageFormat : uint8_t {
     Typeless,
@@ -127,7 +129,13 @@ enum class ImageFormat : uint8_t {
     R16_SINT,
     R32_UINT,
     R32G32_UINT,
-    R32G32B32A32_UINT
+    R32G32B32A32_UINT,
+    R32_SINT,
+    R32G32_SINT,
+    R32G32B32A32_SINT,
+    R32_FLOAT,
+    R32G32_FLOAT,
+    R32G32B32A32_FLOAT,
 };
 enum class Interpolation { Smooth, Flat, NoPerspective };
 }  // namespace shader

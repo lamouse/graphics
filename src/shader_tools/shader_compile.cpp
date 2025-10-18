@@ -1,10 +1,13 @@
 #include "shader_compile.hpp"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
+
+#include "absl/strings/match.h"
 
 #include <spdlog/spdlog.h>
 namespace {
@@ -23,7 +26,7 @@ auto list_files(const fs::path& directory) -> std::vector<fs::path> {
     return file_list;
 }
 auto read_shader(const fs::path& path) -> std::string {
-    std::ifstream file(path, std::ios::ate | std::ios::binary);//NOLINT
+    std::ifstream file(path, std::ios::ate | std::ios::binary);  // NOLINT
     auto file_size = file.tellg();
     std::string buffer(file_size, ' ');
     file.seekg(0);
@@ -184,58 +187,466 @@ auto compileGLSLtoSPIRV(const std::string& sourceCode, EShLanguage shaderType)
     SPDLOG_INFO("build shader:\n {}", logger.getAllMessages());
     return spirv;
 }
+
+auto GetTextureType(const spirv_cross::SPIRType& type) -> shader::TextureType {
+    using Dim = spv::Dim;
+
+    bool is_array = type.image.arrayed != 0;
+    Dim dim = type.image.dim;
+
+    switch (dim) {
+        case Dim::Dim1D:
+            return is_array ? shader::TextureType::ColorArray1D : shader::TextureType::Color1D;
+
+        case Dim::Dim2D:
+            return is_array ? shader::TextureType::ColorArray2D : shader::TextureType::Color2D;
+
+        case Dim::Dim3D:
+            // 3D 纹理不能是数组（GL/Vulkan 中不允许）
+            return shader::TextureType::Color3D;
+
+        case Dim::DimCube:
+            return is_array ? shader::TextureType::ColorArrayCube : shader::TextureType::ColorCube;
+
+        case Dim::DimBuffer:
+            return shader::TextureType::Buffer;  // ← Uniform Texel Buffer
+
+        default:
+            return shader::TextureType::Color2D;  // fallback
+    }
+}
+
+auto IsRectTexture(const spirv_cross::Resource& resource) -> bool {
+    const std::string& name = resource.name;
+    // 常见命名：_rect, Rect, sampler2DRect, 甚至包含 "rect" 的名字
+    std::string lower_name = name;
+    std::ranges::transform(lower_name, lower_name.begin(), ::tolower);
+
+    return absl::StrContains(lower_name, "rect");
+}
+
+auto GetTextureBufferPixelFormat(const spirv_cross::SPIRType& sampled_type)
+    -> shader::TexturePixelFormat {
+    using BaseType = spirv_cross::SPIRType::BaseType;
+
+    switch (sampled_type.basetype) {
+        case BaseType::Float:
+            switch (sampled_type.vecsize) {
+                case 1:
+                    return shader::TexturePixelFormat::R32_FLOAT;
+                case 2:
+                    return shader::TexturePixelFormat::R32G32_FLOAT;
+                case 3:
+                    return shader::TexturePixelFormat::R32G32B32_FLOAT;
+                case 4:
+                    return shader::TexturePixelFormat::R32G32B32A32_FLOAT;
+            }
+            break;
+
+        case BaseType::Int:
+            switch (sampled_type.vecsize) {
+                case 1:
+                    return shader::TexturePixelFormat::R32_SINT;
+                case 2:
+                    return shader::TexturePixelFormat::R32G32_SINT;
+                case 3:
+                    return shader::TexturePixelFormat::R32G32B32_SINT;
+                case 4:
+                    return shader::TexturePixelFormat::R32G32B32A32_SINT;
+            }
+            break;
+
+        case BaseType::UInt:
+            switch (sampled_type.vecsize) {
+                case 1:
+                    return shader::TexturePixelFormat::R32_UINT;
+                case 2:
+                    return shader::TexturePixelFormat::R32G32_UINT;
+                case 3:
+                    return shader::TexturePixelFormat::R32G32B32_UINT;
+                case 4:
+                    return shader::TexturePixelFormat::R32G32B32A32_UINT;
+            }
+            break;
+
+        default:
+            // fallback
+            return shader::TexturePixelFormat::R32G32B32A32_FLOAT;
+    }
+
+    // fallback
+    return shader::TexturePixelFormat::R32G32B32A32_FLOAT;
+}
+
+auto GetImageTextureType(const spirv_cross::SPIRType& type) -> shader::TextureType {
+    bool is_array = type.image.arrayed;
+    bool is_cube = (type.image.dim == spv::Dim::DimCube);
+
+    switch (type.image.dim) {
+        case spv::Dim::Dim1D:
+            return is_array ? shader::TextureType::ColorArray1D : shader::TextureType::Color1D;
+        case spv::Dim::Dim2D:
+            if (is_cube) {
+                return is_array ? shader::TextureType::ColorArrayCube
+                                : shader::TextureType::ColorCube;
+            }
+            return is_array ? shader::TextureType::ColorArray2D : shader::TextureType::Color2D;
+        case spv::Dim::Dim3D:
+            return shader::TextureType::Color3D;
+        case spv::Dim::DimBuffer:
+            return shader::TextureType::Buffer;  // 不应出现在 storage_image
+        default:
+            return shader::TextureType::Color2D;  // fallback
+    }
+}
+
+auto GetImageFormat(const spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type)
+    -> shader::ImageFormat {
+    const auto& sampled_type = compiler.get_type(type.image.type);
+
+// 使用兼容宏（如之前定义）
+#ifdef SPIRV_CROSS_BASETYPE_SINT
+    auto SInt = SPIRV_CROSS_BASETYPE_SINT;
+#else
+    auto SInt = spirv_cross::SPIRType::BaseType::Int;
+#endif
+
+    auto UInt = spirv_cross::SPIRType::BaseType::UInt;
+    auto Float = spirv_cross::SPIRType::BaseType::Float;
+
+    if (sampled_type.basetype == Float) {
+        switch (sampled_type.vecsize) {
+            case 4:
+                return shader::ImageFormat::R32G32B32A32_FLOAT;
+            default:
+                return shader::ImageFormat::Typeless;
+        }
+    } else if (sampled_type.basetype == SInt) {
+        switch (sampled_type.vecsize) {
+            case 1:
+                return shader::ImageFormat::R32_SINT;
+            case 2:
+                return shader::ImageFormat::R32G32_SINT;
+            case 4:
+                return shader::ImageFormat::R32G32B32A32_SINT;
+            default:
+                return shader::ImageFormat::Typeless;
+        }
+    } else if (sampled_type.basetype == UInt) {
+        switch (sampled_type.vecsize) {
+            case 1:
+                return shader::ImageFormat::R32_UINT;
+            case 2:
+                return shader::ImageFormat::R16_UINT;
+            case 4:
+                return shader::ImageFormat::R32G32B32A32_UINT;
+            default:
+                return shader::ImageFormat::Typeless;
+        }
+    }
+
+    return shader::ImageFormat::Typeless;
+}
+
+auto GetImageBufferFormat(const spirv_cross::SPIRType& sampled_type) -> shader::ImageFormat {
+    using BaseType = spirv_cross::SPIRType::BaseType;
+
+// 兼容 SInt / Int
+#if defined(SPIRV_CROSS_VERSION_MAJOR) && \
+    (SPIRV_CROSS_VERSION_MAJOR > 1 ||     \
+     (SPIRV_CROSS_VERSION_MAJOR == 1 && SPIRV_CROSS_VERSION_MINOR >= 3))
+    const auto SInt = BaseType::SInt;
+#else
+    const auto SInt = BaseType::Int;
+#endif
+
+    const auto UInt = BaseType::UInt;
+    const auto Float = BaseType::Float;
+
+    if (sampled_type.basetype == SInt) {
+        switch (sampled_type.vecsize) {
+            case 1:
+                return shader::ImageFormat::R32_SINT;
+            case 2:
+                return shader::ImageFormat::R32G32_SINT;
+            case 4:
+                return shader::ImageFormat::R32G32B32A32_SINT;
+            default:
+                break;
+        }
+    } else if (sampled_type.basetype == UInt) {
+        switch (sampled_type.vecsize) {
+            case 1:
+                return shader::ImageFormat::R32_UINT;
+            case 2:
+                return shader::ImageFormat::R32G32_UINT;
+            case 4:
+                return shader::ImageFormat::R32G32B32A32_UINT;
+            default:
+                break;
+        }
+    } else if (sampled_type.basetype == Float) {
+        switch (sampled_type.vecsize) {
+            case 1:
+                return shader::ImageFormat::R32_FLOAT;
+            case 2:
+                return shader::ImageFormat::R32G32_FLOAT;
+            case 4:
+                return shader::ImageFormat::R32G32B32A32_FLOAT;
+            default:
+                break;
+        }
+    }
+
+    return shader::ImageFormat::Typeless;  // fallback
+}
+
 }  // namespace
 
 namespace shader::compile {
 
 auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     Info info;
-
-    const spirv_cross::CompilerGLSL compiler(spirv.data(), spirv.size());
+    const spirv_cross::Compiler compiler(spirv.data(), spirv.size());
     auto resources = compiler.get_shader_resources();
-    for (const auto& input : resources.stage_inputs) {
-        spirv_cross::SPIRType type = compiler.get_type(input.type_id);
+    std::unordered_map<std::uint32_t, std::uint32_t> bindingStrideMap;
 
-        std::string typeName;
+    for (const auto& input : resources.stage_inputs) {
+        const spirv_cross::SPIRType& type = compiler.get_type(input.type_id);
+
+        // 映射 basetype 和 vecsize 到 VertexAttribute 的 Size 和 Type
+        render::VertexAttribute::Size sizeEnum = render::VertexAttribute::Size::Invalid;
+        render::VertexAttribute::Type typeEnum =
+            render::VertexAttribute::Type::UnusedEnumDoNotUseBecauseItWillGoAway;
         switch (type.basetype) {
             case spirv_cross::SPIRType::Float:
-                if (type.vecsize == 1)
-                    typeName = "float";
-                else if (type.vecsize == 2)
-                    typeName = "vec2";
-                else if (type.vecsize == 3)
-                    typeName = "vec3";
-                else if (type.vecsize == 4)
-                    typeName = "vec4";
+                typeEnum = render::VertexAttribute::Type::Float;
+                if (type.vecsize == 1) {
+                    sizeEnum = render::VertexAttribute::Size::R32;
+                } else if (type.vecsize == 2) {
+                    sizeEnum = render::VertexAttribute::Size::R32_G32;
+                } else if (type.vecsize == 3) {
+                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32;
+                } else if (type.vecsize == 4) {
+                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32_A32;
+                }
                 break;
             case spirv_cross::SPIRType::Int:
-                if (type.vecsize == 1)
-                    typeName = "int";
-                else if (type.vecsize == 2)
-                    typeName = "ivec2";
-                else if (type.vecsize == 3)
-                    typeName = "ivec3";
-                else if (type.vecsize == 4)
-                    typeName = "ivec4";
+                typeEnum = render::VertexAttribute::Type::SInt;
+                if (type.vecsize == 1) {
+                    sizeEnum = render::VertexAttribute::Size::R32;
+                } else if (type.vecsize == 2) {
+                    sizeEnum = render::VertexAttribute::Size::R32_G32;
+                } else if (type.vecsize == 3) {
+                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32;
+                } else if (type.vecsize == 4) {
+                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32_A32;
+                }
                 break;
-            // Add more cases as needed
+            // 根据需要添加其他类型的处理
             default:
-                typeName = "unknown";
-                break;
+                continue;  // 跳过不支持的类型
         }
+        uint32_t binding = compiler.get_decoration(input.id, spv::DecorationBinding);
+        uint32_t location = compiler.get_decoration(input.id, spv::DecorationLocation);
+        // 创建 VertexAttribute 实例
+        render::VertexAttribute attr{};
+        attr.location.Assign(location);
+        attr.offset.Assign(compiler.get_decoration(input.id, spv::DecorationOffset));
+        attr.size.Assign(sizeEnum);
+        attr.type.Assign(typeEnum);
+
+        // 计算 stride 并更新 bindingStrideMap
+        std::uint32_t stride = attr.SizeInBytes();
+        if(bindingStrideMap.contains(binding)){
+            bindingStrideMap[binding] =
+            stride + bindingStrideMap.find(binding)->second;
+        }else {
+            bindingStrideMap[binding] = stride;
+        }
+        info.vertexAttribute.push_back(attr);
+    }
+    for (const auto& [binding, stride] : bindingStrideMap) {
+        info.vertexBindings.push_back({.binding = binding, .stride = stride});
     }
 
-    // 打印绑定信息
-    for (size_t index = 0; index < resources.uniform_buffers.size();) {
-        info.constant_buffer_descriptors.push_back(
-            {.index = static_cast<uint32_t>(index++), .count = 1});
+    // uniform_buffer_descriptors
+    for (const auto& resource : resources.uniform_buffers) {
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        uint32_t count = 1;
+        // 获取该变量的类型
+        const spirv_cross::SPIRType& type = compiler.get_type(resource.type_id);
+
+        if (type.array.size() > 0) {
+            // 如果是数组，则取第一个维度的大小
+            count = static_cast<uint32_t>(compiler.get_constant(type.array[0]).scalar());
+        }
+
+        info.uniform_buffer_descriptors.push_back({.binding = binding, .count = count, .set = set});
     }
 
-    for (size_t i = 0; i < resources.sampled_images.size(); i++) {
+    // storage_buffers_descriptors
+    for (const auto& resource : resources.storage_buffers) {
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        uint32_t count = 1;
+        // 获取该变量的类型
+        const spirv_cross::SPIRType& type = compiler.get_type(resource.type_id);
+
+        if (type.array.size() > 0) {
+            // 如果是数组，则取第一个维度的大小
+            count = static_cast<uint32_t>(compiler.get_constant(type.array[0]).scalar());
+        }
+        info.storage_buffers_descriptors.push_back(
+            {.binding = binding, .count = count, .set = set, .is_written = false});
+    }
+    // eCombinedImageSampler
+    for (const auto& resource : resources.sampled_images) {
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        uint32_t count = 1;
+        // 获取该变量的类型
+        const spirv_cross::SPIRType& type = compiler.get_type(resource.type_id);
+        if (type.array.size() > 0) {
+            // 如果是数组，则取第一个维度的大小
+            count = static_cast<uint32_t>(compiler.get_constant(type.array[0]).scalar());
+        }
         TextureDescriptor td{};
-        td.count = 1;
+        td.count = count;
+        td.set = set;
+        td.binding = binding;
+        td.is_multisample = (type.image.ms != 0);
+        td.is_depth = (type.image.depth != 0);
+        if (IsRectTexture(resource)) {
+            td.type = TextureType::Color2DRect;
+        } else {
+            td.type = GetTextureType(type);
+        }
         info.texture_descriptors.push_back(td);
     }
+
+    // eUniformTexelBuffer
+    for (const auto& resource : resources.separate_samplers) {
+        const auto& type = compiler.get_type(resource.type_id);
+
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        uint32_t count = 1;
+        if (!type.array.empty()) {
+            count = static_cast<uint32_t>(compiler.get_constant(type.array[0]).scalar());
+        }
+
+        // 获取样本类型
+        const auto& sampled_type = compiler.get_type(type.image.type);
+
+        shader::TexturePixelFormat format = GetTextureBufferPixelFormat(sampled_type);
+
+        shader::TextureBufferDescriptor desc{.binding = binding, .count = count, .format = format};
+
+        // 添加到你的描述符列表
+        info.texture_buffer_descriptors.push_back(desc);
+    }
+
+    // eStorageImage
+    for (const auto& resource : compiler.get_shader_resources().storage_images) {
+        const auto& type = compiler.get_type(resource.type_id);
+
+        uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        // ✅ 数组大小
+        uint32_t count = 1;
+        if (!type.array.empty()) {
+            count = static_cast<uint32_t>(compiler.get_constant(type.array[0]).scalar());
+        }
+
+        // ✅ 维度和类型
+        TextureType tex_type = GetImageTextureType(type);
+        if (tex_type == TextureType::Buffer) {
+            continue;  // 不应是 buffer
+        }
+
+        // ✅ 格式映射
+        ImageFormat format = GetImageFormat(compiler, type);
+
+        // 注意：storage image 默认可读可写，但可通过访问模式判断
+        bool is_written = true;  // storage image 默认可写
+        bool is_read = true;     // 默认可读
+
+        // 可选：通过访问模式更精确判断（SPIRV-Cross 支持有限）
+        // 这里我们假设所有 storage image 都是读写
+
+        info.image_descriptors.push_back({
+            .type = tex_type,
+            .format = format,
+            .is_written = is_written,
+            .is_read = is_read,
+            .binding = binding,
+            .count = count,
+            .set = set,
+        });
+    }
+
+    // 获取所有 storage images（包括 image2D, imageBuffer 等）
+
+    // eStorageTexelBuffer
+    for (const auto& resource : compiler.get_shader_resources().storage_images) {
+        const auto& type = compiler.get_type(resource.type_id);
+
+        // ✅ 只处理 Buffer 类型：即 GLSL 的 imageBuffer
+        if (type.image.dim != spv::Dim::DimBuffer) {
+            continue;
+        }
+
+        // ✅ 获取 set 和 binding
+        uint32_t set = 0;
+        uint32_t binding = 0;
+
+        try {
+            set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        } catch (...) {
+            continue;  // 装饰缺失，跳过
+        }
+
+        // ✅ 数组大小（如 imageBuffer arr[4]）
+        uint32_t count = 1;
+        if (!type.array.empty()) {
+            // 数组大小是常量表达式，从常量中获取
+            const auto& array_size_const = compiler.get_constant(type.array[0]);
+            count = static_cast<uint32_t>(array_size_const.scalar());
+        }
+
+        // ✅ 获取样本数据类型（vec4<int>, float, etc.）
+        const auto& sampled_type = compiler.get_type(type.image.type);
+
+        // ✅ 推断 ImageFormat
+        ImageFormat format = GetImageBufferFormat(sampled_type);
+        if (format == ImageFormat::Typeless) {
+            // 可选：日志警告
+            // printf("Warning: Unsupported imageBuffer format for binding %u\n", binding);
+            continue;
+        }
+
+        // ✅ 是否可写/可读
+        // storage image 默认可读可写
+        bool is_written = true;
+        bool is_read = true;
+
+        // 可选：通过访问模式进一步判断（SPIRV-Cross 支持有限）
+        // 这里假设所有 storage image 都是读写
+
+        info.image_buffer_descriptors.push_back({
+            .format = format,
+            .is_written = is_written,
+            .is_read = is_read,
+            .binding = binding,
+            .count = count,
+            .set = set,
+        });
+    }
+
     return info;
 }
 
