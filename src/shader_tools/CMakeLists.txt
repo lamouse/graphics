@@ -1,5 +1,4 @@
 set(sources
-    profile.h
     shader_compile.hpp
     shader_compile.cpp
     shader_enums.hpp

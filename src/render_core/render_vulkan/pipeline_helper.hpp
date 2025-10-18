@@ -132,39 +132,5 @@ class DescriptorLayoutBuilder {
         size_t offset{};
 };
 
-class RescalingPushConstant {
-    public:
-        explicit RescalingPushConstant() noexcept {}
-
-        void PushTexture(bool is_rescaled) noexcept {
-            *texture_ptr |= is_rescaled ? texture_bit : 0u;
-            texture_bit <<= 1u;
-            if (texture_bit == 0u) {
-                texture_bit = 1u;
-                ++texture_ptr;
-            }
-        }
-
-        void PushImage(bool is_rescaled) noexcept {
-            *image_ptr |= is_rescaled ? image_bit : 0u;
-            image_bit <<= 1u;
-            if (image_bit == 0u) {
-                image_bit = 1u;
-                ++image_ptr;
-            }
-        }
-
-        [[nodiscard]] const std::array<u32, NUM_TEXTURE_AND_IMAGE_SCALING_WORDS>& Data()
-            const noexcept {
-            return words;
-        }
-
-    private:
-        std::array<u32, NUM_TEXTURE_AND_IMAGE_SCALING_WORDS> words{};
-        u32* texture_ptr{words.data()};
-        u32* image_ptr{words.data() + 4};
-        u32 texture_bit{1U};
-        u32 image_bit{1U};
-};
 
 }  // namespace render::vulkan::pipeline

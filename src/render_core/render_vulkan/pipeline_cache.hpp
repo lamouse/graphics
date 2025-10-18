@@ -7,7 +7,6 @@
 #include "common/common_types.hpp"
 #include "common/common_funcs.hpp"
 #include "render_core/render_vulkan/graphics_pipeline.hpp"
-#include "shader_tools/profile.h"
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/shader_cache.hpp"
 namespace render::vulkan {
@@ -108,8 +107,6 @@ class PipelineCache : public ShaderCache{
         bool use_vulkan_pipeline_cache{};
         GraphicsPipelineCacheKey graphics_key{};
         GraphicsPipeline* current_pipeline{};
-
-        Shader::Profile profile;
 
         std::unordered_map<ComputePipelineCacheKey, std::unique_ptr<ComputePipeline>> compute_cache;
         std::unordered_map<GraphicsPipelineCacheKey, std::unique_ptr<GraphicsPipeline>>

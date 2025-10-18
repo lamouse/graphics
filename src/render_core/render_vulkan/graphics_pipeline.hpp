@@ -62,7 +62,6 @@ class DescriptorPool;
 }  // namespace resource
 namespace pipeline {
 class PipelineStatistics;
-class RescalingPushConstant;
 class RenderAreaPushConstant;
 }  // namespace pipeline
 
