@@ -48,7 +48,8 @@ auto NativeErrorToString(int e) -> std::string {
 
 auto GetLastErrorMsg() -> std::string {
 #ifdef _WIN32
-    return NativeErrorToString(GetLastError());
+    DWORD error_code = GetLastError();
+    return NativeErrorToString(static_cast<int>(error_code));
 #else
     return NativeErrorToString(errno);
 #endif

@@ -4,8 +4,9 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include "vulkan_common.hpp"
 #include "vk_mem_alloc.h"
+#if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
-
+#endif
 namespace render::vulkan {
 namespace utils {
 auto VulkanException::what() const noexcept -> const char* {

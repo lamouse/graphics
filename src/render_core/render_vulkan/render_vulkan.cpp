@@ -19,7 +19,6 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
             case vk::PhysicalDeviceType::eDiscreteGpu:
                 SPDLOG_INFO("设备类型：离散 GPU（独立显卡）, 设备名称：{}", std::string(properties.deviceName.data()));
                 return Device(*instance, device, surface);
-                break;
             case vk::PhysicalDeviceType::eIntegratedGpu:
                 SPDLOG_INFO("设备类型：集成 GPU（如 Intel UHD）设备名称：{}", std::string(properties.deviceName.data()));
                 break;

@@ -52,8 +52,8 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
     return true;
 }
 
-[[nodiscard]] auto requiredExtensions(core::frontend::WindowSystemType wst,
-                                      bool enable_validation) -> std::vector<const char*> {
+[[nodiscard]] auto requiredExtensions(core::frontend::WindowSystemType wst, bool enable_validation)
+    -> std::vector<const char*> {
     std::vector<const char*> extensions;
     switch (wst) {
         case core::frontend::WindowSystemType::Headless:
@@ -101,7 +101,6 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
 }  // namespace instance
 auto createInstance(uint32_t required_version, core::frontend::WindowSystemType wst,
                     bool enable_validation) -> Instance {
-
     VULKAN_HPP_DEFAULT_DISPATCHER.init();
     auto layers = instance::layers(enable_validation);
     instance::removeUnavailableLayers(layers);

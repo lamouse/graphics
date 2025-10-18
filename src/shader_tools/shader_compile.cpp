@@ -5,6 +5,8 @@
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
+
+#include <spdlog/spdlog.h>
 namespace {
 namespace fs = std::filesystem;
 
@@ -21,15 +23,15 @@ auto list_files(const fs::path& directory) -> std::vector<fs::path> {
     return file_list;
 }
 auto read_shader(const fs::path& path) -> std::string {
-    std::ifstream file(path, std::ios::ate | std::ios::binary);
+    std::ifstream file(path, std::ios::ate | std::ios::binary);//NOLINT
     auto file_size = file.tellg();
     std::string buffer(file_size, ' ');
     file.seekg(0);
     file.read(buffer.data(), file_size);
     return buffer;
 }
-auto getDefaultTBuiltInResource() -> TBuiltInResource {
-    TBuiltInResource resource = {};
+auto getDefaultTBuiltInResource() -> TBuiltInResource* {
+    static TBuiltInResource resource = {};
     resource.maxLights = 32;
     resource.maxClipPlanes = 6;
     resource.maxTextureUnits = 32;
@@ -122,50 +124,64 @@ auto getDefaultTBuiltInResource() -> TBuiltInResource {
     resource.limits.generalSamplerIndexing = true;
     resource.limits.generalVariableIndexing = true;
     resource.limits.generalConstantMatrixVectorIndexing = true;
-    return resource;
+    return &resource;
 }
 
 auto getEShLanguage(const std::string& fileExtension) -> EShLanguage {
     if (fileExtension == ".vert") {
         return EShLangVertex;
-    } else if (fileExtension == ".tesc") {
-        return EShLangTessControl;
-    } else if (fileExtension == ".tese") {
-        return EShLangTessEvaluation;
-    } else if (fileExtension == ".geom") {
-        return EShLangGeometry;
-    } else if (fileExtension == ".frag") {
-        return EShLangFragment;
-    } else if (fileExtension == ".comp") {
-        return EShLangCompute;
-    } else {
-        throw std::runtime_error("Unknown shader type: " + fileExtension);
     }
+    if (fileExtension == ".tesc") {
+        return EShLangTessControl;
+    }
+    if (fileExtension == ".tese") {
+        return EShLangTessEvaluation;
+    }
+    if (fileExtension == ".geom") {
+        return EShLangGeometry;
+    }
+    if (fileExtension == ".frag") {
+        return EShLangFragment;
+    }
+    if (fileExtension == ".comp") {
+        return EShLangCompute;
+    }
+    throw std::runtime_error("Unknown shader type: " + fileExtension);
 }
 
 auto compileGLSLtoSPIRV(const std::string& sourceCode, EShLanguage shaderType)
     -> std::vector<uint32_t> {
-    auto DefaultTBuiltInResource = getDefaultTBuiltInResource();
-    const char* shaderStrings[1];
-    shaderStrings[0] = sourceCode.c_str();
-
     glslang::TShader shader(shaderType);
-    shader.setStrings(shaderStrings, 1);
 
-    if (!shader.parse(&DefaultTBuiltInResource, 100, false, EShMsgDefault)) {
-        throw std::runtime_error("GLSL Parsing Failed: " + std::string(shader.getInfoLog()));
+    const char* shaderStrings[] = {sourceCode.c_str()};  // NOLINT
+    shader.setStrings(shaderStrings, 1);                 // NOLINT
+
+    // 2. 设置语言标准（GLSL 450）
+    shader.setEnvInput(glslang::EShSourceGlsl, shaderType, glslang::EShClientVulkan, 100);
+    shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
+    shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
+
+    // 4. 编译
+    auto messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
+    bool success = shader.parse(getDefaultTBuiltInResource(), 100, false, messages);
+
+    if (!success) {
+        SPDLOG_ERROR("build shader{}", shader.getInfoLog());
+        return {};
     }
-
+    // 5. 创建程序对象并链接（对于单个着色器，只需添加）
     glslang::TProgram program;
     program.addShader(&shader);
 
-    if (!program.link(EShMsgDefault)) {
-        throw std::runtime_error("GLSL Linking Failed: " + std::string(program.getInfoLog()));
-    }
+    // 6. 输出 SPIR-V
+    spv::SpvBuildLogger logger;
+    glslang::SpvOptions spvOptions;
+    spvOptions.optimizeSize = true;
+    spvOptions.generateDebugInfo = false;
 
     std::vector<uint32_t> spirv;
-    glslang::GlslangToSpv(*program.getIntermediate(shaderType), spirv);
-
+    glslang::GlslangToSpv(*program.getIntermediate(shaderType), spirv, &logger, &spvOptions);
+    SPDLOG_INFO("build shader:\n {}", logger.getAllMessages());
     return spirv;
 }
 }  // namespace
@@ -211,11 +227,12 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
 
     // 打印绑定信息
     for (size_t index = 0; index < resources.uniform_buffers.size();) {
-        info.constant_buffer_descriptors.push_back({static_cast<uint32_t>(index++), 1});
+        info.constant_buffer_descriptors.push_back(
+            {.index = static_cast<uint32_t>(index++), .count = 1});
     }
 
     for (size_t i = 0; i < resources.sampled_images.size(); i++) {
-        TextureDescriptor td;
+        TextureDescriptor td{};
         td.count = 1;
         info.texture_descriptors.push_back(td);
     }
@@ -233,7 +250,11 @@ void ShaderCompile::compile(const std::string_view& shader_path, std::string_vie
         out.write(reinterpret_cast<const char*>(spirv.data()), spirv.size() * sizeof(uint32_t));
     }
 }
-ShaderCompile::ShaderCompile() { glslang::InitializeProcess(); }
+ShaderCompile::ShaderCompile() {
+    if (!glslang::InitializeProcess()) {
+        throw std::runtime_error("Failed to initialize glslang");
+    }
+}
 ShaderCompile::~ShaderCompile() { glslang::FinalizeProcess(); }
 
 }  // namespace shader::compile

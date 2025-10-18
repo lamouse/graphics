@@ -31,7 +31,7 @@ else()
 endif()
 
 target_link_libraries(shader PUBLIC core)
-target_link_libraries(shader PRIVATE Boost::boost )
+target_link_libraries(shader PRIVATE Boost::boost spdlog::spdlog)
 target_link_libraries(shader PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl)
 target_link_libraries(shader PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
 
