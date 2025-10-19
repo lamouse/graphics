@@ -164,6 +164,10 @@ class BufferCache : public BufferCacheInfo {
         void BindStageBuffers(size_t stage);
         [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
 
+        void DoUpdateComputeBuffers();
+        void UpdateComputeUniformBuffers();
+        void UpdateComputeStorageBuffers();
+        void UpdateComputeTextureBuffers();
 
         [[nodiscard]] auto CreateBuffer(u32 wanted_size) -> BufferId;
         ~BufferCache() = default;

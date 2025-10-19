@@ -12,7 +12,6 @@ class IMeshData {
         CLASS_DEFAULT_COPYABLE(IMeshData);
         CLASS_DEFAULT_MOVEABLE(IMeshData);
         [[nodiscard]] virtual auto getMesh() const -> std::span<const float> = 0;
-
         [[nodiscard]] virtual auto getIndices() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getIndicesSize() const -> std::uint64_t = 0;
         [[nodiscard]] virtual auto getVertexAttribute() const -> std::vector<render::VertexAttribute> = 0;

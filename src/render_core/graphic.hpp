@@ -18,7 +18,7 @@ class Graphic {
         virtual auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId = 0;
         virtual void draw(const graphics::IModelInstance& instance) = 0;
         virtual auto getShaderCache() ->ShaderCache* = 0;
-
+        virtual void dispatchCompute() = 0;
         virtual void clean() = 0;
         virtual void end() = 0;
         Graphic() = default;

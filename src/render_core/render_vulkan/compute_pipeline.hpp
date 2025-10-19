@@ -16,6 +16,7 @@
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/render_vulkan/buffer_cache.h"
 #include "render_core/render_vulkan/texture_cache.hpp"
+#include "render_core/shader_notify.hpp"
 
 namespace render::vulkan {
 
@@ -37,12 +38,13 @@ class ComputePipeline {
                                  GuestDescriptorQueue& guest_descriptor_queue,
                                  common::ThreadWorker* thread_worker,
                                  pipeline::PipelineStatistics* pipeline_statistics,
+                                 ShaderNotify* shader_notify,
                                  const shader::Info& info, ShaderModule spv_module);
 
         CLASS_NON_COPYABLE(ComputePipeline);
         CLASS_NON_MOVEABLE(ComputePipeline);
 
-        void Configure(scheduler::Scheduler& scheduler);
+        void Configure(scheduler::Scheduler& scheduler, BufferCache& buffer_cache);
 
     private:
         const Device& device;

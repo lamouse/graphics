@@ -1,9 +1,11 @@
 #include "vk_graphic.hpp"
 #include "blit_screen.hpp"
 #include "render_core/render_vulkan/format_to_vk.hpp"
+#include "render_core/render_vulkan/compute_pipeline.hpp"
 #include <imgui_impl_vulkan.h>
 #include <algorithm>
 #include <tracy/Tracy.hpp>
+
 
 namespace {
 auto buildVertexAttribute(const render::vulkan::Device& device,
@@ -108,6 +110,18 @@ void VulkanGraphics::clear() {
 }
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
+
+void VulkanGraphics::dispatchCompute(){
+    FlushWork();
+    auto* pipeline{pipeline_cache.currentComputePipeline()};
+    if(!pipeline){
+        return;
+    }
+    std::scoped_lock lock{texture_cache.mutex, buffer_cache.mutex};
+    pipeline->Configure(scheduler, buffer_cache);
+}
+
+
 #if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
     // 将 Vulkan 纹理绑定到 ImGui
@@ -145,6 +159,7 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
     return imguiTextureID_;
     return 0;
 }
+
 #else
 auto VulkanGraphics::getDrawImage() -> ImTextureID { return 0; }
 #endif
@@ -475,9 +490,6 @@ template <typename Func>
 void VulkanGraphics::PrepareDraw(bool is_indexed, Func&& draw_func) {
     ZoneScopedN("VulkanGraphics::PrepareDraw()");
     GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline()};
-    if (!pipeline) {
-        return;
-    }
     if (!pipeline) {
         return;
     }

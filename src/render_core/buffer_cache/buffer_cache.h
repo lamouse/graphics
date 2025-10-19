@@ -115,4 +115,28 @@ void BufferCache<P>::BindUniformBuffer(std::span<const std::byte> data) {
     auto map = runtime.BindMappedUniformBuffer(0, 0, data.size());
     std::memcpy(map.data(), data.data(), data.size());
 }
+
+template <class P>
+void BufferCache<P>::DoUpdateComputeBuffers() {
+    UpdateComputeUniformBuffers();
+    UpdateComputeStorageBuffers();
+    UpdateComputeTextureBuffers();
+}
+
+template <class P>
+void BufferCache<P>::UpdateComputeUniformBuffers() {
+
+}
+
+template <class P>
+void BufferCache<P>::UpdateComputeStorageBuffers() {
+
+}
+
+template <class P>
+void BufferCache<P>::UpdateComputeTextureBuffers() {
+
+}
+
+
 }  // namespace render::buffer

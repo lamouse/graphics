@@ -20,13 +20,18 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
                                  GuestDescriptorQueue& guest_descriptor_queue_,
                                  common::ThreadWorker* thread_worker,
                                  pipeline::PipelineStatistics* pipeline_statistics,
-                                 const shader::Info& info_, ShaderModule spv_module_)
+                                 ShaderNotify* shader_notify, const shader::Info& info_,
+                                 ShaderModule spv_module_)
     : device{device_},
       pipeline_cache(pipeline_cache_),
       guest_descriptor_queue(guest_descriptor_queue_),
       info{info_},
       spv_module(std::move(spv_module_)) {
-    auto func{[this, &descriptor_pool, pipeline_statistics] {
+    if (shader_notify) {
+        shader_notify->MarkShaderBuilding();
+    }
+
+    auto func{[this, &descriptor_pool, shader_notify, pipeline_statistics] {
         pipeline::DescriptorLayoutBuilder builder{device};
         builder.Add(info, vk::ShaderStageFlagBits::eCompute);
 
@@ -61,6 +66,9 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
         std::scoped_lock lock{build_mutex};
         is_built = true;
         build_condvar.notify_one();
+        if (shader_notify) {
+            shader_notify->MarkShaderComplete();
+        }
     }};
     if (thread_worker) {
         thread_worker->QueueWork(std::move(func));
@@ -69,13 +77,28 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
     }
 }
 
-void ComputePipeline::Configure(scheduler::Scheduler& scheduler) {
+void ComputePipeline::Configure(scheduler::Scheduler& scheduler, BufferCache& buffer_cache) {
     guest_descriptor_queue.Acquire();
 
+    for(const auto& desc : info.storage_buffers_descriptors){
+        ASSERT(desc.count == 1);
+    }
 
-    static constexpr size_t max_elements = 64;
-    boost::container::static_vector<texture::ImageViewInOut, max_elements> views;
-    boost::container::static_vector<texture::SamplerId, max_elements> samplers;
+    buffer_cache.DoUpdateComputeBuffers();
+    const void* const descriptor_data{guest_descriptor_queue.UpdateData()};
+
+    scheduler.record([this, descriptor_data](vk::CommandBuffer cmdbuf) {
+        cmdbuf.bindPipeline(vk::PipelineBindPoint::eCompute, *pipeline);
+        if (!descriptor_set_layout) {
+            return;
+        }
+        const vk::DescriptorSet descriptor_set{descriptor_allocator.commit()};
+        const vk::Device& dev{device.getLogical()};
+        dev.updateDescriptorSetWithTemplate(descriptor_set, *descriptor_update_template,
+                                            descriptor_data);
+        cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eCompute, *pipeline_layout, 0,
+                                  descriptor_set, nullptr);
+    });
 }
 
 }  // namespace render::vulkan

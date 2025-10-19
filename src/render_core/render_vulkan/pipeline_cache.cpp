@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <utility>
 #include "render_core/vulkan_common/device.hpp"
 #include "common/settings.hpp"
 #include "render_core/render_vulkan/compute_pipeline.hpp"
@@ -17,7 +18,6 @@ namespace render::vulkan {
 namespace {
 
 constexpr u32 CACHE_VERSION = 11;
-constexpr std::array<char, 8> VULKAN_CACHE_MAGIC_NUMBER{'e', 'n', 'g', 'e', 'v', 'k', 'c', 'h'};
 
 auto GetTotalPipelineWorkers() -> size_t {
     const size_t max_core_threads =
@@ -73,37 +73,50 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
         .has_extended_dynamic_state_3_enables = device.IsExtExtendedDynamicState3EnablesSupported(),
         .has_dynamic_vertex_input = device.IsExtVertexInputDynamicStateSupported(),
     };
-
 }
 
 PipelineCache::~PipelineCache() {
-    if (use_vulkan_pipeline_cache && !vulkan_pipeline_cache_filename.empty()) {
-        SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
-                                     CACHE_VERSION);
-    }
+
 }
 
 auto PipelineCache::currentGraphicsPipeline() -> GraphicsPipeline* {
+    graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Vertex)) =
+        shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash;
+    graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Fragment)) =
+        shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash;
     if (current_pipeline) {
-        return current_pipeline;
+        GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
+        if (next) {
+            current_pipeline = next;
+            return builtPipeline(current_pipeline);
+        }
     }
-    createGraphicsPipeline();  // TODO 临时设置一下后续使用
+    return CurrentGraphicsPipelineSlowPath();
+}
 
-    return nullptr;
-
-    // if (current_pipeline) {
-    //     GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
-    //     if (next) {
-    //         current_pipeline = next;
-    //         return builtPipeline(current_pipeline);
-    //     }
-    // }
-    // return currentGraphicsPipelineSlowPath();
+[[nodiscard]] auto PipelineCache::CurrentGraphicsPipelineSlowPath() -> GraphicsPipeline* {
+    const auto [pair, is_new]{graphics_cache.try_emplace(graphics_key)};
+    auto& pipeline{pair->second};
+    if (is_new) {
+        pipeline = createGraphicsPipeline();
+    }
+    if (!pipeline) {
+        return nullptr;
+    }
+    if (current_pipeline) {
+        current_pipeline->AddTransition(pipeline.get());
+    }
+    current_pipeline = pipeline.get();
+    return builtPipeline(current_pipeline);
 }
 
 auto PipelineCache::currentComputePipeline() -> ComputePipeline* {
+    const ShaderInfo* shader = shader_infos.at(static_cast<u8>(ShaderType::Compute));
+    if (!shader) {
+        return nullptr;
+    }
     const ComputePipelineCacheKey key{
-        .unique_hash = 0,
+        .unique_hash = shader->unique_hash,
         .shared_memory_size = 0,
         .workgroup_size{1, 1, 1},
     };
@@ -114,100 +127,6 @@ auto PipelineCache::currentComputePipeline() -> ComputePipeline* {
     }
     pipeline = CreateComputePipeline(key);
     return pipeline.get();
-}
-
-void PipelineCache::loadDiskResource(u64 title_id, std::stop_token stop_loading) {
-    if (title_id == 0) {
-        return;
-    }
-    const auto* const shader_dir{"./user/"};
-    const auto base_dir{shader_dir + fmt::format("{:016x}", title_id)};
-    if (std::filesystem::create_directories(base_dir)) {
-        SPDLOG_ERROR("Failed to create pipeline cache directories");
-        return;
-    }
-    pipeline_cache_filename = base_dir + "/vulkan.bin";
-
-    if (use_vulkan_pipeline_cache) {
-        vulkan_pipeline_cache_filename = base_dir + "/vulkan_pipelines.bin";
-        vulkan_pipeline_cache =
-            LoadVulkanPipelineCache(vulkan_pipeline_cache_filename, CACHE_VERSION);
-    }
-
-    struct {
-            std::mutex mutex;
-            size_t total{};
-            size_t built{};
-            bool has_loaded{};
-            std::unique_ptr<pipeline::PipelineStatistics> statistics;
-    } state;
-
-    if (device.IsKhrPipelineExecutablePropertiesEnabled()) {
-        state.statistics = std::make_unique<pipeline::PipelineStatistics>(device);
-    }
-    const auto load_compute{[&](std::ifstream& file) {
-        ComputePipelineCacheKey key;
-        file.read(reinterpret_cast<char*>(&key), sizeof(key));
-
-        workers.QueueWork([this, key, &state]() mutable {
-            auto pipeline{CreateComputePipeline(key, state.statistics.get(), false)};
-            std::scoped_lock lock{state.mutex};
-            if (pipeline) {
-                compute_cache.emplace(key, std::move(pipeline));
-            }
-            ++state.built;
-        });
-        ++state.total;
-    }};
-    const auto load_graphics{[&](std::ifstream& file) {
-        GraphicsPipelineCacheKey key;
-        file.read(reinterpret_cast<char*>(&key), sizeof(key));
-
-        // if ((key.state.extended_dynamic_state != 0) !=
-        //         dynamic_features.has_extended_dynamic_state ||
-        //     (key.state.extended_dynamic_state_2 != 0) !=
-        //         dynamic_features.has_extended_dynamic_state_2 ||
-        //     (key.state.extended_dynamic_state_2_extra != 0) !=
-        //         dynamic_features.has_extended_dynamic_state_2_extra ||
-        //     (key.state.extended_dynamic_state_3_blend != 0) !=
-        //         dynamic_features.has_extended_dynamic_state_3_blend ||
-        //     (key.state.extended_dynamic_state_3_enables != 0) !=
-        //         dynamic_features.has_extended_dynamic_state_3_enables ||
-        //     (key.state.dynamic_vertex_input != 0) != dynamic_features.has_dynamic_vertex_input) {
-        //     return;
-        // }
-        workers.QueueWork([this, key, &state]() mutable {
-            auto pipeline{createGraphicsPipeline(key, state.statistics.get(), false)};
-
-            std::scoped_lock lock{state.mutex};
-            if (pipeline) {
-                graphics_cache.emplace(key, std::move(pipeline));
-            }
-            ++state.built;
-            if (state.has_loaded) {
-                // callback(VideoCore::LoadCallbackStage::Build, state.built, state.total);
-            }
-        });
-        ++state.total;
-    }};
-
-    SPDLOG_INFO("Total Pipeline Count: {}", state.total);
-
-    std::unique_lock lock{state.mutex};
-    // callback(VideoCore::LoadCallbackStage::Build, 0, state.total);
-    state.has_loaded = true;
-    lock.unlock();
-
-    workers.WaitForRequests(stop_loading);
-
-    if (use_vulkan_pipeline_cache) {
-        SerializeVulkanPipelineCache(vulkan_pipeline_cache_filename, vulkan_pipeline_cache,
-                                     CACHE_VERSION);
-    }
-
-    if (state.statistics) {
-        state.statistics->Report();
-    }
 }
 
 auto PipelineCache::currentGraphicsPipelineSlowPath() -> GraphicsPipeline* {
@@ -276,24 +195,16 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     return nullptr;
 }
 
-void PipelineCache::SerializeVulkanPipelineCache(const std::filesystem::path& filename,
-                                                 const VulkanPipelineCache& pipeline_cache,
-                                                 u32 cache_version) {}
-
-auto PipelineCache::LoadVulkanPipelineCache(const std::filesystem::path& filename,
-                                            u32 expected_cache_version) -> VulkanPipelineCache {
-    return {};
-}
 auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline> {
-    GraphicsPipelineCacheKey key;
-    key.state.color_formats[0] = surface::PixelFormat::B8G8R8A8_UNORM;
-    for (size_t i = 1; i < key.state.color_formats.size(); i++) {
-        key.state.color_formats[i] = surface::PixelFormat::Invalid;
+
+    graphics_key.state.color_formats[0] = surface::PixelFormat::B8G8R8A8_UNORM;
+    for (size_t i = 1; i < graphics_key.state.color_formats.size(); i++) {
+        graphics_key.state.color_formats.at(i) = surface::PixelFormat::Invalid;
     }
-    key.state.depth_format = surface::PixelFormat::D32_FLOAT;
-    key.state.msaa_mode = MsaaMode::Msaa1x1;
-    key.state.depth_enabled = 1;
-    return createGraphicsPipeline(key, nullptr, false);
+    graphics_key.state.depth_format = surface::PixelFormat::D32_FLOAT;
+    graphics_key.state.msaa_mode = MsaaMode::Msaa1x1;
+    graphics_key.state.depth_enabled = 1;
+    return createGraphicsPipeline(graphics_key, nullptr, false);
 }
 
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)
@@ -304,7 +215,29 @@ auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,
                                           pipeline::PipelineStatistics* statistics,
                                           bool build_in_parallel)
-    -> std::unique_ptr<ComputePipeline> {
+    -> std::unique_ptr<ComputePipeline> try {
+    auto hash = key.Hash();
+    if (device.HasBrokenCompute()) {
+        SPDLOG_ERROR("ComputePipeline Skipping 0x{:016x}", hash);
+        return nullptr;
+    }
+    SPDLOG_INFO("ComputePipeline 0x{:016x}", hash);
+    ShaderModule spv_module = utils::buildShader(
+        device.getLogical(),
+        getShaderData(shader_infos.at(static_cast<u8>(ShaderType::Compute))->unique_hash));
+    if (device.hasDebuggingToolAttached()) {
+        const auto name{fmt::format("Shader {:016x}", key.unique_hash)};
+        spv_module.SetObjectNameEXT(name.c_str());
+    }
+    shader::Info info = shader::compile::getShaderInfo(
+        getShaderData(shader_infos.at(static_cast<u8>(ShaderType::Compute))->unique_hash));
+    common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
+    mark_loaded(shader_infos);
+    return std::make_unique<ComputePipeline>(device, vulkan_pipeline_cache, descriptor_pool,
+                                             guest_descriptor_queue, thread_worker, statistics,
+                                             &shader_notify, info, std::move(spv_module));
+} catch (const std::exception& exception) {
+    SPDLOG_ERROR("{}", exception.what());
     return nullptr;
 }
 

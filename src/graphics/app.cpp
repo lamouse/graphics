@@ -16,7 +16,6 @@
 #include "ui.hpp"
 #include "ui/ui.hpp"
 #define image_path ::std::string{"./images/"}
-#define shader_path ::std::string{"./shader/"}
 #define models_path ::std::string{"./models/"}
 
 namespace graphics {
@@ -40,10 +39,11 @@ void App::run() {
     pipeline_state.viewport.height = layout.screen.GetHeight();
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
-    auto * shader_cache = graphics->getShaderCache();
-    auto vertex_hash = shader_cache->addShader(resourceManager.getShaderCode(render::ShaderType::Vertex), render::ShaderType::Vertex);
-    auto fragment_hash = shader_cache->addShader(resourceManager.getShaderCode(render::ShaderType::Fragment), render::ShaderType::Fragment);
-    shader_cache->setCurrentShader(vertex_hash, fragment_hash);
+    auto* shader_cache = graphics->getShaderCache();
+    auto vertex_hash = shader_cache->addShader(
+        resourceManager.getShaderCode(render::ShaderType::Vertex), render::ShaderType::Vertex);
+    auto fragment_hash = shader_cache->addShader(
+        resourceManager.getShaderCode(render::ShaderType::Fragment), render::ShaderType::Fragment);
     world::World world;
     [[maybe_unused]] bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
@@ -69,6 +69,8 @@ void App::run() {
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();
     while (!window->shouldClose()) {
+        shader_cache->setCurrentShader(vertex_hash, fragment_hash);
+
         window->pullEvents();
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -81,7 +83,7 @@ void App::run() {
         if ((static_cast<int>(modelComponent.rotation.z) % 10) > 5) {
             modelInstance.setTextureId(resourceManager.getTexture(other_image));
             modelInstance2.setTextureId(resourceManager.getTexture(viking_room_path));
-        }else{
+        } else {
             modelInstance.setTextureId(resourceManager.getTexture(viking_room_path));
             modelInstance2.setTextureId(resourceManager.getTexture(other_image));
         }

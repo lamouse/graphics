@@ -67,9 +67,7 @@ class Device {
         [[nodiscard]] auto isExt4444FormatsSupported() const -> bool {
             return features_.format_a4b4g4r4.formatA4B4G4R4;
         }
-        bool mustEmulateScaledFormats() const {
-            return misc_features_.must_emulate_scaled_formats;
-        }
+        bool mustEmulateScaledFormats() const { return misc_features_.must_emulate_scaled_formats; }
 
         [[nodiscard]] auto mustEmulateBGR565() const -> bool {
             return misc_features_.must_emulate_bgr565;
@@ -231,6 +229,8 @@ class Device {
         [[nodiscard]] auto IsShaderInt16Supported() const -> bool {
             return features_.features.shaderInt16;
         }
+        /// @returns True if compute pipelines can cause crashing.
+        [[nodiscard]] auto HasBrokenCompute() const -> bool { return misc_features_.has_broken_compute; }
 
         [[nodiscard]] auto getDeviceLocalMemory() const -> u64 { return device_access_memory_; }
 
@@ -342,7 +342,8 @@ class Device {
             return extensions_.extended_dynamic_state2;
         }
 
-        [[nodiscard]] auto IsFormatSupport(vk::Format format, vk::FormatFeatureFlagBits feature) const -> bool;
+        [[nodiscard]] auto IsFormatSupport(vk::Format format,
+                                           vk::FormatFeatureFlagBits feature) const -> bool;
 
         [[nodiscard]] auto IsExtExtendedDynamicState2ExtrasSupported() const -> bool {
             return features_.extended_dynamic_state2.extendedDynamicState2LogicOp;

@@ -56,7 +56,7 @@ namespace resource {
 class DescriptorPool;
 }
 
-class PipelineCache : public ShaderCache{
+class PipelineCache : public ShaderCache {
     public:
         PipelineCache(const Device& device, scheduler::Scheduler& scheduler,
                       resource::DescriptorPool& descriptor_pool,
@@ -68,10 +68,8 @@ class PipelineCache : public ShaderCache{
         CLASS_NON_MOVEABLE(PipelineCache);
         [[nodiscard]] auto currentGraphicsPipeline() -> GraphicsPipeline*;
         [[nodiscard]] auto currentComputePipeline() -> ComputePipeline*;
-        void loadDiskResource(u64 title_id, std::stop_token stop_loading);
-        auto createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline>;
-
     private:
+            auto createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline>;
         [[nodiscard]] auto currentGraphicsPipelineSlowPath() -> GraphicsPipeline*;
         [[nodiscard]] auto builtPipeline(GraphicsPipeline* pipeline) const noexcept
             -> GraphicsPipeline*;
@@ -87,12 +85,7 @@ class PipelineCache : public ShaderCache{
                                    pipeline::PipelineStatistics* statistics, bool build_in_parallel)
             -> std::unique_ptr<ComputePipeline>;
 
-        void SerializeVulkanPipelineCache(const std::filesystem::path& filename,
-                                          const VulkanPipelineCache& pipeline_cache,
-                                          u32 cache_version);
-
-        auto LoadVulkanPipelineCache(const std::filesystem::path& filename,
-                                     u32 expected_cache_version) -> VulkanPipelineCache;
+        [[nodiscard]] auto CurrentGraphicsPipelineSlowPath() -> GraphicsPipeline*;
 
         const Device& device;
         scheduler::Scheduler& scheduler;
