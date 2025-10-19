@@ -44,6 +44,8 @@ void App::run() {
         resourceManager.getShaderCode(render::ShaderType::Vertex), render::ShaderType::Vertex);
     auto fragment_hash = shader_cache->addShader(
         resourceManager.getShaderCode(render::ShaderType::Fragment), render::ShaderType::Fragment);
+    auto compute_hash = shader_cache->addShader(
+        resourceManager.getShaderCode(render::ShaderType::Compute), render::ShaderType::Compute);
     world::World world;
     [[maybe_unused]] bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
@@ -104,6 +106,8 @@ void App::run() {
         ubo2.model = model2.mat4();
         modelInstance2.writeToUBOMapData(ubo2.as_byte_span());
         graphics->draw(modelInstance2);
+        shader_cache->setsetCurrentShader(compute_hash);
+        graphics->dispatchCompute();
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();

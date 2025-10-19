@@ -36,6 +36,8 @@ auto ResourceManager::getShaderCode(render::ShaderType type)-> std::vector<std::
             return read_shader("model"  + std::string("_vert"));
         case render::ShaderType::Fragment:
             return read_shader("model" + std::string("_frag"));
+        case render::ShaderType::Compute:
+            return read_shader("compute" + std::string("_comp"));
         default:
             ASSERT_MSG(false, "Unsupported shader type");
             return {};
