@@ -150,11 +150,13 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
+
 include(Resource)
 include(Config)
 
 include(ClangFormat)
 
+add_subdirectory(shader)
 add_subdirectory(src)
 add_subdirectory(doc)
 

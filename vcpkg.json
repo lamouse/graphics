@@ -20,6 +20,7 @@
         "farmhash",
         "vulkan-memory-allocator",
         "vulkan-utility-libraries",
+        "xxhash",
         {
             "name": "sdl3",
             "features": [

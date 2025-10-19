@@ -1,0 +1,11 @@
+// SPDX-FileCopyrightText: 2020 yuzu Emulator Project
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#pragma once
+
+namespace shader {
+    constexpr const char* SHADER_ROOT_PATH = "@SHADER_PATH@";
+    constexpr const char* SHADER_EXTENSION = "@SHADER_EXTENSION@";
+}// namespace shader
+
+

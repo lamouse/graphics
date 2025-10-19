@@ -7,8 +7,6 @@
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
-#include "model_vert_spv.h"
-#include "model_frag_spv.h"
 #if defined(USE_GLFW)
 #include "glfw_window.hpp"
 #endif
@@ -43,8 +41,8 @@ void App::run() {
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
     auto * shader_cache = graphics->getShaderCache();
-    auto vertex_hash = shader_cache->addShader(MODEL_VERT_SPV, render::ShaderType::Vertex);
-    auto fragment_hash = shader_cache->addShader(MODEL_FRAG_SPV, render::ShaderType::Fragment);
+    auto vertex_hash = shader_cache->addShader(resourceManager.getShaderCode(render::ShaderType::Vertex), render::ShaderType::Vertex);
+    auto fragment_hash = shader_cache->addShader(resourceManager.getShaderCode(render::ShaderType::Fragment), render::ShaderType::Fragment);
     shader_cache->setCurrentShader(vertex_hash, fragment_hash);
     world::World world;
     [[maybe_unused]] bool show_console_logger = false;

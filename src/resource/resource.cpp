@@ -1,6 +1,7 @@
 #include "resource/resource.hpp"
 #include "common/assert.hpp"
 #include "resource/obj/model.hpp"
+#include "resource/shader/shader.hpp"
 namespace graphics {
 void ResourceManager::addTexture(std::string textureName, add_texture_func func) {
     ASSERT_MSG(!textureName.empty(), "textureName is null");
@@ -27,6 +28,18 @@ void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
 auto ResourceManager::getMesh(std::string meshName) -> render::MeshId {
     ASSERT_MSG(mesh.contains(meshName), meshName + " texture in catch");
     return mesh.find(meshName)->second;
+}
+
+auto ResourceManager::getShaderCode(render::ShaderType type)-> std::vector<std::uint32_t>{
+    switch(type){
+        case render::ShaderType::Vertex:
+            return read_shader("model"  + std::string("_vert"));
+        case render::ShaderType::Fragment:
+            return read_shader("model" + std::string("_frag"));
+        default:
+            ASSERT_MSG(false, "Unsupported shader type");
+            return {};
+    }
 }
 
 }  // namespace graphics

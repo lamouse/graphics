@@ -7,12 +7,15 @@ set (sources
     obj/mesh.hpp
     obj/model.hpp
     obj/model.cpp
+    shader/shader.hpp
+    shader/shader.cpp
     config.hpp
     model_instance.hpp
     model_instance.cpp
     resource.hpp
     resource.cpp
 )
+
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 if (MSVC)
     target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
@@ -32,8 +35,8 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
-target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
-target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE spdlog::spdlog glm::glm ecs imgui)
+target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${SHADER_PATH_INCLUDE})
+target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE spdlog::spdlog glm::glm ecs Imgui::Imgui)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_RESOURCE_NAME}/lib)
 set_target_properties(${LIB_RESOURCE_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)

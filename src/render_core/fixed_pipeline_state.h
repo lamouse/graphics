@@ -122,7 +122,7 @@ struct PipelineState {
                 f32 width{};
                 f32 height{};
                 f32 minDepth{};
-                f32 maxDepth{};
+                f32 maxDepth{1};
         };
         struct Scissors {
                 int32_t x = 0;

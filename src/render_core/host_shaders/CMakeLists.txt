@@ -37,8 +37,6 @@ set(SHADER_FILES
     present_bicubic.frag
     present_gaussian.frag
     opengl_present_scaleforce.frag
-    model.vert
-    model.frag
 )
 
 find_program(GLSLANGVALIDATOR "glslangValidator")

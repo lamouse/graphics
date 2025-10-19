@@ -1,5 +1,4 @@
 #pragma once
-#include <imgui.h>
 #include "ecs/components/transform_component.hpp"
 #include "ui/ui.hpp"
 namespace ecs {
