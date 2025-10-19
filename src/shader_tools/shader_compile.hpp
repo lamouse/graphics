@@ -3,6 +3,7 @@
 #include <string_view>
 #include "common/common_funcs.hpp"
 #include <span>
+#include <vector>
 #include "shader_tools/shader_info.h"
 namespace shader::compile {
 
@@ -14,7 +15,7 @@ class ShaderCompile {
         CLASS_NON_MOVEABLE(ShaderCompile);
         ShaderCompile();
         ~ShaderCompile();
-        void compile(const std::string_view& shader_path, std::string_view out_path);
+        auto compile(const std::string_view& shader_path) -> std::vector<uint32_t>;
 
     private:
 };

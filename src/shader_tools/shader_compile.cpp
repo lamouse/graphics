@@ -13,18 +13,6 @@
 namespace {
 namespace fs = std::filesystem;
 
-auto list_files(const fs::path& directory) -> std::vector<fs::path> {
-    std::vector<fs::path> file_list;
-    if (!fs::exists(directory)) {
-        throw std::runtime_error("Directory does not exist: " + directory.string());
-    }
-    for (const auto& entry : fs::recursive_directory_iterator(directory)) {
-        if (fs::is_regular_file(entry)) {
-            file_list.push_back(entry.path());
-        }
-    }
-    return file_list;
-}
 auto read_shader(const fs::path& path) -> std::string {
     std::ifstream file(path, std::ios::ate | std::ios::binary);  // NOLINT
     auto file_size = file.tellg();
@@ -591,16 +579,12 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     return info;
 }
 
-void ShaderCompile::compile(const std::string_view& shader_path, std::string_view out_path) {
-    auto shader_paths = list_files(shader_path);
-    for (auto& path : shader_paths) {
-        auto shader = read_shader(path);
-        auto language = getEShLanguage(path.extension().string());
-        auto spirv = compileGLSLtoSPIRV(shader, language);
-        auto out_file = std::string(out_path.data()) + path.filename().generic_string() + ".spv";
-        std::ofstream out(out_file, std::ios::binary);
-        out.write(reinterpret_cast<const char*>(spirv.data()), spirv.size() * sizeof(uint32_t));
-    }
+//NOLINTNEXTLINE
+auto ShaderCompile::compile(const std::string_view& shader_path) -> std::vector<uint32_t> {
+    fs::path path{shader_path};
+    auto shader = read_shader(path);
+    auto language = getEShLanguage(path.extension().string());
+    return compileGLSLtoSPIRV(shader, language);
 }
 ShaderCompile::ShaderCompile() {
     if (!glslang::InitializeProcess()) {
