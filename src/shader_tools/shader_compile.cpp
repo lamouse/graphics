@@ -411,65 +411,6 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     auto resources = compiler.get_shader_resources();
     std::unordered_map<std::uint32_t, std::uint32_t> bindingStrideMap;
 
-    for (const auto& input : resources.stage_inputs) {
-        const spirv_cross::SPIRType& type = compiler.get_type(input.type_id);
-
-        // 映射 basetype 和 vecsize 到 VertexAttribute 的 Size 和 Type
-        render::VertexAttribute::Size sizeEnum = render::VertexAttribute::Size::Invalid;
-        render::VertexAttribute::Type typeEnum =
-            render::VertexAttribute::Type::UnusedEnumDoNotUseBecauseItWillGoAway;
-        switch (type.basetype) {
-            case spirv_cross::SPIRType::Float:
-                typeEnum = render::VertexAttribute::Type::Float;
-                if (type.vecsize == 1) {
-                    sizeEnum = render::VertexAttribute::Size::R32;
-                } else if (type.vecsize == 2) {
-                    sizeEnum = render::VertexAttribute::Size::R32_G32;
-                } else if (type.vecsize == 3) {
-                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32;
-                } else if (type.vecsize == 4) {
-                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32_A32;
-                }
-                break;
-            case spirv_cross::SPIRType::Int:
-                typeEnum = render::VertexAttribute::Type::SInt;
-                if (type.vecsize == 1) {
-                    sizeEnum = render::VertexAttribute::Size::R32;
-                } else if (type.vecsize == 2) {
-                    sizeEnum = render::VertexAttribute::Size::R32_G32;
-                } else if (type.vecsize == 3) {
-                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32;
-                } else if (type.vecsize == 4) {
-                    sizeEnum = render::VertexAttribute::Size::R32_G32_B32_A32;
-                }
-                break;
-            // 根据需要添加其他类型的处理
-            default:
-                continue;  // 跳过不支持的类型
-        }
-        uint32_t binding = compiler.get_decoration(input.id, spv::DecorationBinding);
-        uint32_t location = compiler.get_decoration(input.id, spv::DecorationLocation);
-        // 创建 VertexAttribute 实例
-        render::VertexAttribute attr{};
-        attr.location.Assign(location);
-        attr.offset.Assign(compiler.get_decoration(input.id, spv::DecorationOffset));
-        attr.size.Assign(sizeEnum);
-        attr.type.Assign(typeEnum);
-
-        // 计算 stride 并更新 bindingStrideMap
-        std::uint32_t stride = attr.SizeInBytes();
-        if(bindingStrideMap.contains(binding)){
-            bindingStrideMap[binding] =
-            stride + bindingStrideMap.find(binding)->second;
-        }else {
-            bindingStrideMap[binding] = stride;
-        }
-        info.vertexAttribute.push_back(attr);
-    }
-    for (const auto& [binding, stride] : bindingStrideMap) {
-        info.vertexBindings.push_back({.binding = binding, .stride = stride});
-    }
-
     // uniform_buffer_descriptors
     for (const auto& resource : resources.uniform_buffers) {
         uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);

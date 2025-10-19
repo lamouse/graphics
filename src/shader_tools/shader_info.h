@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include "shader_enums.hpp"
-#include "render_core/vertex.hpp"
 
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
@@ -77,8 +76,6 @@ struct Info {
             uniform_buffer_descriptors;
         boost::container::static_vector<StorageBufferDescriptor, MAX_SSBOS>
             storage_buffers_descriptors;
-        boost::container::static_vector<render::VertexBinding, 32> vertexBindings;
-        boost::container::static_vector<render::VertexAttribute, 32> vertexAttribute;
         TextureBufferDescriptors texture_buffer_descriptors;
         ImageBufferDescriptors image_buffer_descriptors;
         TextureDescriptors texture_descriptors;
