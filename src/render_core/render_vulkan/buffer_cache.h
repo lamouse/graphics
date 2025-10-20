@@ -91,8 +91,7 @@ class BufferCacheRuntime {
 
         void ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t size, u32 value);
 
-        void BindIndexBuffer(IndexFormat index_format,
-                             vk::Buffer buffer);
+        void BindIndexBuffer(IndexFormat index_format, vk::Buffer buffer);
 
         void BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offset, u32 size, u32 stride);
 
@@ -105,6 +104,11 @@ class BufferCacheRuntime {
         auto BindMappedUniformBuffer([[maybe_unused]] size_t stage,
                                      [[maybe_unused]] u32 binding_index, u32 size)
             -> std::span<u8> {
+            u32 offset = 0;
+            if (auto span = uniform_ring.Alloc(size, offset); !span.empty()) {
+                BindBuffer(*uniform_ring.buffers[uniform_ring.current_frame], offset, size);
+                return span;
+            }
             const StagingBufferRef ref = staging_pool.Request(size, MemoryUsage::Upload);
             BindBuffer(ref.buffer, static_cast<u32>(ref.offset), size);
             return ref.mapped_span;
@@ -131,6 +135,24 @@ class BufferCacheRuntime {
 
         void ReserveNullBuffer();
         auto CreateNullBuffer() -> Buffer;
+
+        struct UniformRing {
+                static constexpr size_t NUM_FRAMES = 3;
+                std::array<Buffer, NUM_FRAMES> buffers{};
+                std::array<u8*, NUM_FRAMES> mapped{};
+                u64 size = 0;
+                u64 head = 0;
+                u32 align = 256;
+                size_t current_frame = 0;
+
+                void Init(const Device& device, MemoryAllocator& alloc, u64 bytes, u32 alignment);
+                void BeginFrame() {
+                    current_frame = (current_frame + 1) % NUM_FRAMES;
+                    head = 0;
+                }
+                auto Alloc(u32 bytes, u32& out_offset) -> std::span<u8>;
+        };
+        UniformRing uniform_ring;
 
         const Device& device;
         MemoryAllocator& memory_allocator;

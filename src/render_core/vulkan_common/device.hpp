@@ -244,8 +244,11 @@ class Device {
         [[nodiscard]] auto isMoltenVK() const noexcept -> bool {
             return properties_.driver_.driverID == VK_DRIVER_ID_MOLTENVK;
         }
-
-        /// Reports a device loss.
+        /// Returns uniform buffer alignment requirement.
+        [[nodiscard]] auto GetUniformBufferAlignment() const -> VkDeviceSize {
+            return properties_.properties_.limits.minUniformBufferOffsetAlignment;
+        }
+            /// Reports a device loss.
         void reportLoss() const;
         /// Returns true if the device supports VK_EXT_shader_stencil_export.
         [[nodiscard]] auto isExtShaderStencilExportSupported() const -> bool {

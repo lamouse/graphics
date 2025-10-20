@@ -99,11 +99,12 @@ class DescriptorLayoutBuilder {
         void Add(vk::DescriptorType type, vk::ShaderStageFlags stage,
                  const Descriptors& descriptors) {
             const size_t num{descriptors.size()};
-            if (num > 0) {
-                spdlog::debug("Adding descriptor type={} stage={} descriptors={}",
-                              vk::to_string(type), vk::to_string(stage), descriptors.size());
-            }
             for (size_t i = 0; i < num; ++i) {
+                spdlog::debug(
+                    "Adding descriptor type={} stage={} \ndescriptors={} binding:{} descriptors "
+                    "count:{}",
+                    vk::to_string(type), vk::to_string(stage), descriptors.size(),
+                    descriptors[i].binding, descriptors[i].count);
                 bindings.push_back(vk::DescriptorSetLayoutBinding()
                                        .setBinding(descriptors[i].binding)
                                        .setDescriptorType(type)
@@ -129,6 +130,5 @@ class DescriptorLayoutBuilder {
         u32 num_descriptors{};
         size_t offset{};
 };
-
 
 }  // namespace render::vulkan::pipeline

@@ -18,14 +18,15 @@ struct FramebufferTextureInfo;
 class Device;
 
 struct ModelResource {
-        BufferId vertex_buffer_id;
-        u32 vertex_size;
+        BufferId vertex_buffer_id{};
+        std::size_t vertex_size{};
+        std::size_t vertex_count{};
 
-        u32 indices_count;
-        BufferId indices_buffer_id;
+        u32 indices_count{};
+        BufferId indices_buffer_id{};
 
-        VertexAttributeId vertex_attribute_id;
-        VertexBindingsId vertex_binding_id;
+        VertexAttributeId vertex_attribute_id{};
+        VertexBindingsId vertex_binding_id{};
 };
 
 class VulkanGraphics : public render::Graphic {
@@ -60,7 +61,7 @@ class VulkanGraphics : public render::Graphic {
 
         static constexpr vk::DeviceSize DEFAULT_BUFFER_SIZE = 4 * sizeof(float);
         template <typename Func>
-        void PrepareDraw(bool is_indexed, Func&&);
+        void PrepareDraw(PrimitiveTopology topology, bool is_indexed, Func&&);
         void FlushWork();
         void UpdateDynamicStates();
         void UpdatePrimitiveRestartEnable();

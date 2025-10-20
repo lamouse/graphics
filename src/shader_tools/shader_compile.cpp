@@ -208,7 +208,10 @@ auto IsRectTexture(const spirv_cross::Resource& resource) -> bool {
     const std::string& name = resource.name;
     // 常见命名：_rect, Rect, sampler2DRect, 甚至包含 "rect" 的名字
     std::string lower_name = name;
-    std::ranges::transform(lower_name, lower_name.begin(), ::tolower);
+    //msvc c4242 error fix
+    std::ranges::transform(lower_name, lower_name.begin(), [](auto c){
+        return static_cast<char>(::tolower(c));
+    });
 
     return absl::StrContains(lower_name, "rect");
 }

@@ -120,7 +120,14 @@ BufferCacheRuntime::BufferCacheRuntime(const Device& device_, MemoryAllocator& m
       memory_allocator{memory_allocator_},
       scheduler{scheduler_},
       staging_pool{staging_pool_},
-      guest_descriptor_queue{guest_descriptor_queue_} {}
+      guest_descriptor_queue{guest_descriptor_queue_} {
+    const u32 ubo_align =
+        static_cast<u32>(device.GetUniformBufferAlignment()  // check if the device has it
+        );
+    // add the ability to change the size in settings in future
+    uniform_ring.Init(device, memory_allocator, 8 * 1024 * 1024 /* 8 MiB */,
+                      ubo_align ? ubo_align : 256);
+}
 
 auto BufferCacheRuntime::UploadStagingBuffer(size_t size) -> StagingBufferRef {
     return staging_pool.Request(size, MemoryUsage::Upload);
@@ -153,6 +160,7 @@ void BufferCacheRuntime::TickFrame(common::SlotVector<BaseBufferCache>& slot_buf
     for (auto it = slot_buffers.begin(); it != slot_buffers.end(); it++) {
         it->ResetUsageTracking();
     }
+    uniform_ring.BeginFrame();
 }
 
 void BufferCacheRuntime::Finish() { scheduler.finish(); }
@@ -229,8 +237,7 @@ void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t 
     });
 }
 
-void BufferCacheRuntime::BindIndexBuffer(IndexFormat index_format,
-                                         vk::Buffer buffer) {
+void BufferCacheRuntime::BindIndexBuffer(IndexFormat index_format, vk::Buffer buffer) {
     vk::IndexType vk_index_type = ToIndexFormat(index_format);
     vk::Buffer vk_buffer = buffer;
     if (vk_buffer == VK_NULL_HANDLE) {
@@ -267,6 +274,41 @@ void BufferCacheRuntime::BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offs
     }
 }
 
+void BufferCacheRuntime::UniformRing::Init(const Device& device, MemoryAllocator& alloc, u64 bytes,
+                                           u32 alignment) {
+    for (size_t i = 0; i < NUM_FRAMES; ++i) {
+        VkBufferCreateInfo ci{
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .size = bytes,
+            .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 0,
+            .pQueueFamilyIndices = nullptr,
+        };
+        buffers[i] = alloc.createBuffer(ci, MemoryUsage::Upload);
+        mapped[i] = buffers[i].Mapped().data();
+    }
+    size = bytes;
+    align = alignment ? alignment : 256;
+    head = 0;
+    current_frame = 0;
+}
+
+auto BufferCacheRuntime::UniformRing::Alloc(u32 bytes, u32& out_offset) -> std::span<u8> {
+    const u64 aligned = common::AlignUp(head, static_cast<u64>(align));
+    u64 end = aligned + bytes;
+
+    if (end > size) {
+        return {};  // Fallback to staging pool
+    }
+
+    out_offset = static_cast<u32>(aligned);
+    head = end;
+    return {mapped[current_frame] + out_offset, bytes};
+}
+
 void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>& bindings) {
     boost::container::small_vector<vk::Buffer, 32> buffer_handles;
     for (u32 index = 0; index < bindings.buffers.size(); ++index) {
@@ -289,7 +331,7 @@ void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>
         return;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
-        scheduler.record([ bindings_ = std::move(bindings),
+        scheduler.record([bindings_ = std::move(bindings),
                           buffer_handles_ = std::move(buffer_handles),
                           binding_count](vk::CommandBuffer cmdbuf) {
             cmdbuf.bindVertexBuffers2EXT(bindings_.min_index, binding_count, buffer_handles_.data(),

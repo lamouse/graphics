@@ -67,8 +67,9 @@ auto TextureCache<P>::getSampler(SamplerPreset preset) -> typename P::Sampler* {
 
 template <class P>
 auto TextureCache<P>::getCurrentTexture() -> std::pair<ImageView*, Sampler*> {
-    // NOLINTNEXTLINE
-    ASSERT_MSG(currentTextureId, "current not set texture but get it");
+    if (!currentTextureId) {
+        return std::make_pair(nullptr, nullptr);
+    }
     auto tmp_textureId = currentTextureId;
     currentTextureId = {};
     return std::make_pair(&slot_image_views[tmp_textureId], getSampler(currentSamplerPreset));

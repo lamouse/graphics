@@ -2,6 +2,7 @@
 
 #include "config/window.h"
 #include "resource/model_instance.hpp"
+#include "resource/particle_instance.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "world/world.hpp"
@@ -40,12 +41,25 @@ void App::run() {
     pipeline_state.scissors.width = layout.screen.GetWidth();
     pipeline_state.scissors.height = layout.screen.GetHeight();
     auto* shader_cache = graphics->getShaderCache();
+    std::string model_shader_name = "model";
+    std::string particle_shader_name = "particle";
     auto vertex_hash = shader_cache->addShader(
-        resourceManager.getShaderCode(render::ShaderType::Vertex), render::ShaderType::Vertex);
+        resourceManager.getShaderCode(render::ShaderType::Vertex, model_shader_name),
+        render::ShaderType::Vertex);
     auto fragment_hash = shader_cache->addShader(
-        resourceManager.getShaderCode(render::ShaderType::Fragment), render::ShaderType::Fragment);
-    auto compute_hash = shader_cache->addShader(
-        resourceManager.getShaderCode(render::ShaderType::Compute), render::ShaderType::Compute);
+        resourceManager.getShaderCode(render::ShaderType::Fragment, model_shader_name),
+        render::ShaderType::Fragment);
+
+    auto particle_vertex_hash = shader_cache->addShader(
+        resourceManager.getShaderCode(render::ShaderType::Vertex, particle_shader_name),
+        render::ShaderType::Vertex);
+    auto particle_fragment_hash = shader_cache->addShader(
+        resourceManager.getShaderCode(render::ShaderType::Fragment, particle_shader_name),
+        render::ShaderType::Fragment);
+    auto particle_compute_hash = shader_cache->addShader(
+        resourceManager.getShaderCode(render::ShaderType::Compute, particle_shader_name),
+        render::ShaderType::Compute);
+
     world::World world;
     [[maybe_unused]] bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
@@ -63,6 +77,13 @@ void App::run() {
     resourceManager.addMesh(viking_obj_path, [&](const auto& mesh) -> render::MeshId {
         return graphics->uploadModel(mesh);
     });
+
+    Particle particle;
+    resourceManager.addMesh("particle", particle, [&](const auto& mesh) -> render::MeshId {
+        return graphics->uploadModel(mesh);
+    });
+    ParticleInstance particle_instance;
+    particle_instance.meshId = resourceManager.getMesh("particle");
     ModelInstance modelInstance = ModelInstance::createGameObject(
         resourceManager.getTexture(viking_room_path), resourceManager.getMesh(viking_obj_path));
     ModelInstance modelInstance2 = ModelInstance::createGameObject(
@@ -106,8 +127,9 @@ void App::run() {
         ubo2.model = model2.mat4();
         modelInstance2.writeToUBOMapData(ubo2.as_byte_span());
         graphics->draw(modelInstance2);
-        shader_cache->setsetCurrentShader(compute_hash);
-        graphics->dispatchCompute();
+
+        shader_cache->setCurrentShader(particle_vertex_hash, particle_fragment_hash);
+        graphics->draw(particle_instance);
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();

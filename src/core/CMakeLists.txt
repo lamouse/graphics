@@ -10,7 +10,6 @@ set (sources
 add_library(${LIB_CORE_NAME} STATIC ${sources})
 if (MSVC)
     target_compile_options(${LIB_CORE_NAME} PRIVATE
-        /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
         /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data

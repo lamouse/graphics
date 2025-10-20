@@ -21,8 +21,11 @@ class ResourceManager {
         auto getTexture(std::string textureName) -> render::TextureId;
 
         void addMesh(std::string meshName, add_mesh_func func);
+        void addMesh(std::string meshName, const IMeshData&, add_mesh_func func);
+
+
         auto getMesh(std::string meshName) -> render::MeshId;
-        auto getShaderCode(render::ShaderType type)-> std::vector<std::uint32_t>;
+        auto getShaderCode(render::ShaderType type, const std::string& name)-> std::vector<std::uint32_t>;
     private:
         std::unordered_map<std::string, render::TextureId> textures;
         std::unordered_map<std::string, render::MeshId> mesh;

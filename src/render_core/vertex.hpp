@@ -12,8 +12,10 @@
 #include <string>
 namespace render {
     struct VertexBinding {
-        std::uint32_t binding;
-        std::uint32_t stride;
+        std::uint32_t binding{};
+        std::uint32_t stride{};
+        bool is_instance{};
+        std::uint32_t divisor{1};
     };
 
         struct VertexAttribute {

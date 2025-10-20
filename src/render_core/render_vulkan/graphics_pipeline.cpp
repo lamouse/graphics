@@ -1,4 +1,5 @@
 #include "graphics_pipeline.hpp"
+#include "format_to_vk.hpp"
 #include "vulkan_common/device.hpp"
 #include "descriptor_pool.hpp"
 #include "scheduler.hpp"
@@ -211,8 +212,8 @@ struct DefaultSpec {
         static constexpr bool has_images = true;
 };
 
-ConfigureFuncPtr ConfigureFunc(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
-                               const std::array<shader::Info, buffer::NUM_STAGES>& infos) {
+auto ConfigureFunc(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
+                               const std::array<shader::Info, buffer::NUM_STAGES>& infos)->ConfigureFuncPtr {
     return FindSpec<SimpleVertexSpec, SimpleVertexFragmentSpec, SimpleStorageSpec, SimpleImageSpec,
                     DefaultSpec>(modules, infos);
 }
@@ -298,7 +299,13 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 template <typename Spec>
 void GraphicsPipeline::configureImpl(bool is_indexed) {
 
-
+    guest_descriptor_queue_.Acquire();
+    buffer_cache.BindGraphicUniformBuffer();
+    auto [view, sample] = texture_cache.getCurrentTexture();
+    if(view){
+        guest_descriptor_queue_.AddSampledImage(view->Handle(shader::TextureType::Color2D),
+                                            sample->Handle());
+    }
     ConfigureDraw();
 }
 
@@ -368,7 +375,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     if (!vertex_binding_divisors.empty()) {
         // vertex_input_ci.pNext = &input_divisor_ci;
     }
-    auto input_assembly_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    auto input_assembly_topology = static_cast<VkPrimitiveTopology>(PrimitiveTopologyToVK(key_.state.topology));
     const VkPipelineInputAssemblyStateCreateInfo input_assembly_ci{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .pNext = nullptr,

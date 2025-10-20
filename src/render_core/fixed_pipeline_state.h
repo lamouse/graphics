@@ -65,12 +65,12 @@ struct FixedPipelineState {
         };
         std::array<surface::PixelFormat, 8> color_formats;
         surface::PixelFormat depth_format;
+        State state;
+        PrimitiveTopology topology;
         u32 alpha_test_ref;
         u32 point_size;
         int depth_enabled;
         MsaaMode msaa_mode;
-        int xfb_state;
-        State state;
         [[nodiscard]] auto Hash() const noexcept -> size_t;
 
         auto operator==(const FixedPipelineState& rhs) const noexcept -> bool;

@@ -160,7 +160,8 @@ class BufferCache : public BufferCacheInfo {
         auto addIndexBuffer(const void* data, u32 size) -> BufferId;
         void BindIndexBuffer(IndexFormat format, BufferId id);
         void BindVertexBuffers(BufferId id, u32 size);
-        void BindUniformBuffer(std::span<const std::byte> data);
+        void BindGraphicUniformBuffer();
+        void UploadGraphicUniformBuffer(std::span<const std::byte> data);
         void BindStageBuffers(size_t stage);
         [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
 
@@ -197,6 +198,9 @@ class BufferCache : public BufferCacheInfo {
         std::deque<boost::container::small_vector<texture::BufferCopy, 4>> pending_downloads;
 
         std::deque<Async_Buffer> async_buffers_death_ring;
+
+        //当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
+        std::span<const std::byte> graphic_host_buffer;
 
         size_t immediate_buffer_capacity = 0;
         struct LRUItemParams {

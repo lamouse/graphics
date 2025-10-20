@@ -1,8 +1,10 @@
 
 set(SHADER_FILES
-    compute.comp
     model.frag
     model.vert
+    particle.comp
+    particle.frag
+    particle.vert
 )
 
 # 查找 glslc 编译器
@@ -11,7 +13,6 @@ find_program(GLSLC_PROGRAM glslc REQUIRED)
 # 设置输出目录（相对于项目根目录）
 set(SHADER_OUTPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data/shader)
 file(MAKE_DIRECTORY ${SHADER_OUTPUT_DIR})
-
 
 foreach(SHADER_FILE ${SHADER_FILES})
     get_filename_component(SHADER_NAME ${SHADER_FILE} NAME_WE)
@@ -25,5 +26,3 @@ foreach(SHADER_FILE ${SHADER_FILES})
     execute_process(COMMAND ${GLSLC_PROGRAM} ${SHADER_SOURCE_PATH} -o ${SHADER_OUTPUT_PATH})
     message(STATUS "Compiled shader: ${SHADER_FILE} -> ${OUTPUT_NAME}")
 endforeach()
-
-

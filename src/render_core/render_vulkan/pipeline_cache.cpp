@@ -79,11 +79,12 @@ PipelineCache::~PipelineCache() {
 
 }
 
-auto PipelineCache::currentGraphicsPipeline() -> GraphicsPipeline* {
+auto PipelineCache::currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline* {
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Vertex)) =
         shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash;
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Fragment)) =
         shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash;
+        graphics_key.state.topology = topology;
     if (current_pipeline) {
         GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
         if (next) {
@@ -188,7 +189,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     }
 
     mark_loaded(shader_infos);
-    return nullptr;
+    return pipeline;
 
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("{}", exception.what());
@@ -209,7 +210,7 @@ auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline
 
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)
     -> std::unique_ptr<ComputePipeline> {
-    return nullptr;
+    return CreateComputePipeline(key, nullptr, false);
 }
 
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,

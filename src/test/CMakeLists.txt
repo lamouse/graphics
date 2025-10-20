@@ -8,9 +8,8 @@ add_executable(
   common_test.cpp
 )
 target_link_libraries(
-  hello_test PRIVATE GTest::gtest GTest::gtest_main
+  hello_test PRIVATE GTest::gtest GTest::gtest_main glfw absl::strings
 )
-
 if(MINGW)
   target_link_libraries(hello_test PRIVATE "-lstdc++exp")
 endif()

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <tracy/Tracy.hpp>
 
+using IsInstance = bool;
 
 namespace {
 auto buildVertexAttribute(const render::vulkan::Device& device,
@@ -32,8 +33,9 @@ auto buildVertexBinding(std::span<render::VertexBinding> bindings)
         vertex_bindings.push_back(vk::VertexInputBindingDescription2EXT()
                                       .setBinding(binding.binding)
                                       .setStride(binding.stride)
-                                      .setInputRate(vk::VertexInputRate::eVertex)
-                                      .setDivisor(1));
+                                      .setInputRate(binding.is_instance ?  vk::VertexInputRate::eInstance : vk::VertexInputRate::eVertex)
+                                      .setDivisor(binding.divisor));
+
     }
 
     return vertex_bindings;
@@ -110,17 +112,15 @@ void VulkanGraphics::clear() {
 }
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
-
-void VulkanGraphics::dispatchCompute(){
+void VulkanGraphics::dispatchCompute() {
     FlushWork();
     auto* pipeline{pipeline_cache.currentComputePipeline()};
-    if(!pipeline){
+    if (!pipeline) {
         return;
     }
     std::scoped_lock lock{texture_cache.mutex, buffer_cache.mutex};
     pipeline->Configure(scheduler, buffer_cache);
 }
-
 
 #if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
@@ -422,11 +422,15 @@ void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
 auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
     ModelResource resource;
     resource.vertex_size = static_cast<u32>(meshData.getMesh().size() * sizeof(float));
+    ASSERT_MSG(!meshData.getMesh().empty(), "upload empty vertex index");
     resource.vertex_buffer_id =
         buffer_cache.addVertexBuffer(meshData.getMesh().data(), resource.vertex_size);
-    resource.indices_buffer_id =
-        buffer_cache.addIndexBuffer(meshData.getIndices().data(), meshData.getIndices().size());
-    resource.indices_count = meshData.getIndicesSize();
+    resource.vertex_count = meshData.getVertexCount();
+    if (!meshData.getIndices().empty()) {
+        resource.indices_buffer_id =
+            buffer_cache.addIndexBuffer(meshData.getIndices().data(), meshData.getIndices().size());
+        resource.indices_count = meshData.getIndicesSize();
+    }
 
     auto vertexAttribute = meshData.getVertexAttribute();
     resource.vertex_attribute_id =
@@ -446,12 +450,13 @@ auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     current_modelId = instance.getMeshId();
     const auto resource = modelResource[current_modelId];
-    texture_cache.setCurrentTexture(instance.getTextureId(), SamplerPreset::Linear);
-    guest_descriptor_queue.Acquire();
-    buffer_cache.BindUniformBuffer(instance.getUBOData());
-    auto [view, sample] = texture_cache.getCurrentTexture();
-    guest_descriptor_queue.AddSampledImage(view->Handle(shader::TextureType::Color2D),
-                                           sample->Handle());
+    if (instance.getTextureId()) {
+        texture_cache.setCurrentTexture(instance.getTextureId(), SamplerPreset::Linear);
+    }
+    if (!instance.getUBOData().empty()) {
+        buffer_cache.UploadGraphicUniformBuffer(instance.getUBOData());
+    }
+
     texture::FramebufferKey key;
     key.size.width = emu_window->getActiveConfig().extent.width;
     key.size.height = emu_window->getActiveConfig().extent.height;
@@ -460,15 +465,23 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
-    PrepareDraw(true, [resource, this] -> void {
-        IndexFormat index_format{IndexFormat::UnsignedShort};
-        if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
-            index_format = IndexFormat::UnsignedInt;
-        }
+    PrepareDraw(instance.getPrimitiveTopology(), true, [resource, this] -> void {
         buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size);
-        buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
-        scheduler.record([indices_size = resource.indices_count](vk::CommandBuffer cmdbuf) {
-            cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
+        if (resource.indices_buffer_id) {
+            IndexFormat index_format{IndexFormat::UnsignedShort};
+            if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
+                index_format = IndexFormat::UnsignedInt;
+            }
+            buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
+        }
+
+        scheduler.record([indices_size = resource.indices_count,
+                          vertexCount = resource.vertex_count](vk::CommandBuffer cmdbuf) {
+            if (indices_size > 0) {
+                cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
+            } else {
+                cmdbuf.draw(vertexCount, 1, 0, 0);
+            }
         });
     });
 }
@@ -487,9 +500,9 @@ void VulkanGraphics::TickFrame() {
 }
 
 template <typename Func>
-void VulkanGraphics::PrepareDraw(bool is_indexed, Func&& draw_func) {
+void VulkanGraphics::PrepareDraw(PrimitiveTopology topology, bool is_indexed, Func&& draw_func) {
     ZoneScopedN("VulkanGraphics::PrepareDraw()");
-    GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline()};
+    GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline(topology)};
     if (!pipeline) {
         return;
     }

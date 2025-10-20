@@ -111,9 +111,17 @@ void BufferCache<P>::TickFrame() {
 }
 
 template <class P>
-void BufferCache<P>::BindUniformBuffer(std::span<const std::byte> data) {
-    auto map = runtime.BindMappedUniformBuffer(0, 0, data.size());
-    std::memcpy(map.data(), data.data(), data.size());
+void BufferCache<P>::BindGraphicUniformBuffer() {
+    if (graphic_host_buffer.empty()) {
+        return;
+    }
+    auto map = runtime.BindMappedUniformBuffer(0, 0, graphic_host_buffer.size());
+    std::memcpy(map.data(), graphic_host_buffer.data(), graphic_host_buffer.size());
+    graphic_host_buffer = {};
+}
+template <class P>
+void BufferCache<P>::UploadGraphicUniformBuffer(std::span<const std::byte> data) {
+    graphic_host_buffer = data;
 }
 
 template <class P>
@@ -124,19 +132,12 @@ void BufferCache<P>::DoUpdateComputeBuffers() {
 }
 
 template <class P>
-void BufferCache<P>::UpdateComputeUniformBuffers() {
-
-}
+void BufferCache<P>::UpdateComputeUniformBuffers() {}
 
 template <class P>
-void BufferCache<P>::UpdateComputeStorageBuffers() {
-
-}
+void BufferCache<P>::UpdateComputeStorageBuffers() {}
 
 template <class P>
-void BufferCache<P>::UpdateComputeTextureBuffers() {
-
-}
-
+void BufferCache<P>::UpdateComputeTextureBuffers() {}
 
 }  // namespace render::buffer

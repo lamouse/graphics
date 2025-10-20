@@ -19,7 +19,8 @@ class Model : public IMeshData {
 
                 static auto getVertexBinding() -> std::vector<render::VertexBinding> {
                     std::vector<render::VertexBinding> bindings;
-                    bindings.push_back(render::VertexBinding{ .binding = 0, .stride = sizeof(Vertex)});
+                    bindings.push_back(
+                        render::VertexBinding{.binding = 0, .stride = sizeof(Vertex),.is_instance = false, .divisor = 1});
                     return bindings;
                 }
                 static auto getVertexAttribute() -> std::vector<render::VertexAttribute> {
@@ -55,12 +56,15 @@ class Model : public IMeshData {
         // 返回顶点坐标（仅 position），展平为 float 数组
         [[nodiscard]] auto getMesh() const -> std::span<const float> override;
 
+        [[nodiscard]] auto getVertexCount() const -> std::size_t override {return vertices_.size();};
+
         // 返回索引数据（16位或32位）
         [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override;
 
         // 判断是否使用 32 位索引
         [[nodiscard]] auto uses32BitIndices() const -> bool override { return use32BitIndices; }
-        [[nodiscard]] auto getVertexAttribute() const -> std::vector<render::VertexAttribute> override {
+        [[nodiscard]] auto getVertexAttribute() const
+            -> std::vector<render::VertexAttribute> override {
             return Vertex::getVertexAttribute();
         }
         [[nodiscard]] auto getVertexBinding() const -> std::vector<render::VertexBinding> override {
