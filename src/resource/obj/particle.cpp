@@ -9,11 +9,12 @@ Particle::Particle() {
     std::uniform_real_distribution<float> rndDist(0.0F, 1.0F);
 
     particles.resize(PARTICLE_COUNT);
+    const float aspect = 1920.0F / 1080.0F; // 修正为浮点除法
     for (auto& particle : particles) {
-        float r = 0.25F * sqrt(rndDist(randEngine));
+        float r = 0.25F * std::sqrt(rndDist(randEngine));
         float theta = rndDist(randEngine) * 2.0F * std::numbers::pi_v<float>;
-        float x = r * cos(theta) * 1920 / 1080;
-        float y = r * sin(theta);
+        float x = r * std::cos(theta) * aspect;
+        float y = r * std::sin(theta);
         particle.position = glm::vec2(x, y);
         particle.velocity = glm::normalize(glm::vec2(x, y)) * 0.00025F;
         particle.color =

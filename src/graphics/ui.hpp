@@ -10,5 +10,4 @@ namespace graphics::ui {
 void pipeline_state(render::PipelineState& state);
 
 void draw_result(ImTextureID imguiTextureID, float aspectRatio);
-void draw_setting();
 }  // namespace graphics::ui

@@ -1,11 +1,36 @@
 
 set(LIB_NAME system)
 set (sources
-    logger_system.hpp
     logger_system.cpp
+    setting.cpp
 )
 
-add_library(${LIB_NAME} STATIC ${sources})
+set(HEADER_FILES
+    logger_system.hpp      # 头文件
+)
+
+set(MODULE_FILES
+    setting.cppm           # 模块接口文件
+)
+
+
+add_library(${LIB_NAME} STATIC)
+
+# 添加模块文件 (CXX_MODULES) - 这是解决你错误的关键！
+target_sources(${LIB_NAME} PUBLIC
+    FILE_SET CXX_MODULES
+    FILES ${MODULE_FILES}   # 这里传入 setting.cppm
+)
+
+# 添加头文件 (HEADERS) - 可选，主要用于 IDE 显示
+target_sources(${LIB_NAME} PUBLIC
+    FILE_SET HEADERS
+    FILES ${HEADER_FILES}
+)
+
+# 添加普通源文件 (SOURCES)
+target_sources(${LIB_NAME} PRIVATE ${sources})
+
 if (MSVC)
     target_compile_options(${LIB_NAME} PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
@@ -13,6 +38,10 @@ if (MSVC)
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
         /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
+    )
+    target_compile_features(system
+            PUBLIC
+            cxx_std_23
     )
 else()
     target_compile_options(${LIB_NAME} PRIVATE
@@ -27,7 +56,7 @@ endif()
 
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
 include_directories(${CMAKE_BINARY_DIR}/generated)
-target_link_libraries(${LIB_NAME} PRIVATE  spdlog::spdlog imgui utils  absl::strings)
+target_link_libraries(${LIB_NAME} PRIVATE  spdlog::spdlog imgui ui utils  absl::strings)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_NAME}/lib)
 set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)

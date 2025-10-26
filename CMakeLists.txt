@@ -26,9 +26,7 @@ if(CMAKE_C_COMPILER MATCHES "ucrt" OR CMAKE_CXX_COMPILER MATCHES "ucrt")
         endif()
 endif()
 
-
-
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.0)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
 set(EXECUTE_NAME graphics)
@@ -37,6 +35,10 @@ set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 1)
 include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(USE_FASTER_LD "Check if a faster linker is available" ON "NOT WIN32" OFF)
+
+if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
+        message(FATAL_ERROR "This project requires the Ninja generator. Refers to https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html#generator-support")
+endif()
 
 if(NOT MINGW)
         if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
@@ -102,8 +104,8 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
-# need vcpkg end
 
+# need vcpkg end
 add_subdirectory(third-party)
 
 # This function should be passed a list of all files in a target. It will automatically generate
@@ -159,4 +161,3 @@ include(ClangFormat)
 add_subdirectory(shader)
 add_subdirectory(src)
 add_subdirectory(doc)
-

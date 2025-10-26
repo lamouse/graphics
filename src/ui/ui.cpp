@@ -134,6 +134,16 @@ void DrawFloatControl(const std::string& label, float& value, float speed,
     ImGui::PopID();
 }
 
+void HelpMarker(const char* desc) {
+    ImGui::TextDisabled("(?)");
+    if (ImGui::BeginItemTooltip()) {
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0F);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
 namespace graphics {
     namespace ui {
         void begin() {}

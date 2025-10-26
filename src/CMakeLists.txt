@@ -1,5 +1,6 @@
 include_directories(.)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 # CMake seems to only define _DEBUG on Windows
 set_property(DIRECTORY APPEND PROPERTY
     COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
@@ -48,7 +49,7 @@ if(MSVC)
         /GT
 
         # Modules
-        /experimental:module- # Explicitly disable module support due to conflicts with precompiled headers.
+        # /experimental:module- # Explicitly disable module support due to conflicts with precompiled headers.
 
         # External headers diagnostics
         /external:anglebrackets # Treats all headers included by #include <header>, where the header file is enclosed in angle brackets (< >), as external headers
@@ -56,43 +57,41 @@ if(MSVC)
 
         # Warnings
         /W4
-
-
     )
 
     if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-
         add_compile_options(
-              # /WX
-        /we4062 # Enumerator 'identifier' in a switch of enum 'enumeration' is not handled
-        /we4189 # 'identifier': local variable is initialized but not referenced
-        /we4265 # 'class': class has virtual functions, but destructor is not virtual
-        /we4388 # 'expression': signed/unsigned mismatch
-        /we4389 # 'operator': signed/unsigned mismatch
-        /we4456 # Declaration of 'identifier' hides previous local declaration
-        /we4457 # Declaration of 'identifier' hides function parameter
-        /we4458 # Declaration of 'identifier' hides class member
-        /we4459 # Declaration of 'identifier' hides global declaration
-        /we4505 # 'function': unreferenced local function has been removed
-        /we4547 # 'operator': operator before comma has no effect; expected operator with side-effect
-        /we4549 # 'operator1': operator before comma has no effect; did you intend 'operator2'?
-        /we4555 # Expression has no effect; expected expression with side-effect
-        /we4826 # Conversion from 'type1' to 'type2' is sign-extended. This may cause unexpected runtime behavior.
-        /we5038 # data member 'member1' will be initialized after data member 'member2'
-        /we5233 # explicit lambda capture 'identifier' is not used
-        /we5245 # 'function': unreferenced function with internal linkage has been removed
 
-        /wd4100 # 'identifier': unreferenced formal parameter
-        /wd4324 # 'struct_name': structure was padded due to __declspec(align())
-        /wd4201 # nonstandard extension used : nameless struct/union
-        /wd4702 # unreachable code (when used with LTO)
+            # /WX
+            /we4062 # Enumerator 'identifier' in a switch of enum 'enumeration' is not handled
+            /we4189 # 'identifier': local variable is initialized but not referenced
+            /we4265 # 'class': class has virtual functions, but destructor is not virtual
+            /we4388 # 'expression': signed/unsigned mismatch
+            /we4389 # 'operator': signed/unsigned mismatch
+            /we4456 # Declaration of 'identifier' hides previous local declaration
+            /we4457 # Declaration of 'identifier' hides function parameter
+            /we4458 # Declaration of 'identifier' hides class member
+            /we4459 # Declaration of 'identifier' hides global declaration
+            /we4505 # 'function': unreferenced local function has been removed
+            /we4547 # 'operator': operator before comma has no effect; expected operator with side-effect
+            /we4549 # 'operator1': operator before comma has no effect; did you intend 'operator2'?
+            /we4555 # Expression has no effect; expected expression with side-effect
+            /we4826 # Conversion from 'type1' to 'type2' is sign-extended. This may cause unexpected runtime behavior.
+            /we5038 # data member 'member1' will be initialized after data member 'member2'
+            /we5233 # explicit lambda capture 'identifier' is not used
+            /we5245 # 'function': unreferenced function with internal linkage has been removed
+
+            /wd4100 # 'identifier': unreferenced formal parameter
+            /wd4324 # 'struct_name': structure was padded due to __declspec(align())
+            /wd4201 # nonstandard extension used : nameless struct/union
+            /wd4702 # unreachable code (when used with LTO)
         )
     endif()
 
     # /GS- - No stack buffer overflow checks
     add_compile_options("$<$<CONFIG:Release>:/GS->")
 
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG   "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MANIFEST:NO /INCREMENTAL:NO /OPT:REF,ICF" CACHE STRING "" FORCE)
 else()
     add_compile_options(
@@ -108,6 +107,13 @@ else()
         -Wno-unused-parameter
         -Wno-missing-field-initializers
     )
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES GNU) # GCC
+        add_compile_options(
+            -fmodules
+            -fsearch-include-path
+        )
+    endif()
 
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang) # Clang or AppleClang
         add_compile_options(

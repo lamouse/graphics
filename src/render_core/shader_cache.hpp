@@ -5,6 +5,7 @@
 #include <memory>
 #include <span>
 #include <vector>
+#include <limits>
 namespace render {
 enum class ShaderType : u8 {
     Vertex = 0,

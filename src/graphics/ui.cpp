@@ -6,34 +6,6 @@
 #include <format>
 
 namespace {
-constexpr auto MAIN_WINDOW_NAME = "Main Window";
-
-void fps() {
-    ImGuiIO const& io = ImGui::GetIO();
-    (void)io;
-    ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
-    auto main_size = ImGui::GetMainViewport()->Size;
-    bool fps_open = false;
-    ImGui::SetNextWindowBgAlpha(.0f);
-    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always,
-                            ImVec2(1.01f, 0.0f));
-    ImGui::Begin("Window 1", &fps_open,
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
-                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, "FPS: %.1f ", io.Framerate);
-    ImGui::End();
-}
-
-void show_fps() {
-    static bool show_fps = false;
-    ImGui::Checkbox("show fps", &show_fps);
-    if (show_fps) {
-        fps();
-    }
-}
 
 auto calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) -> ImVec2 {
     float targetWidth = availableSize.x;
@@ -48,34 +20,6 @@ auto calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) -> ImVec2
     return ImVec2(targetWidth, targetHeight);
 }
 
-void HelpMarker(const char* desc) {
-    ImGui::TextDisabled("(?)");
-    if (ImGui::BeginItemTooltip()) {
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0F);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
-
-void vsync_setting() {
-    auto canon = settings::enums::EnumMetadata<settings::enums::VSyncMode>::canonicalizations();
-    std::vector<const char*> names;
-    for (auto& key : canon | std::views::keys) {
-        names.push_back(key.c_str());
-    }
-
-    const auto render_vulkan = common::settings::get<settings::RenderVulkan>();
-    const auto mode = render_vulkan.vSyncMode;
-    static int item_current = static_cast<int>(mode);
-    ImGui::Combo("vsync mode", &item_current, names.data(), names.size());
-    const auto vSyncMode = settings::enums::ToEnum<settings::enums::VSyncMode>(names[item_current]);
-    settings::RenderVulkan::setVsyncMode(vSyncMode);
-    ImGui::SameLine();
-    HelpMarker(std::format("frame 同步方式{}",
-                           settings::enums::CanonicalizeEnum<settings::enums::VSyncMode>(mode))
-                   .c_str());
-}
 }  // namespace
 namespace graphics::ui {
 
@@ -115,7 +59,6 @@ void pipeline_state(render::PipelineState& state) {
         ImGui::TreePop();
     }
     if (ImGui::TreeNode("set clear value")) {
-        HelpMarker("clear color");
         static float col1[3] = {state.clearColor.r, state.clearColor.g, state.clearColor.b};
         ImGui::ColorEdit3("clear color", col1);
         state.clearColor.r = col1[0];
@@ -179,19 +122,6 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, text, 1000.0f / io.Framerate, io.Framerate);
     ImGui::PopStyleVar();
     ImGui::End();
-}
-
-void draw_setting() {
-    {
-        // Using the _simplified_ one-liner Combo() api here
-        // See "Combo" section for examples of how to use the more flexible BeginCombo()/EndCombo()
-        // api.
-        // IMGUI_DEMO_MARKER("Widgets/Basic/Combo");
-        ImGui::Begin("系统设置");
-        show_fps();
-        vsync_setting();
-        ImGui::End();
-    }
 }
 
 }  // namespace graphics::ui

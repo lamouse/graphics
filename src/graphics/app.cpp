@@ -1,3 +1,4 @@
+import setting;
 #include "app.hpp"
 
 #include "config/window.h"
@@ -56,9 +57,9 @@ void App::run() {
     auto particle_fragment_hash = shader_cache->addShader(
         resourceManager.getShaderCode(render::ShaderType::Fragment, particle_shader_name),
         render::ShaderType::Fragment);
-    auto particle_compute_hash = shader_cache->addShader(
-        resourceManager.getShaderCode(render::ShaderType::Compute, particle_shader_name),
-        render::ShaderType::Compute);
+    // auto particle_compute_hash = shader_cache->addShader(
+    //     resourceManager.getShaderCode(render::ShaderType::Compute, particle_shader_name),
+    //     render::ShaderType::Compute);
 
     world::World world;
     [[maybe_unused]] bool show_console_logger = false;
@@ -141,10 +142,10 @@ void App::run() {
 #if defined(USE_DEBUG_UI)
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
+            draw_setting();
             graphics::ui::begin();
             graphics::ui::draw_result(imageId, window->getAspectRatio());
             graphics::ui::pipeline_state(pipeline_state);
-            graphics::ui::draw_setting();
             logger.drawUi(show_console_logger);
             world.drawUI();
             modelInstance.drawUI();
