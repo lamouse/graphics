@@ -111,7 +111,6 @@ else()
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU) # GCC
         add_compile_options(
             -fmodules
-            -fsearch-include-path
         )
     endif()
 
