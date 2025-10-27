@@ -141,7 +141,6 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
 }
 
 ImguiCore::~ImguiCore() {
-    device.getLogical().waitIdle();
     ImGui_ImplVulkan_Shutdown();
     window->destroyGUI();
     ImGui::DestroyContext();
