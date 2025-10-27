@@ -49,14 +49,13 @@ void check_vk_result(VkResult err) {
 
 ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
                      scheduler::Scheduler& scheduler_, vk::PhysicalDevice physical,
-                     vk::Instance instance, float scale)
+                     vk::Instance instance)
     : device(device_),
       render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
                                                           vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
       window(window_),
       scheduler(scheduler_) {
-
 
     // Setup Platform/Renderer backends
     window->configGUI();
@@ -107,6 +106,7 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
 }
 
 ImguiCore::~ImguiCore() {
+    device.getLogical().waitIdle();
     ImGui_ImplVulkan_Shutdown();
     window->destroyGUI();
     ImGui::DestroyContext();

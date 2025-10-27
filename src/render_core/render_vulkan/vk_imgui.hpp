@@ -28,7 +28,7 @@ class ImguiCore {
         void draw(const std::function<void()>& draw_func, Frame* frame);
         explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,
                            scheduler::Scheduler& scheduler, vk::PhysicalDevice physical,
-                           vk::Instance instance, float scale = 1.0F);
+                           vk::Instance instance);
         ImguiCore(const ImguiCore&) = delete;
         auto operator=(const ImguiCore&) -> ImguiCore = delete;
         auto operator=(ImguiCore&&) -> ImguiCore = delete;

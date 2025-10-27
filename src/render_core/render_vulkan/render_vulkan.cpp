@@ -55,9 +55,8 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       blit_capture(device, memory_allocator, present_manager, scheduler),
-      imgui(std::make_unique<ImguiCore>(window, device, scheduler, device.getPhysical(), *instance,
-                                        window->getWindowSystemInfo().render_surface_scale)),
-      vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify(), imgui.get()) {
+      imgui(std::make_unique<ImguiCore>(window, device, scheduler, device.getPhysical(), *instance)),
+      vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify()) {
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("Vulkan initialization failed with error: {}", exception.what());
     throw std::runtime_error{fmt::format("Vulkan initialization error {}", exception.what())};

@@ -46,11 +46,10 @@ namespace render::vulkan {
 
 VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                MemoryAllocator& memory_allocator_, scheduler::Scheduler& scheduler_,
-                               ShaderNotify& shader_notify_, ImguiCore* imgui_)
+                               ShaderNotify& shader_notify_)
     : device(device_),
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
-      imgui(imgui_),
       staging_pool(device, memory_allocator, scheduler),
       descriptor_pool(device, scheduler),
       guest_descriptor_queue(device, scheduler),

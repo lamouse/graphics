@@ -33,8 +33,7 @@ class VulkanGraphics : public render::Graphic {
     public:
         explicit VulkanGraphics(core::frontend::BaseWindow* emu_window_, const Device& device_,
                                 MemoryAllocator& memory_allocator_,
-                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_,
-                                ImguiCore* imgui);
+                                scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_);
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
@@ -92,7 +91,6 @@ class VulkanGraphics : public render::Graphic {
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;
-        ImguiCore* imgui;
         Sampler sampler;
         StagingBufferPool staging_pool;
         resource::DescriptorPool descriptor_pool;
