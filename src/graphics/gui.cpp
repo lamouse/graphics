@@ -95,11 +95,7 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
     // 在 ImGui 窗口中显示 Vulkan 渲染结果
-    static bool first_time = true;
-    if (first_time) {
-        ImGui::SetNextWindowDockID(0x00000002, ImGuiCond_Always);
-        first_time = false;
-    }
+
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("绘制结果", nullptr, window_flags);
     // 获取当前 ImGui 窗口的尺寸
@@ -109,16 +105,8 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     // 计算图像显示位置，使其居中
     ImVec2 imagePos = ImGui::GetCursorPos();
     ImGui::SetCursorPos(imagePos);
-    ImGui::Image(imguiTextureID, windowSize);
-    // 计算文本的宽度
-    const auto* text = "average %.3f ms/frame (%.1f FPS)";
-    const ImVec2 textSize = ImGui::CalcTextSize(text);
-    // 设置文本绘制位置为右上角
-    const float textPosX = windowSize.x - textSize.x - 20;  // 10 是右边距
-    const float textPosY = textSize.y + 10;                 // 20 是上边距
-    // // 设置文本绘制位置为右上角
-    ImGui::SetCursorPos(ImVec2(textPosX, textPosY));
-    ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, text, 1000.0f / io.Framerate, io.Framerate);
+    ImGui::Image(imguiTextureID, imageSize);
+
     ImGui::PopStyleVar();
     ImGui::End();
 }

@@ -96,6 +96,7 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     };
     newFrame();
     draw_func();
+    ImGui::ShowMetricsWindow();
     endFrame();
     scheduler.record(
         [renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
