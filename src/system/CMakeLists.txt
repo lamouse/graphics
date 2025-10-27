@@ -7,6 +7,7 @@ set (sources
 
 set(HEADER_FILES
     logger_system.hpp      # 头文件
+    setting.hpp
 )
 
 set(MODULE_FILES
@@ -17,10 +18,10 @@ set(MODULE_FILES
 add_library(${LIB_NAME} STATIC)
 
 # 添加模块文件 (CXX_MODULES) - 这是解决你错误的关键！
-target_sources(${LIB_NAME} PUBLIC
-    FILE_SET CXX_MODULES
-    FILES ${MODULE_FILES}   # 这里传入 setting.cppm
-)
+# target_sources(${LIB_NAME} PUBLIC
+#     FILE_SET CXX_MODULES
+#     FILES ${MODULE_FILES}   # 这里传入 setting.cppm
+# )
 
 # 添加头文件 (HEADERS) - 可选，主要用于 IDE 显示
 target_sources(${LIB_NAME} PUBLIC
@@ -39,10 +40,10 @@ if (MSVC)
         /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
-    target_compile_features(system
-            PUBLIC
-            cxx_std_23
-    )
+    # target_compile_features(system
+    #         PUBLIC
+    #         cxx_std_23
+    # )
 else()
     target_compile_options(${LIB_NAME} PRIVATE
         -Werror=conversion

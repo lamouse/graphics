@@ -108,12 +108,6 @@ else()
         -Wno-missing-field-initializers
     )
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES GNU) # GCC
-        add_compile_options(
-            -fmodules
-        )
-    endif()
-
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang) # Clang or AppleClang
         add_compile_options(
             -Wno-braced-scalar-init

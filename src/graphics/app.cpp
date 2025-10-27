@@ -1,4 +1,3 @@
-import setting;
 #include "app.hpp"
 
 #include "config/window.h"
@@ -6,6 +5,7 @@ import setting;
 #include "resource/particle_instance.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
+#include "system/setting.hpp"
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
@@ -143,13 +143,13 @@ void App::run() {
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
             draw_setting();
-            graphics::ui::begin();
-            graphics::ui::draw_result(imageId, window->getAspectRatio());
-            graphics::ui::pipeline_state(pipeline_state);
+            ui::begin();
+            ui::draw_result(imageId, window->getAspectRatio());
+            ui::pipeline_state(pipeline_state);
             logger.drawUi(show_console_logger);
             world.drawUI();
             modelInstance.drawUI();
-            graphics::ui::end();
+            ui::end();
         });
 #endif
         render_base->composite(std::span{&frames, 1});

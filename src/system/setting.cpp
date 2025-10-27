@@ -1,4 +1,5 @@
-module;
+// module;
+#include "setting.hpp"
 #include "common/settings.hpp"
 #include "ui/ui.hpp"
 #include <imgui.h>
@@ -6,7 +7,7 @@ module;
 #include <ranges>
 #include <vector>
 
-module setting;
+// module setting;
 namespace  {
 
 void vsync_setting() {
