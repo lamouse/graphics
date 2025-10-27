@@ -139,7 +139,6 @@ void App::run() {
         } else {
             window->setWindowTitle("graphics");
         }
-#if defined(USE_DEBUG_UI)
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
             draw_setting();
@@ -151,13 +150,12 @@ void App::run() {
             modelInstance.drawUI();
             ui::end();
         });
-#endif
         render_base->composite(std::span{&frames, 1});
         graphics->clean();
     }
 }
 
-App::App() : logger() {
+App::App(){
     const int width = 1920;
     const int height = 1080;
     const char* title = "graphic engine";
@@ -171,6 +169,6 @@ App::App() : logger() {
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }
 
-App::~App() {};
+App::~App() = default;
 
 }  // namespace graphics

@@ -2,9 +2,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 #include "SDL_common.hpp"
-#if defined(USE_DEBUG_UI)
 #include "imgui_impl_sdl3.h"
-#endif
 namespace graphics {
 SDLWindow::SDLWindow(int width, int height, std::string_view title) {
     core::frontend::BaseWindow::WindowConfig conf;
@@ -78,27 +76,13 @@ auto SDLWindow::shouldClose() const -> bool { return should_close_; }
 void SDLWindow::setWindowTitle(std::string_view title) {
     SDL_SetWindowTitle(window_, title.data());
 }
-void SDLWindow::configGUI() {
-#if defined(USE_DEBUG_UI)
-    ImGui_ImplSDL3_InitForVulkan(window_);
-#endif
-}
-void SDLWindow::destroyGUI() {
-#if defined(USE_DEBUG_UI)
-    ImGui_ImplSDL3_Shutdown();
-#endif
-}
-void SDLWindow::newFrame() {
-#if defined(USE_DEBUG_UI)
-    ImGui_ImplSDL3_NewFrame();
-#endif
-}
+void SDLWindow::configGUI() { ImGui_ImplSDL3_InitForVulkan(window_); }
+void SDLWindow::destroyGUI() { ImGui_ImplSDL3_Shutdown(); }
+void SDLWindow::newFrame() { ImGui_ImplSDL3_NewFrame(); }
 void SDLWindow::pullEvents() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-#if defined(USE_DEBUG_UI)
         ImGui_ImplSDL3_ProcessEvent(&e);
-#endif
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {
             should_close_ = true;

@@ -16,7 +16,6 @@ set(MODULE_FILES
 
 add_library(${LIB_NAME} STATIC)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    #-DUSE_DEBUG_UI 用来显示imgui debug窗口
     target_compile_definitions(${LIB_NAME} PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 else()
     target_compile_definitions(${LIB_NAME} PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)

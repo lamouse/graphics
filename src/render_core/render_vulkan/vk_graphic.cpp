@@ -122,7 +122,6 @@ void VulkanGraphics::dispatchCompute() {
     pipeline->Configure(scheduler, buffer_cache);
 }
 
-#if defined(USE_DEBUG_UI)
 auto VulkanGraphics::getDrawImage() -> ImTextureID {
     // 将 Vulkan 纹理绑定到 ImGui
     const auto& image_view = texture_cache.TryFindFramebufferImageView();
@@ -159,10 +158,6 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
     return imguiTextureID_;
     return 0;
 }
-
-#else
-auto VulkanGraphics::getDrawImage() -> ImTextureID { return 0; }
-#endif
 
 void VulkanGraphics::UpdateDynamicStates() {
     UpdateViewportsState();
@@ -414,9 +409,7 @@ void VulkanGraphics::UpdateLineWidth() {
 }
 
 void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
-#if defined(USE_DEBUG_UI)
     imgui->draw(cmd_buf);
-#endif
 }
 
 auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
