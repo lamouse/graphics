@@ -13,7 +13,9 @@ namespace settings::enums {
 template <typename T>
 struct EnumMetadata {
         static std::vector<std::pair<std::string, T>> canonicalizations();
-        static uint32_t index();
+        static uint32_t Index();
+        static constexpr T GetFirst();
+        static constexpr T GetLast();
 };
 
 #define PAIR_45(N, X, ...) {#X, N::X} __VA_OPT__(, PAIR_46(N, __VA_ARGS__))
@@ -63,6 +65,8 @@ struct EnumMetadata {
 #define PAIR_1(N, X, ...) {#X, N::X} __VA_OPT__(, PAIR_2(N, __VA_ARGS__))
 #define PAIR(N, X, ...) {#X, N::X} __VA_OPT__(, PAIR_1(N, __VA_ARGS__))
 
+#define PP_HEAD(A, ...) A
+
 #define ENUM(NAME, ...)                                                                        \
     enum class NAME : uint32_t { __VA_ARGS__ };                                                \
     template <>                                                                                \
@@ -70,8 +74,18 @@ struct EnumMetadata {
         return {PAIR(NAME, __VA_ARGS__)};                                                      \
     }                                                                                          \
     template <>                                                                                \
-    inline uint32_t EnumMetadata<NAME>::index() {                                              \
+    inline uint32_t EnumMetadata<NAME>::Index() {                                              \
         return __COUNTER__;                                                                    \
+    }                                                                                          \
+    template <>                                                                                \
+    inline constexpr NAME EnumMetadata<NAME>::GetFirst() {                                     \
+        return NAME::PP_HEAD(__VA_ARGS__);                                                     \
+    }                                                                                          \
+    template <>                                                                                \
+    inline constexpr NAME EnumMetadata<NAME>::GetLast() {                                      \
+        return (std::vector<std::pair<std::string_view, NAME>>{PAIR(NAME, __VA_ARGS__)})       \
+            .back()                                                                            \
+            .second;                                                                           \
     }
 
 ENUM(VSyncMode, Immediate, Mailbox, Fifo, FifoRelaxed);
@@ -82,8 +96,10 @@ ENUM(ScalingFilter, NearestNeighbor, Bilinear, Bicubic, Gaussian, ScaleForce, Fs
 ENUM(VramUsageMode, Conservative, Aggressive);
 ENUM(ShaderBackend, Glsl, Glasm, SpirV);
 ENUM(AspectRatio, R16_9, R4_3, R21_9, R16_10, R32_9, Stretch);
+ENUM(LogLevel, debug, info, warn, trace, error, critical, off);
+
 template <typename Type>
-inline std::string CanonicalizeEnum(Type id) {
+inline auto CanonicalizeEnum(Type id) -> std::string {
     const auto group = EnumMetadata<Type>::canonicalizations();
     for (auto& [name, value] : group) {
         if (value == id) {

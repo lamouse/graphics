@@ -1,6 +1,7 @@
 #pragma once
 #include "common_settings.hpp"
 #include "settings_enums.hpp"
+#include "common/settings_setting.hpp"
 #undef max
 #undef min
 namespace settings {
@@ -18,9 +19,7 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         bool async_presentation = false;
         bool render_debug = true;
         bool use_pipeline_cache = true;
-        enums::VSyncMode vSyncMode = enums::VSyncMode::Mailbox;
         enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
-        static void setVsyncMode(enums::VSyncMode vSyncMode) { instance_.vSyncMode = vSyncMode; }
         static auto get() { return instance_; }
 
     private:
@@ -41,29 +40,35 @@ class Graphics : public common::settings::BaseSetting<Graphics> {
         static auto get() { return Graphics{}; }
 };
 
-struct ResolutionScalingInfo {
-        uint32_t up_scale{1};
-        uint32_t down_shift{0};
-        float up_factor{1.0f};
-        float down_factor{1.0f};
-        bool active{};
-        bool downscale{};
+auto TranslateCategory(Category category) -> const char*;
 
-        std::int32_t ScaleUp(std::int32_t value) const {
-            if (value == 0) {
-                return 0;
-            }
-            return std::max((value * static_cast<std::int32_t>(up_scale)) >>
-                                static_cast<std::int32_t>(down_shift),
-                            1);
-        }
+#define SETTING(TYPE, RANGED) extern template class Setting<TYPE, RANGED>
 
-        auto ScaleUp(uint32_t value) const -> uint32_t {
-            if (value == 0U) {
-                return 0U;
-            }
-            return std::max((value * up_scale) >> down_shift, 1U);
-        }
-        static auto get() { return ResolutionScalingInfo{}; }
+SETTING(enums::VSyncMode, true);
+SETTING(enums::LogLevel, true);
+SETTING(bool, false);
+
+#undef SETTING
+
+struct Values {
+    Linkage linkage;
+    SwitchableSetting<enums::VSyncMode, true> vsync_mode{linkage,
+                                                         enums::VSyncMode::Fifo,
+                                                         "use_vsync",
+                                                         Category::render,
+                                                         Specialization::RuntimeList,
+                                                         true,
+                                                         true};
+    SwitchableSetting<enums::LogLevel, true> log_level{linkage,
+                                                       enums::LogLevel::info,
+                                                       "",
+                                                       Category::log,
+                                                       Specialization::RuntimeList,
+                                                       true,
+                                                       true};
+    Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
+    Setting<bool, false> log_file{linkage, true, "file", Category::log};
 };
-}  // namespace settings
+
+extern Values values;
+} // namespace settings

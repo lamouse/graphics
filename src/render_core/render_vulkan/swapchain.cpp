@@ -46,10 +46,10 @@ auto chooseSwapPresentMode(bool has_imm, bool has_mailbox, const bool has_fifo_r
     -> vk::PresentModeKHR {
     // Mailbox doesn't lock the application like FIFO (vsync)
     // FIFO present mode locks the framerate to the monitor's refresh rate
-    settings::enums::VSyncMode setting = [has_imm, has_mailbox]() {
+    settings::enums::VSyncMode setting = [has_imm, has_mailbox]() -> settings::enums::VSyncMode {
         // Choose Mailbox or Immediate if unlocked and those modes are supported
 
-        switch (const auto mode = common::settings::get<settings::RenderVulkan>().vSyncMode) {
+        switch (const auto mode = settings::values.vsync_mode.GetValue()) {
             case settings::enums::VSyncMode::Fifo:
             case settings::enums::VSyncMode::FifoRelaxed:
                 if (has_mailbox) {
@@ -107,7 +107,6 @@ Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Sc
 
 /// Creates (or recreates) the swapchain with a given size.
 void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) {
-    spdlog::info("创建 swapchain w:{}, h:{}", width, height);
     is_outdated_ = false;
     is_suboptimal_ = false;
     width_ = width;
@@ -119,11 +118,14 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
     if (capabilities.maxImageExtent.width == 0 || capabilities.maxImageExtent.height == 0) {
         return;
     }
+    device_.getLogical().waitIdle();
     destroy();
     createSwapchain(capabilities);
     createSemaphores();
     resource_ticks_.clear();
     resource_ticks_.resize(image_count_);
+    spdlog::info("创建 swapchain w:{}, h:{}, present mode {}", width, height,
+                 vk::to_string(present_mode_));
 }
 
 auto Swapchain::acquireNextImage() -> bool {

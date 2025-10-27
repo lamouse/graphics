@@ -1,6 +1,5 @@
 set(LIB_COMMON_NAME common)
 include(${CMAKE_CURRENT_SOURCE_DIR}/common.cmake)
-
 add_library(${LIB_COMMON_NAME} STATIC ${sources})
 
 if(MSVC)

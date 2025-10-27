@@ -161,7 +161,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
                                            pipeline::PipelineStatistics* statistics,
                                            bool build_in_parallel)
     -> std::unique_ptr<GraphicsPipeline> try {
-    SPDLOG_INFO("0x{:016x}", key.Hash());
+    SPDLOG_INFO("create pipeline 0x{:016x}", key.Hash());
     std::array<ShaderModule, 5> modules;
 
     modules[0] = utils::buildShader(

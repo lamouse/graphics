@@ -1091,15 +1091,13 @@ void Device::collectPhysicalMemoryInfo() {
         const uint64_t reserve_memory = std::min<uint64_t>(device_access_memory_ / 8, 1_GiB);
         device_access_memory_ -= reserve_memory;
         auto renderVulkan = common::settings::get<settings::RenderVulkan>();
-        auto resolutionScalingInfo = common::settings::get<settings::ResolutionScalingInfo>();
         if (renderVulkan.v_ram_usage_mode != settings::enums::VramUsageMode::Aggressive) {
             // Account for resolution scaling in memory limits
             const size_t normal_memory = 6_GiB;
-            const size_t scaler_memory = 1_GiB * resolutionScalingInfo.ScaleUp(1);
+            const size_t scaler_memory = 1_GiB;
             device_access_memory_ =
                 std::min<uint64_t>(device_access_memory_, normal_memory + scaler_memory);
         }
-
         return;
     }
     const auto available_memory =

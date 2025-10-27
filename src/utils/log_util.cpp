@@ -14,4 +14,25 @@ auto get_log_level_from_string(const std::string& level) -> spdlog::level::level
 
     throw std::invalid_argument("Invalid log level: " + level);
 }
+spdlog::level::level_enum get_log_level(settings::enums::LogLevel level) {
+    using Level = settings::enums::LogLevel;
+    switch (level) {
+        case Level::debug:
+            return spdlog::level::debug;
+        case Level::info:
+            return spdlog::level::info;
+        case Level::warn:
+            return spdlog::level::warn;
+        case Level::trace:
+            return spdlog::level::trace;
+        case Level::error:
+            return spdlog::level::err;
+        case Level::critical:
+            return spdlog::level::critical;
+        case Level::off:
+            return spdlog::level::off;
+        default:
+            throw std::invalid_argument("Invalid log level: ");
+    }
+}
 }  // namespace utils

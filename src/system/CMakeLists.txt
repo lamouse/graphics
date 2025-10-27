@@ -2,12 +2,12 @@
 set(LIB_NAME system)
 set (sources
     logger_system.cpp
-    setting.cpp
+    setting_ui.cpp
 )
 
 set(HEADER_FILES
     logger_system.hpp      # 头文件
-    setting.hpp
+    setting_ui.hpp
 )
 
 set(MODULE_FILES

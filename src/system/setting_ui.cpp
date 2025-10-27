@@ -1,5 +1,5 @@
 // module;
-#include "setting.hpp"
+#include "setting_ui.hpp"
 #include "common/settings.hpp"
 #include "ui/ui.hpp"
 #include <imgui.h>
@@ -17,16 +17,24 @@ void vsync_setting() {
         names.push_back(key.c_str());
     }
 
-    const auto render_vulkan = common::settings::get<settings::RenderVulkan>();
-    const auto mode = render_vulkan.vSyncMode;
-    static int item_current = static_cast<int>(mode);
+    static int item_current = static_cast<int>(settings::values.vsync_mode.GetValue());
     ImGui::Combo("vsync mode", &item_current, names.data(), static_cast<int>(names.size()));
     const auto vSyncMode = settings::enums::ToEnum<settings::enums::VSyncMode>(names[item_current]);
-    settings::RenderVulkan::setVsyncMode(vSyncMode);
+    settings::values.vsync_mode.SetValue(vSyncMode);
+}
+
+void log_settings() {
+    auto canon = settings::enums::EnumMetadata<settings::enums::LogLevel>::canonicalizations();
+    std::vector<const char*> names;
+    for (auto& key : canon | std::views::keys) {
+        names.push_back(key.c_str());
+    }
+
+    static int item_current = static_cast<int>(settings::values.log_level.GetValue());
+    ImGui::Combo("log level", &item_current, names.data(), static_cast<int>(names.size()));
+    const auto level = settings::enums::ToEnum<settings::enums::LogLevel>(names[item_current]);
+    settings::values.log_level.SetValue(level);
     ImGui::SameLine();
-    HelpMarker(std::format("frame 同步方式{}",
-                           settings::enums::CanonicalizeEnum<settings::enums::VSyncMode>(mode))
-                   .c_str());
 }
 
 void fps() {
@@ -60,6 +68,7 @@ void draw_setting() {
     ImGui::Begin("系统设置");
     show_fps();
     vsync_setting();
+    log_settings();
     ImGui::End();
 }
 }  // namespace graphics

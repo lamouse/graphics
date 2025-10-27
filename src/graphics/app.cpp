@@ -5,7 +5,7 @@
 #include "resource/particle_instance.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
-#include "system/setting.hpp"
+#include "system/setting_ui.hpp"
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/render_vulkan.hpp"
@@ -157,7 +157,7 @@ void App::run() {
     }
 }
 
-App::App(const g::Config& config) : logger(config) {
+App::App(const g::Config& config) : logger() {
     auto [width, height, title] = config.getConfig<config::window::Window>();
 
 #if defined(USE_GLFW)

@@ -1,4 +1,4 @@
-set (sources
+set(sources
     alignment.h
     alignment.hpp
     assert.hpp
@@ -18,6 +18,9 @@ set (sources
     polyfill_thread.hpp
     scope_exit.h
     scratch_buffer.h
+    settings_common.hpp
+    settings_common.cpp
+    settings_setting.hpp
     settings_enums.hpp
     settings.hpp
     settings.cpp

@@ -75,7 +75,7 @@ class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
 using ImGuiLogSink_mt = ImGuiLogSink<std::mutex>;
 class LoggerSystem {
     public:
-        explicit LoggerSystem(const g::Config& config);
+        explicit LoggerSystem();
         CLASS_NON_COPYABLE(LoggerSystem);
         CLASS_DEFAULT_MOVEABLE(LoggerSystem);
         ~LoggerSystem() = default;
