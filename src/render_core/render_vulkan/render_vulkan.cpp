@@ -51,7 +51,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       blit_capture(device, memory_allocator, present_manager, scheduler),
-      imgui(std::make_unique<ImguiCore>(window, device, device.getPhysical(), *instance,
+      imgui(std::make_unique<ImguiCore>(window, device, scheduler, device.getPhysical(), *instance,
                                         window->getWindowSystemInfo().render_surface_scale)),
       vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify(), imgui.get()) {
 } catch (const std::exception& exception) {
@@ -76,19 +76,11 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     }
     RenderScreenshot(frame_buffers);
     Frame* frame = present_manager.getRenderFrame();
-    imgui->newFrame();
+
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
-    if (imgui_ui) {
-        imgui_ui();
-    } else {
-        imgui->imgui_predraw();
-    }
-    {
-        std::scoped_lock submit_lock{scheduler.submit_mutex_};
-        imgui->endFrame();
-    }
+    imgui->draw(imgui_ui, frame);
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);
     vulkan_graphics.TickFrame();

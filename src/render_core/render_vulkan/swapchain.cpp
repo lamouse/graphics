@@ -118,7 +118,6 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
     if (capabilities.maxImageExtent.width == 0 || capabilities.maxImageExtent.height == 0) {
         return;
     }
-    device_.getLogical().waitIdle();
     destroy();
     createSwapchain(capabilities);
     createSemaphores();
@@ -232,6 +231,7 @@ void Swapchain::init_sync_mode() {
 }
 
 void Swapchain::destroy() {
+    device_.getLogical().waitIdle();
     frame_index_ = 0;
     present_semaphores_.clear();
     swapchain_.reset();

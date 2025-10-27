@@ -128,7 +128,6 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                                       descriptor_sets[i], {});
             cmdbuf.draw(4, 1, 0, 0);
         }
-        rasterizer.drawImgui(cmdbuf);
         cmdbuf.endRenderPass();
     });
 }

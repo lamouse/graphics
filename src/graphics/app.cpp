@@ -142,13 +142,11 @@ void App::run() {
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
             draw_setting();
-            ui::begin();
             ui::draw_result(imageId, window->getAspectRatio());
             ui::pipeline_state(pipeline_state);
             logger.drawUi(show_console_logger);
             world.drawUI();
             modelInstance.drawUI();
-            ui::end();
         });
         render_base->composite(std::span{&frames, 1});
         graphics->clean();

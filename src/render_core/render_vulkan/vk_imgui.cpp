@@ -9,6 +9,8 @@
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 #include "present/vulkan_utils.hpp"
+#include "present_manager.hpp"
+#include "scheduler.hpp"
 
 #include <vulkan/vk_enum_string_helper.h>
 
@@ -45,12 +47,15 @@ void check_vk_result(VkResult err) {
 }
 }  // namespace
 
-ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device,
-                     vk::PhysicalDevice physical, vk::Instance instance, float scale)
-    : render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
+ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
+                     scheduler::Scheduler& scheduler_, vk::PhysicalDevice physical,
+                     vk::Instance instance, float scale)
+    : device(device_),
+      render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
                                                           vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
-      window(window_) {
+      window(window_),
+      scheduler(scheduler_) {
     // 这里使用了imgui的一个分支docking
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -99,10 +104,12 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device,
     init_info.CheckVkResultFn = check_vk_result;
     // init_info.UseDynamicRendering = true;
     init_info.RenderPass = *render_pass;
-    ImGui_ImplVulkan_LoadFunctions(0,    [](const char* name, void* userData) -> PFN_vkVoidFunction {
-        return vk::Instance(static_cast<VkInstance>(userData)).getProcAddr(name);
-    },
-    instance);
+    ImGui_ImplVulkan_LoadFunctions(
+        0,
+        [](const char* name, void* userData) -> PFN_vkVoidFunction {
+            return vk::Instance(static_cast<VkInstance>(userData)).getProcAddr(name);
+        },
+        instance);
     ImGui_ImplVulkan_Init(&init_info);
     ImFontConfig fontConfig;
     fontConfig.OversampleH = 2;  // 水平方向抗锯齿
@@ -115,20 +122,26 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device,
     io.Fonts->AddFontFromFileTTF("fronts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
 }
 
-void ImguiCore::imgui_predraw() {
-    {
-        {
-            bool show = false;
-            ImGui::ShowDemoWindow(&show);
-        }
-    }
-    ImGui::Render();
-}
-void ImguiCore::draw(const vk::CommandBuffer& commandBuffer) {
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
+    const vk::Framebuffer host_framebuffer{*frame->framebuffer};
+    const vk::RenderPass renderPass(*render_pass);
+    const vk::Extent2D extent{
+        frame->width,
+        frame->height,
+    };
+    newFrame();
+    draw_func();
+    endFrame();
+    scheduler.record(
+        [draw_func, renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
+            present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
+            cmdbuf.endRenderPass();
+        });
 }
 
 ImguiCore::~ImguiCore() {
+    device.getLogical().waitIdle();
     ImGui_ImplVulkan_Shutdown();
     window->destroyGUI();
     ImGui::DestroyContext();
@@ -140,11 +153,12 @@ void ImguiCore::newFrame() {
     ImGui::NewFrame();
 }
 
-//NOLINTNEXTLINE
+// NOLINTNEXTLINE
 void ImguiCore::endFrame() {
+    ImGui::Render();
     ImGuiIO const& io = ImGui::GetIO();
     (void)io;
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {//NOLINT
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {  // NOLINT
         ImGui::UpdatePlatformWindows();
         ImGui::RenderPlatformWindowsDefault();
     }

@@ -408,10 +408,6 @@ void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
-void VulkanGraphics::drawImgui(vk::CommandBuffer cmd_buf) {
-    imgui->draw(cmd_buf);
-}
-
 auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
     ModelResource resource;
     resource.vertex_size = static_cast<u32>(meshData.getMesh().size() * sizeof(float));

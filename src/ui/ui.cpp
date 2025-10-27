@@ -145,8 +145,5 @@ void HelpMarker(const char* desc) {
 }
 
 namespace graphics {
-    namespace ui {
-        void begin() {}
-        void end() { ImGui::Render(); }
-    }
+
 }  // namespace graphics

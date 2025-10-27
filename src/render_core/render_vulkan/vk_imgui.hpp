@@ -7,25 +7,33 @@
 #pragma once
 #include "render_core/vulkan_common/device.hpp"
 #include "core/frontend/window.hpp"
+#include <functional>
 namespace render::vulkan {
+struct Frame;
+namespace scheduler {
+class Scheduler;
+}
 class ImguiCore {
     private:
+        const Device& device;
+
         RenderPass render_pass;
-        void init_debug_info();
         VulkanDescriptorPool descriptorPool;
         core::frontend::BaseWindow* window;
+        scheduler::Scheduler& scheduler;
+        void newFrame();
+        void endFrame();
 
     public:
-        void draw(const vk::CommandBuffer& commandBuffer);
-        void imgui_predraw();
+        void draw(const std::function<void()>& draw_func, Frame* frame);
         explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,
-                           vk::PhysicalDevice physical, vk::Instance instance, float scale = 1.0F);
+                           scheduler::Scheduler& scheduler, vk::PhysicalDevice physical,
+                           vk::Instance instance, float scale = 1.0F);
         ImguiCore(const ImguiCore&) = delete;
         auto operator=(const ImguiCore&) -> ImguiCore = delete;
         auto operator=(ImguiCore&&) -> ImguiCore = delete;
         ImguiCore(ImguiCore&&) = delete;
-        void newFrame();
-        void endFrame();
+
         ~ImguiCore();
 };
 
