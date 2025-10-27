@@ -4,8 +4,9 @@
 #include <mutex>
 #include <deque>
 #include <imgui.h>
+#include <spdlog/async_logger.h>
+
 #include "absl/strings/match.h"
-#include "resource/config.hpp"
 #include "common/common_funcs.hpp"
 
 namespace sys {
@@ -82,6 +83,8 @@ class LoggerSystem {
         void drawUi(bool show = false);
 
     private:
+        spdlog::level::level_enum log_level_ = spdlog::level::info;
         std::shared_ptr<ImGuiLogSink_mt> imgui_sink;
+        std::shared_ptr<spdlog::async_logger> logger_;
 };
 }  // namespace sys

@@ -157,8 +157,10 @@ void App::run() {
     }
 }
 
-App::App(const g::Config& config) : logger() {
-    auto [width, height, title] = config.getConfig<config::window::Window>();
+App::App() : logger() {
+    const int width = 1920;
+    const int height = 1080;
+    const char* title = "graphic engine";
 
 #if defined(USE_GLFW)
     window = std::make_unique<ScreenWindow>(width, height, title);

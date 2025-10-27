@@ -2,11 +2,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(PROGRAM_NAME "graphics")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
-aux_source_directory(. MAIN_SRC)
-aux_source_directory(${CMAKE_BINARY_DIR}/generated/config GENERATED_SRC)
-set(SRC ${sources} ${GENERATED_SRC})
 
-add_executable(${PROGRAM_NAME} ${SRC})
+add_executable(${PROGRAM_NAME} ${sources})
 
 target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core resource)
 target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)

@@ -3,14 +3,13 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/async.h>
-#include "config/log.h"
 #include "utils/log_util.hpp"
 #include "common/settings.hpp"
 #include <memory>
 namespace sys {
 
 LoggerSystem::LoggerSystem() {
-    const auto level = utils::get_log_level(settings::values.log_level.GetValue());
+    log_level_ = utils::get_log_level(settings::values.log_level.GetValue());
     const char* log_patten = "%^[%Y-%m-%d %H:%M:%S.%e] [%l] [thread %t] (%s:%# %!): %v%$";
     const char* file_patten = "[%Y-%m-%d %H:%M:%S.%e] [%l] : %v";
     // 初始化线程池
@@ -22,7 +21,7 @@ LoggerSystem::LoggerSystem() {
     if (settings::values.log_console.GetValue()) {
         // 创建控制台接收器
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        console_sink->set_level(level);
+        console_sink->set_level(log_level_);
         console_sink->set_pattern(log_patten);
         sinks.push_back(console_sink);
     }
@@ -30,24 +29,28 @@ LoggerSystem::LoggerSystem() {
         // 创建文件接收器
         auto file_sink =
             std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/graphics.log", true);
-        file_sink->set_level(level);
+        file_sink->set_level(log_level_);
         file_sink->set_pattern(file_patten);
         sinks.push_back(file_sink);
     }
     imgui_sink = std::make_shared<ImGuiLogSink_mt>();
     sinks.push_back(imgui_sink);
-    auto logger = std::make_shared<spdlog::async_logger>("multi_sink", sinks.begin(), sinks.end(),
-                                                         spdlog::thread_pool(),
-                                                         spdlog::async_overflow_policy::block);
+    logger_ = std::make_shared<spdlog::async_logger>("multi_sink", sinks.begin(), sinks.end(),
+                                                     spdlog::thread_pool(),
+                                                     spdlog::async_overflow_policy::block);
 
     // 设置默认日志器
-    spdlog::set_default_logger(logger);
+    spdlog::set_default_logger(logger_);
 }
 
 void LoggerSystem::drawUi(bool show) {
     if (show) {
         imgui_sink->draw("Console");
     }
+    const auto level = utils::get_log_level(settings::values.log_level.GetValue());
+    if (log_level_ != level) {
+        log_level_ = level;
+        logger_->set_level(log_level_);
+    }
 }
-
-}  // namespace sys
+} // namespace sys

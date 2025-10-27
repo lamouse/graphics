@@ -4,7 +4,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # CMake seems to only define _DEBUG on Windows
 set_property(DIRECTORY APPEND PROPERTY
     COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
-
+if(WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+if(LINUX)
+    add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
+endif()
 if(MSVC)
     # set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING "" FORCE)
 

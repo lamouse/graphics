@@ -14,8 +14,13 @@ set(MODULE_FILES
     setting.cppm           # 模块接口文件
 )
 
-
 add_library(${LIB_NAME} STATIC)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    #-DUSE_DEBUG_UI 用来显示imgui debug窗口
+    target_compile_definitions(${LIB_NAME} PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+else()
+    target_compile_definitions(${LIB_NAME} PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
+endif()
 
 # 添加模块文件 (CXX_MODULES) - 这是解决你错误的关键！
 # target_sources(${LIB_NAME} PUBLIC

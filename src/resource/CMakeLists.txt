@@ -11,7 +11,6 @@ set (sources
     obj/particle.cpp
     shader/shader.hpp
     shader/shader.cpp
-    config.hpp
     model_instance.hpp
     model_instance.cpp
     resource.hpp
