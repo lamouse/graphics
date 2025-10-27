@@ -133,7 +133,7 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     draw_func();
     endFrame();
     scheduler.record(
-        [draw_func, renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
+        [renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
             present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
             cmdbuf.endRenderPass();
