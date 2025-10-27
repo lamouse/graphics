@@ -79,10 +79,6 @@ class Scheduler {
         void requestOutsideRenderPassOperationContext() { endRenderPass(); }
 
         void requestRenderPass(const TextureFramebuffer* framebuffer);
-
-        // Registers a callback to perform on queue submission.
-        void registerOnSubmit(std::function<void()>&& func) { on_submit_ = std::move(func); }
-
         // Update the pipeline to the current execution context.
         auto updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool;
 
@@ -199,7 +195,6 @@ class Scheduler {
         vk::CommandBuffer current_cmd_buf_;
         vk::CommandBuffer current_upload_cmd_buf_;
         std::unique_ptr<CommandChunk> chunk_;
-        std::function<void()> on_submit_;
 
         uint32_t num_render_pass_images_ = 0;
         std::array<vk::Image, 9> render_pass_images_{};

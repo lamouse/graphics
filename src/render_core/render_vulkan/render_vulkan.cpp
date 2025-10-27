@@ -60,7 +60,6 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
 }
 
 RendererVulkan::~RendererVulkan() {
-    scheduler.registerOnSubmit([] {});
     void(device.getLogical().waitIdle());
 }
 

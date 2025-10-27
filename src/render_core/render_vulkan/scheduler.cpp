@@ -210,11 +210,6 @@ auto Scheduler::submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wa
                                       {}, {});
         upload_cmdbuf.end();
         cmdbuf.end();
-
-        if (on_submit_) {
-            on_submit_();
-        }
-
         std::scoped_lock lock{submit_mutex_};
         master_semaphore_->submitQueue(cmdbuf, upload_cmdbuf, signal_semaphore, wait_semaphore,
                                        signal_value);
