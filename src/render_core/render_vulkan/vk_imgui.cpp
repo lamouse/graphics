@@ -123,6 +123,9 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
 }
 
 void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
+    if(!draw_func){
+        return;
+    }
     const vk::Framebuffer host_framebuffer{*frame->framebuffer};
     const vk::RenderPass renderPass(*render_pass);
     const vk::Extent2D extent{
