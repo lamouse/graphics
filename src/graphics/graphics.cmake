@@ -9,7 +9,7 @@ set(sources
     SDL_common.cpp
     sdl_window.hpp
     sdl_window.cpp
-    ui.hpp
-    ui.cpp
+    gui.hpp
+    gui.cpp
     main.cpp
 )

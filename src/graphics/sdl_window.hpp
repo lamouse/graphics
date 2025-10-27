@@ -27,5 +27,6 @@ class SDLWindow : public core::frontend::BaseWindow {
     private:
         SDL_Window* window_ = nullptr;
         bool should_close_ = false;
+        SDL_GPUDevice* gpu_device;
 };
 }  // namespace graphics

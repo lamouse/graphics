@@ -15,7 +15,7 @@
 #include "sdl_window.hpp"
 #include <thread>
 #include "render_core/framebufferConfig.hpp"
-#include "ui.hpp"
+#include "gui.hpp"
 #include "ui/ui.hpp"
 #define image_path ::std::string{"./images/"}
 #define models_path ::std::string{"./models/"}
@@ -153,7 +153,7 @@ void App::run() {
     }
 }
 
-App::App(){
+App::App() {
     const int width = 1920;
     const int height = 1080;
     const char* title = "graphic engine";
@@ -164,6 +164,8 @@ App::App(){
 #if defined(USE_SDL)
     window = std::make_unique<graphics::SDLWindow>(width, height, title);
 #endif
+    ui::init_imgui(window->getWindowSystemInfo().render_surface_scale);
+
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
 }
 

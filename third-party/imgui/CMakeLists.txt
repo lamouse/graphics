@@ -22,6 +22,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(${CMAKE_CURRENT_SOURCE_DIR}/imgui.cmake)
 
 add_library(imgui STATIC ${sources})
+
 if(MSVC)
     target_compile_options(imgui PRIVATE
         /MP
@@ -70,7 +71,6 @@ else()
     endif()
 endif()
 
-
 find_package(VulkanHeaders CONFIG)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
@@ -83,6 +83,7 @@ target_include_directories(Imgui INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOU
 target_link_libraries(Imgui INTERFACE imgui)
 
 set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
+
 #
 # Install
 #

@@ -1,5 +1,5 @@
 #include "imgui.h"
-#include "ui.hpp"
+#include "gui.hpp"
 
 #include "common/settings.hpp"
 #include <ranges>
@@ -22,7 +22,6 @@ auto calculateAspectRatioSize(ImVec2 availableSize, float aspectRatio) -> ImVec2
 
 }  // namespace
 namespace graphics::ui {
-
 
 void pipeline_state(render::PipelineState& state) {
     ImGui::Begin("pipeline 状态");
@@ -122,6 +121,48 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImGui::TextColored({0.0f, 1.0f, 0.0f, 1.0f}, text, 1000.0f / io.Framerate, io.Framerate);
     ImGui::PopStyleVar();
     ImGui::End();
+}
+
+void init_imgui(float scale) {
+    // 这里使用了imgui的一个分支docking
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
+    io.DisplayFramebufferScale = ImVec2(scale, scale);
+    io.FontGlobalScale = scale;
+    // io.ConfigViewportsNoAutoMerge = true;
+    // io.ConfigViewportsNoTaskBarIcon = true;
+    //   Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsLight();
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look
+    // identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        style.WindowRounding = .0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        // style.Colors[ImGuiCol_WindowBg] = ImVec4(.0f, .0f, .0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBg] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_DockingPreview] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+    }
+
+    ImFontConfig fontConfig;
+    fontConfig.OversampleH = 2;  // 水平方向抗锯齿
+    fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
+    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
+                                 io.Fonts->GetGlyphRangesChineseFull());
+    ImFontConfig iconConfig;
+    iconConfig.MergeMode = true;
+    iconConfig.PixelSnapH = true;
+    io.Fonts->AddFontFromFileTTF("fronts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
 }
 
 }  // namespace graphics::ui

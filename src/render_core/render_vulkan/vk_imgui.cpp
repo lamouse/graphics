@@ -56,35 +56,7 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
       descriptorPool(createDescriptorPool(device)),
       window(window_),
       scheduler(scheduler_) {
-    // 这里使用了imgui的一个分支docking
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
-    io.DisplayFramebufferScale = ImVec2(scale, scale);
-    io.FontGlobalScale = scale;
-    // io.ConfigViewportsNoAutoMerge = true;
-    // io.ConfigViewportsNoTaskBarIcon = true;
-    //   Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // ImGui::StyleColorsLight();
 
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look
-    // identical to regular ones.
-    ImGuiStyle& style = ImGui::GetStyle();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        style.WindowRounding = .0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-        // style.Colors[ImGuiCol_WindowBg] = ImVec4(.0f, .0f, .0f, 1.0f);
-        //  style.Colors[ImGuiCol_TitleBg] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-        //  style.Colors[ImGuiCol_DockingPreview] = ImVec4(.0f, .0f, 0.0f, 1.0f);
-    }
 
     // Setup Platform/Renderer backends
     window->configGUI();
@@ -96,14 +68,13 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
     init_info.Queue = device.getGraphicsQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = *descriptorPool;
-    init_info.Subpass = 0;
     init_info.MinImageCount = 3;
     init_info.ImageCount = 3;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
-    // init_info.UseDynamicRendering = true;
-    init_info.RenderPass = *render_pass;
+    init_info.PipelineInfoMain.RenderPass = *render_pass;
+    init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    init_info.PipelineInfoMain.Subpass = 0;
     ImGui_ImplVulkan_LoadFunctions(
         0,
         [](const char* name, void* userData) -> PFN_vkVoidFunction {
@@ -111,15 +82,7 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
         },
         instance);
     ImGui_ImplVulkan_Init(&init_info);
-    ImFontConfig fontConfig;
-    fontConfig.OversampleH = 2;  // 水平方向抗锯齿
-    fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
-    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
-                                 io.Fonts->GetGlyphRangesChineseFull());
-    ImFontConfig iconConfig;
-    iconConfig.MergeMode = true;
-    iconConfig.PixelSnapH = true;
-    io.Fonts->AddFontFromFileTTF("fronts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
+
 }
 
 void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {

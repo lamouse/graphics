@@ -14,19 +14,23 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
         return Device(*instance, physical[0], surface);
     }
     for (auto device : physical) {
-        vk::PhysicalDeviceProperties properties =  device.getProperties();
+        vk::PhysicalDeviceProperties properties = device.getProperties();
         switch (properties.deviceType) {
             case vk::PhysicalDeviceType::eDiscreteGpu:
-                SPDLOG_INFO("设备类型：离散 GPU（独立显卡）, 设备名称：{}", std::string(properties.deviceName.data()));
+                SPDLOG_INFO("设备类型：离散 GPU（独立显卡）, 设备名称：{}",
+                            std::string(properties.deviceName.data()));
                 return Device(*instance, device, surface);
             case vk::PhysicalDeviceType::eIntegratedGpu:
-                SPDLOG_INFO("设备类型：集成 GPU（如 Intel UHD）设备名称：{}", std::string(properties.deviceName.data()));
+                SPDLOG_INFO("设备类型：集成 GPU（如 Intel UHD）设备名称：{}",
+                            std::string(properties.deviceName.data()));
                 break;
             case vk::PhysicalDeviceType::eVirtualGpu:
-                SPDLOG_INFO("设备类型：虚拟 GPU（如远程渲染）设备名称：{}", std::string(properties.deviceName.data()));
+                SPDLOG_INFO("设备类型：虚拟 GPU（如远程渲染）设备名称：{}",
+                            std::string(properties.deviceName.data()));
                 break;
             case vk::PhysicalDeviceType::eCpu:
-                SPDLOG_INFO("设备类型：CPU（软件模拟）设备名称：{}", std::string(properties.deviceName.data()));
+                SPDLOG_INFO("设备类型：CPU（软件模拟）设备名称：{}",
+                            std::string(properties.deviceName.data()));
                 break;
             default:
                 SPDLOG_INFO("设备类型：未知");
@@ -59,9 +63,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
     throw std::runtime_error{fmt::format("Vulkan initialization error {}", exception.what())};
 }
 
-RendererVulkan::~RendererVulkan() {
-    void(device.getLogical().waitIdle());
-}
+RendererVulkan::~RendererVulkan() { void(device.getLogical().waitIdle()); }
 
 void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers) {
     if (frame_buffers.empty()) {
@@ -79,7 +81,9 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
-    imgui->draw(imgui_ui, frame);
+    if (imgui) {
+        imgui->draw(imgui_ui, frame);
+    }
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);
     vulkan_graphics.TickFrame();
