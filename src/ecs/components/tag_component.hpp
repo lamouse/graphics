@@ -9,7 +9,7 @@ struct TagComponent {
         ~TagComponent() = default;
         CLASS_DEFAULT_COPYABLE(TagComponent);
         CLASS_DEFAULT_MOVEABLE(TagComponent);
-        explicit TagComponent(std::string   tag) : tag(std::move(tag)) {}
+        explicit TagComponent(std::string tag) : tag(std::move(tag)) {}
         // NOLINTNEXTLINE(hicpp-explicit-conversions)
         operator std::string() const { return tag; }
         // NOLINTNEXTLINE(hicpp-explicit-conversions)

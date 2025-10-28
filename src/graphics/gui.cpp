@@ -2,6 +2,7 @@
 #include "gui.hpp"
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
+#include <limits>
 // Helper to wire demo markers located in code to an interactive browser
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section,
                                         void* user_data);
@@ -16,7 +17,7 @@ void* GImGuiDemoMarkerCallbackUserData = NULL;
                                      GImGuiDemoMarkerCallbackUserData); \
     } while (0)
 namespace {
-
+constexpr float OUTLINER_WIDTH = 0.3f;
 // ======================================
 // 手动绘制箭头函数（替代不存在的 ImGui::RenderArrow）
 // ======================================
@@ -135,7 +136,6 @@ static void ShowExampleMenuFile() {
     }
 }
 
-
 }  // namespace
 namespace graphics::ui {
 
@@ -195,7 +195,7 @@ void pipeline_state(render::PipelineState& state) {
     ImGui::End();
 }
 
-void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
+void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio) {
     // 设置窗口标志
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
@@ -207,6 +207,9 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     auto window_size = viewport->Size;
+    if (data.show_out_liner) {
+        window_size.x *= (1.f - OUTLINER_WIDTH);
+    }
     window_size.y -= ImGui::GetFrameHeight();
     ImGui::SetNextWindowSize(window_size);
 
@@ -233,7 +236,8 @@ void draw_result(ImTextureID imguiTextureID, float aspectRatio) {
         uv_max_x = 1.0f - pad;
     }
 
-    ImGui::Image(imguiTextureID, window_size, ImVec2(uv_min_x, uv_min_y), ImVec2(uv_max_x, uv_max_y));
+    ImGui::Image(imguiTextureID, window_size, ImVec2(uv_min_x, uv_min_y),
+                 ImVec2(uv_max_x, uv_max_y));
 
     ImGui::PopStyleVar();
     ImGui::End();
@@ -286,9 +290,9 @@ void init_imgui(float scale) {
 // ======================================
 void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
     ImGui::PushID(&entity);
-    auto& tag = entity.getComponent<ecs::TagComponent>();
     auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
-    //const bool hasChildren = model.hasChildren();
+    auto& tag = entity.getComponent<ecs::TagComponent>();
+    // const bool hasChildren = model.hasChildren();
     const float indent_spacing = ImGui::GetStyle().IndentSpacing;
     const float line_height = ImGui::GetFrameHeight();
 
@@ -324,9 +328,9 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
 
     //     ImGui::SameLine();
     // } else {
-        // 无子项，占位
-        ImGui::Dummy(ImVec2(indent_spacing, 1));
-        ImGui::SameLine();
+    // 无子项，占位
+    ImGui::Dummy(ImVec2(indent_spacing, 1));
+    ImGui::SameLine();
     //}
 
     // ===== 可见性复选框 =====
@@ -341,11 +345,12 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
     // 使用 Selectable 占满整行，允许重叠
     ImGui::Selectable(tag.tag.c_str(), false,
                       ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
-
+    static unsigned int select_id = std::numeric_limits<unsigned int>::max();
     // 仅当点击了名称区域（非箭头/复选框）时才选中
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        //g_selected_ptr = &model;
+        select_id = render_state.id;
     }
+    render_state.select_id = select_id;
 
     ImGui::PopStyleVar();  // ItemInnerSpacing
 
@@ -371,27 +376,28 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
 // ======================================
 // 主函数：显示 Outliner 窗口
 // ======================================
-void ShowOutliner(std::span<ecs::Entity> instances) {
-    ImGui::Begin("Outliner");
+void ShowOutliner(std::span<ecs::Entity> instances, bool& show) {
+    if (!show) {
+        return;
+    }
+    // 设置窗口标志
+    ImGuiWindowFlags window_flags =
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-    ImGui::Separator();
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    auto window_size = viewport->Size;
+    window_size.y -= ImGui::GetFrameHeight();
+    window_size.x *= OUTLINER_WIDTH;
 
-    // 可滚动区域
-    ImGui::BeginChild("OutlinerScroll", ImVec2(0, -ImGui::GetFrameHeight()));
+    ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x), viewport->WorkPos.y);
+    ImGui::SetNextWindowSize(window_size);
+    ImGui::SetNextWindowPos(panelPos);
+    ImGui::Begin("Outliner", &show, window_flags);
 
     for (auto& instance : instances) {
         DrawModelTreeNode(instance, 0);
     }
-
-    ImGui::EndChild();
-
-    // // 显示选中信息
-    // if (g_selected_ptr) {
-    //     auto* sel = (Model*)g_selected_ptr;
-    //     ImGui::Separator();
-    //     ImGui::Text("Selected: %s", sel->name.c_str());
-    //     ImGui::Checkbox("Visible", &sel->visible);
-    // }
 
     ImGui::End();
 }
@@ -416,10 +422,9 @@ void show_menu(MenuData& data) {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Window")) {
-            if (ImGui::MenuItem("outliner", nullptr, true)) {
-            }
-            ImGui::MenuItem("系统设置", "", &data.show_system_setting);
-            ImGui::MenuItem("日志", "", &data.show_log);
+            ImGui::MenuItem("\uf1b3 outliner", nullptr, &data.show_out_liner);
+            ImGui::MenuItem("\ueb51 系统设置", "", &data.show_system_setting);
+            ImGui::MenuItem("\uF15C 日志", "", &data.show_log);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();

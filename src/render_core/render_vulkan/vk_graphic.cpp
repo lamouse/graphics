@@ -436,6 +436,7 @@ auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -
 }
 
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
+    getShaderCache()->setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
     current_modelId = instance.getMeshId();
     const auto resource = modelResource[current_modelId];
     if (instance.getTextureId()) {

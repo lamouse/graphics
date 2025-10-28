@@ -13,6 +13,8 @@ set (sources
     shader/shader.cpp
     model_instance.hpp
     model_instance.cpp
+    particle_instance.hpp
+    particle_instance.cpp
     resource.hpp
     resource.cpp
 )

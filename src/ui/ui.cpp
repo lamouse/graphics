@@ -77,7 +77,7 @@ void DrawVec3ColorControl(const std::string& label, glm::vec3& value, const glm:
         ImGui::SameLine();
 
         // Reset button
-        if (ImGui::Button("⟳", ImVec2{ lineHeight, lineHeight })) {
+        if (ImGui::Button("\uead2", ImVec2{ lineHeight, lineHeight })) {
             value = resetValue;
         }
 
@@ -123,7 +123,7 @@ void DrawFloatControl(const std::string& label, float& value, float speed,
         ImGui::SameLine();
 
         // Reset button
-        if (ImGui::Button("⟳", ImVec2{ lineHeight, lineHeight })) {
+        if (ImGui::Button("\uead2", ImVec2{ lineHeight, lineHeight })) {
             value = resetValue;
         }
 

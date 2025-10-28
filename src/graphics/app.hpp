@@ -19,5 +19,6 @@ class App {
         std::unique_ptr<render::RenderBase> render_base;
         sys::LoggerSystem logger;
         ResourceManager resourceManager;
+        void load_resource();
 };
 }  // namespace graphics

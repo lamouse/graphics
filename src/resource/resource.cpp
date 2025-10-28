@@ -12,7 +12,10 @@ void ResourceManager::addTexture(std::string textureName, add_texture_func func)
     textures[textureName] = textureId;
 }
 
-auto ResourceManager::getTexture(std::string textureName) -> render::TextureId {
+auto ResourceManager::getTexture(std::string textureName) const -> render::TextureId {
+    if (textureName.empty()) {
+        return {};
+    }
     ASSERT_MSG(textures.contains(textureName), textureName + " texture not in catch");
     return textures.find(textureName)->second;
 }
@@ -32,7 +35,10 @@ void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, a
     ASSERT_MSG(!mesh.contains(meshName), meshName + " mesh in catch");
     mesh[meshName] = meshId;
 }
-auto ResourceManager::getMesh(std::string meshName) -> render::MeshId {
+auto ResourceManager::getMesh(std::string meshName) const -> render::MeshId {
+    if (meshName.empty()) {
+        return {};
+    }
     ASSERT_MSG(mesh.contains(meshName), meshName + " texture in catch");
     return mesh.find(meshName)->second;
 }
@@ -52,4 +58,68 @@ auto ResourceManager::getShaderCode(render::ShaderType type, const std::string& 
     }
 }
 
+template <render::ShaderType type>
+auto ResourceManager::getShaderHash(const std::string& name) const -> std::uint64_t {
+    if constexpr (type == render::ShaderType::Vertex) {
+        if (graphic_shader_hash.contains(name)) {
+            return graphic_shader_hash.find(name)->second.vertex;
+        }
+    }
+
+    if constexpr (type == render::ShaderType::Fragment) {
+        if (graphic_shader_hash.contains(name)) {
+            return graphic_shader_hash.find(name)->second.fragment;
+        }
+    }
+
+    if constexpr (type == render::ShaderType::Compute) {
+        if (compute_shader_hash.contains(name)) {
+            return compute_shader_hash.find(name)->second;
+        }
+    }
+    ASSERT_MSG(false, "get shader not found");
+    return 0;
+}
+
+template <typename T>
+requires (IsUint64<T> || IsShaderHashStruct<T>)
+[[nodiscard]] auto ResourceManager::getShaderHash(const std::string& name) const -> T {
+    if constexpr (std::is_same_v<T, std::uint64_t>) {
+        if (compute_shader_hash.contains(name)) {
+            return compute_shader_hash.find(name)->second;
+        }
+    }
+    if constexpr (std::is_same_v<T, ShaderHash>) {
+        if (graphic_shader_hash.contains(name)) {
+            return graphic_shader_hash.find(name)->second;
+        }
+    }
+    ASSERT_MSG(false, "get shader not found or type error");
+
+    return T{};
+}
+
+void ResourceManager::addGraphShader(
+    const std::string& name,
+    const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
+        upload_func) {
+    auto vertex_shader_code = getShaderCode(render::ShaderType::Vertex, name);
+    ShaderHash hash{};
+    hash.vertex = upload_func(vertex_shader_code, render::ShaderType::Vertex);
+
+    auto fragment_shader_code = getShaderCode(render::ShaderType::Fragment, name);
+    hash.fragment = upload_func(fragment_shader_code, render::ShaderType::Fragment);
+    graphic_shader_hash[name] = hash;
+}
+void ResourceManager::addComputeShader(
+    const std::string& name,
+    const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
+        upload_func) {
+    auto shader_code = getShaderCode(render::ShaderType::Compute, name);
+    auto hash = upload_func(shader_code, render::ShaderType::Compute);
+    compute_shader_hash[name] = hash;
+}
+// 显式实例化模板成员函数
+template ShaderHash ResourceManager::getShaderHash<ShaderHash>(const std::string& name) const;
+template std::uint64_t ResourceManager::getShaderHash<std::uint64_t>(const std::string& name) const;
 }  // namespace graphics

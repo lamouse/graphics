@@ -75,7 +75,7 @@ void show_ui_debug_window() {
 namespace graphics {
 void draw_setting(bool& show) {
     if (show) {
-        ImGui::Begin("系统设置", &show);
+        ImGui::Begin("\ueb51 系统设置", &show);
         show_fps();
         show_ui_debug_window();
         vsync_setting();
