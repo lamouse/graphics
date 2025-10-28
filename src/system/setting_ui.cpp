@@ -8,7 +8,7 @@
 #include <vector>
 
 // module setting;
-namespace  {
+namespace {
 
 void vsync_setting() {
     auto canon = settings::enums::EnumMetadata<settings::enums::VSyncMode>::canonicalizations();
@@ -62,11 +62,21 @@ void show_fps() {
         fps();
     }
 }
+
+void show_ui_debug_window() {
+    static bool show_window = false;
+    ImGui::Checkbox("show ui debug", &show_window);
+    if (show_window) {
+        ImGui::ShowMetricsWindow();
+    }
 }
+
+}  // namespace
 namespace graphics {
 void draw_setting() {
     ImGui::Begin("系统设置");
     show_fps();
+    show_ui_debug_window();
     vsync_setting();
     log_settings();
     ImGui::End();
