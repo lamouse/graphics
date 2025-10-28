@@ -84,7 +84,10 @@ void App::run() {
             graphics->draw(m);
         }
 
-        graphics->draw(particle_instance);
+        if(particle_instance.entity_.getComponent<ecs::RenderStateComponent>().visible){
+            graphics->draw(particle_instance);
+
+        }
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
