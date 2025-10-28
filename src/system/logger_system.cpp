@@ -8,8 +8,7 @@
 #include <memory>
 namespace sys {
 
-LoggerSystem::LoggerSystem() {
-    log_level_ = utils::get_log_level(settings::values.log_level.GetValue());
+LoggerSystem::LoggerSystem():log_level_(utils::get_log_level(settings::values.log_level.GetValue())) {
     const char* log_patten = "%^[%Y-%m-%d %H:%M:%S.%e] [%l] [thread %t] (%s:%# %!): %v%$";
     const char* file_patten = "[%Y-%m-%d %H:%M:%S.%e] [%l] : %v";
     // 初始化线程池
@@ -43,9 +42,9 @@ LoggerSystem::LoggerSystem() {
     spdlog::set_default_logger(logger_);
 }
 
-void LoggerSystem::drawUi(bool show) {
+void LoggerSystem::drawUi(bool& show) {
     if (show) {
-        imgui_sink->draw("Console");
+        imgui_sink->draw("Console", show);
     }
     const auto level = utils::get_log_level(settings::values.log_level.GetValue());
     if (log_level_ != level) {

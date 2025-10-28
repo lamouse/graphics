@@ -1,12 +1,6 @@
 Checks: '
  modernize-*,
- -modernize-return-braced-init-list,
-  -modernize-use-auto,
-  -modernize-use-nullptr,
-  -modernize-use-override,
-  -modernize-use-equals-default,
-  -modernize-use-equals-delete,
-  -hicpp-signed-bitwise,
+
 performance*,
 cert-*,
 misc-confusable-identifiers,
@@ -159,6 +153,15 @@ bugprone-unused-raii,
 bugprone-unused-return-value,
 bugprone-use-after-move,
 bugprone-virtual-near-miss,
+ -modernize-return-braced-init-list,
+  -modernize-use-auto,
+  -modernize-use-nullptr,
+  -modernize-use-override,
+  -modernize-use-equals-default,
+  -modernize-use-equals-delete,
+  -hicpp-signed-bitwise,
+  -hicpp-uppercase-literal-suffix,
+  -hicpp-vararg,
 '
 
 

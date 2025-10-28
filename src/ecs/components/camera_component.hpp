@@ -13,8 +13,8 @@ struct CameraComponent {
         ::glm::vec3 lookAt{DEFAULT_LOOK_AT};
         ::glm::vec3 center{DEFAULT_CENTER};
         ::glm::vec3 up{DEFAULT_UP};
-        float near{DEFAULT_NEAR};
-        float far{DEFAULT_FAR};
+        float z_near{DEFAULT_NEAR};
+        float z_far{DEFAULT_FAR};
         float fovy{DEFAULT_FOVY};
         float extentAspectRation{};
         CameraComponent() = default;
@@ -37,12 +37,12 @@ struct CameraComponent {
         }
 
         auto setNear(float v) -> CameraComponent& {
-            near = v;
+            z_near = v;
             return *this;
         }
 
         auto setFar(float v) -> CameraComponent& {
-            far = v;
+            z_far = v;
             return *this;
         }
 
@@ -57,7 +57,7 @@ struct CameraComponent {
         }
         [[nodiscard]] auto getCamera() const -> Camera {
             Camera camera;
-            camera.setPerspectiveProjection(glm::radians(fovy), extentAspectRation, near, far);
+            camera.setPerspectiveProjection(glm::radians(fovy), extentAspectRation, z_near, z_far);
             camera.setViewTarget(lookAt, center, up);
             return camera;
         }

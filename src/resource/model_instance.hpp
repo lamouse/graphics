@@ -5,6 +5,8 @@
 #include "ecs/scene/entity.hpp"
 #include "ecs/scene/scene.hpp"
 #include "ecs/components/transform_component.hpp"
+#include "ecs/components/render_state_component.hpp"
+#include "ecs/components/camera_component.hpp"
 #include "resource/obj/model.hpp"
 #include "common/slot_vector.hpp"
 #include "resource/instance.hpp"
@@ -22,9 +24,18 @@ struct UniformBufferObject {
             return std::span<const std::byte>{reinterpret_cast<const std::byte*>(this),
                                               sizeof(UniformBufferObject)};
         }
+
+        [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> {
+            return std::span<const std::byte>{reinterpret_cast<const std::byte*>(this),
+                                              sizeof(UniformBufferObject)};
+        }
 };
 
-
+struct ModelResource {
+        std::string vertex_shader_name;
+        std::string fragment_shader_name;
+        std::string texture_name;
+};
 
 class ModelInstance : public IModelInstance {
     public:
@@ -32,9 +43,13 @@ class ModelInstance : public IModelInstance {
         using Map = std::unordered_map<id_t, ModelInstance>;
         static auto createGameObject(render::TextureId textureId, render::MeshId meshId)
             -> ModelInstance {
-            static id_t currentId = 0;
             return ModelInstance{currentId++, textureId, meshId};
         }
+
+        // static auto CreateInstance(const ModelResource& resource) -> ModelInstance {
+
+        // }
+
         [[nodiscard]] auto getModelMatrix() -> glm::mat4 {
             if (entity_.hasComponent<ecs::TransformComponent>()) {
                 return entity_.getComponent<ecs::TransformComponent>().mat4();
@@ -53,28 +68,32 @@ class ModelInstance : public IModelInstance {
         ::glm::vec3 color{};
         ecs::Entity entity_;
         ~ModelInstance() override = default;
-        void writeToUBOMapData(std::span<const std::byte> data);
+        void updateViewProjection(const ecs::Camera& camera);
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
-            // NOLINTNEXTLINE
-            ASSERT_MSG(!ubo_data.empty(), "UBO size not match");
-            return ubo_data;
+            return ubo.as_byte_span();
         };
         [[nodiscard]] auto getTextureId() const -> render::TextureId override { return textureId; }
         [[nodiscard]] auto getMeshId() const -> render::MeshId override { return meshId; }
         void setTextureId(render::TextureId textureId_) override { textureId = textureId_; }
-        [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {return topology;}
+        [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {
+            return topology;
+        }
+
     private:
         id_t id;
-        std::span<const std::byte> ubo_data;
+        UniformBufferObject ubo;
         render::TextureId textureId;
         render::MeshId meshId;
         render::PrimitiveTopology topology = render::PrimitiveTopology::Triangles;
         explicit ModelInstance(id_t id, render::TextureId textureId_, render::MeshId meshId_)
             : id(id), textureId(textureId_), meshId(meshId_) {
             static ecs::Scene scene;
-            entity_ = scene.createEntity("ModelInstance");
+            entity_ = scene.createEntity("Model" + std::to_string(id));
             entity_.addComponent<ecs::TransformComponent>();
+            entity_.addComponent<ecs::RenderStateComponent>();
         }
+
+        inline static id_t currentId = 0;
 };
 
 }  // namespace graphics

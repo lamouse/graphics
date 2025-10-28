@@ -13,8 +13,11 @@ namespace sys {
 template <typename Mutex>
 class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
     public:
-        void draw(const char* title) {
-            ImGui::Begin(title);
+        void draw(const char* title, bool& popen) {
+            if(!popen){
+                return;
+            }
+            ImGui::Begin(title, &popen);
 
             std::lock_guard lock(mutex_);
             ImGui::Checkbox("Auto-scroll", &auto_scroll_);
@@ -46,7 +49,6 @@ class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
                 }
 
                 ImGui::TextUnformatted(padded.c_str());
-
                 ImGui::PopStyleColor();
             }
             if (auto_scroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
@@ -80,7 +82,7 @@ class LoggerSystem {
         CLASS_NON_COPYABLE(LoggerSystem);
         CLASS_DEFAULT_MOVEABLE(LoggerSystem);
         ~LoggerSystem() = default;
-        void drawUi(bool show = false);
+        void drawUi(bool& show);
 
     private:
         spdlog::level::level_enum log_level_ = spdlog::level::info;

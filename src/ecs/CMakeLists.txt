@@ -11,6 +11,7 @@ set (sources
     components/camera_component.hpp
     components/tag_component.hpp
     components/transform_component.hpp
+    components/render_state_component.hpp
     ui/cameraUI.hpp
     ui/tagUI.hpp
     ui/transformUI.hpp

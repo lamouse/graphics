@@ -16,7 +16,6 @@
 #include <thread>
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
-#include "ui/ui.hpp"
 #define image_path ::std::string{"./images/"}
 #define models_path ::std::string{"./models/"}
 
@@ -31,10 +30,10 @@ auto getRuntime() -> float {
 }  // namespace
 
 void App::run() {
+    std::vector<ecs::Entity> model_entt;
     auto* graphics = render_base->getGraphics();
-
+    ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     render::PipelineState pipeline_state;
     auto layout = window->getFramebufferLayout();
     pipeline_state.viewport.width = layout.screen.GetWidth();
@@ -92,6 +91,8 @@ void App::run() {
     auto& camera =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto& modelComponent = modelInstance.getEntity().getComponent<ecs::TransformComponent>();
+    model_entt.push_back(modelInstance.entity_);
+    model_entt.push_back(modelInstance2.entity_);
     while (!window->shouldClose()) {
         shader_cache->setCurrentShader(vertex_hash, fragment_hash);
 
@@ -111,22 +112,17 @@ void App::run() {
             modelInstance.setTextureId(resourceManager.getTexture(viking_room_path));
             modelInstance2.setTextureId(resourceManager.getTexture(other_image));
         }
-        UniformBufferObject ubo1{};
-        UniformBufferObject ubo2{};
-        ubo1.model = modelInstance.getModelMatrix();
-        ubo1.view = camera.getCamera().getView();
-        ubo1.proj = camera.getCamera().getProjection();
-        modelInstance.writeToUBOMapData(ubo1.as_byte_span());
+        modelInstance.updateViewProjection(camera.getCamera());
         graphics->setPipelineState(pipeline_state);
         graphics->draw(modelInstance);
-        ubo2 = ubo1;
-        auto model2 = modelComponent;
-        model2.translation.x = modelComponent.translation.x + 1.8F;
-        model2.scale.x = modelComponent.scale.x * 0.4F;
-        model2.scale.y = modelComponent.scale.y * 0.4F;
-        model2.scale.z = modelComponent.scale.z * 0.4F;
-        ubo2.model = model2.mat4();
-        modelInstance2.writeToUBOMapData(ubo2.as_byte_span());
+
+        auto& model2_transform =modelInstance2.getEntity().getComponent<ecs::TransformComponent>();
+        model2_transform = modelComponent;
+        model2_transform.translation.x = modelComponent.translation.x + 1.8F;
+        model2_transform.scale.x = modelComponent.scale.x * 0.4F;
+        model2_transform.scale.y = modelComponent.scale.y * 0.4F;
+        model2_transform.scale.z = modelComponent.scale.z * 0.4F;
+        modelInstance2.updateViewProjection(camera.getCamera());
         graphics->draw(modelInstance2);
 
         shader_cache->setCurrentShader(particle_vertex_hash, particle_fragment_hash);
@@ -141,10 +137,12 @@ void App::run() {
         }
         auto imageId = graphics->getDrawImage();
         render_base->addImguiUI([&]() {
-            draw_setting();
+            ui::show_menu(menu_data);
+            draw_setting(menu_data.show_system_setting);
+            ui::ShowOutliner(model_entt);
             ui::draw_result(imageId, window->getAspectRatio());
             ui::pipeline_state(pipeline_state);
-            logger.drawUi(show_console_logger);
+            logger.drawUi(menu_data.show_log);
             world.drawUI();
             modelInstance.drawUI();
         });

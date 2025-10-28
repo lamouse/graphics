@@ -14,10 +14,11 @@ void ModelInstance::drawUI() {
     ImGui::End();
 }
 
-void ModelInstance::writeToUBOMapData(std::span<const std::byte> data) {
-    // NOLINTNEXTLINE
-    ASSERT_MSG(!data.empty(), "ubo data size is empty");
-    ubo_data = data;
+void ModelInstance::updateViewProjection(const ecs::Camera& camera) {
+    auto& transform = entity_.getComponent<ecs::TransformComponent>();
+    ubo.model = transform.mat4();
+    ubo.view = camera.getView();
+    ubo.proj = camera.getProjection();
 }
 
 }  // namespace graphics
