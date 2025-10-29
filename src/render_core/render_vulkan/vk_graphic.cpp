@@ -434,10 +434,11 @@ void VulkanGraphics::UpdateLineWidth() {
 
 auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
     ModelResource resource;
-    resource.vertex_size = static_cast<u32>(meshData.getMesh().size() * sizeof(float));
-    ASSERT_MSG(!meshData.getMesh().empty(), "upload empty vertex index");
+    auto mesh_data = meshData.getMesh();
+    resource.vertex_size = static_cast<u32>(mesh_data.size() * sizeof(float));
+    ASSERT_MSG(!mesh_data.empty(), "upload empty vertex index");
     resource.vertex_buffer_id =
-        buffer_cache.addVertexBuffer(meshData.getMesh().data(), resource.vertex_size);
+        buffer_cache.addVertexBuffer(mesh_data.data(), resource.vertex_size);
     resource.vertex_count = meshData.getVertexCount();
     if (!meshData.getIndices().empty()) {
         resource.indices_buffer_id =
@@ -480,7 +481,9 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
     PrepareDraw(instance.getPrimitiveTopology(), [resource, this] -> void {
-        buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size);
+        auto bindings = vertex_bindings[resource.vertex_binding_id];
+        buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size,
+                                       bindings[0].stride);
         if (resource.indices_buffer_id) {
             IndexFormat index_format{IndexFormat::UnsignedShort};
             if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
@@ -489,7 +492,7 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
             buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
         }
         scheduler.record([indices_size = resource.indices_count,
-                          vertexCount = resource.vertex_count](vk::CommandBuffer cmdbuf) {
+                          vertexCount = resource.vertex_count](vk::CommandBuffer cmdbuf) -> void {
             if (indices_size > 0) {
                 cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
             } else {

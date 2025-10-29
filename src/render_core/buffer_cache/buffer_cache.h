@@ -34,7 +34,7 @@ void BufferCache<P>::BindIndexBuffer(IndexFormat format, BufferId id) {
 }
 
 template <class P>
-void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size) {
+void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size, u64 stride) {
     HostBindings<typename P::Buffer> host_bindings;
     for (u32 index = 0; index < 1; ++index) {
         // TouchBuffer(buffer, id);
@@ -46,7 +46,7 @@ void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size) {
         host_bindings.buffers.push_back(&buffer);
         host_bindings.offsets.push_back(0);
         host_bindings.sizes.push_back(size);
-        host_bindings.strides.push_back(32);
+        host_bindings.strides.push_back(stride);
         runtime.BindVertexBuffers(host_bindings);
     }
 }

@@ -115,7 +115,7 @@ class BufferCache : public BufferCacheInfo {
         auto addVertexBuffer(const void* data, u32 size) -> BufferId;
         auto addIndexBuffer(const void* data, u32 size) -> BufferId;
         void BindIndexBuffer(IndexFormat format, BufferId id);
-        void BindVertexBuffers(BufferId id, u32 size);
+        void BindVertexBuffers(BufferId id, u32 size, u64 stride);
         void BindGraphicUniformBuffer();
         void UploadGraphicUniformBuffer(std::span<const std::byte> data);
 
