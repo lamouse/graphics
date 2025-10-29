@@ -50,7 +50,6 @@ namespace graphics {
 void draw_setting(bool& show) {
     if (show) {
         ImGui::Begin("\ueb51 系统设置", &show);
-        show_ui_debug_window();
         vsync_setting();
         log_settings();
         ImGui::End();

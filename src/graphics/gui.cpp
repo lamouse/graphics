@@ -425,6 +425,10 @@ void show_menu(MenuData& data) {
     if (show_fps) {
         fps();
     }
+    static bool show_imgui_debug_window = false;
+    if (show_imgui_debug_window) {
+        ImGui::ShowMetricsWindow(&show_imgui_debug_window);
+    }
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             ShowExampleMenuFile();
@@ -450,7 +454,7 @@ void show_menu(MenuData& data) {
             ImGui::MenuItem("\ueb51 系统设置", "", &data.show_system_setting);
             ImGui::MenuItem("\uF15C 日志", "", &data.show_log);
             ImGui::MenuItem("\uf9c4 fps", "", &show_fps);
-
+            ImGui::MenuItem("\uead8 Imgui Metrics", "", &show_imgui_debug_window);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
