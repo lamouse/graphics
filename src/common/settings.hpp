@@ -15,9 +15,6 @@ class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
         // src\render_core\render_vulkan\pipeline_statistics.hpp
         bool renderer_shader_feedback = false;
         bool enable_compute_pipelines = true;
-        bool use_present_thread = false;
-        bool async_presentation = false;
-        bool render_debug = true;
         bool use_pipeline_cache = true;
         enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
         static auto get() { return instance_; }
@@ -66,6 +63,8 @@ struct Values {
                                                        Specialization::RuntimeList,
                                                        true,
                                                        true};
+    Setting<bool, false> use_present_thread{linkage, false, "use_present_thread", Category::render};
+    Setting<bool, false> render_debug{linkage, true, "render_debug", Category::render};
     Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
     Setting<bool, false> log_file{linkage, true, "file", Category::log};
 };

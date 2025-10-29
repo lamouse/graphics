@@ -42,8 +42,8 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
 RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
     : RenderBase(window),
       instance(createInstance(VK_API_VERSION_1_3, window->getWindowSystemInfo().type,
-                              common::settings::get<settings::RenderVulkan>().render_debug)),
-      debug_messenger(common::settings::get<settings::RenderVulkan>().render_debug
+                              settings::values.render_debug.GetValue())),
+      debug_messenger(settings::values.render_debug.GetValue()
                           ? createDebugMessenger(*instance)
                           : DebugUtilsMessenger{}),
       surface(createSurface(*instance, window->getWindowSystemInfo())),

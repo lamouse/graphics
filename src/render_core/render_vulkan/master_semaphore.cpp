@@ -28,7 +28,7 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
         vk::SemaphoreCreateInfo().setPNext(&semaphore_type_ci);
     semaphore_ = device.logical().CreateSemaphore(semaphore_ci);
 
-    if (not common::settings::get<settings::RenderVulkan>().render_debug) {
+    if (not settings::values.render_debug.GetValue()) {
         return;
     }
     // Validation layers have a bug where they fail to track resource usage when using timeline

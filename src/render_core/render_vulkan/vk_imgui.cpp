@@ -11,6 +11,7 @@
 #include "present/vulkan_utils.hpp"
 #include "present_manager.hpp"
 #include "scheduler.hpp"
+#include "common/settings.hpp"
 
 #include <vulkan/vk_enum_string_helper.h>
 
@@ -55,7 +56,8 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
                                                           vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
       window(window_),
-      scheduler(scheduler_) {
+      scheduler(scheduler_),
+      is_render_finish(true) {
     // Setup Platform/Renderer backends
     window->configGUI();
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -86,6 +88,12 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     if (!draw_func) {
         return;
     }
+    if (settings::values.use_present_thread.GetValue()) {
+        while (!is_render_finish.load()) {
+        }
+        is_render_finish.exchange(false);
+    }
+
     const vk::Framebuffer host_framebuffer{*frame->framebuffer};
     const vk::RenderPass renderPass(*render_pass);
     const vk::Extent2D extent{
@@ -95,11 +103,15 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     newFrame();
     draw_func();
     ImGui::Render();
-    scheduler.record([renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
-        present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
-        cmdbuf.endRenderPass();
-    });
+    scheduler.record(
+        [this, renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
+            present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
+            cmdbuf.endRenderPass();
+            if (settings::values.use_present_thread.GetValue()) {
+                is_render_finish.exchange(true);
+            }
+        });
 
     {
         std::scoped_lock lock(scheduler.submit_mutex_);
