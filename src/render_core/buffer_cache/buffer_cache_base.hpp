@@ -26,29 +26,10 @@ constexpr u32 NUM_VERTEX_BUFFERS = 16;
 constexpr u32 NUM_VERTEX_BUFFERS = 32;
 #endif
 constexpr u32 NUM_TRANSFORM_FEEDBACK_BUFFERS = 4;
-constexpr u32 NUM_GRAPHICS_UNIFORM_BUFFERS = 18;
-constexpr u32 NUM_COMPUTE_UNIFORM_BUFFERS = 8;
 constexpr u32 NUM_STORAGE_BUFFERS = 16;
 constexpr u32 NUM_TEXTURE_BUFFERS = 32;
-constexpr u32 NUM_STAGES = 5;
 
-using UniformBufferSizes = std::array<std::array<u32, NUM_GRAPHICS_UNIFORM_BUFFERS>, NUM_STAGES>;
-using ComputeUniformBufferSizes = std::array<u32, NUM_COMPUTE_UNIFORM_BUFFERS>;
 
-enum class ObtainBufferSynchronize : u32 {
-    NoSynchronize = 0,
-    FullSynchronize = 1,
-    SynchronizeNoDirty = 2,
-};
-
-enum class ObtainBufferOperation : u32 {
-    DoNothing = 0,
-    MarkAsWritten = 1,
-    DiscardWrite = 2,
-    MarkQuery = 3,
-};
-
-static constexpr BufferId NULL_BUFFER_ID{0};
 static constexpr u32 DEFAULT_SKIP_CACHE_SIZE = static_cast<u32>(4_KiB);
 
 struct Binding {
@@ -60,10 +41,6 @@ struct TextureBufferBinding : Binding {
         PixelFormat format;
 };
 
-static constexpr Binding NULL_BINDING{
-    .size = 0,
-    .buffer_id = NULL_BUFFER_ID,
-};
 
 template <typename Buffer>
 struct HostBindings {
@@ -91,26 +68,19 @@ class BufferCacheInfo {
 
         Binding index_buffer;
         std::array<Binding, NUM_VERTEX_BUFFERS> vertex_buffers;
-        std::array<std::array<Binding, NUM_GRAPHICS_UNIFORM_BUFFERS>, NUM_STAGES> uniform_buffers;
-        std::array<std::array<Binding, NUM_STORAGE_BUFFERS>, NUM_STAGES> storage_buffers;
-        std::array<std::array<TextureBufferBinding, NUM_TEXTURE_BUFFERS>, NUM_STAGES>
-            texture_buffers;
+
         std::array<Binding, NUM_TRANSFORM_FEEDBACK_BUFFERS> transform_feedback_buffers;
         Binding count_buffer_binding;
         Binding indirect_buffer_binding;
 
-        std::array<Binding, NUM_COMPUTE_UNIFORM_BUFFERS> compute_uniform_buffers;
+        std::array<Binding, 32> compute_uniform_buffers;
         std::array<Binding, NUM_STORAGE_BUFFERS> compute_storage_buffers;
         std::array<TextureBufferBinding, NUM_TEXTURE_BUFFERS> compute_texture_buffers;
 
-        std::array<u32, NUM_STAGES> enabled_uniform_buffer_masks{};
         u32 enabled_compute_uniform_buffer_mask = 0;
 
         u32 compute_storage_buffers_size = 0;
 
-        std::array<u32, NUM_STAGES> enabled_texture_buffers{};
-        std::array<u32, NUM_STAGES> written_texture_buffers{};
-        std::array<u32, NUM_STAGES> image_texture_buffers{};
         u32 enabled_compute_texture_buffers = 0;
         u32 written_compute_texture_buffers = 0;
         u32 image_compute_texture_buffers = 0;
@@ -122,10 +92,7 @@ class BufferCacheInfo {
 
         bool has_deleted_buffers = false;
 
-        std::array<u32, NUM_STAGES> dirty_uniform_buffers{};
-        std::array<u32, NUM_STAGES> fast_bound_uniform_buffers{};
-        std::array<std::array<u32, NUM_GRAPHICS_UNIFORM_BUFFERS>, NUM_STAGES>
-            uniform_buffer_binding_sizes{};
+
 };
 
 template <class P>
@@ -163,8 +130,6 @@ class BufferCache : public BufferCacheInfo {
         std::recursive_mutex mutex;
 
     private:
-
-        void TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept;
 
         Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;

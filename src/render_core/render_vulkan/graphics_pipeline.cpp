@@ -129,94 +129,6 @@ auto MakeRenderPassKey(const FixedPipelineState& state) -> RenderPassKey {
     return key;
 }
 
-template <typename Spec>
-auto Passes(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
-            const std::array<shader::Info, buffer::NUM_STAGES>& stage_infos) -> bool {
-    for (size_t stage = 0; stage < buffer::NUM_STAGES; ++stage) {
-        if (!Spec::enabled_stages[stage] && modules[stage]) {
-            return false;
-        }
-        const auto& info{stage_infos[stage]};
-        if constexpr (!Spec::has_storage_buffers) {
-            if (!info.storage_buffers_descriptors.empty()) {
-                return false;
-            }
-        }
-        if constexpr (!Spec::has_texture_buffers) {
-            if (!info.texture_buffer_descriptors.empty()) {
-                return false;
-            }
-        }
-        if constexpr (!Spec::has_image_buffers) {
-            if (!info.image_buffer_descriptors.empty()) {
-                return false;
-            }
-        }
-        if constexpr (!Spec::has_images) {
-            if (!info.image_descriptors.empty()) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-using ConfigureFuncPtr = void (*)(GraphicsPipeline*, bool);
-template <typename Spec, typename... Specs>
-ConfigureFuncPtr FindSpec(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
-                          const std::array<shader::Info, buffer::NUM_STAGES>& stage_infos) {
-    if constexpr (sizeof...(Specs) > 0) {
-        if (!Passes<Spec>(modules, stage_infos)) {
-            return FindSpec<Specs...>(modules, stage_infos);
-        }
-    }
-    return GraphicsPipeline::MakeConfigureSpecFunc<Spec>();
-}
-struct SimpleVertexFragmentSpec {
-        static constexpr std::array<bool, 5> enabled_stages{true, false, false, false, true};
-        static constexpr bool has_storage_buffers = false;
-        static constexpr bool has_texture_buffers = false;
-        static constexpr bool has_image_buffers = false;
-        static constexpr bool has_images = false;
-};
-
-struct SimpleVertexSpec {
-        static constexpr std::array<bool, 5> enabled_stages{true, false, false, false, false};
-        static constexpr bool has_storage_buffers = false;
-        static constexpr bool has_texture_buffers = false;
-        static constexpr bool has_image_buffers = false;
-        static constexpr bool has_images = false;
-};
-
-struct SimpleStorageSpec {
-        static constexpr std::array<bool, 5> enabled_stages{true, false, false, false, true};
-        static constexpr bool has_storage_buffers = true;
-        static constexpr bool has_texture_buffers = false;
-        static constexpr bool has_image_buffers = false;
-        static constexpr bool has_images = false;
-};
-
-struct SimpleImageSpec {
-        static constexpr std::array<bool, 5> enabled_stages{true, false, false, false, true};
-        static constexpr bool has_storage_buffers = false;
-        static constexpr bool has_texture_buffers = false;
-        static constexpr bool has_image_buffers = false;
-        static constexpr bool has_images = true;
-};
-
-struct DefaultSpec {
-        static constexpr std::array<bool, 5> enabled_stages{true, true, true, true, true};
-        static constexpr bool has_storage_buffers = true;
-        static constexpr bool has_texture_buffers = true;
-        static constexpr bool has_image_buffers = true;
-        static constexpr bool has_images = true;
-};
-
-auto ConfigureFunc(const std::array<ShaderModule, buffer::NUM_STAGES>& modules,
-                               const std::array<shader::Info, buffer::NUM_STAGES>& infos)->ConfigureFuncPtr {
-    return FindSpec<SimpleVertexSpec, SimpleVertexFragmentSpec, SimpleStorageSpec, SimpleImageSpec,
-                    DefaultSpec>(modules, infos);
-}
 }  // namespace
 
 auto GraphicsPipelineCacheKey::operator==(const GraphicsPipelineCacheKey& rhs) const noexcept
@@ -288,7 +200,6 @@ GraphicsPipeline::GraphicsPipeline(
     } else {
         func();
     }
-    configure_func = ConfigureFunc(spv_modules_, stage_infos);
 }
 
 void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
@@ -296,8 +207,8 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
     transitions.push_back(transition);
 }
 
-template <typename Spec>
-void GraphicsPipeline::configureImpl(bool is_indexed) {
+
+void GraphicsPipeline::Configure() {
 
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindGraphicUniformBuffer();

@@ -52,8 +52,6 @@ class ComputePipeline {
         GuestDescriptorQueue& guest_descriptor_queue;
         shader::Info info;
 
-        buffer::ComputeUniformBufferSizes uniform_buffer_sizes{};
-
         ShaderModule spv_module;
         DescriptorSetLayout descriptor_set_layout;
         resource::DescriptorAllocator descriptor_allocator;

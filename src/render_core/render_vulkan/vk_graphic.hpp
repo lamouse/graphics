@@ -59,7 +59,7 @@ class VulkanGraphics : public render::Graphic {
 
         static constexpr vk::DeviceSize DEFAULT_BUFFER_SIZE = 4 * sizeof(float);
         template <typename Func>
-        void PrepareDraw(PrimitiveTopology topology, bool is_indexed, Func&&);
+        void PrepareDraw(PrimitiveTopology topology, Func&&);
         void FlushWork();
         void UpdateDynamicStates();
         void UpdatePrimitiveRestartEnable();

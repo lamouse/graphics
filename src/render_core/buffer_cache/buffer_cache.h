@@ -52,13 +52,6 @@ void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size) {
 }
 
 template <class P>
-void BufferCache<P>::TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept {
-    if (buffer_id != NULL_BUFFER_ID) {
-        lru_cache.Touch(buffer.getLRUID(), frame_tick);
-    }
-}
-
-template <class P>
 auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
     auto buffer_id = CreateBuffer(size);
     auto& buffer = slot_buffers[buffer_id];

@@ -454,7 +454,7 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
-    PrepareDraw(instance.getPrimitiveTopology(), true, [resource, this] -> void {
+    PrepareDraw(instance.getPrimitiveTopology(), [resource, this] -> void {
         buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size);
         if (resource.indices_buffer_id) {
             IndexFormat index_format{IndexFormat::UnsignedShort};
@@ -489,14 +489,14 @@ void VulkanGraphics::TickFrame() {
 }
 
 template <typename Func>
-void VulkanGraphics::PrepareDraw(PrimitiveTopology topology, bool is_indexed, Func&& draw_func) {
+void VulkanGraphics::PrepareDraw(PrimitiveTopology topology, Func&& draw_func) {
     ZoneScopedN("VulkanGraphics::PrepareDraw()");
     GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline(topology)};
     if (!pipeline) {
         return;
     }
     std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
-    pipeline->Configure(is_indexed);
+    pipeline->Configure();
     UpdateDynamicStates();
     draw_func();
     FlushWork();

@@ -71,11 +71,6 @@ class GraphicsPipeline {
         static constexpr size_t NUM_STAGES = 5;
 
     public:
-        template <typename Spec>
-        static auto MakeConfigureSpecFunc() {
-            return
-                [](GraphicsPipeline* pl, bool is_indexed) { pl->configureImpl<Spec>(is_indexed); };
-        }
 
         explicit GraphicsPipeline(
             scheduler::Scheduler& scheduler, VulkanPipelineCache& pipeline_cache,
@@ -90,7 +85,7 @@ class GraphicsPipeline {
         CLASS_NON_COPYABLE(GraphicsPipeline);
         CLASS_NON_MOVEABLE(GraphicsPipeline);
         void AddTransition(GraphicsPipeline* transition);
-        void Configure(bool is_indexed) { configure_func(this, is_indexed); }
+        void Configure();
 
         [[nodiscard]] auto Next(const GraphicsPipelineCacheKey& current_key) noexcept
             -> GraphicsPipeline* {
@@ -109,9 +104,6 @@ class GraphicsPipeline {
         ~GraphicsPipeline();
 
     private:
-        template <typename Spec>
-        void configureImpl(bool is_indexed);
-
         void makePipeline(vk::RenderPass render_pass);
         void ConfigureDraw();
         void validate();
