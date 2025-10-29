@@ -11,7 +11,6 @@
 #include "common/slot_vector.hpp"
 #include "resource/instance.hpp"
 
-using ModelId = common::SlotId;
 
 namespace graphics {
 class ResourceManager;

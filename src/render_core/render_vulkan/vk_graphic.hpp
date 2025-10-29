@@ -14,6 +14,8 @@
 #include "common/common_funcs.hpp"
 #include "render_core/framebufferConfig.hpp"
 namespace render::vulkan {
+using ModelId = common::SlotId;
+
 struct FramebufferTextureInfo;
 class Device;
 
@@ -41,11 +43,13 @@ class VulkanGraphics : public render::Graphic {
         void setPipelineState(const PipelineState& state) override;
         void dispatchCompute() override;
         auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
-        auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId override;
+        auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
         void draw(const graphics::IModelInstance& instance) override;
         void end() override {};
         auto getDrawImage() -> ImTextureID override;
-        auto getShaderCache() ->ShaderCache* override {return &pipeline_cache;};
+        auto addShader(std::span<const u32> data, ShaderType type) -> u64 override {
+            return pipeline_cache.addShader(data, type);
+        };
         ~VulkanGraphics() override;
 
         auto AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
@@ -108,8 +112,12 @@ class VulkanGraphics : public render::Graphic {
         u32 draw_counter = 0;
         ModelId current_modelId;
         common::SlotVector<ModelResource> modelResource;
-        common::SlotVector<boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32>> vertex_attributes;
-        common::SlotVector<boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32>> vertex_bindings;
+        common::SlotVector<
+            boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32>>
+            vertex_attributes;
+        common::SlotVector<
+            boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32>>
+            vertex_bindings;
 
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
 };

@@ -3,7 +3,7 @@
 #include "render_core/types.hpp"
 #include "render_core/shader_cache.hpp"
 #include "common/common_funcs.hpp"
-#include "resource/model_instance.hpp"
+#include "resource/instance.hpp"
 #include "resource/texture/image.hpp"
 #include "resource/obj/mesh.hpp"
 #include <imgui.h>
@@ -17,7 +17,14 @@ class Graphic {
         virtual auto uploadModel(const graphics::IMeshData& instance) -> MeshId = 0;
         virtual auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId = 0;
         virtual void draw(const graphics::IModelInstance& instance) = 0;
-        virtual auto getShaderCache() ->ShaderCache* = 0;
+        /**
+         * @brief 添加shader，返回shader的hash，同过设置IModelInstance设置shader hash 确认使用的shader
+         *
+         * @param data
+         * @param type
+         * @return u64
+         */
+        virtual auto addShader(std::span<const u32> data, ShaderType type) -> u64 = 0;
         virtual void dispatchCompute() = 0;
         virtual void clean() = 0;
         virtual void end() = 0;

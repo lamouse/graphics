@@ -161,14 +161,13 @@ void App::load_resource() {
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
 
-    auto* shader_cache = graphics->getShaderCache();
     resourceManager.addGraphShader(model_shader_name,
-                                   [shader_cache](auto data, auto type) -> std::uint64_t {
-                                       return shader_cache->addShader(data, type);
+                                   [graphics](auto data, auto type) -> std::uint64_t {
+                                       return graphics->addShader(data, type);
                                    });
     resourceManager.addGraphShader(particle_shader_name,
-                                   [shader_cache](auto data, auto type) -> std::uint64_t {
-                                       return shader_cache->addShader(data, type);
+                                   [graphics](auto data, auto type) -> std::uint64_t {
+                                       return graphics->addShader(data, type);
                                    });
 }
 
