@@ -6,7 +6,8 @@
 #include "render_core/fixed_pipeline_state.h"
 #include "ecs/scene/entity.hpp"
 namespace graphics {
-using id_t = unsigned int;
+
+auto getModelScene() -> ecs::Scene&;
 
 class IModelInstance {
     public:
@@ -29,12 +30,11 @@ class IModelInstance {
         void setTextureId(render::TextureId id) { textureId = id; }
 
         ecs::Entity entity_;
+
     protected:
         render::TextureId textureId;
         render::MeshId meshId;
         std::uint64_t vertex_shader_hash{0};
         std::uint64_t fragment_shader_hash{0};
-        inline static id_t currentId = 0;
-        inline static ecs::Scene scene;
 };
 }  // namespace graphics

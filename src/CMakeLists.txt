@@ -172,6 +172,7 @@ add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_E
 
 add_subdirectory(common)
 add_subdirectory(core)
+add_subdirectory(effects)
 add_subdirectory(shader_tools)
 add_subdirectory(render_core)
 add_subdirectory(utils)

@@ -3,12 +3,13 @@
 #include <random>
 namespace graphics {
 
-Particle::Particle() {
+ParticleModel::ParticleModel(std::uint64_t count) {
     // Initialize particles
-    std::default_random_engine randEngine((unsigned)time(nullptr));
+    std::random_device rd;
+    std::default_random_engine randEngine(rd());
     std::uniform_real_distribution<float> rndDist(0.0F, 1.0F);
 
-    particles.resize(PARTICLE_COUNT);
+    particles.resize(count);
     const float aspect = 1920.0F / 1080.0F; // 修正为浮点除法
     for (auto& particle : particles) {
         float r = 0.25F * std::sqrt(rndDist(randEngine));
@@ -22,7 +23,7 @@ Particle::Particle() {
     }
 }
 
-[[nodiscard]] auto Particle::getMesh() const -> std::span<const float> {
+[[nodiscard]] auto ParticleModel::getMesh() const -> std::span<const float> {
         return std::span<const float>(reinterpret_cast<const float*>(particles.data()),
                                   particles.size() * sizeof(Vertex) / sizeof(float));
 }

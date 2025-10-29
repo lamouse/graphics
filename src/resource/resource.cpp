@@ -21,7 +21,7 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
 }
 
 void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
-    ASSERT_MSG(!meshName.empty(), "textureName is null");
+    ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func, "add_mesh_func is null");
     auto model = Model::createFromFile(meshName);
     auto meshId = func(model);
@@ -29,7 +29,7 @@ void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
     mesh[meshName] = meshId;
 }
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
-    ASSERT_MSG(!meshName.empty(), "textureName is null");
+    ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func, "add_mesh_func is null");
     auto meshId = func(meshData);
     ASSERT_MSG(!mesh.contains(meshName), meshName + " mesh in catch");

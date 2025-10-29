@@ -8,8 +8,8 @@
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "resource/obj/model.hpp"
-#include "common/slot_vector.hpp"
 #include "resource/instance.hpp"
+#include "resource/id.hpp"
 
 
 namespace graphics {
@@ -70,7 +70,7 @@ class ModelInstance : public IModelInstance {
             : id(id) {
             textureId = textureId_;
             meshId = meshId_;
-            entity_ = scene.createEntity("Model" + std::to_string(id));
+            entity_ = getModelScene().createEntity("Model" + std::to_string(id));
             entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }

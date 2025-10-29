@@ -1,4 +1,5 @@
 set(sources
+    compute_instance.hpp
     delayed_destruction_ring.h
     fixed_pipeline_state.cpp
     fixed_pipeline_state.h

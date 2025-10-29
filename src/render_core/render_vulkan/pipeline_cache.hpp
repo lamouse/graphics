@@ -67,7 +67,7 @@ class PipelineCache : public ShaderCache {
         CLASS_NON_COPYABLE(PipelineCache);
         CLASS_NON_MOVEABLE(PipelineCache);
         [[nodiscard]] auto currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline*;
-        [[nodiscard]] auto currentComputePipeline() -> ComputePipeline*;
+        [[nodiscard]] auto currentComputePipeline(const std::array<u32, 3>& workgroupSize) -> ComputePipeline*;
     private:
             auto createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline>;
         [[nodiscard]] auto currentGraphicsPipelineSlowPath() -> GraphicsPipeline*;

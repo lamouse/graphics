@@ -2,6 +2,7 @@
 #include "render_core/fixed_pipeline_state.h"
 #include "render_core/types.hpp"
 #include "render_core/shader_cache.hpp"
+#include "render_core/compute_instance.hpp"
 #include "common/common_funcs.hpp"
 #include "resource/instance.hpp"
 #include "resource/texture/image.hpp"
@@ -25,7 +26,7 @@ class Graphic {
          * @return u64
          */
         virtual auto addShader(std::span<const u32> data, ShaderType type) -> u64 = 0;
-        virtual void dispatchCompute() = 0;
+        virtual void dispatchCompute(const IComputeInstance& instance) = 0;
         virtual void clean() = 0;
         virtual void end() = 0;
         Graphic() = default;

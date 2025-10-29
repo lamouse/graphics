@@ -33,9 +33,10 @@ auto buildVertexBinding(std::span<render::VertexBinding> bindings)
         vertex_bindings.push_back(vk::VertexInputBindingDescription2EXT()
                                       .setBinding(binding.binding)
                                       .setStride(binding.stride)
-                                      .setInputRate(binding.is_instance ?  vk::VertexInputRate::eInstance : vk::VertexInputRate::eVertex)
+                                      .setInputRate(binding.is_instance
+                                                        ? vk::VertexInputRate::eInstance
+                                                        : vk::VertexInputRate::eVertex)
                                       .setDivisor(binding.divisor));
-
     }
 
     return vertex_bindings;
@@ -111,14 +112,38 @@ void VulkanGraphics::clear() {
 }
 void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
 
-void VulkanGraphics::dispatchCompute() {
+void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
+    pipeline_cache.setsetCurrentShader(instance.getShaderHash());
     FlushWork();
-    auto* pipeline{pipeline_cache.currentComputePipeline()};
+    auto work = instance.getWorkgroupSize();
+
+    auto* pipeline{pipeline_cache.currentComputePipeline(work)};
     if (!pipeline) {
         return;
     }
+    buffer_cache.UploadComputeUniformBuffer(instance.getUBOData());
+    for (const auto& mesh : instance.getMeshIds()) {
+        const auto resource = modelResource[mesh];
+        buffer_cache.bindComputeStorageBuffers(resource.vertex_buffer_id);
+    }
+
     std::scoped_lock lock{texture_cache.mutex, buffer_cache.mutex};
     pipeline->Configure(scheduler, buffer_cache);
+#ifdef MemoryBarrier
+#undef MemoryBarrier
+#endif
+    static constexpr vk::MemoryBarrier READ_BARRIER =
+        vk::MemoryBarrier()
+            .setSrcAccessMask(vk::AccessFlagBits::eMemoryWrite)
+            .setDstAccessMask(vk::AccessFlagBits::eMemoryRead);
+    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.record([](vk::CommandBuffer cmdbuf) {
+        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+                               vk::PipelineStageFlagBits::eComputeShader, {}, READ_BARRIER, nullptr,
+                               nullptr);
+    });
+    scheduler.record(
+        [work](vk::CommandBuffer cmdbuf) -> void { cmdbuf.dispatch(work[0], work[1], work[2]); });
 }
 
 auto VulkanGraphics::getDrawImage() -> ImTextureID {

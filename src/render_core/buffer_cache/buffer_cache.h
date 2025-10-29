@@ -109,6 +109,10 @@ template <class P>
 void BufferCache<P>::UploadGraphicUniformBuffer(std::span<const std::byte> data) {
     graphic_uniform_buffer = data;
 }
+template <class P>
+void BufferCache<P>::UploadComputeUniformBuffer(std::span<const std::byte> data) {
+    compute_uniform_buffer = data;
+}
 
 template <class P>
 void BufferCache<P>::DoUpdateComputeBuffers() {
@@ -140,10 +144,10 @@ template <class P>
 void BufferCache<P>::UpdateComputeTextureBuffers() {}
 
 template <class P>
-void BufferCache<P>::bindComputeStorageBuffers(std::span<Binding> bindings) {
-    std::ranges::for_each(bindings, [this](Binding& binding) -> void {
-        compute_storage_buffers.at(compute_storage_buffers_size) = binding;
-    });
+void BufferCache<P>::bindComputeStorageBuffers(BufferId id) {
+    auto& buffer = slot_buffers[id];
+    compute_storage_buffers.at(compute_storage_buffers_size++) =
+        Binding{.size = static_cast<u32>(buffer.sizeBytes()), .buffer_id = id};
 }
 
 }  // namespace render::buffer

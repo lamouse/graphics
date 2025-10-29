@@ -119,7 +119,8 @@ class BufferCache : public BufferCacheInfo {
         void BindGraphicUniformBuffer();
         void UploadGraphicUniformBuffer(std::span<const std::byte> data);
 
-        void bindComputeStorageBuffers(std::span<Binding> bindings);
+        void bindComputeStorageBuffers(BufferId id);
+        void UploadComputeUniformBuffer(std::span<const std::byte> data);
 
         void DoUpdateComputeBuffers();
         void UpdateComputeUniformBuffers();

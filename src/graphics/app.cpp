@@ -2,9 +2,9 @@
 
 #include "resource/model_instance.hpp"
 #include "resource/particle_instance.hpp"
-#include "resource/obj/particle.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
+#include "effects/particle/particle.hpp"
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
@@ -50,12 +50,10 @@ void App::run() {
     std::string viking_room_path = image_path + "viking_room.png";
     std::string other_image = image_path + "p1.jpg";
     std::string viking_obj_path = "models/viking_room.obj";
-
-    ParticleInstance particle_instance(resourceManager, "", "particle", particle_shader_name);
-    model_entt.push_back(particle_instance.entity_);
+    effects::DeltaParticle particle(resourceManager, graphics, PARTICLE_COUNT);
     models.emplace_back(resourceManager, viking_room_path, viking_obj_path, model_shader_name);
     models.emplace_back(resourceManager, other_image, viking_obj_path, model_shader_name);
-
+    model_entt.emplace_back(particle.entity_);
     for (const auto& model : models) {
         model_entt.push_back(model.entity_);
     }
@@ -72,22 +70,20 @@ void App::run() {
         if (camera.extentAspectRation != window->getAspectRatio()) {
             camera.extentAspectRation = window->getAspectRatio();
         }
-
+        auto last_frame_time = getRuntime();
         for (auto& m : models) {
             m.entity_.getComponent<ecs::TransformComponent>().rotation.z =
-                getRuntime() * glm::radians(90.0F);
+                last_frame_time * glm::radians(90.0F);
             m.updateViewProjection(camera.getCamera());
-            if(!m.entity_.getComponent<ecs::RenderStateComponent>().visible){
+            if (!m.entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 continue;
             }
             graphics->setPipelineState(pipeline_state);
             graphics->draw(m);
         }
-
-        if(particle_instance.entity_.getComponent<ecs::RenderStateComponent>().visible){
-            graphics->draw(particle_instance);
-
-        }
+        particle.getUniforBuffer().deltaTime = last_frame_time * 2.0f;
+        graphics->setPipelineState(pipeline_state);
+        particle.draw(graphics);
         graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
@@ -153,11 +149,6 @@ void App::load_resource() {
         return graphics->uploadModel(mesh);
     });
 
-    Particle particle;
-    resourceManager.addMesh("particle", particle, [&](const auto& mesh) -> render::MeshId {
-        return graphics->uploadModel(mesh);
-    });
-
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
 
@@ -169,6 +160,10 @@ void App::load_resource() {
                                    [graphics](auto data, auto type) -> std::uint64_t {
                                        return graphics->addShader(data, type);
                                    });
+    resourceManager.addComputeShader(particle_shader_name,
+                                     [graphics](auto data, auto type) -> std::uint64_t {
+                                         return graphics->addShader(data, type);
+                                     });
 }
 
 }  // namespace graphics

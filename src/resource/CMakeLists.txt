@@ -2,6 +2,10 @@
 set(LIB_RESOURCE_NAME resource)
 
 set (sources
+    id.hpp
+    id.cpp
+    instance.hpp
+    instance.cpp
     texture/image.hpp
     texture/image.cpp
     obj/mesh.hpp

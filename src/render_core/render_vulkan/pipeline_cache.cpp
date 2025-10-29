@@ -111,7 +111,7 @@ auto PipelineCache::currentGraphicsPipeline(PrimitiveTopology topology) -> Graph
     return builtPipeline(current_pipeline);
 }
 
-auto PipelineCache::currentComputePipeline() -> ComputePipeline* {
+auto PipelineCache::currentComputePipeline(const std::array<u32, 3>& workgroupSize) -> ComputePipeline* {
     const ShaderInfo* shader = shader_infos.at(static_cast<u8>(ShaderType::Compute));
     if (!shader) {
         return nullptr;
@@ -119,7 +119,7 @@ auto PipelineCache::currentComputePipeline() -> ComputePipeline* {
     const ComputePipelineCacheKey key{
         .unique_hash = shader->unique_hash,
         .shared_memory_size = 0,
-        .workgroup_size{1, 1, 1},
+        .workgroup_size = workgroupSize,
     };
     const auto [pair, is_new]{compute_cache.try_emplace(key)};
     auto& pipeline{pair->second};
@@ -127,6 +127,7 @@ auto PipelineCache::currentComputePipeline() -> ComputePipeline* {
         return pipeline.get();
     }
     pipeline = CreateComputePipeline(key);
+    mark_loaded(shader_infos);
     return pipeline.get();
 }
 

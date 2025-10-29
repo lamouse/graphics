@@ -1,5 +1,7 @@
 #pragma once
 #include "resource/instance.hpp"
+#include "common/common_funcs.hpp"
+#include "id.hpp"
 namespace graphics {
 class ResourceManager;
 class ParticleInstance : public IModelInstance {
@@ -10,6 +12,10 @@ class ParticleInstance : public IModelInstance {
         }
         explicit ParticleInstance(const ResourceManager& resource, const std::string& textureName,
                                   const std::string& meshName, std::string shaderName);
+        CLASS_DEFAULT_COPYABLE(ParticleInstance);
+        CLASS_DEFAULT_MOVEABLE(ParticleInstance);
+        ~ParticleInstance() override = default;
+        ParticleInstance() = default;
     private:
         render::PrimitiveTopology topology = render::PrimitiveTopology::Points;
         id_t id;

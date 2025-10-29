@@ -2,8 +2,7 @@
 #include <glm/glm.hpp>
 #include "mesh.hpp"
 namespace graphics {
-struct Particle : public IMeshData {
-        const uint32_t PARTICLE_COUNT = 8192;
+struct ParticleModel : public IMeshData {
         struct Vertex {
                 glm::vec2 position;
                 glm::vec2 velocity;
@@ -12,7 +11,7 @@ struct Particle : public IMeshData {
                 static auto getVertexBinding() -> std::vector<render::VertexBinding> {
                     std::vector<render::VertexBinding> bindings;
                     bindings.push_back(
-                        render::VertexBinding{.binding = 0, .stride = sizeof(Particle),.is_instance = true, .divisor = 1});
+                        render::VertexBinding{.binding = 0, .stride = sizeof(Vertex),.is_instance = true, .divisor = 1});
                     return bindings;
                 }
                 static auto getVertexAttribute() -> std::vector<render::VertexAttribute> {
@@ -52,8 +51,8 @@ struct Particle : public IMeshData {
         }
 
         [[nodiscard]] auto uses32BitIndices() const -> bool override { return false; }
-        Particle();
-        ~Particle() = default;
+        ParticleModel(std::uint64_t count);
+        ~ParticleModel() override = default;
 
     private:
         // Initial particle positions on a circle
