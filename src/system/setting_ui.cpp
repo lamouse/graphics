@@ -37,32 +37,6 @@ void log_settings() {
     ImGui::SameLine();
 }
 
-void fps() {
-    ImGuiIO const& io = ImGui::GetIO();
-    (void)io;
-    ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
-    auto main_size = ImGui::GetMainViewport()->Size;
-    bool fps_open = false;
-    ImGui::SetNextWindowBgAlpha(.0f);
-    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always,
-                            ImVec2(1.01F, 0.0F));
-    ImGui::Begin("Window 1", &fps_open,
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
-                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
-    ImGui::End();
-}
-void show_fps() {
-    static bool show_fps = false;
-    ImGui::Checkbox("show fps", &show_fps);
-    if (show_fps) {
-        fps();
-    }
-}
-
 void show_ui_debug_window() {
     static bool show_window = false;
     ImGui::Checkbox("show ui debug", &show_window);
@@ -76,7 +50,6 @@ namespace graphics {
 void draw_setting(bool& show) {
     if (show) {
         ImGui::Begin("\ueb51 系统设置", &show);
-        show_fps();
         show_ui_debug_window();
         vsync_setting();
         log_settings();

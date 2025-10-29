@@ -136,6 +136,25 @@ static void ShowExampleMenuFile() {
     }
 }
 
+void fps() {
+    ImGuiIO const& io = ImGui::GetIO();
+    (void)io;
+    ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
+    auto main_size = ImGui::GetMainViewport()->Size;
+    bool fps_open = false;
+    ImGui::SetNextWindowBgAlpha(.0f);
+    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always,
+                            ImVec2(1.01F, 0.0F));
+    ImGui::Begin("Window 1", &fps_open,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoScrollbar |
+                     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
+                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
+    ImGui::End();
+}
+
 }  // namespace
 namespace graphics::ui {
 
@@ -402,6 +421,10 @@ void ShowOutliner(std::span<ecs::Entity> instances, bool& show) {
     ImGui::End();
 }
 void show_menu(MenuData& data) {
+    static bool show_fps = false;
+    if (show_fps) {
+        fps();
+    }
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             ShowExampleMenuFile();
@@ -421,10 +444,13 @@ void show_menu(MenuData& data) {
             }
             ImGui::EndMenu();
         }
+
         if (ImGui::BeginMenu("Window")) {
             ImGui::MenuItem("\uf1b3 outliner", nullptr, &data.show_out_liner);
             ImGui::MenuItem("\ueb51 系统设置", "", &data.show_system_setting);
             ImGui::MenuItem("\uF15C 日志", "", &data.show_log);
+            ImGui::MenuItem("\uf9c4 fps", "", &show_fps);
+
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
