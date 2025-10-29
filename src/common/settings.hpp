@@ -6,23 +6,6 @@
 #undef min
 namespace settings {
 
-class RenderVulkan : public common::settings::BaseSetting<RenderVulkan> {
-        friend common::settings::BaseSetting<RenderVulkan>;
-        auto getImpl() -> RenderVulkan { return *this; }
-
-    public:
-        // 这里可以用来统计渲染器的性能 主要在调试的时候使用 相关文件是
-        // src\render_core\render_vulkan\pipeline_statistics.hpp
-        bool renderer_shader_feedback = false;
-        bool enable_compute_pipelines = true;
-        bool use_pipeline_cache = true;
-        enums::VramUsageMode v_ram_usage_mode = settings::enums::VramUsageMode::Conservative;
-        static auto get() { return instance_; }
-
-    private:
-        static RenderVulkan instance_;
-};
-
 class Graphics : public common::settings::BaseSetting<Graphics> {
         friend common::settings::BaseSetting<Graphics>;
         auto getImpl() -> Graphics { return *this; }
@@ -48,26 +31,33 @@ SETTING(bool, false);
 #undef SETTING
 
 struct Values {
-    Linkage linkage;
-    SwitchableSetting<enums::VSyncMode, true> vsync_mode{linkage,
-                                                         enums::VSyncMode::Fifo,
-                                                         "use_vsync",
-                                                         Category::render,
-                                                         Specialization::RuntimeList,
-                                                         true,
-                                                         true};
-    SwitchableSetting<enums::LogLevel, true> log_level{linkage,
-                                                       enums::LogLevel::info,
-                                                       "",
-                                                       Category::log,
-                                                       Specialization::RuntimeList,
-                                                       true,
-                                                       true};
-    Setting<bool, false> use_present_thread{linkage, false, "use_present_thread", Category::render};
-    Setting<bool, false> render_debug{linkage, true, "render_debug", Category::render};
-    Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
-    Setting<bool, false> log_file{linkage, true, "file", Category::log};
+        Linkage linkage;
+        SwitchableSetting<enums::VSyncMode, true> vsync_mode{linkage,
+                                                             enums::VSyncMode::Fifo,
+                                                             "use_vsync",
+                                                             Category::render,
+                                                             Specialization::RuntimeList,
+                                                             true,
+                                                             true};
+        SwitchableSetting<enums::LogLevel, true> log_level{
+            linkage, enums::LogLevel::info, "", Category::log, Specialization::RuntimeList, true,
+            true};
+        Setting<enums::VramUsageMode, false> v_ram_usage_mode{
+            linkage, enums::VramUsageMode::Conservative, "v_ram_usage_mode", Category::render};
+        Setting<bool, false> use_present_thread{linkage, false, "use_present_thread",
+                                                Category::render};
+        Setting<bool, false> render_debug{linkage, true, "render_debug", Category::render};
+        Setting<bool, false> renderer_shader_feedback{linkage, false, "renderer_shader_feedback",
+                                                      Category::render};
+        Setting<bool, false> enable_compute_pipelines{linkage, true, "enable_compute_pipelines",
+                                                      Category::render};
+        Setting<bool, false> use_pipeline_cache{linkage, true, "use_pipeline_cache",
+                                                      Category::render};
+
+
+        Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
+        Setting<bool, false> log_file{linkage, true, "file", Category::log};
 };
 
 extern Values values;
-} // namespace settings
+}  // namespace settings

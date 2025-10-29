@@ -61,7 +61,7 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
       shader_notify(shader_notify_),
       use_asynchronous_shaders(
           common::settings::get<settings::Graphics>().use_asynchronous_shaders),
-      use_vulkan_pipeline_cache(common::settings::get<settings::RenderVulkan>().use_pipeline_cache),
+      use_vulkan_pipeline_cache(settings::values.use_pipeline_cache.GetValue()),
       workers(device.hasBrokenParallelShaderCompiling() ? 1ULL : GetTotalPipelineWorkers(),
               "VkPipelineBuilder"),
       serialization_thread(1, "vkPipelineSerialization") {

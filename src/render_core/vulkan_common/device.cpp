@@ -500,11 +500,10 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         misc_features_.cant_blit_msaa = true;
     }
 
-    auto vk_setting = common::settings::get<settings::RenderVulkan>();
     misc_features_.has_broken_compute =
         utils::checkBrokenCompute(static_cast<vk::DriverId>(properties_.driver_.driverID),
                                   properties_.properties_.driverVersion) &&
-        !vk_setting.enable_compute_pipelines;
+        !settings::values.enable_compute_pipelines.GetValue();
     if (is_intel_anv || (is_qualcomm && !is_s8gen2)) {
         SPDLOG_WARN("Driver does not support native BGR format");
         misc_features_.must_emulate_bgr565 = true;
@@ -864,8 +863,7 @@ void Device::removeUnsuitableExtensions() {
                                        VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
 
     // VK_KHR_pipeline_executable_properties
-    auto vulkan = common::settings::get<settings::RenderVulkan>();
-    if (vulkan.renderer_shader_feedback) {
+    if (settings::values.renderer_shader_feedback.GetValue()) {
         extensions_.pipeline_executable_properties =
             static_cast<bool>(features_.pipeline_executable_properties.pipelineExecutableInfo);
         removeExtensionFeatureIfUnsuitable(extensions_.pipeline_executable_properties,
@@ -1090,8 +1088,7 @@ void Device::collectPhysicalMemoryInfo() {
     if (!misc_features_.is_integrated) {
         const uint64_t reserve_memory = std::min<uint64_t>(device_access_memory_ / 8, 1_GiB);
         device_access_memory_ -= reserve_memory;
-        auto renderVulkan = common::settings::get<settings::RenderVulkan>();
-        if (renderVulkan.v_ram_usage_mode != settings::enums::VramUsageMode::Aggressive) {
+        if (settings::values.v_ram_usage_mode.GetValue() != settings::enums::VramUsageMode::Aggressive) {
             // Account for resolution scaling in memory limits
             const size_t normal_memory = 6_GiB;
             const size_t scaler_memory = 1_GiB;

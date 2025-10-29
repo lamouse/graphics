@@ -1,7 +1,5 @@
 #include "settings.hpp"
 namespace settings {
-RenderVulkan RenderVulkan::instance_ = {};
-
 Values values;
 
 #define SETTING(TYPE, RANGED) template class Setting<TYPE, RANGED>
