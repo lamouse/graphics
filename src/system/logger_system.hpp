@@ -41,14 +41,7 @@ class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
                 }
 
                 ImGui::PushStyleColor(ImGuiCol_Text, color);
-
-                // 保证每行至少显示 120 字符宽度（填充空格）
-                std::string padded = line;
-                if (padded.length() < 120) {
-                    padded.append(120 - padded.length(), ' ');
-                }
-
-                ImGui::TextUnformatted(padded.c_str());
+                ImGui::TextUnformatted(line.c_str());
                 ImGui::PopStyleColor();
             }
             if (auto_scroll_ && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
