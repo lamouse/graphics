@@ -34,8 +34,7 @@ class Particle : public render::IComputeInstance {
             return u.as_byte_span();
         };
         Particle(graphics::ResourceManager& manager, render::Graphic* graphics, std::uint32_t count)
-            : id(getCurrentId()),
-              entity_(getEffectsScene().createEntity(getParticleTypeName(Type) + std::to_string(id))) {
+            : id(getCurrentId()) {
             graphics::ParticleModel model{count};
             manager.addMesh("particle_in", model, [&](const auto& mesh) -> render::MeshId {
                 return graphics->uploadModel(mesh);
@@ -51,6 +50,8 @@ class Particle : public render::IComputeInstance {
             compute_mesh.at(0) = out.getMeshId();
             compute_mesh.at(1) = in.getMeshId();
             mesh_ids = compute_mesh;
+            entity_ =
+                getEffectsScene().createEntity(getParticleTypeName(Type) + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             compute_shader_hash = manager.getShaderHash<std::uint64_t>(particle_shader_name);
             uint32_t group_x = (count + LOCAL_SIZE - 1) / LOCAL_SIZE;
@@ -60,12 +61,14 @@ class Particle : public render::IComputeInstance {
         void draw(render::Graphic* graphics) {
             graphics->dispatchCompute(*this);
             std::swap(compute_mesh.at(0), compute_mesh.at(1));
-            if (draw_out) {
-                graphics->draw(out);
-                draw_out = false;
-            } else {
-                graphics->draw(in);
-                draw_out = true;
+            if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                if (draw_out) {
+                    graphics->draw(out);
+                    draw_out = false;
+                } else {
+                    graphics->draw(in);
+                    draw_out = true;
+                }
             }
         }
 

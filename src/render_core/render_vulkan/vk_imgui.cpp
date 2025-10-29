@@ -56,7 +56,6 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
       descriptorPool(createDescriptorPool(device)),
       window(window_),
       scheduler(scheduler_) {
-
     // Setup Platform/Renderer backends
     window->configGUI();
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -81,11 +80,10 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
         },
         instance);
     ImGui_ImplVulkan_Init(&init_info);
-
 }
 
 void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
-    if(!draw_func){
+    if (!draw_func) {
         return;
     }
     const vk::Framebuffer host_framebuffer{*frame->framebuffer};
@@ -96,13 +94,22 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     };
     newFrame();
     draw_func();
-    endFrame();
-    scheduler.record(
-        [renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
-            present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
-            cmdbuf.endRenderPass();
-        });
+    ImGui::Render();
+    scheduler.record([renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
+        present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
+        cmdbuf.endRenderPass();
+    });
+
+    {
+        std::scoped_lock lock(scheduler.submit_mutex_);
+        ImGuiIO const& io = ImGui::GetIO();
+        (void)io;
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {  // NOLINT
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+        }
+    }
 }
 
 ImguiCore::~ImguiCore() {
@@ -116,17 +123,6 @@ void ImguiCore::newFrame() {
     window->newFrame();
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
-}
-
-// NOLINTNEXTLINE
-void ImguiCore::endFrame() {
-    ImGui::Render();
-    ImGuiIO const& io = ImGui::GetIO();
-    (void)io;
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {  // NOLINT
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-    }
 }
 
 }  // namespace render::vulkan

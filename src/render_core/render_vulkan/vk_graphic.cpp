@@ -488,7 +488,6 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
             }
             buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
         }
-
         scheduler.record([indices_size = resource.indices_count,
                           vertexCount = resource.vertex_count](vk::CommandBuffer cmdbuf) {
             if (indices_size > 0) {

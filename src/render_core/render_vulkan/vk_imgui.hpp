@@ -22,8 +22,6 @@ class ImguiCore {
         core::frontend::BaseWindow* window;
         scheduler::Scheduler& scheduler;
         void newFrame();
-        void endFrame();
-
     public:
         void draw(const std::function<void()>& draw_func, Frame* frame);
         explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,
