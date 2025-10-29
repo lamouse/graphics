@@ -14,7 +14,6 @@ auto BufferCache<P>::CreateBuffer(u32 wanted_size) -> BufferId {
     auto& new_buffer = slot_buffers[new_buffer_id];
     const size_t size_bytes = wanted_size;
     runtime.ClearBuffer(new_buffer, 0, size_bytes, 0);
-    new_buffer.MarkUsage(0, size_bytes);
     return new_buffer_id;
 }
 template <class P>
@@ -71,11 +70,6 @@ auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
     return buffer_id;
 }
 
-template <class P>
-void BufferCache<P>::BindStageBuffers(size_t stage) {
-    // BindHostGraphicsStorageBuffers(stage);
-    // BindHostGraphicsTextureBuffers(stage);
-}
 
 template <class P>
 void BufferCache<P>::TickFrame() {
@@ -112,16 +106,16 @@ void BufferCache<P>::TickFrame() {
 
 template <class P>
 void BufferCache<P>::BindGraphicUniformBuffer() {
-    if (graphic_host_buffer.empty()) {
+    if (graphic_uniform_buffer.empty()) {
         return;
     }
-    auto map = runtime.BindMappedUniformBuffer(0, 0, graphic_host_buffer.size());
-    std::memcpy(map.data(), graphic_host_buffer.data(), graphic_host_buffer.size());
-    graphic_host_buffer = {};
+    auto map = runtime.BindMappedUniformBuffer(0, 0, graphic_uniform_buffer.size());
+    std::memcpy(map.data(), graphic_uniform_buffer.data(), graphic_uniform_buffer.size());
+    graphic_uniform_buffer = {};
 }
 template <class P>
 void BufferCache<P>::UploadGraphicUniformBuffer(std::span<const std::byte> data) {
-    graphic_host_buffer = data;
+    graphic_uniform_buffer = data;
 }
 
 template <class P>
@@ -132,10 +126,23 @@ void BufferCache<P>::DoUpdateComputeBuffers() {
 }
 
 template <class P>
-void BufferCache<P>::UpdateComputeUniformBuffers() {}
+void BufferCache<P>::UpdateComputeUniformBuffers() {
+    if (compute_uniform_buffer.empty()) {
+        return;
+    }
+    auto map = runtime.BindMappedUniformBuffer(0, 0, compute_uniform_buffer.size());
+    std::memcpy(map.data(), compute_uniform_buffer.data(), compute_uniform_buffer.size());
+    compute_uniform_buffer = {};
+}
 
 template <class P>
-void BufferCache<P>::UpdateComputeStorageBuffers() {}
+void BufferCache<P>::UpdateComputeStorageBuffers() {
+    for(std::uint32_t i = 0; i < compute_storage_buffers_size; i++){
+        auto & buffer = slot_buffers[compute_storage_buffers.at(i).buffer_id];
+        runtime.BindStorageBuffer(buffer, 0, compute_storage_buffers.at(i).size);
+    }
+    compute_storage_buffers_size = 0;
+}
 
 template <class P>
 void BufferCache<P>::UpdateComputeTextureBuffers() {}

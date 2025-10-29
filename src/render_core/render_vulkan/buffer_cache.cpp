@@ -5,7 +5,8 @@
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "update_descriptor.hpp"
 #include "staging_buffer_pool.hpp"
-#include <format>
+#include "common/alignment.h"
+
 #if defined(MemoryBarrier)
 #undef MemoryBarrier
 #undef min
@@ -65,7 +66,7 @@ auto CreateBuffer(const Device& device, const MemoryAllocator& memory_allocator,
 }  // namespace
 
 BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, buffer::NullBufferParams null_params)
-    : buffer::BufferBase(null_params), tracker{4096} {
+    : buffer::BufferBase(null_params) {
     if (runtime.device.HasNullDescriptor()) {
         return;
     }
@@ -77,8 +78,8 @@ BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, buffer::NullBuffer
 BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, u64 size_bytes_)
     : buffer::BufferBase(size_bytes_),
       device{&runtime.device},
-      buffer{CreateBuffer(*device, runtime.memory_allocator, sizeBytes())},
-      tracker{sizeBytes()} {}
+      buffer{CreateBuffer(*device, runtime.memory_allocator, sizeBytes())}
+      {}
 
 auto BaseBufferCache::View(u32 offset, u32 size, surface::PixelFormat format) -> vk::BufferView {
     if (!device) {
@@ -158,21 +159,12 @@ auto BufferCacheRuntime::GetStorageBufferAlignment() const -> u32 {
 
 void BufferCacheRuntime::TickFrame(common::SlotVector<BaseBufferCache>& slot_buffers) noexcept {
     for (auto it = slot_buffers.begin(); it != slot_buffers.end(); it++) {
-        it->ResetUsageTracking();
     }
     uniform_ring.BeginFrame();
 }
 
 void BufferCacheRuntime::Finish() { scheduler.finish(); }
 
-auto BufferCacheRuntime::CanReorderUpload(const BaseBufferCache& buffer,
-                                          std::span<const texture::BufferCopy> copies) -> bool {
-    const bool can_use_upload_cmdbuf =
-        std::ranges::all_of(copies, [&](const texture::BufferCopy& copy) {
-            return !buffer.IsRegionUsed(copy.dst_offset, copy.size);
-        });
-    return can_use_upload_cmdbuf;
-}
 
 void BufferCacheRuntime::CopyBuffer(vk::Buffer dst_buffer, vk::Buffer src_buffer,
                                     std::span<const texture::BufferCopy> copies, bool barrier,
@@ -228,7 +220,7 @@ void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t 
     };
 
     scheduler.requestOutsideRenderPassOperationContext();
-    scheduler.record([dest_buffer, offset, size, value](vk::CommandBuffer cmdbuf) {
+    scheduler.record([dest_buffer, offset, size, value](vk::CommandBuffer cmdbuf)-> void {
         cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
                                vk::PipelineStageFlagBits::eTransfer, {}, READ_BARRIER, {}, {});
         cmdbuf.fillBuffer(dest_buffer, offset, size, value);

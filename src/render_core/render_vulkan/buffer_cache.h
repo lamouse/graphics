@@ -5,7 +5,6 @@
 #include "common/slot_vector.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/surface.hpp"
-#include "render_core/buffer_cache/usage_tracker.hpp"
 #include "render_core/render_vulkan/staging_buffer_pool.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/texture/types.hpp"
@@ -27,12 +26,6 @@ class BaseBufferCache : public buffer::BufferBase {
         explicit BaseBufferCache(BufferCacheRuntime&, buffer::NullBufferParams null_params);
         explicit BaseBufferCache(BufferCacheRuntime& runtime, u64 size_bytes_);
         operator vk::Buffer() const noexcept { return *buffer; }
-        void ResetUsageTracking() noexcept { tracker.Reset(); }
-        [[nodiscard]] auto IsRegionUsed(u64 offset, u64 size) const noexcept -> bool {
-            return tracker.IsUsed(offset, size);
-        }
-
-        void MarkUsage(u64 offset, u64 size) noexcept { tracker.Track(offset, size); }
         [[nodiscard]] auto View(u32 offset, u32 size, surface::PixelFormat format)
             -> vk::BufferView;
 
@@ -49,7 +42,6 @@ class BaseBufferCache : public buffer::BufferBase {
         const Device* device{};
         Buffer buffer;
         std::vector<BufferView> views;
-        buffer::UsageTracker tracker;
         bool is_null{};
 };
 
@@ -118,8 +110,7 @@ class BufferCacheRuntime {
             BindBuffer(buffer, offset, size);
         }
 
-        void BindStorageBuffer(vk::Buffer buffer, u32 offset, u32 size,
-                               [[maybe_unused]] bool is_written) {
+        void BindStorageBuffer(vk::Buffer buffer, u32 offset, u32 size) {
             BindBuffer(buffer, offset, size);
         }
 

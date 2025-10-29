@@ -106,13 +106,7 @@ class BufferCacheInfo {
         std::array<u32, NUM_STAGES> enabled_uniform_buffer_masks{};
         u32 enabled_compute_uniform_buffer_mask = 0;
 
-        const UniformBufferSizes* uniform_buffer_sizes{};
-        const ComputeUniformBufferSizes* compute_uniform_buffer_sizes{};
-
-        std::array<u32, NUM_STAGES> enabled_storage_buffers{};
-        std::array<u32, NUM_STAGES> written_storage_buffers{};
-        u32 enabled_compute_storage_buffers = 0;
-        u32 written_compute_storage_buffers = 0;
+        u32 compute_storage_buffers_size = 0;
 
         std::array<u32, NUM_STAGES> enabled_texture_buffers{};
         std::array<u32, NUM_STAGES> written_texture_buffers{};
@@ -136,11 +130,6 @@ class BufferCacheInfo {
 
 template <class P>
 class BufferCache : public BufferCacheInfo {
-        static constexpr s64 DEFAULT_EXPECTED_MEMORY = 512_MiB;
-        static constexpr s64 DEFAULT_CRITICAL_MEMORY = 1_GiB;
-        static constexpr s64 TARGET_THRESHOLD = 4_GiB;
-
-        // Debug Flags.
 
         static constexpr bool DISABLE_DOWNLOADS = true;
 
@@ -162,8 +151,7 @@ class BufferCache : public BufferCacheInfo {
         void BindVertexBuffers(BufferId id, u32 size);
         void BindGraphicUniformBuffer();
         void UploadGraphicUniformBuffer(std::span<const std::byte> data);
-        void BindStageBuffers(size_t stage);
-        [[nodiscard]] auto GetDrawIndirectCount() -> std::pair<Buffer*, u32>;
+
 
         void DoUpdateComputeBuffers();
         void UpdateComputeUniformBuffers();
@@ -175,15 +163,6 @@ class BufferCache : public BufferCacheInfo {
         std::recursive_mutex mutex;
 
     private:
-        template <typename Func>
-        static void ForEachEnabledBit(u32 enabled_mask, Func&& func) {
-            for (u32 index = 0; enabled_mask != 0; ++index, enabled_mask >>= 1) {
-                const int disabled_bits = std::countr_zero(enabled_mask);
-                index += disabled_bits;
-                enabled_mask >>= disabled_bits;
-                func(index);
-            }
-        }
 
         void TouchBuffer(Buffer& buffer, BufferId buffer_id) noexcept;
 
@@ -200,7 +179,10 @@ class BufferCache : public BufferCacheInfo {
         std::deque<Async_Buffer> async_buffers_death_ring;
 
         //当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
-        std::span<const std::byte> graphic_host_buffer;
+        std::span<const std::byte> graphic_uniform_buffer;
+
+        //当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
+        std::span<const std::byte> compute_uniform_buffer;
 
         size_t immediate_buffer_capacity = 0;
         struct LRUItemParams {

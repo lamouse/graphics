@@ -21,7 +21,6 @@ set(sources
     buffer_cache/buffer_base.hpp
     buffer_cache/buffer_cache.h
     buffer_cache/buffer_cache_base.hpp
-    buffer_cache/usage_tracker.hpp
     render_vulkan/blit_screen.cpp
     render_vulkan/blit_screen.hpp
     render_vulkan/buffer_cache.cpp

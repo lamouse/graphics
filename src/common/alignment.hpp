@@ -16,7 +16,7 @@ namespace common {
  */
 template <typename T>
     requires std::is_integral_v<T>
-[[nodiscard]] constexpr T alignUp(T value_, size_t size) {
+[[nodiscard]] constexpr auto alignUp(T value_, size_t size) -> T {
     using U = typename std::make_unsigned_t<T>;  // Convert the type to its unsigned equivalent
     auto value{static_cast<U>(value_)};          // Cast value_ to unsigned type
     auto mod{static_cast<T>(value % size)};  // Compute the remainder when value is divided by size
