@@ -63,7 +63,6 @@ auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
     return buffer_id;
 }
 
-
 template <class P>
 void BufferCache<P>::TickFrame() {
     runtime.TickFrame(slot_buffers);
@@ -130,8 +129,8 @@ void BufferCache<P>::UpdateComputeUniformBuffers() {
 
 template <class P>
 void BufferCache<P>::UpdateComputeStorageBuffers() {
-    for(std::uint32_t i = 0; i < compute_storage_buffers_size; i++){
-        auto & buffer = slot_buffers[compute_storage_buffers.at(i).buffer_id];
+    for (std::uint32_t i = 0; i < compute_storage_buffers_size; i++) {
+        auto& buffer = slot_buffers[compute_storage_buffers.at(i).buffer_id];
         runtime.BindStorageBuffer(buffer, 0, compute_storage_buffers.at(i).size);
     }
     compute_storage_buffers_size = 0;
@@ -139,5 +138,12 @@ void BufferCache<P>::UpdateComputeStorageBuffers() {
 
 template <class P>
 void BufferCache<P>::UpdateComputeTextureBuffers() {}
+
+template <class P>
+void BufferCache<P>::bindComputeStorageBuffers(std::span<Binding> bindings) {
+    std::ranges::for_each(bindings, [this](Binding& binding) -> void {
+        compute_storage_buffers.at(compute_storage_buffers_size) = binding;
+    });
+}
 
 }  // namespace render::buffer
