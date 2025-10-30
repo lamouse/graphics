@@ -32,7 +32,7 @@ auto getRuntime() -> float {
 void App::run() {
     load_resource();
     std::vector<ecs::Entity> model_entt;
-    std::vector<ModelInstance> models;
+    std::vector<Base3DModelInstance> models;
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
@@ -52,7 +52,7 @@ void App::run() {
     std::string viking_obj_path = "models/viking_room.obj";
     effects::DeltaParticle particle(resourceManager, graphics, PARTICLE_COUNT);
     ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path, .texture_name = viking_room_path};
-    models.emplace_back(resourceManager, names);
+    models.emplace_back(resourceManager, names, "model");
     model_entt.emplace_back(particle.entity_);
     for (const auto& model : models) {
         model_entt.push_back(model.entity_);

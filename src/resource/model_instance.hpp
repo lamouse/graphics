@@ -10,6 +10,7 @@
 #include "resource/instance.hpp"
 #include "resource/id.hpp"
 #include "resource/resource.hpp"
+#include <type_traits>
 
 namespace graphics {
 class ResourceManager;
@@ -36,6 +37,8 @@ struct ModelResourceName {
         std::string texture_name;
 };
 
+template <typename UBO, render::PrimitiveTopology primitiveTopology>
+    requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO>
 class ModelInstance : public IModelInstance {
     public:
         [[nodiscard]] auto getId() const -> id_t { return id; }
@@ -59,8 +62,10 @@ class ModelInstance : public IModelInstance {
             ubo.view = camera.getView();
             ubo.proj = camera.getProjection();
         }
+        auto getUBO() -> UBO& { return ubo; }
 
-        ModelInstance(const ResourceManager& resource, const ModelResourceName& resourceName)
+        ModelInstance(const ResourceManager& resource, const ModelResourceName& resourceName,
+                      const std::string& modelName)
             : id(getCurrentId()),
               texture_name(resourceName.texture_name),
               mesh_name(resourceName.mesh_name),
@@ -70,18 +75,21 @@ class ModelInstance : public IModelInstance {
             auto hash = resource.getShaderHash<ShaderHash>(shader_name);
             vertex_shader_hash = hash.vertex;
             fragment_shader_hash = hash.fragment;
-            entity_ = getModelScene().createEntity("Model" + std::to_string(id));
+            entity_ = getModelScene().createEntity(
+                modelName.empty() ? "Model" + std::to_string(id) : modelName + std::to_string(id));
             entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }
 
     private:
         id_t id;
-        UniformBufferObject ubo{};
+        UBO ubo{};
         std::string texture_name;
         std::string mesh_name;
         std::string shader_name;
-        render::PrimitiveTopology topology = render::PrimitiveTopology::Triangles;
+        render::PrimitiveTopology topology = primitiveTopology;
 };
+
+using Base3DModelInstance = ModelInstance<UniformBufferObject, render::PrimitiveTopology::Triangles>;
 
 }  // namespace graphics
