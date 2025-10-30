@@ -7,6 +7,8 @@
 #include "shader_tools/shader_info.h"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/texture_cache.hpp"
+#include <unordered_set>
+#include <unordered_map>
 namespace render::vulkan::pipeline {
 constexpr u32 NUM_TEXTURE_SCALING_WORDS = 4;
 constexpr u32 NUM_IMAGE_SCALING_WORDS = 2;
@@ -100,6 +102,18 @@ class DescriptorLayoutBuilder {
                  const Descriptors& descriptors) {
             const size_t num{descriptors.size()};
             for (size_t i = 0; i < num; ++i) {
+                int shader_set = descriptors[i].set;
+                int shader_binding = descriptors[i].binding;
+                if (already_binding.contains(shader_set)) {
+                    auto sets = already_binding.find(shader_set);
+                    if (sets->second.contains(shader_binding)) {
+                        spdlog::debug("重复的声明");
+                        continue;;
+                    }
+                    sets->second.insert(shader_binding);
+                }else {
+                    already_binding[shader_set] = std::unordered_set<int>{shader_binding};
+                }
                 spdlog::debug(
                     "Adding descriptor type={} stage={} \ndescriptors={} binding:{} descriptors "
                     "count:{}",
@@ -129,6 +143,8 @@ class DescriptorLayoutBuilder {
         boost::container::small_vector<vk::DescriptorUpdateTemplateEntry, 32> entries;
         u32 num_descriptors{};
         size_t offset{};
+        // set (binding)
+        std::unordered_map<int, std::unordered_set<int>> already_binding;
 };
 
 }  // namespace render::vulkan::pipeline

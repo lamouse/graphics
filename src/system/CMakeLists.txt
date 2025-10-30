@@ -15,11 +15,7 @@ set(MODULE_FILES
 )
 
 add_library(${LIB_NAME} STATIC)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(${LIB_NAME} PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
-else()
-    target_compile_definitions(${LIB_NAME} PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
-endif()
+
 
 # 添加模块文件 (CXX_MODULES) - 这是解决你错误的关键！
 # target_sources(${LIB_NAME} PUBLIC

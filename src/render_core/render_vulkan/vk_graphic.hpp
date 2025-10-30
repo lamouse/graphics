@@ -63,7 +63,7 @@ class VulkanGraphics : public render::Graphic {
 
         static constexpr vk::DeviceSize DEFAULT_BUFFER_SIZE = 4 * sizeof(float);
         template <typename Func>
-        void PrepareDraw(PrimitiveTopology topology, Func&&);
+        void PrepareDraw(Func&&);
         void FlushWork();
         void UpdateDynamicStates();
         void UpdatePrimitiveRestartEnable();
@@ -120,6 +120,7 @@ class VulkanGraphics : public render::Graphic {
             vertex_bindings;
 
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
+        FixedPipelineState fixedPipelineState;
 };
 
 }  // namespace render::vulkan

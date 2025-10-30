@@ -149,5 +149,15 @@ void BufferCache<P>::bindComputeStorageBuffers(BufferId id) {
     compute_storage_buffers.at(compute_storage_buffers_size++) =
         Binding{.size = static_cast<u32>(buffer.sizeBytes()), .buffer_id = id};
 }
+template <class P>
+void BufferCache<P>::UploadPushConstants(std::span<const std::byte> data){
+    push_constants = data;
+}
+template <class P>
+auto BufferCache<P>::GetPushConstants()->std::span<const std::byte>{
+    auto tmp = push_constants;
+    push_constants = {};
+    return tmp;
+}
 
 }  // namespace render::buffer

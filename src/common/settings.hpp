@@ -40,7 +40,7 @@ struct Values {
                                                              true,
                                                              true};
         SwitchableSetting<enums::LogLevel, true> log_level{
-            linkage, enums::LogLevel::info, "", Category::log, Specialization::RuntimeList, true,
+            linkage, enums::LogLevel::debug, "", Category::log, Specialization::RuntimeList, true,
             true};
         Setting<enums::VramUsageMode, false> v_ram_usage_mode{
             linkage, enums::VramUsageMode::Conservative, "v_ram_usage_mode", Category::render};

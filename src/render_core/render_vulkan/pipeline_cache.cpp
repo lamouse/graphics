@@ -79,12 +79,13 @@ PipelineCache::~PipelineCache() {
 
 }
 
-auto PipelineCache::currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline* {
+auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> GraphicsPipeline* {
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Vertex)) =
         shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash;
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Fragment)) =
         shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash;
-        graphics_key.state.topology = topology;
+        graphics_key.state.topology = state.topology;
+        graphics_key.state.dynamic_vertex_input.Assign(state.dynamic_vertex_input);
     if (current_pipeline) {
         GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
         if (next) {

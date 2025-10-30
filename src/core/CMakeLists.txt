@@ -2,6 +2,8 @@
 set(LIB_CORE_NAME core)
 
 set (sources
+    camera/camera.hpp
+    camera/camera.cpp
     frontend/framebuffer_layout.hpp
     frontend/framebuffer_layout.cpp
     frontend/window.hpp

@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "common/common_funcs.hpp"
-#include "ecs/camera/camera.hpp"
+#include "core/camera/camera.hpp"
 namespace ecs {
 constexpr auto DEFAULT_FOVY = 45.F;
 constexpr auto DEFAULT_NEAR = 0.1F;
@@ -55,8 +55,8 @@ struct CameraComponent {
             extentAspectRation = v;
             return *this;
         }
-        [[nodiscard]] auto getCamera() const -> Camera {
-            Camera camera;
+        [[nodiscard]] auto getCamera() const -> core::Camera {
+            core::Camera camera;
             camera.setPerspectiveProjection(glm::radians(fovy), extentAspectRation, z_near, z_far);
             camera.setViewTarget(lookAt, center, up);
             return camera;

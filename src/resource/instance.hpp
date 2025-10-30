@@ -18,6 +18,9 @@ struct EmptyUnformBuffer {
         [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> { return {}; }
 };
 
+struct EmptyPushConstants {
+        [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> { return {}; }
+};
 
 class IModelInstance {
     public:
@@ -35,7 +38,10 @@ class IModelInstance {
             ASSERT_MSG(fragment_shader_hash, "fragment_shader_hash can't be 0");
             return fragment_shader_hash;
         }
+        [[nodiscard]] auto getVertexCount() const -> std::int32_t { return vertex_count; }
+        [[nodiscard]] void setVertexCount(std::int32_t count) { vertex_count = count; }
         [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
+        [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getPrimitiveTopology() const -> render::PrimitiveTopology = 0;
         void setTextureId(render::TextureId id) { textureId = id; }
 
@@ -46,5 +52,6 @@ class IModelInstance {
         render::MeshId meshId;
         std::uint64_t vertex_shader_hash{0};
         std::uint64_t fragment_shader_hash{0};
+        std::int32_t vertex_count{-1};
 };
 }  // namespace graphics

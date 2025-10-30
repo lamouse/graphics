@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace ecs {
+namespace core {
 
 class Camera {
     public:

@@ -37,8 +37,9 @@ struct ModelResourceName {
         std::string texture_name;
 };
 
-template <typename UBO, render::PrimitiveTopology primitiveTopology>
-    requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO>
+template <typename UBO, typename PushConstants, render::PrimitiveTopology primitiveTopology>
+    requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO> &&
+             ByteSpanConvertible<PushConstants> && std::is_trivially_copyable_v<PushConstants>
 class ModelInstance : public IModelInstance {
     public:
         [[nodiscard]] auto getId() const -> id_t { return id; }
@@ -53,10 +54,14 @@ class ModelInstance : public IModelInstance {
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             return ubo.as_byte_span();
         };
+        [[nodiscard]] auto getPushConstants() const -> std::span<const std::byte> override {
+            return push_constants.as_byte_span();
+        };
         [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {
             return topology;
         }
         auto getUBO() -> UBO& { return ubo; }
+        auto PushConstant() -> PushConstants& { return push_constants; }
 
         ModelInstance(const ResourceManager& resource, const ModelResourceName& resourceName,
                       const std::string& modelName)
@@ -79,6 +84,7 @@ class ModelInstance : public IModelInstance {
     private:
         id_t id;
         UBO ubo{};
+        PushConstants push_constants;
         std::string texture_name;
         std::string mesh_name;
         std::string shader_name;
@@ -86,6 +92,6 @@ class ModelInstance : public IModelInstance {
 };
 
 using Base3DModelInstance =
-    ModelInstance<UniformBufferObject, render::PrimitiveTopology::Triangles>;
+    ModelInstance<UniformBufferObject, EmptyPushConstants, render::PrimitiveTopology::Triangles>;
 
 }  // namespace graphics

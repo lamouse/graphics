@@ -232,10 +232,16 @@ void GraphicsPipeline::ConfigureDraw() {
     }
     const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
-    scheduler_.record([this, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
+    const auto push = buffer_cache.GetPushConstants();
+    scheduler_.record([this, push, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {
         if (bind_pipeline) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
         }
+        if(!push.empty())
+        {
+            cmdbuf.pushConstants(*pipeline_layout, vk::ShaderStageFlagBits::eAllGraphics, 0, push.size(), push.data());
+        }
+
         if (!descriptor_set_layout) {
             return;
         }
@@ -450,7 +456,6 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         static constexpr std::array extended{
             VK_DYNAMIC_STATE_CULL_MODE_EXT,
             VK_DYNAMIC_STATE_FRONT_FACE_EXT,
-            VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT,
             VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT,
             VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
             VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
@@ -458,8 +463,9 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
             VK_DYNAMIC_STATE_STENCIL_OP_EXT,
         };
-        if (dynamic.has_dynamic_vertex_input) {
+        if (key_.state.dynamic_vertex_input) {
             dynamic_states.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_EXT);
+            dynamic_states.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT);
         }
         dynamic_states.insert(dynamic_states.end(), extended.begin(), extended.end());
         if (dynamic.has_extended_dynamic_state_2) {

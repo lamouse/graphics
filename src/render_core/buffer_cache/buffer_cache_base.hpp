@@ -122,6 +122,9 @@ class BufferCache : public BufferCacheInfo {
         void bindComputeStorageBuffers(BufferId id);
         void UploadComputeUniformBuffer(std::span<const std::byte> data);
 
+        void UploadPushConstants(std::span<const std::byte> data);
+        auto GetPushConstants()->std::span<const std::byte>;
+
         void DoUpdateComputeBuffers();
         void UpdateComputeUniformBuffers();
         void UpdateComputeStorageBuffers();
@@ -150,6 +153,9 @@ class BufferCache : public BufferCacheInfo {
 
         //当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
         std::span<const std::byte> compute_uniform_buffer;
+
+        //当前需要bind的graphic的push constants，如果没有.empty()应该返回true
+        std::span<const std::byte> push_constants;
 
         size_t immediate_buffer_capacity = 0;
         struct LRUItemParams {

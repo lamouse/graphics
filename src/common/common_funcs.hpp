@@ -1,7 +1,7 @@
 #pragma once
 #include <iterator>
 #if !defined(ARCHITECTURE_x86_64)
-#include <cstdlib> // for exit
+#include <cstdlib>  // for exit
 #endif
 /**
  * @brief Macro to make a class non-copyable
@@ -31,11 +31,11 @@
 // Locale Cross-Compatibility
 #define locale_t _locale_t
 extern "C" {
-    __declspec(dllimport) void __stdcall DebugBreak(void);
+__declspec(dllimport) void __stdcall DebugBreak(void);
 }
 #define Crash() DebugBreak()
 
-#endif // _MSC_VER ndef
+#endif  // _MSC_VER ndef
 #define CLASS_NON_MOVEABLE(cls) \
     cls(cls&&) = delete;        \
     auto operator=(cls&&)->cls& = delete
@@ -120,3 +120,8 @@ constexpr auto constexpr_size(const C& c) -> std::size_t {
         return std::size(c);
     }
 }
+
+#define AS_BYTE_SPAN                                                               \
+    [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> {        \
+        return std::span{reinterpret_cast<const std::byte*>(this), sizeof(*this)}; \
+    }

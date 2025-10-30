@@ -26,6 +26,7 @@ struct StorageBufferDescriptor {
 struct TextureBufferDescriptor {
         uint32_t binding;
         uint32_t count;
+        uint32_t set;
         TexturePixelFormat format;
         auto operator<=>(const TextureBufferDescriptor&) const = default;
 };

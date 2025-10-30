@@ -463,6 +463,7 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
         const auto& type = compiler.get_type(resource.type_id);
 
         uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         uint32_t count = 1;
         if (!type.array.empty()) {
             count = static_cast<uint32_t>(compiler.get_constant(type.array[0]).scalar());
@@ -473,7 +474,7 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
 
         shader::TexturePixelFormat format = GetTextureBufferPixelFormat(sampled_type);
 
-        shader::TextureBufferDescriptor desc{.binding = binding, .count = count, .format = format};
+        shader::TextureBufferDescriptor desc{.binding = binding, .count = count, .set = set, .format = format};
 
         // 添加到你的描述符列表
         info.texture_buffer_descriptors.push_back(desc);

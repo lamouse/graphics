@@ -55,19 +55,19 @@ struct DynamicFeatures {
 };
 
 struct FixedPipelineState {
-        struct State {
-                int extended_dynamic_state;
-                int extended_dynamic_state_2;
-                int extended_dynamic_state_2_extra;
-                int extended_dynamic_state_3_blend;
-                int extended_dynamic_state_3_enables;
-                int dynamic_vertex_input;
+        union {
+                u32 raw1;
+                BitField<0, 1, u32> extended_dynamic_state;
+                BitField<1, 1, u32> extended_dynamic_state_2;
+                BitField<2, 1, u32> extended_dynamic_state_2_extra;
+                BitField<3, 1, u32> extended_dynamic_state_3_blend;
+                BitField<4, 1, u32> extended_dynamic_state_3_enables;
+                BitField<5, 1, u32> dynamic_vertex_input;
         };
+
         std::array<surface::PixelFormat, 8> color_formats;
         surface::PixelFormat depth_format;
-        State state;
         PrimitiveTopology topology;
-        u32 alpha_test_ref;
         u32 point_size;
         int depth_enabled;
         MsaaMode msaa_mode;

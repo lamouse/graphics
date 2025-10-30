@@ -7,11 +7,12 @@
 #include "resource/id.hpp"
 #include "ecs/scene/entity.hpp"
 #include "ecs/components/render_state_component.hpp"
+#include "effects/effect.hpp"
 const uint32_t PARTICLE_COUNT = 8192;
 
 constexpr const char* particle_shader_name = "particle";
 namespace graphics::effects {
-auto getEffectsScene() -> ecs::Scene&;
+
 enum class ParticleType : std::uint8_t { Delta };
 
 inline auto getParticleTypeName(ParticleType type) -> const char* {
@@ -78,7 +79,7 @@ class Particle : public render::IComputeInstance {
     private:
         id_t id;
         using DeltaParticleInstance =
-            ModelInstance<EmptyUnformBuffer, render::PrimitiveTopology::Points>;
+            ModelInstance<EmptyUnformBuffer, EmptyPushConstants, render::PrimitiveTopology::Points>;
 
         DeltaParticleInstance in;
         DeltaParticleInstance out;

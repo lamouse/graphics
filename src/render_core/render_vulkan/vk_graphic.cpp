@@ -245,6 +245,9 @@ void VulkanGraphics::UpdateDepthBiasEnable() {
 }
 
 void VulkanGraphics::UpdateVertexInput() {
+    if (!fixedPipelineState.dynamic_vertex_input) {
+        return;
+    }
     auto resource = modelResource[current_modelId];
     auto attrs = vertex_attributes[resource.vertex_attribute_id];
     auto bindings = vertex_bindings[resource.vertex_binding_id];
@@ -464,12 +467,19 @@ auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     pipeline_cache.setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
     current_modelId = instance.getMeshId();
-    const auto resource = modelResource[current_modelId];
     if (instance.getTextureId()) {
         texture_cache.setCurrentTexture(instance.getTextureId(), SamplerPreset::Linear);
     }
     if (!instance.getUBOData().empty()) {
         buffer_cache.UploadGraphicUniformBuffer(instance.getUBOData());
+    }
+    if (!instance.getPushConstants().empty()) {
+        buffer_cache.UploadPushConstants(instance.getPushConstants());
+    }
+    if (instance.getMeshId()) {
+        fixedPipelineState.dynamic_vertex_input.Assign(1);
+    } else {
+        fixedPipelineState.dynamic_vertex_input.Assign(0);
     }
 
     texture::FramebufferKey key;
@@ -480,19 +490,32 @@ void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
-    PrepareDraw(instance.getPrimitiveTopology(), [resource, this] -> void {
-        auto bindings = vertex_bindings[resource.vertex_binding_id];
-        buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size,
-                                       bindings[0].stride);
-        if (resource.indices_buffer_id) {
-            IndexFormat index_format{IndexFormat::UnsignedShort};
-            if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
-                index_format = IndexFormat::UnsignedInt;
+    fixedPipelineState.topology = instance.getPrimitiveTopology();
+    int instance_vertex_count = 0;
+    if (instance.getVertexCount() > 0) {
+        instance_vertex_count = instance.getVertexCount();
+    }
+    PrepareDraw([instance_vertex_count, this] -> void {
+        uint32_t indices_size = 0;
+        uint32_t vertexCount = instance_vertex_count;
+
+        if (current_modelId) {
+            const auto resource = modelResource[current_modelId];
+            auto bindings = vertex_bindings[resource.vertex_binding_id];
+            buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size,
+                                           bindings[0].stride);
+            if (resource.indices_buffer_id) {
+                IndexFormat index_format{IndexFormat::UnsignedShort};
+                if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
+                    index_format = IndexFormat::UnsignedInt;
+                }
+                buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
             }
-            buffer_cache.BindIndexBuffer(index_format, resource.indices_buffer_id);
+            indices_size = resource.indices_count;
+            vertexCount = resource.vertex_count;
         }
-        scheduler.record([indices_size = resource.indices_count,
-                          vertexCount = resource.vertex_count](vk::CommandBuffer cmdbuf) -> void {
+
+        scheduler.record([indices_size, vertexCount](vk::CommandBuffer cmdbuf) -> void {
             if (indices_size > 0) {
                 cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
             } else {
@@ -516,9 +539,9 @@ void VulkanGraphics::TickFrame() {
 }
 
 template <typename Func>
-void VulkanGraphics::PrepareDraw(PrimitiveTopology topology, Func&& draw_func) {
+void VulkanGraphics::PrepareDraw(Func&& draw_func) {
     ZoneScopedN("VulkanGraphics::PrepareDraw()");
-    GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline(topology)};
+    GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline(fixedPipelineState)};
     if (!pipeline) {
         return;
     }

@@ -161,6 +161,9 @@ bugprone-virtual-near-miss,
   -hicpp-signed-bitwise,
   -hicpp-uppercase-literal-suffix,
   -hicpp-vararg,
+  -hicpp-avoid-c-arrays,
+  -modernize-avoid-c-arrays,
+  -hicpp-explicit-conversions,
   -cert-err58-cpp,
 '
 

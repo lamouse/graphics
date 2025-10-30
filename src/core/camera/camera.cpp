@@ -1,7 +1,7 @@
 #include "camera.hpp"
 
 #include <limits>
-namespace ecs {
+namespace core {
 
 void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float near,
                                        float far) {

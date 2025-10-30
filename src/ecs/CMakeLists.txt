@@ -6,8 +6,6 @@ set (sources
     scene/scene.cpp
     scene/entity.hpp
     scene/entity.cpp
-    camera/camera.hpp
-    camera/camera.cpp
     components/camera_component.hpp
     components/tag_component.hpp
     components/transform_component.hpp
