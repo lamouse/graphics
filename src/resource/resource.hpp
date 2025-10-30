@@ -1,6 +1,5 @@
 #pragma once
 #include "render_core/types.hpp"
-#include "render_core/shader_cache.hpp"
 #include "render_core/graphic.hpp"
 #include <unordered_map>
 #include <string>
@@ -40,10 +39,10 @@ class ResourceManager {
         [[nodiscard]] auto getMesh(std::string meshName) const -> render::MeshId;
         void addGraphShader(const std::string& name,
                             const std::function<std::uint64_t(std::span<const std::uint32_t>,
-                                                              render::ShaderType)>& upload_func);
+                                                              render::ShaderType)>& upload_func = nullptr);
         void addComputeShader(const std::string& name,
                               const std::function<std::uint64_t(std::span<const std::uint32_t>,
-                                                                render::ShaderType)>& upload_func);
+                                                                render::ShaderType)>& upload_func = nullptr);
 
         template <render::ShaderType type>
         [[nodiscard]] auto getShaderHash(const std::string& name) const -> std::uint64_t;

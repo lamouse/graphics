@@ -23,8 +23,7 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
 void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     auto model = Model::createFromFile(meshName);
-    addMesh(meshName, model,  std::move(func));
-
+    addMesh(meshName, model, std::move(func));
 }
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
@@ -32,7 +31,7 @@ void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, a
     render::MeshId meshId;
     if (func) {
         meshId = func(meshData);
-    }else {
+    } else {
         meshId = graphic->uploadModel(meshData);
     }
     ASSERT_MSG(!mesh.contains(meshName), meshName + " mesh in catch");
@@ -107,11 +106,16 @@ void ResourceManager::addGraphShader(
     const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
         upload_func) {
     auto vertex_shader_code = getShaderCode(render::ShaderType::Vertex, name);
-    ShaderHash hash{};
-    hash.vertex = upload_func(vertex_shader_code, render::ShaderType::Vertex);
-
     auto fragment_shader_code = getShaderCode(render::ShaderType::Fragment, name);
-    hash.fragment = upload_func(fragment_shader_code, render::ShaderType::Fragment);
+
+    ShaderHash hash{};
+    if (upload_func) {
+        hash.vertex = upload_func(vertex_shader_code, render::ShaderType::Vertex);
+        hash.fragment = upload_func(fragment_shader_code, render::ShaderType::Fragment);
+    } else {
+        hash.vertex = graphic->addShader(vertex_shader_code, render::ShaderType::Vertex);
+        hash.fragment = graphic->addShader(fragment_shader_code, render::ShaderType::Fragment);
+    }
     graphic_shader_hash[name] = hash;
 }
 void ResourceManager::addComputeShader(
@@ -119,7 +123,12 @@ void ResourceManager::addComputeShader(
     const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
         upload_func) {
     auto shader_code = getShaderCode(render::ShaderType::Compute, name);
-    auto hash = upload_func(shader_code, render::ShaderType::Compute);
+    std::uint64_t hash{};
+    if (upload_func) {
+        hash = upload_func(shader_code, render::ShaderType::Compute);
+    } else {
+        hash = graphic->addShader(shader_code, render::ShaderType::Compute);
+    }
     compute_shader_hash[name] = hash;
 }
 // 显式实例化模板成员函数

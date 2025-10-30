@@ -154,18 +154,9 @@ void App::load_resource() {
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
 
-    resourceManager.addGraphShader(model_shader_name,
-                                   [graphics](auto data, auto type) -> std::uint64_t {
-                                       return graphics->addShader(data, type);
-                                   });
-    resourceManager.addGraphShader(particle_shader_name,
-                                   [graphics](auto data, auto type) -> std::uint64_t {
-                                       return graphics->addShader(data, type);
-                                   });
-    resourceManager.addComputeShader(particle_shader_name,
-                                     [graphics](auto data, auto type) -> std::uint64_t {
-                                         return graphics->addShader(data, type);
-                                     });
+    resourceManager.addGraphShader(model_shader_name);
+    resourceManager.addGraphShader(particle_shader_name);
+    resourceManager.addComputeShader(particle_shader_name);
 }
 
 }  // namespace graphics
