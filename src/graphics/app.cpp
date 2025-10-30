@@ -89,7 +89,6 @@ void App::run() {
         pointLight.update(frameInfo);
         graphics->setPipelineState(pipeline_state);
         pointLight.draw(graphics);
-        graphics->end();
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
         if (shaders_building > 0) {

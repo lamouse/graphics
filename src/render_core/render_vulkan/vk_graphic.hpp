@@ -45,7 +45,6 @@ class VulkanGraphics : public render::Graphic {
         auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
         void draw(const graphics::IModelInstance& instance) override;
-        void end() override {};
         auto getDrawImage() -> ImTextureID override;
         auto addShader(std::span<const u32> data, ShaderType type) -> u64 override {
             return pipeline_cache.addShader(data, type);

@@ -28,7 +28,6 @@ class Graphic {
         virtual auto addShader(std::span<const u32> data, ShaderType type) -> u64 = 0;
         virtual void dispatchCompute(const IComputeInstance& instance) = 0;
         virtual void clean() = 0;
-        virtual void end() = 0;
         Graphic() = default;
         CLASS_DEFAULT_COPYABLE(Graphic);
         CLASS_DEFAULT_MOVEABLE(Graphic);
