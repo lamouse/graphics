@@ -6,6 +6,7 @@
 #include "ecs/components/camera_component.hpp"
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
+#include "effects/model/model.hpp"
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
@@ -29,7 +30,7 @@ auto getRuntime() -> float {
 void App::run() {
     load_resource();
     std::vector<ecs::Entity> model_entt;
-    std::vector<Base3DModelInstance> models;
+    std::vector<effects::LightModel> models;
     core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
@@ -76,21 +77,12 @@ void App::run() {
         frameInfo.frameTime = getRuntime();
         frameInfo.camera = &camera;
 
-        auto last_frame_time = getRuntime();
         for (auto& m : models) {
-            m.entity_.getComponent<ecs::TransformComponent>().rotation.z =
-                last_frame_time * glm::radians(90.0F);
-            auto& transform = m.entity_.getComponent<ecs::TransformComponent>();
-            m.getUBO().model = transform.mat4();
-            m.getUBO().view = camera.getView();
-            m.getUBO().proj = camera.getProjection();
-            if (!m.entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                continue;
-            }
             graphics->setPipelineState(pipeline_state);
-            graphics->draw(m);
+            m.update(frameInfo);
+            m.draw(graphics);
         }
-        particle.getUniforBuffer().deltaTime = last_frame_time;
+        particle.getUniforBuffer().deltaTime = frameInfo.frameTime;
         graphics->setPipelineState(pipeline_state);
         particle.draw(graphics);
         camera.setPerspectiveProjection(glm::radians(50.f), window->getAspectRatio(), 0.1f, 100.f);
@@ -110,15 +102,10 @@ void App::run() {
             ui::show_menu(menu_data);
             draw_setting(menu_data.show_system_setting);
             ui::ShowOutliner(model_entt, menu_data.show_out_liner);
-            //ui::draw_result(menu_data, imageId, window->getAspectRatio());
+            ui::draw_result(menu_data, imageId, window->getAspectRatio());
             ui::pipeline_state(pipeline_state);
             logger.drawUi(menu_data.show_log);
             world.drawUI();
-            for (auto& m : models) {
-                auto& state = m.getEntity().getComponent<ecs::RenderStateComponent>();
-                if (state.is_select()) {
-                }
-            }
         });
         render_base->composite(std::span{&frames, 1});
         graphics->clean();

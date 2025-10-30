@@ -14,14 +14,6 @@ constexpr u32 NUM_TEXTURE_SCALING_WORDS = 4;
 constexpr u32 NUM_IMAGE_SCALING_WORDS = 2;
 constexpr u32 NUM_TEXTURE_AND_IMAGE_SCALING_WORDS =
     NUM_TEXTURE_SCALING_WORDS + NUM_IMAGE_SCALING_WORDS;
-struct RescalingLayout {
-        alignas(16) std::array<u32, NUM_TEXTURE_SCALING_WORDS> rescaling_textures;
-        alignas(16) std::array<u32, NUM_IMAGE_SCALING_WORDS> rescaling_images;
-        u32 down_factor;
-};
-struct RenderAreaLayout {
-        std::array<f32, 4> render_area;
-};
 class DescriptorLayoutBuilder {
     public:
         DescriptorLayoutBuilder(const Device& device_) : device{&device_} {}
@@ -68,16 +60,12 @@ class DescriptorLayoutBuilder {
 
         [[nodiscard]] auto CreatePipelineLayout(vk::DescriptorSetLayout descriptor_set_layout) const
             -> PipelineLayout {
-            const u32 size_offset = is_compute ? sizeof(RescalingLayout::down_factor) : 0u;
-            const vk::PushConstantRange range{
-                static_cast<vk::ShaderStageFlags>(is_compute
-                                                      ? vk::ShaderStageFlagBits::eCompute
-                                                      : vk::ShaderStageFlagBits::eAllGraphics),
-                0,
-                static_cast<u32>(sizeof(RescalingLayout)) - size_offset +
-                    static_cast<u32>(sizeof(RenderAreaLayout)),
-            };
-            ;
+            const vk::PushConstantRange range =
+                vk::PushConstantRange()
+                    .setStageFlags(is_compute ? vk::ShaderStageFlagBits::eCompute
+                                              : vk::ShaderStageFlagBits::eAllGraphics)
+                    .setSize(128);
+
             return device->logical().createPipelineLayout(
                 vk::PipelineLayoutCreateInfo()
                     .setSetLayoutCount(descriptor_set_layout ? 1u : 0u)
@@ -108,10 +96,11 @@ class DescriptorLayoutBuilder {
                     auto sets = already_binding.find(shader_set);
                     if (sets->second.contains(shader_binding)) {
                         spdlog::debug("重复的声明");
-                        continue;;
+                        continue;
+                        ;
                     }
                     sets->second.insert(shader_binding);
-                }else {
+                } else {
                     already_binding[shader_set] = std::unordered_set<int>{shader_binding};
                 }
                 spdlog::debug(

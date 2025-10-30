@@ -1,0 +1,46 @@
+#pragma once
+#include "effects/light/point_light.hpp"
+namespace graphics::effects {
+struct ModelPushConstantData {
+        glm::mat4 modelMatrix{1.f};
+        glm::mat4 normalMatrix{1.f};
+        AS_BYTE_SPAN
+};
+
+class LightModel {
+    public:
+        LightModel(graphics::ResourceManager& manager, const ModelResourceName& names,
+                   const std::string& name)
+            : model_(manager, names, "LightModel"), id(getCurrentId()) {
+            entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
+            entity_.addComponent<ecs::RenderStateComponent>(id);
+        }
+
+        void update(core::FrameInfo& frameInfo) {
+            auto& transform = model_.entity_.getComponent<ecs::TransformComponent>();
+            transform.rotation.z = frameInfo.frameTime * glm::radians(90.0F);
+
+            model_.PushConstant().modelMatrix = transform.mat4();
+            model_.PushConstant().normalMatrix = transform.normalMatrix();
+            model_.getUBO().numLights = 6;
+            model_.getUBO().projection = frameInfo.camera->getProjection();
+            model_.getUBO().view = frameInfo.camera->getView();
+            model_.getUBO().pointLights[0].position = glm::vec4(transform.translation, 1.f);
+        }
+
+        void draw(render::Graphic* graphic) {
+            if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                graphic->draw(model_);
+            }
+        }
+
+        ecs::Entity entity_;
+
+    private:
+        using LightModelInstance = ModelInstance<PointLightUbo, ModelPushConstantData,
+                                                 render::PrimitiveTopology::Triangles>;
+        LightModelInstance model_;
+        id_t id;
+};
+
+}  // namespace graphics::effects

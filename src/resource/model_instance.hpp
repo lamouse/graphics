@@ -91,7 +91,4 @@ class ModelInstance : public IModelInstance {
         render::PrimitiveTopology topology = primitiveTopology;
 };
 
-using Base3DModelInstance =
-    ModelInstance<UniformBufferObject, EmptyPushConstants, render::PrimitiveTopology::Triangles>;
-
 }  // namespace graphics

@@ -52,7 +52,7 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
     }
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
         aiMesh* mesh = scene->mMeshes[i];
-        // auto color = mesh->GetNumColorChannels();
+        auto color = mesh->GetNumColorChannels();
         auto texCoord = mesh->GetNumUVChannels();
         for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
             aiVector3D vertex = mesh->mVertices[j];
@@ -64,7 +64,13 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
             } else {
                 model_vertex.texCoord = {0.0F, 0.0F};
             }
-            model_vertex.color = {1.0F, 1.0F, 1.0F};
+
+            if (color > 0) {
+                model_vertex.color =  {mesh->mColors[0][j].r, mesh->mColors[0][j].g, mesh->mColors[0][j].b};
+            }
+            if(mesh->mNormals){
+                model_vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z };
+            }
             if (!uniqueVertices.contains(model_vertex)) {
                 uniqueVertices[model_vertex] = static_cast<uint32_t>(vertices.size());
                 vertices.push_back(model_vertex);
