@@ -137,17 +137,10 @@ App::App() {
 App::~App() = default;
 
 void App::load_resource() {
-    auto* graphics = render_base->getGraphics();
     std::string viking_room_path = image_path + "viking_room.png";
     std::string other_image = image_path + "p1.jpg";
-    resourceManager.addTexture(viking_room_path,
-                               [&](const resource::image::ITexture& texture) -> render::TextureId {
-                                   return graphics->uploadTexture(texture);
-                               });
-    resourceManager.addTexture(other_image,
-                               [&](const resource::image::ITexture& texture) -> render::TextureId {
-                                   return graphics->uploadTexture(texture);
-                               });
+    resourceManager.addTexture(viking_room_path);
+    resourceManager.addTexture(other_image);
 
     std::string viking_obj_path = "models/viking_room.obj";
     resourceManager.addMesh(viking_obj_path);

@@ -29,7 +29,7 @@ class ResourceManager {
         ~ResourceManager() = default;
         CLASS_NON_COPYABLE(ResourceManager);
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
-        void addTexture(std::string textureName, add_texture_func func);
+        void addTexture(std::string textureName, add_texture_func func = nullptr);
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         void setGraphic(render::Graphic* graphic_) { graphic = graphic_; }
 
