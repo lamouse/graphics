@@ -14,6 +14,11 @@ concept ByteSpanConvertible = requires(const T& t) {
 
 auto getModelScene() -> ecs::Scene&;
 
+struct EmptyUnformBuffer {
+        [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> { return {}; }
+};
+
+
 class IModelInstance {
     public:
         IModelInstance() = default;

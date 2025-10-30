@@ -56,12 +56,6 @@ class ModelInstance : public IModelInstance {
         [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {
             return topology;
         }
-        void updateViewProjection(const ecs::Camera& camera) {
-            auto& transform = entity_.getComponent<ecs::TransformComponent>();
-            ubo.model = transform.mat4();
-            ubo.view = camera.getView();
-            ubo.proj = camera.getProjection();
-        }
         auto getUBO() -> UBO& { return ubo; }
 
         ModelInstance(const ResourceManager& resource, const ModelResourceName& resourceName,
@@ -80,6 +74,7 @@ class ModelInstance : public IModelInstance {
             entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }
+        ModelInstance() = default;
 
     private:
         id_t id;
@@ -90,6 +85,7 @@ class ModelInstance : public IModelInstance {
         render::PrimitiveTopology topology = primitiveTopology;
 };
 
-using Base3DModelInstance = ModelInstance<UniformBufferObject, render::PrimitiveTopology::Triangles>;
+using Base3DModelInstance =
+    ModelInstance<UniformBufferObject, render::PrimitiveTopology::Triangles>;
 
 }  // namespace graphics

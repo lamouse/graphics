@@ -1,7 +1,6 @@
 #include "app.hpp"
 
 #include "resource/model_instance.hpp"
-#include "resource/particle_instance.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "effects/particle/particle.hpp"
@@ -51,7 +50,9 @@ void App::run() {
     std::string other_image = image_path + "p1.jpg";
     std::string viking_obj_path = "models/viking_room.obj";
     effects::DeltaParticle particle(resourceManager, graphics, PARTICLE_COUNT);
-    ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path, .texture_name = viking_room_path};
+    ModelResourceName names{.shader_name = model_shader_name,
+                            .mesh_name = viking_obj_path,
+                            .texture_name = viking_room_path};
     models.emplace_back(resourceManager, names, "model");
     model_entt.emplace_back(particle.entity_);
     for (const auto& model : models) {
@@ -74,7 +75,10 @@ void App::run() {
         for (auto& m : models) {
             m.entity_.getComponent<ecs::TransformComponent>().rotation.z =
                 last_frame_time * glm::radians(90.0F);
-            m.updateViewProjection(camera.getCamera());
+            auto& transform = m.entity_.getComponent<ecs::TransformComponent>();
+            m.getUBO().model = transform.mat4();
+            m.getUBO().view = camera.getCamera().getView();
+            m.getUBO().proj = camera.getCamera().getProjection();
             if (!m.entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 continue;
             }

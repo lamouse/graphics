@@ -1,9 +1,9 @@
 #pragma once
 #include "render_core/compute_instance.hpp"
 #include "render_core/graphic.hpp"
-#include "resource/particle_instance.hpp"
 #include "resource/resource.hpp"
 #include "resource/obj/particle.hpp"
+#include "resource/model_instance.hpp"
 #include "resource/id.hpp"
 #include "ecs/scene/entity.hpp"
 #include "ecs/components/render_state_component.hpp"
@@ -21,7 +21,6 @@ inline auto getParticleTypeName(ParticleType type) -> const char* {
     }
     return "unknown";
 }
-
 
 template <typename UBO, ParticleType Type>
     requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO>
@@ -41,9 +40,17 @@ class Particle : public render::IComputeInstance {
                 return graphics->uploadModel(mesh);
             });
             // NOLINTNEXTLINE
-            in = ParticleInstance(manager, "", "particle_in", particle_shader_name);
+            in = DeltaParticleInstance(manager,
+                                       ModelResourceName{.shader_name = particle_shader_name,
+                                                         .mesh_name = "particle_in",
+                                                         .texture_name = ""},
+                                       "particle");
             // NOLINTNEXTLINE
-            out = ParticleInstance(manager, "", "particle_out", particle_shader_name);
+            out = DeltaParticleInstance(manager,
+                                        ModelResourceName{.shader_name = particle_shader_name,
+                                                          .mesh_name = "particle_out",
+                                                          .texture_name = ""},
+                                        "particle");
             compute_mesh.at(0) = out.getMeshId();
             compute_mesh.at(1) = in.getMeshId();
             mesh_ids = compute_mesh;
@@ -74,17 +81,16 @@ class Particle : public render::IComputeInstance {
 
     private:
         id_t id;
-        graphics::ParticleInstance in;
-        graphics::ParticleInstance out;
+        using DeltaParticleInstance =
+            ModelInstance<EmptyUnformBuffer, render::PrimitiveTopology::Points>;
+
+        DeltaParticleInstance in;
+        DeltaParticleInstance out;
         UBO u;
         std::array<render::MeshId, 2> compute_mesh;
         bool draw_out{true};
         inline static ecs::Scene scene;
         static constexpr uint32_t LOCAL_SIZE = 256;
-};
-
-struct EmptyUnformBuffer {
-        [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> { return {}; }
 };
 
 struct DeltaUniformBufferObject {
