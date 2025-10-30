@@ -1,7 +1,6 @@
 #pragma once
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
-#include <unordered_map>
 #include "ecs/scene/entity.hpp"
 #include "ecs/scene/scene.hpp"
 #include "ecs/components/transform_component.hpp"
@@ -10,7 +9,7 @@
 #include "resource/obj/model.hpp"
 #include "resource/instance.hpp"
 #include "resource/id.hpp"
-
+#include "resource/resource.hpp"
 
 namespace graphics {
 class ResourceManager;
@@ -31,9 +30,9 @@ struct UniformBufferObject {
         }
 };
 
-struct ModelResource {
-        std::string vertex_shader_name;
-        std::string fragment_shader_name;
+struct ModelResourceName {
+        std::string shader_name;
+        std::string mesh_name;
         std::string texture_name;
 };
 
@@ -45,35 +44,44 @@ class ModelInstance : public IModelInstance {
         auto operator=(const ModelInstance&) -> ModelInstance& = delete;
         auto operator=(ModelInstance&&) -> ModelInstance& = default;
         [[nodiscard]] auto getEntity() -> ecs::Entity& { return entity_; }
-        void drawUI();
         ::std::shared_ptr<Model> model;
         ::glm::vec3 color{};
         ~ModelInstance() override = default;
-        void updateViewProjection(const ecs::Camera& camera);
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             return ubo.as_byte_span();
         };
         [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {
             return topology;
         }
-        explicit ModelInstance(const ResourceManager& resource, const std::string& textureName,
-                               const std::string& meshName, std::string shaderName);
+        void updateViewProjection(const ecs::Camera& camera) {
+            auto& transform = entity_.getComponent<ecs::TransformComponent>();
+            ubo.model = transform.mat4();
+            ubo.view = camera.getView();
+            ubo.proj = camera.getProjection();
+        }
 
-    private:
-        id_t id;
-        UniformBufferObject ubo{};
-        std::string texture;
-        std::string mesh;
-        std::string shader;
-        render::PrimitiveTopology topology = render::PrimitiveTopology::Triangles;
-        explicit ModelInstance(id_t id, render::TextureId textureId_, render::MeshId meshId_)
-            : id(id) {
-            textureId = textureId_;
-            meshId = meshId_;
+        ModelInstance(const ResourceManager& resource, const ModelResourceName& resourceName)
+            : id(getCurrentId()),
+              texture_name(resourceName.texture_name),
+              mesh_name(resourceName.mesh_name),
+              shader_name(resourceName.shader_name) {
+            textureId = resource.getTexture(texture_name);
+            meshId = resource.getMesh(mesh_name);
+            auto hash = resource.getShaderHash<ShaderHash>(shader_name);
+            vertex_shader_hash = hash.vertex;
+            fragment_shader_hash = hash.fragment;
             entity_ = getModelScene().createEntity("Model" + std::to_string(id));
             entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }
+
+    private:
+        id_t id;
+        UniformBufferObject ubo{};
+        std::string texture_name;
+        std::string mesh_name;
+        std::string shader_name;
+        render::PrimitiveTopology topology = render::PrimitiveTopology::Triangles;
 };
 
 }  // namespace graphics

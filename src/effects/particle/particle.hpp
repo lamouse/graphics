@@ -22,10 +22,7 @@ inline auto getParticleTypeName(ParticleType type) -> const char* {
     return "unknown";
 }
 
-template <typename T>
-concept ByteSpanConvertible = requires(const T& t) {
-    { t.as_byte_span() } -> std::same_as<std::span<const std::byte>>;
-};
+
 template <typename UBO, ParticleType Type>
     requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO>
 class Particle : public render::IComputeInstance {

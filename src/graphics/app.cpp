@@ -51,8 +51,8 @@ void App::run() {
     std::string other_image = image_path + "p1.jpg";
     std::string viking_obj_path = "models/viking_room.obj";
     effects::DeltaParticle particle(resourceManager, graphics, PARTICLE_COUNT);
-    models.emplace_back(resourceManager, viking_room_path, viking_obj_path, model_shader_name);
-    models.emplace_back(resourceManager, other_image, viking_obj_path, model_shader_name);
+    ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path, .texture_name = viking_room_path};
+    models.emplace_back(resourceManager, names);
     model_entt.emplace_back(particle.entity_);
     for (const auto& model : models) {
         model_entt.push_back(model.entity_);
@@ -104,7 +104,6 @@ void App::run() {
             for (auto& m : models) {
                 auto& state = m.getEntity().getComponent<ecs::RenderStateComponent>();
                 if (state.is_select()) {
-                    m.drawUI();
                 }
             }
         });

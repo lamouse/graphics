@@ -7,6 +7,11 @@
 #include "ecs/scene/entity.hpp"
 namespace graphics {
 
+template <typename T>
+concept ByteSpanConvertible = requires(const T& t) {
+    { t.as_byte_span() } -> std::same_as<std::span<const std::byte>>;
+};
+
 auto getModelScene() -> ecs::Scene&;
 
 class IModelInstance {
