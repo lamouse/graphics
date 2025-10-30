@@ -1,6 +1,7 @@
 #pragma once
 #include "render_core/types.hpp"
 #include "render_core/shader_cache.hpp"
+#include "render_core/graphic.hpp"
 #include <unordered_map>
 #include <string>
 #include "common/common_funcs.hpp"
@@ -31,9 +32,10 @@ class ResourceManager {
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
         void addTexture(std::string textureName, add_texture_func func);
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
+        void setGraphic(render::Graphic* graphic_) { graphic = graphic_; }
 
-        void addMesh(std::string meshName, add_mesh_func func);
-        void addMesh(std::string meshName, const IMeshData&, add_mesh_func func);
+        void addMesh(std::string meshName, add_mesh_func func = nullptr);
+        void addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr);
 
         [[nodiscard]] auto getMesh(std::string meshName) const -> render::MeshId;
         void addGraphShader(const std::string& name,
@@ -52,7 +54,7 @@ class ResourceManager {
          * @tparam T
          */
         template <typename T>
-        requires (IsUint64<T> || IsShaderHashStruct<T>)
+            requires(IsUint64<T> || IsShaderHashStruct<T>)
         [[nodiscard]] auto getShaderHash(const std::string& name) const -> T;
 
     private:
@@ -62,5 +64,7 @@ class ResourceManager {
         std::unordered_map<std::string, render::MeshId> mesh;
         std::unordered_map<std::string, std::uint64_t> compute_shader_hash;
         std::unordered_map<std::string, ShaderHash> graphic_shader_hash;
+
+        render::Graphic* graphic;
 };
 }  // namespace graphics

@@ -32,13 +32,9 @@ class Particle : public render::IComputeInstance {
         Particle(graphics::ResourceManager& manager, render::Graphic* graphics, std::uint32_t count)
             : id(getCurrentId()) {
             graphics::ParticleModel model{count};
-            manager.addMesh("particle_in", model, [&](const auto& mesh) -> render::MeshId {
-                return graphics->uploadModel(mesh);
-            });
+            manager.addMesh("particle_in", model);
+            manager.addMesh("particle_out", model);
 
-            manager.addMesh("particle_out", model, [&](const auto& mesh) -> render::MeshId {
-                return graphics->uploadModel(mesh);
-            });
             // NOLINTNEXTLINE
             in = DeltaParticleInstance(manager,
                                        ModelResourceName{.shader_name = particle_shader_name,

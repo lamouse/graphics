@@ -22,16 +22,19 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
 
 void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
-    ASSERT_MSG(func, "add_mesh_func is null");
     auto model = Model::createFromFile(meshName);
-    auto meshId = func(model);
-    ASSERT_MSG(!mesh.contains(meshName), meshName + " mesh in catch");
-    mesh[meshName] = meshId;
+    addMesh(meshName, model,  std::move(func));
+
 }
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
-    ASSERT_MSG(func, "add_mesh_func is null");
-    auto meshId = func(meshData);
+    ASSERT_MSG(func || graphic, "add_mesh_func is null");
+    render::MeshId meshId;
+    if (func) {
+        meshId = func(meshData);
+    }else {
+        meshId = graphic->uploadModel(meshData);
+    }
     ASSERT_MSG(!mesh.contains(meshName), meshName + " mesh in catch");
     mesh[meshName] = meshId;
 }
@@ -82,7 +85,7 @@ auto ResourceManager::getShaderHash(const std::string& name) const -> std::uint6
 }
 
 template <typename T>
-requires (IsUint64<T> || IsShaderHashStruct<T>)
+    requires(IsUint64<T> || IsShaderHashStruct<T>)
 [[nodiscard]] auto ResourceManager::getShaderHash(const std::string& name) const -> T {
     if constexpr (std::is_same_v<T, std::uint64_t>) {
         if (compute_shader_hash.contains(name)) {

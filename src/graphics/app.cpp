@@ -130,6 +130,8 @@ App::App() {
     ui::init_imgui(window->getWindowSystemInfo().render_surface_scale);
 
     render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
+    resourceManager.setGraphic(render_base->getGraphics());
+
 }
 
 App::~App() = default;
@@ -148,10 +150,7 @@ void App::load_resource() {
                                });
 
     std::string viking_obj_path = "models/viking_room.obj";
-    resourceManager.addMesh(viking_obj_path, [&](const auto& mesh) -> render::MeshId {
-        return graphics->uploadModel(mesh);
-    });
-
+    resourceManager.addMesh(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
 
