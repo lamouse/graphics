@@ -25,13 +25,12 @@ using add_texture_func = std::function<render::TextureId(const resource::image::
 using add_mesh_func = std::function<render::TextureId(const IMeshData&)>;
 class ResourceManager {
     public:
-        ResourceManager() = default;
         ~ResourceManager() = default;
         CLASS_NON_COPYABLE(ResourceManager);
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
         void addTexture(std::string textureName, add_texture_func func = nullptr);
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
-        void setGraphic(render::Graphic* graphic_) { graphic = graphic_; }
+        explicit ResourceManager(render::Graphic* graphic_):graphic(graphic_) {}
 
         void addMesh(std::string meshName, add_mesh_func func = nullptr);
         void addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr);

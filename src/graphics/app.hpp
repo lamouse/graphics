@@ -15,9 +15,9 @@ class App {
         ~App();
 
     private:
+        sys::LoggerSystem logger;
         std::unique_ptr<core::frontend::BaseWindow> window;
         std::unique_ptr<render::RenderBase> render_base;
-        sys::LoggerSystem logger;
         ResourceManager resourceManager;
         void load_resource();
 };

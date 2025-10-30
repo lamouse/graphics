@@ -5,6 +5,8 @@ set(sources
     glfw_common.cpp
     glfw_window.hpp
     glfw_window.cpp
+    graphic.hpp
+    graphic.cpp
     SDL_common.hpp
     SDL_common.cpp
     sdl_window.hpp

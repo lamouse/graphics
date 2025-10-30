@@ -1,5 +1,6 @@
 #include "app.hpp"
 
+#include "graphic.hpp"
 #include "resource/model_instance.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
@@ -116,23 +117,10 @@ void App::run() {
     }
 }
 
-App::App() {
-    const int width = 1920;
-    const int height = 1080;
-    const char* title = "graphic engine";
-
-#if defined(USE_GLFW)
-    window = std::make_unique<ScreenWindow>(width, height, title);
-#endif
-#if defined(USE_SDL)
-    window = std::make_unique<graphics::SDLWindow>(width, height, title);
-#endif
-    ui::init_imgui(window->getWindowSystemInfo().render_surface_scale);
-
-    render_base = std::make_unique<render::vulkan::RendererVulkan>(window.get());
-    resourceManager.setGraphic(render_base->getGraphics());
-
-}
+App::App()
+    : window(createWindow()),
+      render_base(createRender(window.get())),
+      resourceManager(render_base->getGraphics()) {}
 
 App::~App() = default;
 
