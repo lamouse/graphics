@@ -95,9 +95,16 @@ class DescriptorLayoutBuilder {
                 if (already_binding.contains(shader_set)) {
                     auto sets = already_binding.find(shader_set);
                     if (sets->second.contains(shader_binding)) {
-                        spdlog::debug("重复的声明");
+                        spdlog::debug("重复的声明 type={} stage={} descriptors={} binding:{}",
+                                      vk::to_string(type), vk::to_string(stage), descriptors.size(),
+                                      descriptors[i].binding);
+                        for(auto& bind : bindings){
+                            if(bind.binding == static_cast<u32>(shader_binding)){
+                                bind.stageFlags |= stage;
+                                break;
+                            }
+                        }
                         continue;
-                        ;
                     }
                     sets->second.insert(shader_binding);
                 } else {

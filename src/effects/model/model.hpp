@@ -22,10 +22,11 @@ class LightModel {
 
             model_.PushConstant().modelMatrix = transform.mat4();
             model_.PushConstant().normalMatrix = transform.normalMatrix();
-            model_.getUBO().numLights = 6;
+            model_.getUBO().numLights = 1;
             model_.getUBO().projection = frameInfo.camera->getProjection();
             model_.getUBO().view = frameInfo.camera->getView();
-            model_.getUBO().pointLights[0].position = glm::vec4(transform.translation, 1.f);
+            model_.getUBO().ambientLightColor.w = 1.f;
+            model_.getUBO().pointLights[0].position = glm::vec4(1.0, 0.5, 0.3, 1.f);
         }
 
         void draw(render::Graphic* graphic) {

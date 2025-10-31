@@ -40,6 +40,12 @@ LoggerSystem::LoggerSystem():log_level_(utils::get_log_level(settings::values.lo
 
     // 设置默认日志器
     spdlog::set_default_logger(logger_);
+    // 设置日志级别和格式
+    spdlog::set_pattern(log_patten);
+    spdlog::set_level(log_level_);
+
+    // 刷新日志器
+    spdlog::flush_on(log_level_);
 }
 
 void LoggerSystem::drawUi(bool& show) {
