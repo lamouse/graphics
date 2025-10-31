@@ -8,7 +8,8 @@
 #include <memory>
 namespace sys {
 
-LoggerSystem::LoggerSystem():log_level_(utils::get_log_level(settings::values.log_level.GetValue())) {
+LoggerSystem::LoggerSystem()
+    : log_level_(utils::get_log_level(settings::values.log_level.GetValue())) {
     const char* log_patten = "%^[%Y-%m-%d %H:%M:%S.%e] [%l] [thread %t] (%s:%# %!): %v%$";
     const char* file_patten = "[%Y-%m-%d %H:%M:%S.%e] [%l] : %v";
     // 初始化线程池
@@ -56,6 +57,8 @@ void LoggerSystem::drawUi(bool& show) {
     if (log_level_ != level) {
         log_level_ = level;
         logger_->set_level(log_level_);
+        // 刷新日志器
+        spdlog::flush_on(log_level_);
     }
 }
-} // namespace sys
+}  // namespace sys

@@ -1,0 +1,13 @@
+set(sources
+    GraphEditor.h
+    GraphEditor.cpp
+    ImCurveEdit.h
+    ImCurveEdit.cpp
+    ImGradient.cpp
+    ImGradient.h
+    ImGuizmo.cpp
+    ImGuizmo.h
+    ImSequencer.cpp
+    ImSequencer.h
+    ImZoomSlider.h
+)

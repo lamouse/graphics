@@ -169,11 +169,6 @@ else()
 endif()
 
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
-else()
-    add_definitions(-SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN)
-endif()
 
 add_subdirectory(common)
 add_subdirectory(core)

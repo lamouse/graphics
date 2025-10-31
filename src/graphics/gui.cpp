@@ -2,6 +2,11 @@
 #include "gui.hpp"
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
+#include <ImGuizmo.h>
+#include <GraphEditor.h>
+#include <ImSequencer.h>
+#include <ImCurveEdit.h>
+#include <ImZoomSlider.h>
 #include <limits>
 // Helper to wire demo markers located in code to an interactive browser
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section,
