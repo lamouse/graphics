@@ -302,7 +302,10 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     const auto queue_cis = getDeviceQueueCreateInfos();
     // GetSuitability has already configured the linked list of features for us.
     // Reuse it here.
-    const void* first_next = &features2_;
+    const vk::PhysicalDeviceDynamicRenderingFeatures dynamic =
+        vk::PhysicalDeviceDynamicRenderingFeatures().setDynamicRendering(VK_TRUE).setPNext(
+            &features2_);
+    const void* first_next = &dynamic;
     misc_features_.is_blit_depth24_stencil8_supported =
         testDepthStencilBlits(vk::Format::eD24UnormS8Uint);
     misc_features_.is_blit_depth32_stencil8_supported =
@@ -1088,7 +1091,8 @@ void Device::collectPhysicalMemoryInfo() {
     if (!misc_features_.is_integrated) {
         const uint64_t reserve_memory = std::min<uint64_t>(device_access_memory_ / 8, 1_GiB);
         device_access_memory_ -= reserve_memory;
-        if (settings::values.v_ram_usage_mode.GetValue() != settings::enums::VramUsageMode::Aggressive) {
+        if (settings::values.v_ram_usage_mode.GetValue() !=
+            settings::enums::VramUsageMode::Aggressive) {
             // Account for resolution scaling in memory limits
             const size_t normal_memory = 6_GiB;
             const size_t scaler_memory = 1_GiB;

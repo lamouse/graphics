@@ -95,6 +95,10 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
+    if(checkExtensionsSupported(std::array{VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME})){
+        extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+    }
+
     return extensions;
 }
 }  // namespace
