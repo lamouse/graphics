@@ -8,6 +8,7 @@
 #include <format>
 #include <unordered_map>
 
+
 namespace {
 template <typename T>
 std::span<const std::byte> as_bytes(std::span<const T> s) {
@@ -44,8 +45,9 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
     ::std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
 
     Assimp::Importer importer;
+    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs;
     // NOLINTNEXTLINE
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
     if (!scene) {
         throw std::runtime_error(
             std::format("Failed to load model: {}", importer.GetErrorString()));
