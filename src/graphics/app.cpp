@@ -69,6 +69,9 @@ void App::run() {
         model_entt.insert(model_entt.end(), model_child.begin(), model_child.end());
     }
     model_entt.push_back(world.getEntity(world::WorldEntityType::CAMERA));
+    model_entt.push_back(sky_box.entity_);
+    auto sky_child = sky_box.getChildEntitys();
+    model_entt.insert(model_entt.end(), sky_child.begin(), sky_child.end());
 
     auto& cameraComponent =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
@@ -85,7 +88,9 @@ void App::run() {
         }
         frameInfo.frameTime = getRuntime();
         frameInfo.camera = &camera;
-
+        graphics->setPipelineState(pipeline_state);
+        sky_box.update(frameInfo);
+        sky_box.draw(graphics);
         for (auto& m : models) {
             graphics->setPipelineState(pipeline_state);
             m.update(frameInfo);
@@ -99,9 +104,6 @@ void App::run() {
         graphics->setPipelineState(pipeline_state);
         pointLight.draw(graphics);
 
-        graphics->setPipelineState(pipeline_state);
-        sky_box.update(frameInfo);
-        sky_box.draw(graphics);
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
         if (shaders_building > 0) {

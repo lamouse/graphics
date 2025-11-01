@@ -40,18 +40,22 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
     auto staging = runtime.UploadStagingBuffer(data.size());
     std::memcpy(staging.mapped_span.data(), data.data(), data.size());
 
-    const std::array<BufferImageCopy, 1> copys{BufferImageCopy{
-        .buffer_offset = 0,
-        .buffer_size = data.size(),
-        .buffer_row_length = 0,
-        .buffer_image_height = 0,
-        .image_subresource = {.base_level = 0, .base_layer = 0, .num_layers = 1},
-        .image_offset = {.x = 0, .y = 0, .z = 0},
-        .image_extent = info.size,
-    }};
+    std::vector<BufferImageCopy> copys;
+    auto single_data_size = data.size()/layer_count;
+    for (int i = 0; i < layer_count; i++) {
+        BufferImageCopy copy{
+            .buffer_offset = i* single_data_size,
+            .buffer_size = single_data_size,
+            .buffer_row_length = 0,
+            .buffer_image_height = 0,
+            .image_subresource = {.base_level = 0, .base_layer = i, .num_layers = 1},
+            .image_offset = {.x = 0, .y = 0, .z = 0},
+            .image_extent = info.size};
+        copys.push_back(copy);
+    }
     new_image.UploadMemory(staging, copys);
 
-    ImageViewType type = layer_count == 6? ImageViewType::Cube: ImageViewType::e2D;
+    ImageViewType type = layer_count == 6 ? ImageViewType::Cube : ImageViewType::e2D;
     const ImageViewInfo view_info(info, type);
     const ImageViewId image_view_id =
         slot_image_views.insert(runtime, view_info, new_image_id, new_image);

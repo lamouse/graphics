@@ -23,10 +23,9 @@ class SkyBox {
             std::string mesh_path = "models/cube.obj";
             manager.addMesh(mesh_path);
             manager.addGraphShader("skycube");
-            ModelResourceName names{.shader_name = "skycube",
-                                    .mesh_name = mesh_path,
-                                    .texture_name = "skybox"};
-                                    sky_box = SkyBoxInstance{manager, names, "skybox instance"};
+            ModelResourceName names{
+                .shader_name = "skycube", .mesh_name = mesh_path, .texture_name = "skybox"};
+            sky_box = SkyBoxInstance{manager, names, "skybox instance"};
         }
 
         void update(core::FrameInfo& frameInfo) {
@@ -34,7 +33,9 @@ class SkyBox {
             sky_box.getUBO().modelMatrix = transform.mat4();
             sky_box.getUBO().projectionMatrix = glm::mat4(1.f);
         }
-
+        [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
+            return std::vector{sky_box.entity_};
+        }
         void draw(render::Graphic* graphic) {
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 graphic->draw(sky_box);
