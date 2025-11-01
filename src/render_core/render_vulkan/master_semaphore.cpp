@@ -133,9 +133,8 @@ void MasterSemaphore::submitQueueTimeline(vk::CommandBuffer& cmdbuf,
         signal_semaphores.push_back(signal_semaphore);
     }
     const std::array cmdbuffers{upload_cmdbuf, cmdbuf};
-    vk::TimelineSemaphoreSubmitInfo timeline_si;
-    timeline_si.setSignalSemaphoreValues(signal_values);
-
+    const vk::TimelineSemaphoreSubmitInfo timeline_si =
+        vk::TimelineSemaphoreSubmitInfo().setSignalSemaphoreValues(signal_values);
     vk::SubmitInfo submit_info = vk::SubmitInfo()
                                      .setPNext(&timeline_si)
                                      .setWaitDstStageMask(wait_stage_masks)
