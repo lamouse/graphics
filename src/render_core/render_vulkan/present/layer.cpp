@@ -188,7 +188,6 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
 
     const u32 texture_width = texture_info ? texture_info->width : framebuffer.width;
-    ;
     const u32 texture_height = texture_info ? texture_info->height : framebuffer.height;
     const u32 scaled_width = texture_info ? texture_info->scaled_width : texture_width;
     const u32 scaled_height = texture_info ? texture_info->scaled_height : texture_height;

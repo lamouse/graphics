@@ -23,7 +23,8 @@
 #define FOR_EACH_VK_FEATURE_1_3(FEATURE)                                             \
     FEATURE(EXT, ShaderDemoteToHelperInvocation, SHADER_DEMOTE_TO_HELPER_INVOCATION, \
             shader_demote_to_helper_invocation)                                      \
-    FEATURE(EXT, SubgroupSizeControl, SUBGROUP_SIZE_CONTROL, subgroup_size_control)
+    FEATURE(EXT, SubgroupSizeControl, SUBGROUP_SIZE_CONTROL, subgroup_size_control)  \
+    FEATURE(KHR, DynamicRendering, DYNAMIC_RENDERING, dynamic_rendering)
 
 // Define all features which may be used by the implementation and require an extension here.
 #define FOR_EACH_VK_FEATURE_EXT(FEATURE)                                                          \

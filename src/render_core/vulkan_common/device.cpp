@@ -305,7 +305,7 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     const vk::PhysicalDeviceDynamicRenderingFeatures dynamic =
         vk::PhysicalDeviceDynamicRenderingFeatures().setDynamicRendering(VK_TRUE).setPNext(
             &features2_);
-    const void* first_next = &dynamic;
+    const void* first_next = &features2_;
     misc_features_.is_blit_depth24_stencil8_supported =
         testDepthStencilBlits(vk::Format::eD24UnormS8Uint);
     misc_features_.is_blit_depth32_stencil8_supported =

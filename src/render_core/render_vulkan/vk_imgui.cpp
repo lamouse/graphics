@@ -72,7 +72,14 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
     init_info.ImageCount = 3;
     init_info.Allocator = VK_NULL_HANDLE;
     init_info.CheckVkResultFn = check_vk_result;
-    init_info.PipelineInfoMain.RenderPass = *render_pass;
+    init_info.PipelineInfoMain.RenderPass = nullptr;
+    constexpr auto format = VK_FORMAT_B8G8R8A8_UNORM;
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo.pColorAttachmentFormats = &format;
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+    init_info.PipelineInfoMain.PipelineRenderingCreateInfo.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+
+    init_info.UseDynamicRendering = true;
     init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     init_info.PipelineInfoMain.Subpass = 0;
     ImGui_ImplVulkan_LoadFunctions(
@@ -103,15 +110,28 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     newFrame();
     draw_func();
     ImGui::Render();
-    scheduler.record(
-        [this, renderPass, host_framebuffer, extent](vk::CommandBuffer cmdbuf) -> void {
-            present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
-            cmdbuf.endRenderPass();
-            if (settings::values.use_present_thread.GetValue()) {
-                is_render_finish.exchange(true);
-            }
-        });
+    scheduler.record([this, view = *frame->image_view, renderPass, host_framebuffer,
+                      extent](vk::CommandBuffer cmdbuf) -> void {
+        vk::RenderingAttachmentInfo colorAttachment =
+            vk::RenderingAttachmentInfo().setImageView(view).setImageLayout(
+                vk::ImageLayout::eColorAttachmentOptimal)
+                .setLoadOp(vk::AttachmentLoadOp::eClear)
+                .setStoreOp(vk::AttachmentStoreOp::eStore)
+                .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f}));
+        vk::RenderingInfo renderingInfo{};
+        renderingInfo.setColorAttachments(colorAttachment)
+        .setLayerCount(1).setRenderArea(vk::Rect2D().setExtent(extent));
+        // present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
+        // 开始动态渲染
+        cmdbuf.beginRendering(&renderingInfo);
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
+        // cmdbuf.endRenderPass();
+        // 结束动态渲染
+        cmdbuf.endRendering();
+        if (settings::values.use_present_thread.GetValue()) {
+            is_render_finish.exchange(true);
+        }
+    });
 
     {
         std::scoped_lock lock(scheduler.submit_mutex_);

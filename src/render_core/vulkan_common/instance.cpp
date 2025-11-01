@@ -45,7 +45,7 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
             return std::strcmp(extension, prop.extensionName) == 0;
         });
         if (it == properties.end()) {
-            SPDLOG_ERROR("{}Required instance extension {} is not available", LOG_TAG, extension);
+            SPDLOG_ERROR("{} Required instance extension {} is not available", LOG_TAG, extension);
             return false;
         }
     }
@@ -93,10 +93,6 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
     if (enable_validation &&
         checkExtensionsSupported(std::array{VK_EXT_DEBUG_UTILS_EXTENSION_NAME})) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-
-    if(checkExtensionsSupported(std::array{VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME})){
-        extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
     }
 
     return extensions;
