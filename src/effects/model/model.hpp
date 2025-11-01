@@ -35,6 +35,10 @@ class LightModel {
             }
         }
 
+        [[nodiscard]] auto getChildEntitys() const ->std::vector<ecs::Entity>{
+            return std::vector{model_.entity_};
+        }
+
         ecs::Entity entity_;
 
     private:

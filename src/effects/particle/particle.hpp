@@ -74,6 +74,9 @@ class Particle : public render::IComputeInstance {
         }
 
         auto getUniforBuffer() -> UBO& { return u; }
+        auto getChildEntitys() -> std::vector<ecs::Entity> {
+            return std::vector{in.entity_, out.entity_};
+        }
         ecs::Entity entity_;
 
     private:

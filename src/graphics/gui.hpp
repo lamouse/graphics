@@ -11,6 +11,7 @@ struct MenuData{
     bool show_system_setting{};
     bool show_log{};
     bool show_out_liner{true};
+    bool show_detail{true};
 };
 
 /**
@@ -22,6 +23,6 @@ void pipeline_state(render::PipelineState& state);
 void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 void init_imgui(float scale);
 // 递归绘制树节点
-void ShowOutliner(std::span<ecs::Entity> instances, bool& show);
+void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data);
 void show_menu(MenuData& data);
 }  // namespace graphics::ui

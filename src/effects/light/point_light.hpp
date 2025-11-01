@@ -73,6 +73,9 @@ class PointLightEffect {
             }
         }
         ecs::Entity entity_;
+        [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
+            return std::vector{point_light.entity_};
+        }
 
     private:
         struct PointLightComponent {

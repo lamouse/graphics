@@ -2,6 +2,7 @@
 #include "gui.hpp"
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
+#include "ecs/ui/transformUI.hpp"
 #include <ImGuizmo.h>
 #include <GraphEditor.h>
 #include <ImSequencer.h>
@@ -397,11 +398,25 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
     ImGui::PopID();
 }
 
+void draw_detail(MenuData& data, ecs::Entity entity) {
+    ImGui::Begin("Detail", &data.show_detail);
+
+    if (entity.hasComponent<ecs::TransformComponent>()) {
+        if (ImGui::TreeNode("TransformComponent")) {
+            auto& tc = entity.getComponent<ecs::TransformComponent>();
+            ecs::DrawTransformUI(tc);
+            ImGui::TreePop();
+        }
+    }
+
+    ImGui::End();
+}
+
 // ======================================
 // 主函数：显示 Outliner 窗口
 // ======================================
-void ShowOutliner(std::span<ecs::Entity> instances, bool& show) {
-    if (!show) {
+void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
+    if (!data.show_out_liner) {
         return;
     }
     // 设置窗口标志
@@ -417,14 +432,25 @@ void ShowOutliner(std::span<ecs::Entity> instances, bool& show) {
     ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x), viewport->WorkPos.y);
     ImGui::SetNextWindowSize(window_size);
     ImGui::SetNextWindowPos(panelPos);
-    ImGui::Begin("Outliner", &show, window_flags);
+    ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
 
     for (auto& instance : instances) {
         DrawModelTreeNode(instance, 0);
     }
 
     ImGui::End();
+    if (!data.show_detail) {
+        return;
+    }
+    for (auto& instance : instances) {
+        if (instance.hasComponent<ecs::RenderStateComponent>()) {
+            if (instance.getComponent<ecs::RenderStateComponent>().is_select()) {
+                draw_detail(data, instance);
+            }
+        }
+    }
 }
+
 void show_menu(MenuData& data) {
     static bool show_fps = false;
     if (show_fps) {
@@ -460,6 +486,7 @@ void show_menu(MenuData& data) {
             ImGui::MenuItem("\uF15C 日志", "", &data.show_log);
             ImGui::MenuItem("\uf9c4 fps", "", &show_fps);
             ImGui::MenuItem("\uead8 Imgui Metrics", "", &show_imgui_debug_window);
+            ImGui::MenuItem("\uf6c5 Detail", "", &data.show_detail);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();

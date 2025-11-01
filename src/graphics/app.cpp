@@ -56,9 +56,15 @@ void App::run() {
                             .texture_name = viking_room_path};
     models.emplace_back(resourceManager, names, "model");
     model_entt.emplace_back(particle.entity_);
+    auto particle_child = particle.getChildEntitys();
+    model_entt.insert(model_entt.end(), particle_child.begin(), particle_child.end());
     model_entt.emplace_back(pointLight.entity_);
+    auto pointLight_child = pointLight.getChildEntitys();
+    model_entt.insert(model_entt.end(), pointLight_child.begin(), pointLight_child.end());
     for (const auto& model : models) {
         model_entt.push_back(model.entity_);
+        auto model_child = model.getChildEntitys();
+        model_entt.insert(model_entt.end(), model_child.begin(), model_child.end());
     }
 
     auto& cameraComponent =
@@ -100,7 +106,7 @@ void App::run() {
         render_base->addImguiUI([&]() {
             ui::show_menu(menu_data);
             draw_setting(menu_data.show_system_setting);
-            ui::ShowOutliner(model_entt, menu_data.show_out_liner);
+            ui::ShowOutliner(model_entt, menu_data);
             ui::draw_result(menu_data, imageId, window->getAspectRatio());
             ui::pipeline_state(pipeline_state);
             logger.drawUi(menu_data.show_log);
