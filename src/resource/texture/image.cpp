@@ -17,12 +17,14 @@ void Image::readImage(const ::std::string& path) {
 Image::Image(const ::std::string& path) { readImage(path); }
 auto Image::getData() -> unsigned char* { return data_; }
 
-Image::~Image() { stbi_image_free(data_); }
+Image::~Image() {
+    if (data_) {
+        stbi_image_free(data_);
+    }
+}
 
 auto Image::getMipLevels() const -> uint32_t {
-    return static_cast<uint32_t>(
-               ::std::floor(::std::log2(::std::max(width, height)))) +
-           1;
+    return static_cast<uint32_t>(::std::floor(::std::log2(::std::max(width, height)))) + 1;
 }
 
 auto Image::size() const -> unsigned long long {

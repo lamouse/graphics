@@ -460,8 +460,8 @@ auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId 
 
 auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -> TextureId {
     return texture_cache.addTexture({.width = static_cast<u32>(texture.getWidth()),
-                                     .height = static_cast<u32>(texture.getheight())},
-                                    texture.data());
+                                     .height = static_cast<u32>(texture.getHeight())},
+                                    texture.data(), texture.count());
 }
 
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {

@@ -106,7 +106,7 @@ class TextureCache : public TextureCacheInfo {
         void TickFrame();
 
         // 添加一个纹理
-        auto addTexture(const Extent2D& extent, std::span<unsigned char> data) -> ImageViewId;
+        auto addTexture(const Extent2D& extent, std::span<unsigned char> data, int layer_count = 1) -> ImageViewId;
         auto getSampler(SamplerPreset preset) -> typename P::Sampler*;
         auto getCurrentTexture() -> std::pair<ImageView*, Sampler*>;
         void setCurrentTexture(ImageViewId viewId, SamplerPreset preset);

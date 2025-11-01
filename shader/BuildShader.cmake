@@ -7,6 +7,8 @@ set(SHADER_FILES
     particle.vert
     point_light.frag
     point_light.vert
+    skycube.frag
+    skycube.vert
 )
 
 # 查找 glslc 编译器

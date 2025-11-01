@@ -7,6 +7,7 @@
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
 #include "effects/model/model.hpp"
+#include "effects/cubemap/skybox.hpp"
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
@@ -31,6 +32,8 @@ void App::run() {
     load_resource();
     std::vector<ecs::Entity> model_entt;
     std::vector<effects::LightModel> models;
+
+    effects::SkyBox sky_box{resourceManager};
     core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
@@ -95,6 +98,10 @@ void App::run() {
         pointLight.update(frameInfo);
         graphics->setPipelineState(pipeline_state);
         pointLight.draw(graphics);
+
+        graphics->setPipelineState(pipeline_state);
+        sky_box.update(frameInfo);
+        sky_box.draw(graphics);
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
         if (shaders_building > 0) {
@@ -125,9 +132,7 @@ App::~App() = default;
 
 void App::load_resource() {
     std::string viking_room_path = image_path + "viking_room.png";
-    std::string other_image = image_path + "p1.jpg";
     resourceManager.addTexture(viking_room_path);
-    resourceManager.addTexture(other_image);
 
     std::string viking_obj_path = "models/viking_room.obj";
     resourceManager.addMesh(viking_obj_path);

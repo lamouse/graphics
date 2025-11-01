@@ -29,6 +29,13 @@ class ResourceManager {
         CLASS_NON_COPYABLE(ResourceManager);
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
         void addTexture(std::string textureName, add_texture_func func = nullptr);
+        /**
+         * @brief 暂时针对cube map的6张图片
+         *
+         * @param textureName
+         * @param func
+         */
+        void addTexture(std::span<std::string> textureName, const std::string& name, add_texture_func func = nullptr);
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         explicit ResourceManager(render::Graphic* graphic_):graphic(graphic_) {}
 

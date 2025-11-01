@@ -25,13 +25,14 @@ void TextureCache<P>::TickFrame() {
 }
 
 template <class P>
-auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char> data)
-    -> ImageViewId {
+auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char> data,
+                                 int layer_count) -> ImageViewId {
     ImageInfo info;
     info.size.width = extent.width;
     info.size.height = extent.height;
     info.type = render::texture::ImageType::e2D;
     info.num_samples = 1;
+    info.resources.layers = layer_count;
     info.resources.levels = 1;
     info.format = PixelFormat::A8B8G8R8_UNORM;
     const ImageId new_image_id = slot_images.insert(runtime, info);
@@ -50,7 +51,8 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
     }};
     new_image.UploadMemory(staging, copys);
 
-    const ImageViewInfo view_info(info);
+    ImageViewType type = layer_count == 6? ImageViewType::Cube: ImageViewType::e2D;
+    const ImageViewInfo view_info(info, type);
     const ImageViewId image_view_id =
         slot_image_views.insert(runtime, view_info, new_image_id, new_image);
     return image_view_id;
@@ -142,9 +144,8 @@ void TextureCache<P>::setCurrentFrameBuffer(const FramebufferKey& key) {
     frameRenderTarget[key] = target;
 }
 
-        template <class P>
-auto TextureCache<P>::TryFindFramebufferImageView()
-    -> std::pair<typename P::ImageView*, bool> {
+template <class P>
+auto TextureCache<P>::TryFindFramebufferImageView() -> std::pair<typename P::ImageView*, bool> {
     if (slot_image_views.size() <= 1) {
         return std::make_pair(nullptr, false);
     }

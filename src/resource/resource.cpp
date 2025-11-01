@@ -2,16 +2,41 @@
 #include "common/assert.hpp"
 #include "resource/obj/model.hpp"
 #include "resource/shader/shader.hpp"
+#include <cstring>
 namespace graphics {
 void ResourceManager::addTexture(std::string textureName, add_texture_func func) {
     ASSERT_MSG(!textureName.empty(), "textureName is null");
     ASSERT_MSG(!textures.contains(textureName), textureName + " texture in catch");
 
     resource::image::Image texture(textureName);
-    if(func){
+    if (func) {
         textures[textureName] = func(texture);
-    }else{
+    } else {
         textures[textureName] = graphic->uploadTexture(texture);
+    }
+}
+
+void ResourceManager::addTexture(std::span<std::string> textureName, const std::string& name,
+                                 add_texture_func func) {
+    if (textureName.empty()) {
+        return;
+    }
+    std::vector<resource::image::Image> images;
+    int width{}, height{};
+    std::vector<unsigned char> all_image;
+    for (const auto& n : textureName) {
+        resource::image::Image loaded_image{n};
+        width = loaded_image.getWidth();
+        height = loaded_image.getHeight();
+        all_image.insert(all_image.end(), loaded_image.data().begin(), loaded_image.data().end());
+    }
+
+    resource::image::Image uploadImage{width, height, all_image,
+                                       static_cast<std::uint8_t>(textureName.size())};
+    if (func) {
+        textures[name] = func(uploadImage);
+    } else {
+        textures[name] = graphic->uploadTexture(uploadImage);
     }
 }
 
