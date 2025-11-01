@@ -419,8 +419,8 @@ void TextureImage::UploadMemory(vk::Buffer buffer, vk::DeviceSize offset,
     const vk::Image vk_image = *image;
     const vk::ImageAspectFlags vk_aspect_mask = aspect_mask;
     const bool is_initialized = std::exchange(initialized, true);
-    scheduler->record([src_buffer, vk_image, vk_aspect_mask, is_initialized, vk_copies ](
-                          vk::CommandBuffer cmdbuf) {
+    scheduler->record([src_buffer, vk_image, vk_aspect_mask, is_initialized,
+                       vk_copies](vk::CommandBuffer cmdbuf) {
         CopyBufferToImage(cmdbuf, src_buffer, vk_image, vk_aspect_mask, is_initialized, vk_copies);
     });
 }
@@ -466,8 +466,10 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
     };
     switch (info.type) {
         case texture::ImageViewType::e2D:
-        case texture::ImageViewType::e2DArray:
             create(shader::TextureType::Color2D, 1);
+            render_target = Handle(shader::TextureType::Color2D);
+            break;
+        case texture::ImageViewType::e2DArray:
             create(shader::TextureType::ColorArray2D, std::nullopt);
             render_target = Handle(shader::TextureType::ColorArray2D);
             break;
@@ -476,9 +478,13 @@ TextureImageView::TextureImageView(TextureCacheRuntime& runtime, const texture::
             render_target = Handle(shader::TextureType::Color3D);
             break;
         case texture::ImageViewType::Cube:
+            create(TextureType::ColorCube, 6);
+            render_target = Handle(shader::TextureType::ColorCube);
+            break;
         case texture::ImageViewType::CubeArray:
             create(TextureType::ColorCube, 6);
             create(TextureType::ColorArrayCube, std::nullopt);
+            render_target = Handle(shader::TextureType::ColorArrayCube);
             break;
     }
 }

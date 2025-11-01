@@ -32,7 +32,7 @@ class SkyBox {
         void update(core::FrameInfo& frameInfo) {
             auto& transform = sky_box.entity_.getComponent<ecs::TransformComponent>();
             sky_box.getUBO().modelMatrix = transform.mat4();
-            sky_box.getUBO().projectionMatrix = frameInfo.camera->getProjection();
+            sky_box.getUBO().projectionMatrix = glm::mat4(1.f);
         }
 
         void draw(render::Graphic* graphic) {

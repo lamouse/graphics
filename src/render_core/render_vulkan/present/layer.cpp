@@ -37,10 +37,10 @@ Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
       image_count(image_count_) {
     CreateDescriptorPool();
     CreateDescriptorSets(layout);
-    if (common::settings::get<settings::Graphics>().scaling_filter ==
-        settings::enums::ScalingFilter::Fsr) {
-        CreateFSR(output_size);
-    }
+    // if (common::settings::get<settings::Graphics>().scaling_filter ==
+    //     settings::enums::ScalingFilter::Fsr) {
+    //     CreateFSR(output_size);
+    // }
 }
 Layer::~Layer() { ReleaseRawImages(); }
 

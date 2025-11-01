@@ -214,7 +214,7 @@ void GraphicsPipeline::Configure() {
     buffer_cache.BindGraphicUniformBuffer();
     auto [view, sample] = texture_cache.getCurrentTexture();
     if(view){
-        guest_descriptor_queue_.AddSampledImage(view->Handle(shader::TextureType::Color2D),
+        guest_descriptor_queue_.AddSampledImage(view->RenderTarget(),
                                             sample->Handle());
     }
     ConfigureDraw();
