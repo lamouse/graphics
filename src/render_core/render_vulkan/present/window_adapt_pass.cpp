@@ -99,7 +99,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                                 image_index, configs[i], layout);
         layer_it++;
     }
-    scheduler.record([=, &rasterizer](vk::CommandBuffer cmdbuf) {
+    scheduler.record([=](vk::CommandBuffer cmdbuf) -> void {
         const f32 bg_red = 255.0F;
         const f32 bg_green = 255.0F;
         const f32 bg_blue = 255.0F;
@@ -116,7 +116,6 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                     vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
                 .setBaseArrayLayer(0)
                 .setLayerCount(1);
-
 
         utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, render_area);
         cmdbuf.clearAttachments({clear_attachment}, {clear_rect});
