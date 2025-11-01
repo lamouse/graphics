@@ -66,6 +66,7 @@ void App::run() {
         auto model_child = model.getChildEntitys();
         model_entt.insert(model_entt.end(), model_child.begin(), model_child.end());
     }
+    model_entt.push_back(world.getEntity(world::WorldEntityType::CAMERA));
 
     auto& cameraComponent =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
@@ -110,7 +111,6 @@ void App::run() {
             ui::draw_result(menu_data, imageId, window->getAspectRatio());
             ui::pipeline_state(pipeline_state);
             logger.drawUi(menu_data.show_log);
-            world.drawUI();
         });
         render_base->composite(std::span{&frames, 1});
         graphics->clean();

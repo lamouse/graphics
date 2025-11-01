@@ -13,7 +13,6 @@ namespace world {
             World();
             [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
             ~World();
-            void drawUI();
             CLASS_DEFAULT_MOVEABLE(World);
             CLASS_NON_COPYABLE(World);
         private:

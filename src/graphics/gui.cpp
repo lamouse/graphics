@@ -2,7 +2,9 @@
 #include "gui.hpp"
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
+#include "ecs/components/camera_component.hpp"
 #include "ecs/ui/transformUI.hpp"
+#include "ecs/ui/cameraUI.hpp"
 #include <ImGuizmo.h>
 #include <GraphEditor.h>
 #include <ImSequencer.h>
@@ -405,6 +407,14 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
         if (ImGui::TreeNode("TransformComponent")) {
             auto& tc = entity.getComponent<ecs::TransformComponent>();
             ecs::DrawTransformUI(tc);
+            ImGui::TreePop();
+        }
+    }
+
+    if (entity.hasComponent<ecs::CameraComponent>()) {
+        if (ImGui::TreeNode("Camera")) {
+            auto& cam = entity.getComponent<ecs::CameraComponent>();
+            ecs::DrawCameraUI(cam);
             ImGui::TreePop();
         }
     }
