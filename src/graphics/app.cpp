@@ -47,7 +47,6 @@ void App::run() {
     world::World world;
     [[maybe_unused]] bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
-    std::string other_image = image_path + "p1.jpg";
     std::string viking_obj_path = "models/viking_room.obj";
     effects::PointLightEffect pointLight{resourceManager};
     effects::DeltaParticle particle(resourceManager, graphics, PARTICLE_COUNT);

@@ -25,4 +25,5 @@ void init_imgui(float scale);
 // 递归绘制树节点
 void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data);
 void show_menu(MenuData& data);
+auto IsMouseControlledByImGui() -> bool;
 }  // namespace graphics::ui

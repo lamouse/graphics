@@ -73,6 +73,7 @@ else()
 endif()
 
 target_compile_definitions(${LIB_NAME} INTERFACE IMGUI_DEFINE_MATH_OPERATORS)
+target_compile_definitions(${LIB_NAME} PUBLIC IMGUIZMO_IMGUI_FOLDER=)
 target_link_libraries(${LIB_NAME} PRIVATE Imgui::Imgui)
 
 set(EXPORT_NAME ImGuizmo)

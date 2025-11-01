@@ -18,8 +18,6 @@ class LightModel {
 
         void update(core::FrameInfo& frameInfo) {
             auto& transform = model_.entity_.getComponent<ecs::TransformComponent>();
-            transform.rotation.z = frameInfo.frameTime * glm::radians(90.0F);
-
             model_.PushConstant().modelMatrix = transform.mat4();
             model_.PushConstant().normalMatrix = transform.normalMatrix();
             model_.getUBO().numLights = 1;

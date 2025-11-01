@@ -1,15 +1,14 @@
 #include "imgui.h"
+#include "imGuIZMOquat.h"
 #include "gui.hpp"
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "ecs/ui/transformUI.hpp"
 #include "ecs/ui/cameraUI.hpp"
-#include <ImGuizmo.h>
-#include <GraphEditor.h>
-#include <ImSequencer.h>
-#include <ImCurveEdit.h>
-#include <ImZoomSlider.h>
+
+#include <glm/gtc/quaternion.hpp>
+
 #include <limits>
 // Helper to wire demo markers located in code to an interactive browser
 typedef void (*ImGuiDemoMarkerCallback)(const char* file, int line, const char* section,
@@ -408,6 +407,15 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
             auto& tc = entity.getComponent<ecs::TransformComponent>();
             ecs::DrawTransformUI(tc);
             ImGui::TreePop();
+            auto qRot = glm::quat(tc.rotation);
+            static quat qRot1 = quat(qRot.w, qRot.x, qRot.y, qRot.z);
+            qRot1.w = qRot.w;
+            qRot1.x = qRot.x;
+            qRot1.y = qRot.y;
+            qRot1.z = qRot.z;
+            ImGui::gizmo3D("##gizmo1", qRot1, 200.f);
+
+            //tc.rotation = glm::eulerAngles(qRot);
         }
     }
 
@@ -426,29 +434,29 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
 // 主函数：显示 Outliner 窗口
 // ======================================
 void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
-    if (!data.show_out_liner) {
-        return;
+    if (data.show_out_liner) {
+        // 设置窗口标志
+        ImGuiWindowFlags window_flags =
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        auto window_size = viewport->Size;
+        window_size.y -= ImGui::GetFrameHeight();
+        window_size.x *= OUTLINER_WIDTH;
+
+        ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x),
+                        viewport->WorkPos.y);
+        ImGui::SetNextWindowSize(window_size);
+        ImGui::SetNextWindowPos(panelPos);
+        ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
+
+        for (auto& instance : instances) {
+            DrawModelTreeNode(instance, 0);
+        }
+
+        ImGui::End();
     }
-    // 设置窗口标志
-    ImGuiWindowFlags window_flags =
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-    auto window_size = viewport->Size;
-    window_size.y -= ImGui::GetFrameHeight();
-    window_size.x *= OUTLINER_WIDTH;
-
-    ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x), viewport->WorkPos.y);
-    ImGui::SetNextWindowSize(window_size);
-    ImGui::SetNextWindowPos(panelPos);
-    ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
-
-    for (auto& instance : instances) {
-        DrawModelTreeNode(instance, 0);
-    }
-
-    ImGui::End();
     if (!data.show_detail) {
         return;
     }
@@ -501,5 +509,9 @@ void show_menu(MenuData& data) {
         }
         ImGui::EndMainMenuBar();
     }
+}
+auto IsMouseControlledByImGui() -> bool {
+    ImGuiIO& io = ImGui::GetIO();
+    return io.WantCaptureMouse;
 }
 }  // namespace graphics::ui
