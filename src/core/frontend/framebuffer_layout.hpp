@@ -8,7 +8,7 @@
 
 namespace layout {
 
-enum class AspectRatio {
+enum class  AspectRatio : std::uint8_t {
     Default,
     R4_3,
     R21_9,
@@ -19,8 +19,8 @@ enum class AspectRatio {
 
 /// Describes the layout of the window framebuffer
 struct FrameBufferLayout {
-        u32 width;
-        u32 height;
+        u32 width{};
+        u32 height{};
         common::Rectangle<u32> screen;
         bool is_srgb{};
 };

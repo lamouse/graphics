@@ -1,4 +1,4 @@
-#include "fixed_pipeline_state.h"
+#include "pipeline_state.h"
 #include <farmhash.h>
 namespace render {
 auto FixedPipelineState::Hash() const noexcept -> size_t {

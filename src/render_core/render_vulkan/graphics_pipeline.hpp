@@ -4,7 +4,7 @@
 #include "buffer_cache.h"
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
-#include "render_core/fixed_pipeline_state.h"
+#include "render_core/pipeline_state.h"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "shader_tools/shader_info.h"
 #include <condition_variable>

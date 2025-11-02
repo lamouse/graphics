@@ -105,17 +105,23 @@ enum class IndexFormat : u32 {
 };
 
 struct DynamicPipelineState {
-        bool colorBlendEnable = true;
-        bool logicOpEnable = false;
-        bool stencilTestEnable = true;
-        bool depthClampEnable = true;
-        bool depthWriteEnable = true;
-        bool depthTestEnable = true;
-        bool depthBoundsTestEnable = true;
-        bool cullMode = false;
-        bool depthBiasEnable = true;
-        bool rasterizerDiscardEnable = false;
-        bool primitiveRestartEnable = false;
+        union {
+                struct {
+                        uint32_t colorBlendEnable : 1 = 1;
+                        uint32_t logicOpEnable : 1 = 0;
+                        uint32_t stencilTestEnable : 1 = 1;
+                        uint32_t depthClampEnable : 1 = 1;
+                        uint32_t depthWriteEnable : 1 = 1;
+                        uint32_t depthTestEnable : 1 = 1;
+                        uint32_t depthBoundsTestEnable : 1 = 1;
+                        uint32_t cullMode : 1 = 0;
+                        uint32_t depthBiasEnable : 1 = 1;
+                        uint32_t rasterizerDiscardEnable : 1 = 0;
+                        uint32_t primitiveRestartEnable : 1 = 0;
+                        uint32_t reserved : 21;
+                };
+                uint32_t flags;
+        };
         struct ViewPort {
                 f32 x{};
                 f32 y{};
@@ -132,18 +138,6 @@ struct DynamicPipelineState {
         };
         ViewPort viewport;
         Scissors scissors;
-
-        // 主要影响render pass的clear value或者command buffer的clearAttachments
-        struct ClearColor {
-                float r{};
-                float g{};
-                float b{};
-                float a{};
-                float depth{1};
-                int stencil{};
-        };
-
-        ClearColor clearColor;
 
         // cmdbuf.setBlendConstants
         struct BlendColor {

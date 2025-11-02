@@ -30,20 +30,20 @@ class Particle : public render::IComputeInstance {
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             return u.as_byte_span();
         };
-        Particle(graphics::ResourceManager& manager, render::Graphic* graphics, std::uint32_t count)
+        Particle(graphics::ResourceManager& manager,  const layout::FrameBufferLayout& layout, render::Graphic* graphics, std::uint32_t count)
             : id(getCurrentId()) {
             graphics::ParticleModel model{count};
             manager.addMesh("particle_in", model);
             manager.addMesh("particle_out", model);
 
             // NOLINTNEXTLINE
-            in = DeltaParticleInstance(manager,
+            in = DeltaParticleInstance(manager,layout,
                                        ModelResourceName{.shader_name = particle_shader_name,
                                                          .mesh_name = "particle_in",
                                                          .texture_name = ""},
                                        "particle");
             // NOLINTNEXTLINE
-            out = DeltaParticleInstance(manager,
+            out = DeltaParticleInstance(manager,layout,
                                         ModelResourceName{.shader_name = particle_shader_name,
                                                           .mesh_name = "particle_out",
                                                           .texture_name = ""},

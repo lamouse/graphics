@@ -6,7 +6,7 @@
 #ifndef GRAPHICS_FORMAT_TO_VK_HPP
 #define GRAPHICS_FORMAT_TO_VK_HPP
 #include "render_core/vertex.hpp"
-#include "render_core/fixed_pipeline_state.h"
+#include "render_core/pipeline_state.h"
 #include <vulkan/vulkan.hpp>
 
 namespace render::vulkan {

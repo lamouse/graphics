@@ -3,7 +3,7 @@
 #include "common/assert.hpp"
 #include "render_core/types.hpp"
 #include <span>
-#include "render_core/fixed_pipeline_state.h"
+#include "render_core/pipeline_state.h"
 #include "ecs/scene/entity.hpp"
 namespace graphics {
 
@@ -43,6 +43,7 @@ class IModelInstance {
         [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getPrimitiveTopology() const -> render::PrimitiveTopology = 0;
+        [[nodiscard]] virtual auto getPipelineState() const -> render::DynamicPipelineState = 0;
         void setTextureId(render::TextureId id) { textureId = id; }
 
         ecs::Entity entity_;

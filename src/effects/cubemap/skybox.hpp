@@ -11,7 +11,7 @@ struct SkyUBO {
 };
 class SkyBox {
     public:
-        SkyBox(graphics::ResourceManager& manager) : id(getCurrentId()) {
+        SkyBox(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout) : id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
 
@@ -25,7 +25,7 @@ class SkyBox {
             manager.addGraphShader("skycube");
             ModelResourceName names{
                 .shader_name = "skycube", .mesh_name = mesh_path, .texture_name = "skybox"};
-            sky_box = SkyBoxInstance{manager, names, "skybox instance"};
+            sky_box = SkyBoxInstance{manager, layout, names, "skybox instance"};
         }
 
         void update(core::FrameInfo& frameInfo) {

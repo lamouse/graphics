@@ -36,6 +36,13 @@ class Entity {
         }
 
         template <typename T>
+        auto getComponent() const -> T& {
+            // NOLINTNEXTLINE(modernize-use-trailing-return-type)
+            ASSERT_MSG(hasComponent<T>(), "Entity dose not has component");
+            return scene_->registry_.get<T>(handle_);
+        }
+
+        template <typename T>
         void removeComponent() {
             // NOLINTNEXTLINE(modernize-use-trailing-return-type)
             ASSERT_MSG(!hasComponent<T>(), "Entity dose not has component");

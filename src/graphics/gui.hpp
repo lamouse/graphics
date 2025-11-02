@@ -1,5 +1,4 @@
 #pragma once
-#include "render_core/fixed_pipeline_state.h"
 #include "imgui.h"
 #include "ecs/scene/entity.hpp"
 #include <span>
@@ -13,12 +12,6 @@ struct MenuData{
     bool show_out_liner{true};
     bool show_detail{true};
 };
-
-/**
- *
- * @param state 这里的属性值会被修改
- */
-void pipeline_state(render::DynamicPipelineState& state);
 
 void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 void init_imgui(float scale);

@@ -8,7 +8,7 @@
 #include "render_core/render_vulkan/staging_buffer_pool.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/texture/types.hpp"
-#include "render_core/fixed_pipeline_state.h"
+#include "render_core/pipeline_state.h"
 
 namespace render::vulkan {
 class Device;

@@ -9,9 +9,9 @@ struct ModelPushConstantData {
 
 class LightModel {
     public:
-        LightModel(graphics::ResourceManager& manager, const ModelResourceName& names,
+        LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout, const ModelResourceName& names,
                    const std::string& name)
-            : model_(manager, names, "LightModel"), id(getCurrentId()) {
+            : model_(manager, layout, names, "LightModel"), id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }

@@ -30,9 +30,10 @@ struct PointLightPushConstants {
 
 class PointLightEffect {
     public:
-        PointLightEffect(graphics::ResourceManager& manager, float intensity = 10.f,
+        PointLightEffect(graphics::ResourceManager& manager,
+                         const layout::FrameBufferLayout& layout, float intensity = 10.f,
                          float radius = 0.5f, glm::vec3 color_ = glm::vec3(1.f))
-            : point_light{manager,
+            : point_light{manager, layout,
                           ModelResourceName{
                               .shader_name = "point_light", .mesh_name = "", .texture_name = ""},
                           "PointLight"},

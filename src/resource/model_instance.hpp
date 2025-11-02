@@ -6,6 +6,7 @@
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/components/camera_component.hpp"
+#include "ecs/components/dynamic_pipeline_state_component.hpp"
 #include "resource/obj/model.hpp"
 #include "resource/instance.hpp"
 #include "resource/id.hpp"
@@ -60,11 +61,14 @@ class ModelInstance : public IModelInstance {
         [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {
             return topology;
         }
+        [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
+            return entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;
+        }
         auto getUBO() -> UBO& { return ubo; }
         auto PushConstant() -> PushConstants& { return push_constants; }
 
-        ModelInstance(const ResourceManager& resource, const ModelResourceName& resourceName,
-                      const std::string& modelName)
+        ModelInstance(const ResourceManager& resource, const layout::FrameBufferLayout& layout,
+                      const ModelResourceName& resourceName, const std::string& modelName)
             : id(getCurrentId()),
               texture_name(resourceName.texture_name),
               mesh_name(resourceName.mesh_name),
@@ -78,6 +82,7 @@ class ModelInstance : public IModelInstance {
                 modelName.empty() ? "Model" + std::to_string(id) : modelName + std::to_string(id));
             entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
+            entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
         }
         ModelInstance() = default;
 

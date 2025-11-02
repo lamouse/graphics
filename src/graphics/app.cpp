@@ -32,18 +32,18 @@ void App::run() {
     load_resource();
     std::vector<ecs::Entity> model_entt;
     std::vector<effects::LightModel> models;
-
-    effects::SkyBox sky_box{resourceManager};
+    const auto frame_layout = window->getFramebufferLayout();
+    effects::SkyBox sky_box{resourceManager, frame_layout};
     core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
     render::DynamicPipelineState pipeline_state;
-    auto layout = window->getFramebufferLayout();
-    pipeline_state.viewport.width = layout.screen.GetWidth();
-    pipeline_state.viewport.height = layout.screen.GetHeight();
-    pipeline_state.scissors.width = layout.screen.GetWidth();
-    pipeline_state.scissors.height = layout.screen.GetHeight();
+    auto layout1 = window->getFramebufferLayout();
+    pipeline_state.viewport.width = layout1.screen.GetWidth();
+    pipeline_state.viewport.height = layout1.screen.GetHeight();
+    pipeline_state.scissors.width = layout1.screen.GetWidth();
+    pipeline_state.scissors.height = layout1.screen.GetHeight();
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
 
@@ -51,12 +51,12 @@ void App::run() {
     [[maybe_unused]] bool show_console_logger = false;
     std::string viking_room_path = image_path + "viking_room.png";
     std::string viking_obj_path = "models/viking_room.obj";
-    effects::PointLightEffect pointLight{resourceManager};
-    effects::DeltaParticle particle(resourceManager, graphics, PARTICLE_COUNT);
+    effects::PointLightEffect pointLight{resourceManager, frame_layout};
+    effects::DeltaParticle particle(resourceManager, frame_layout, graphics, PARTICLE_COUNT);
     ModelResourceName names{.shader_name = model_shader_name,
                             .mesh_name = viking_obj_path,
                             .texture_name = viking_room_path};
-    models.emplace_back(resourceManager, names, "model");
+    models.emplace_back(resourceManager, frame_layout, names, "model");
     model_entt.emplace_back(particle.entity_);
     auto particle_child = particle.getChildEntitys();
     model_entt.insert(model_entt.end(), particle_child.begin(), particle_child.end());
@@ -88,20 +88,16 @@ void App::run() {
         }
         frameInfo.frameTime = getRuntime();
         frameInfo.camera = &camera;
-        graphics->setPipelineState(pipeline_state);
         sky_box.update(frameInfo);
         sky_box.draw(graphics);
         for (auto& m : models) {
-            graphics->setPipelineState(pipeline_state);
             m.update(frameInfo);
             m.draw(graphics);
         }
         particle.getUniforBuffer().deltaTime = frameInfo.frameTime;
-        graphics->setPipelineState(pipeline_state);
         particle.draw(graphics);
         camera.setPerspectiveProjection(glm::radians(50.f), window->getAspectRatio(), 0.1f, 100.f);
         pointLight.update(frameInfo);
-        graphics->setPipelineState(pipeline_state);
         pointLight.draw(graphics);
 
         auto& shader_notify = render_base->getShaderNotify();
@@ -117,10 +113,10 @@ void App::run() {
             draw_setting(menu_data.show_system_setting);
             ui::ShowOutliner(model_entt, menu_data);
             ui::draw_result(menu_data, imageId, window->getAspectRatio());
-            ui::pipeline_state(pipeline_state);
             logger.drawUi(menu_data.show_log);
         });
         render_base->composite(std::span{&frames, 1});
+        //TODO 添加clear value
         graphics->clean();
     }
 }

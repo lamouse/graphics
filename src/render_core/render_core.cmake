@@ -1,8 +1,8 @@
 set(sources
     compute_instance.hpp
     delayed_destruction_ring.h
-    fixed_pipeline_state.cpp
-    fixed_pipeline_state.h
+    pipeline_state.cpp
+    pipeline_state.h
     framebufferConfig.hpp
     framebuffer_config.cpp
     fsr.cpp

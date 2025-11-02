@@ -78,23 +78,22 @@ void VulkanGraphics::clean() {
     scheduler.requestRenderPass(texture_cache.getFramebuffer());
     clear();
 }
+
 void VulkanGraphics::clear() {
     auto config = emu_window->getActiveConfig();
     const vk::Extent2D render_area{static_cast<std::uint32_t>(config.extent.width),
                                    static_cast<std::uint32_t>(config.extent.height)};
-    const f32 bg_red = pipeline_state.clearColor.r;
-    const f32 bg_green = pipeline_state.clearColor.g;
-    const f32 bg_blue = pipeline_state.clearColor.b;
+
     auto clear_value = vk::ClearValue().setColor(
-        vk::ClearColorValue().setFloat32({bg_red, bg_green, bg_blue, 1.0F}));
+        vk::ClearColorValue().setFloat32({1.f, 1.f, 1.f, 1.0F}));
     const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
                                                      .setAspectMask(vk::ImageAspectFlagBits::eColor)
                                                      .setColorAttachment(0)
                                                      .setClearValue(clear_value);
 
     auto clear_depth = vk::ClearDepthStencilValue()
-                           .setDepth(pipeline_state.clearColor.depth)
-                           .setStencil(pipeline_state.clearColor.stencil);
+                           .setDepth(1)
+                           .setStencil(0);
     auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
     const vk::ClearAttachment depth_attachment = vk::ClearAttachment()
                                                      .setAspectMask(vk::ImageAspectFlagBits::eDepth)
@@ -110,8 +109,6 @@ void VulkanGraphics::clear() {
         cmdbuf.clearAttachments({clear_attachment, depth_attachment}, {clear_rect});
     });
 }
-void VulkanGraphics::setPipelineState(const DynamicPipelineState& state) { pipeline_state = state; }
-
 void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
     pipeline_cache.setsetCurrentShader(instance.getShaderHash());
     FlushWork();
@@ -465,6 +462,7 @@ auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -
 }
 
 void VulkanGraphics::draw(const graphics::IModelInstance& instance) {
+    pipeline_state = instance.getPipelineState();
     pipeline_cache.setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
     current_modelId = instance.getMeshId();
     if (instance.getTextureId()) {
