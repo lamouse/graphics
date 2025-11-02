@@ -138,9 +138,9 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
     float mx{}, my{};
     Uint32 mouseState = SDL_GetMouseState(&mx, &my);
     SDL_GetRelativeMouseState(&lastMouseX_, &lastMouseY_);
-    bool leftButton = mouseState & SDL_BUTTON_LEFT;
-    bool rightButton = mouseState & SDL_BUTTON_RIGHT;
-    bool middleButton = mouseState & SDL_BUTTON_MIDDLE;
+    bool leftButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_LEFT);
+    bool rightButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT);
+    bool middleButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE);
     if (leftButton) {
         core::InputState state{};
         state.mouse_button_left.Assign(1);
@@ -156,6 +156,8 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
         state.mouse_button_right.Assign(1);
         state.mouseX_ = mx;
         state.mouseY_ = my;
+        state.mouseRelativeX_ = lastMouseX_;
+        state.mouseRelativeY_ = lastMouseY_;
         state.key_down.Assign(1);
         event.push_event(state);
     }
@@ -164,6 +166,8 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
         state.mouse_button_center.Assign(1);
         state.mouseX_ = mx;
         state.mouseY_ = my;
+        state.mouseRelativeX_ = lastMouseX_;
+        state.mouseRelativeY_ = lastMouseY_;
         state.key_down.Assign(1);
         event.push_event(state);
     }

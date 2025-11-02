@@ -38,7 +38,6 @@ struct CameraSystem {
                 cam.center += right * frameSpeed;
             }
 
-
             // 🎯 鼠标左键：根据位移平移摄像机（Pan）
             if (state.mouse_button_left.Value() && state.key_down.Value()) {
                 float panSpeed = 0.0035f;  // 平移速度
@@ -46,33 +45,52 @@ struct CameraSystem {
                 // 根据鼠标位移计算平移量
                 glm::vec3 panDelta =
                     right * state.mouseRelativeX_ * panSpeed +  // 水平移动：鼠标右移 ->
-                     up * state.mouseRelativeY_ * panSpeed;       // 垂直移动：鼠标上移
+                    up * state.mouseRelativeY_ * panSpeed;      // 垂直移动：鼠标上移
 
                 // 同时移动 eye 和 center，保持视角方向不变
                 cam.eye += panDelta;
                 cam.center += panDelta;
             }
 
-            // // 🔁 右键旋转视角（如果你还需要旋转功能）
-            // if (state.key_down.Value() && state.mouse_button_right.Value()) {
-            //     float yaw = state.mouseRelativeX_ * 0.005f;
-            //     float pitch = state.mouseRelativeY_ * 0.005f;
+            // 🔁 右键旋转视角（如果你还需要旋转功能）
+            if (state.key_down.Value() && state.mouse_button_right.Value()) {
+                const glm::vec3 WORLD_UP(0, 1, 0);
+                glm::vec3 toEye = cam.eye - cam.center;
+                float dist = glm::length(toEye);
+                if (dist < 0.1f) return;
 
-            //     glm::vec3 toEye = cam.eye - cam.center;
-            //     glm::mat4 yawRot = glm::rotate(glm::mat4(1.0f), yaw, up);
-            //     toEye = glm::vec3(yawRot * glm::vec4(toEye, 0.0f));
+                toEye = glm::normalize(toEye);
 
-            //     glm::mat4 pitchRot = glm::rotate(glm::mat4(1.0f), pitch, right);
-            //     glm::vec3 newToEye = glm::vec3(pitchRot * glm::vec4(toEye, 0.0f));
+                float sensitivity = 0.002f;
+                float dx = state.mouseRelativeX_ * sensitivity;
+                float dy = -state.mouseRelativeY_ * sensitivity;
 
-            //     glm::vec3 newForward = -glm::normalize(newToEye);
-            //     float angle = glm::acos(glm::dot(newForward, up));
-            //     if (angle > 0.1f && angle < 3.0f) {
-            //         toEye = newToEye;
-            //     }
+                // 🔁 1. 先绕 WORLD_UP 旋转（yaw）—— 左右
+                glm::mat4 yawRot = glm::rotate(glm::mat4(1.0f), -dx, WORLD_UP);
+                toEye = glm::vec3(yawRot * glm::vec4(toEye, 0.0f));
 
-            //     cam.eye = cam.center + toEye;
-            // }
+                // 🔁 2. 重新计算 right（因为 toEye 变了）
+                glm::vec3 right = glm::cross(toEye, WORLD_UP);
+                if (glm::length(right) < 1e-6f) {
+                    right = glm::vec3(1, 0, 0);  // fallback
+                } else {
+                    right = glm::normalize(right);
+                }
+
+                // 🔽 3. 绕 right 旋转（pitch）—— 上下
+                glm::mat4 pitchRot = glm::rotate(glm::mat4(1.0f), -dy, right);
+                glm::vec3 newToEye = glm::vec3(pitchRot * glm::vec4(toEye, 0.0f));
+
+                // ✅ 限制 pitch，防止翻转
+                float dot = glm::dot(newToEye, WORLD_UP);
+                if (dot > 0.99f || dot < -0.99f) {
+                    // 角度太大，拒绝更新
+                } else {
+                    toEye = newToEye;
+                }
+
+                cam.eye = cam.center + toEye * dist;
+            }
 
             // 🧮 缩放
             if (state.scrollOffset_ != 0.0f) {
@@ -83,7 +101,6 @@ struct CameraSystem {
                 glm::vec3 direction = glm::normalize(cam.eye - cam.center);
                 cam.eye = cam.center + direction * newDist;
             }
-
         }
 };
 
