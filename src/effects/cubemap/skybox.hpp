@@ -11,7 +11,11 @@ struct SkyUBO {
 };
 class SkyBox {
     public:
-        SkyBox(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout) : id(getCurrentId()) {
+        CLASS_DEFAULT_MOVEABLE(SkyBox);
+        CLASS_NON_COPYABLE(SkyBox);
+        ~SkyBox() = default;
+        SkyBox(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout)
+            : id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
 
@@ -28,7 +32,7 @@ class SkyBox {
             sky_box = SkyBoxInstance{manager, layout, names, "skybox instance"};
         }
 
-        void update(core::FrameInfo& frameInfo) {
+        void update(const core::FrameInfo& frameInfo) {
             auto& transform = sky_box.entity_.getComponent<ecs::TransformComponent>();
             sky_box.getUBO().modelMatrix = transform.mat4();
             sky_box.getUBO().projectionMatrix = frameInfo.camera->getProjection();

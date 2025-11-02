@@ -51,7 +51,7 @@ struct ParticleModel : public IMeshData {
         }
 
         [[nodiscard]] auto uses32BitIndices() const -> bool override { return false; }
-        ParticleModel(std::uint64_t count);
+        ParticleModel(std::uint64_t count, float aspect);
         ~ParticleModel() override = default;
 
     private:

@@ -5,6 +5,7 @@
 #include <span>
 #include "render_core/pipeline_state.h"
 #include "ecs/scene/entity.hpp"
+#include <spdlog/spdlog.h>
 namespace graphics {
 
 template <typename T>

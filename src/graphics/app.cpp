@@ -29,47 +29,20 @@ auto getRuntime() -> float {
 
 void App::run() {
     load_resource();
-    std::vector<ecs::Entity> model_entt;
     std::vector<effects::LightModel> models;
     const auto frame_layout = window->getFramebufferLayout();
-    effects::SkyBox sky_box{resourceManager, frame_layout};
     core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
-    std::string model_shader_name = "model";
-    std::string particle_shader_name = "particle";
 
     world::World world;
-    [[maybe_unused]] bool show_console_logger = false;
-    std::string viking_room_path = image_path + "viking_room.png";
-    std::string viking_obj_path = "models/viking_room.obj";
-    effects::PointLightEffect pointLight{resourceManager, frame_layout};
-    effects::DeltaParticle particle(resourceManager, frame_layout, graphics, PARTICLE_COUNT);
-    ModelResourceName names{.shader_name = model_shader_name,
-                            .mesh_name = viking_obj_path,
-                            .texture_name = viking_room_path};
-    models.emplace_back(resourceManager, frame_layout, names, "model");
-    model_entt.emplace_back(particle.entity_);
-    auto particle_child = particle.getChildEntitys();
-    model_entt.insert(model_entt.end(), particle_child.begin(), particle_child.end());
-    model_entt.emplace_back(pointLight.entity_);
-    auto pointLight_child = pointLight.getChildEntitys();
-    model_entt.insert(model_entt.end(), pointLight_child.begin(), pointLight_child.end());
-    for (const auto& model : models) {
-        model_entt.push_back(model.entity_);
-        auto model_child = model.getChildEntitys();
-        model_entt.insert(model_entt.end(), model_child.begin(), model_child.end());
-    }
     model_entt.push_back(world.getEntity(world::WorldEntityType::CAMERA));
-    model_entt.push_back(sky_box.entity_);
-    auto sky_child = sky_box.getChildEntitys();
-    model_entt.insert(model_entt.end(), sky_child.begin(), sky_child.end());
-
     auto& cameraComponent =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto camera = cameraComponent.getCamera();
+    model_entt.insert(model_entt.end(), registry.getEntt().begin(), registry.getEntt().end());
     while (!window->shouldClose()) {
         camera = cameraComponent.getCamera();
         window->pullEvents();
@@ -82,17 +55,9 @@ void App::run() {
         }
         frameInfo.frameTime = getRuntime();
         frameInfo.camera = &camera;
-        sky_box.update(frameInfo);
-        sky_box.draw(graphics);
-        for (auto& m : models) {
-            m.update(frameInfo);
-            m.draw(graphics);
-        }
-        particle.getUniforBuffer().deltaTime = frameInfo.frameTime;
-        particle.draw(graphics);
-        camera.setPerspectiveProjection(glm::radians(50.f), window->getAspectRatio(), 0.1f, 100.f);
-        pointLight.update(frameInfo);
-        pointLight.draw(graphics);
+
+        registry.updateAll(frameInfo);
+        registry.drawAll(graphics);
 
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
@@ -136,6 +101,24 @@ void App::load_resource() {
     resourceManager.addGraphShader(particle_shader_name);
     resourceManager.addGraphShader(point_light_shader_name);
     resourceManager.addComputeShader(particle_shader_name);
+    auto frame_layout = window->getFramebufferLayout();
+    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
+    registry.add(sky_box);
+
+    ModelResourceName names{.shader_name = model_shader_name,
+                            .mesh_name = viking_obj_path,
+                            .texture_name = viking_room_path};
+
+    auto light_model =
+        std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
+    registry.add(light_model);
+
+    auto point_light = std::make_shared<effects::PointLightEffect>(resourceManager, frame_layout);
+    registry.add(point_light);
+
+    auto delta_particle =
+        std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
+    registry.add(delta_particle);
 }
 
 }  // namespace graphics

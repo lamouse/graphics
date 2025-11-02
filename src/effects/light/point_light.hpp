@@ -38,10 +38,10 @@ class PointLightEffect {
                               .shader_name = "point_light", .mesh_name = "", .texture_name = ""},
                           "PointLight"},
               color(color_),
-              pointLight(std::make_unique<PointLightComponent>()),
+              pointLight(),
               id(getCurrentId()) {
             point_light.entity_.getComponent<ecs::TransformComponent>().scale.x = radius;
-            pointLight->lightIntensity = intensity;
+            pointLight.lightIntensity = intensity;
             auto rotateLight =
                 glm::rotate(glm::mat4(1.f), (1 * glm::two_pi<float>()) / 7, {0.f, -1.f, 0.f});
             point_light.entity_.getComponent<ecs::TransformComponent>().translation =
@@ -51,7 +51,10 @@ class PointLightEffect {
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }
 
-        void update(core::FrameInfo& frameInfo) {
+        CLASS_NON_COPYABLE(PointLightEffect);
+        CLASS_DEFAULT_MOVEABLE(PointLightEffect);
+
+        void update(const core::FrameInfo& frameInfo) {
             auto rotateLight =
                 glm::rotate(glm::mat4(1.f), 0.5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
             auto& transform = point_light.entity_.getComponent<ecs::TransformComponent>();
@@ -62,12 +65,12 @@ class PointLightEffect {
             point_light.getUBO().view = frameInfo.camera->getView();
             point_light.getUBO().pointLights[0].position = glm::vec4(transform.translation, 1.f);
             point_light.getUBO().pointLights[0].color =
-                glm::vec4(color, pointLight->lightIntensity);
+                glm::vec4(color, pointLight.lightIntensity);
         }
         void draw(render::Graphic* graphic) {
             auto& transform = point_light.entity_.getComponent<ecs::TransformComponent>();
             point_light.PushConstant().position = glm::vec4(transform.translation, 1.f);
-            point_light.PushConstant().color = glm::vec4(color, pointLight->lightIntensity);
+            point_light.PushConstant().color = glm::vec4(color, pointLight.lightIntensity);
             point_light.PushConstant().radius = transform.scale.x;
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 graphic->draw(point_light);
@@ -86,7 +89,7 @@ class PointLightEffect {
                                                  render::PrimitiveTopology::Triangles>;
         PointLightInstance point_light;
         glm::vec3 color{};
-        std::unique_ptr<PointLightComponent> pointLight = nullptr;
+        PointLightComponent pointLight;
 
         id_t id;
 };

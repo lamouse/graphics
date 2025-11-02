@@ -3,14 +3,13 @@
 #include <random>
 namespace graphics {
 
-ParticleModel::ParticleModel(std::uint64_t count) {
+ParticleModel::ParticleModel(std::uint64_t count, float aspect) {
     // Initialize particles
     std::random_device rd;
     std::default_random_engine randEngine(rd());
     std::uniform_real_distribution<float> rndDist(0.0F, 1.0F);
 
     particles.resize(count);
-    const float aspect = 1920.0F / 1080.0F; // 修正为浮点除法
     for (auto& particle : particles) {
         float r = 0.25F * std::sqrt(rndDist(randEngine));
         float theta = rndDist(randEngine) * 2.0F * std::numbers::pi_v<float>;

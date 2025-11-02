@@ -5,7 +5,10 @@
 #include "render_core/render_base.hpp"
 #include "common/common_funcs.hpp"
 #include "system/logger_system.hpp"
+#include "graphics/render_registry.hpp"
+
 namespace graphics {
+class RenderRegistry;
 class App {
     public:
         void run();
@@ -19,6 +22,9 @@ class App {
         std::unique_ptr<core::frontend::BaseWindow> window;
         std::unique_ptr<render::RenderBase> render_base;
         ResourceManager resourceManager;
+        RenderRegistry registry;
+        std::vector<ecs::Entity> model_entt;
+
         void load_resource();
 };
 }  // namespace graphics

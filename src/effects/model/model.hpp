@@ -16,7 +16,7 @@ class LightModel {
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }
 
-        void update(core::FrameInfo& frameInfo) {
+        void update(const core::FrameInfo& frameInfo) {
             auto& transform = model_.entity_.getComponent<ecs::TransformComponent>();
             model_.PushConstant().modelMatrix = transform.mat4();
             model_.PushConstant().normalMatrix = transform.normalMatrix();

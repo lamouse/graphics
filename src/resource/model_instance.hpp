@@ -44,13 +44,9 @@ template <typename UBO, typename PushConstants, render::PrimitiveTopology primit
 class ModelInstance : public IModelInstance {
     public:
         [[nodiscard]] auto getId() const -> id_t { return id; }
-        ModelInstance(const ModelInstance&) = delete;
-        ModelInstance(ModelInstance&&) = default;
-        auto operator=(const ModelInstance&) -> ModelInstance& = delete;
-        auto operator=(ModelInstance&&) -> ModelInstance& = default;
+        CLASS_DEFAULT_MOVEABLE(ModelInstance);
+        CLASS_NON_COPYABLE(ModelInstance);
         [[nodiscard]] auto getEntity() -> ecs::Entity& { return entity_; }
-        ::std::shared_ptr<Model> model;
-        ::glm::vec3 color{};
         ~ModelInstance() override = default;
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             return ubo.as_byte_span();

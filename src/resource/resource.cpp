@@ -3,6 +3,7 @@
 #include "resource/obj/model.hpp"
 #include "resource/shader/shader.hpp"
 #include <cstring>
+#include <spdlog/spdlog.h>
 namespace graphics {
 void ResourceManager::addTexture(std::string textureName, add_texture_func func) {
     ASSERT_MSG(!textureName.empty(), "textureName is null");
@@ -56,13 +57,17 @@ void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func || graphic, "add_mesh_func is null");
+    if(mesh.contains(meshName)){
+        SPDLOG_WARN("meshName {} in cache", meshName);
+        return;
+    }
+
     render::MeshId meshId;
     if (func) {
         meshId = func(meshData);
     } else {
         meshId = graphic->uploadModel(meshData);
     }
-    ASSERT_MSG(!mesh.contains(meshName), meshName + " mesh in catch");
     mesh[meshName] = meshId;
 }
 auto ResourceManager::getMesh(std::string meshName) const -> render::MeshId {
