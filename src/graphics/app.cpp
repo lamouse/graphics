@@ -54,9 +54,9 @@ void App::run() {
 
         window->pullEvents(input_event);
         while (auto e = input_event.pop_event()) {
-            if(show_debug_ui && ui::IsMouseControlledByImGui() && (e->mouse_button_left.Value() || e->mouse_button_right.Value())){
-                continue;
-            }
+            // if(show_debug_ui && ui::IsMouseControlledByImGui() && (e->mouse_button_left.Value() || e->mouse_button_right.Value())){
+            //     continue;
+            // }
             glm::vec3 moveDir(0.0f);
             switch (e->key) {
                 case core::InputKey::Insert: {

@@ -30,12 +30,14 @@ class SkyBox {
             ModelResourceName names{
                 .shader_name = "skycube", .mesh_name = mesh_path, .texture_name = "skybox"};
             sky_box = SkyBoxInstance{manager, layout, names, "skybox instance"};
-            sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable = 0;
+            sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable =
+                0;
         }
 
         void update(const core::FrameInfo& frameInfo) {
-            auto& transform = sky_box.entity_.getComponent<ecs::TransformComponent>();
-            sky_box.getUBO().modelMatrix = transform.mat4();
+            glm::mat4 view = frameInfo.camera->getView();
+            glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(view));  // 去除平移
+            sky_box.getUBO().modelMatrix = viewNoTranslate;
             sky_box.getUBO().projectionMatrix = frameInfo.camera->getProjection();
         }
         [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
