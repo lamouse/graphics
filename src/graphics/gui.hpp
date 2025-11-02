@@ -18,7 +18,7 @@ struct MenuData{
  *
  * @param state 这里的属性值会被修改
  */
-void pipeline_state(render::PipelineState& state);
+void pipeline_state(render::DynamicPipelineState& state);
 
 void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 void init_imgui(float scale);

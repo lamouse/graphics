@@ -38,7 +38,7 @@ void App::run() {
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
-    render::PipelineState pipeline_state;
+    render::DynamicPipelineState pipeline_state;
     auto layout = window->getFramebufferLayout();
     pipeline_state.viewport.width = layout.screen.GetWidth();
     pipeline_state.viewport.height = layout.screen.GetHeight();

@@ -110,7 +110,7 @@ void VulkanGraphics::clear() {
         cmdbuf.clearAttachments({clear_attachment, depth_attachment}, {clear_rect});
     });
 }
-void VulkanGraphics::setPipelineState(const PipelineState& state) { pipeline_state = state; }
+void VulkanGraphics::setPipelineState(const DynamicPipelineState& state) { pipeline_state = state; }
 
 void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
     pipeline_cache.setsetCurrentShader(instance.getShaderHash());

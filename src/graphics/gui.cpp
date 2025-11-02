@@ -165,7 +165,7 @@ void fps() {
 }  // namespace
 namespace graphics::ui {
 
-void pipeline_state(render::PipelineState& state) {
+void pipeline_state(render::DynamicPipelineState& state) {
     ImGui::Begin("pipeline 状态");
 
     if (ImGui::TreeNode("set pipeline state")) {

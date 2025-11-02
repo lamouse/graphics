@@ -13,7 +13,7 @@ using GraphicsId = common::SlotId;
 class Graphic {
     public:
         virtual ~Graphic() = default;
-        virtual void setPipelineState(const PipelineState& state) = 0;
+        virtual void setPipelineState(const DynamicPipelineState& state) = 0;
         virtual auto getDrawImage() -> ImTextureID = 0;
         virtual auto uploadModel(const graphics::IMeshData& instance) -> MeshId = 0;
         virtual auto uploadTexture(const ::resource::image::ITexture& texture ) ->TextureId = 0;

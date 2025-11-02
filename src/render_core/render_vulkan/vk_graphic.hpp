@@ -40,7 +40,7 @@ class VulkanGraphics : public render::Graphic {
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
         void clean() override;
-        void setPipelineState(const PipelineState& state) override;
+        void setPipelineState(const DynamicPipelineState& state) override;
         void dispatchCompute(const IComputeInstance& instance) override;
         auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
@@ -107,7 +107,7 @@ class VulkanGraphics : public render::Graphic {
         BufferCache buffer_cache;
         PipelineCache pipeline_cache;
         Event wfi_event;
-        PipelineState pipeline_state;
+        DynamicPipelineState pipeline_state;
         u32 draw_counter = 0;
         ModelId current_modelId;
         common::SlotVector<ModelResource> modelResource;

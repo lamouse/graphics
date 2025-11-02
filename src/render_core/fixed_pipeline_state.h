@@ -104,7 +104,7 @@ enum class IndexFormat : u32 {
     UnsignedInt = 0x2,
 };
 
-struct PipelineState {
+struct DynamicPipelineState {
         bool colorBlendEnable = true;
         bool logicOpEnable = false;
         bool stencilTestEnable = true;
