@@ -14,17 +14,19 @@ namespace core {
     };
 
 struct InputState {
-        InputKey key;
+        InputKey key{InputKey::UN_SUPER};
         union {
-                std::uint8_t raw1;
+                std::uint8_t raw1{0};
                 BitField<0, 1, std::uint8_t> mouse_button_left;
                 BitField<1, 1, std::uint8_t> mouse_button_right;
                 BitField<2, 1, std::uint8_t> mouse_button_center;
                 BitField<3, 1, std::uint8_t> mouse_captured;
-                // BitField<4, 1, std::uint8_t> extended_dynamic_state_3_enables;
-                // BitField<5, 1, std::uint8_t> dynamic_vertex_input;
+                BitField<4, 1, std::uint8_t> key_down;
+                BitField<5, 1, std::uint8_t> key_up;
+                BitField<6, 1, std::uint8_t> mouse_move;
         };
         float mouseX_ = -1.0f, mouseY_ = -1.0f;
+        float mouseRelativeX_{0}, mouseRelativeY_{0};
         float scrollOffset_ = 0.0f;
 };
 

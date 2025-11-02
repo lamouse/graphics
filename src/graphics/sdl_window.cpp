@@ -35,6 +35,8 @@ auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey {
             return core::InputKey::UN_SUPER;  // 未支持的键
     }
 }
+static inline float lastMouseX_ = 0.0f;
+static inline float lastMouseY_ = 0.0f;
 }  // namespace
 namespace graphics {
 SDLWindow::SDLWindow(int width, int height, std::string_view title) {
@@ -114,6 +116,58 @@ void SDLWindow::destroyGUI() { ImGui_ImplSDL3_Shutdown(); }
 void SDLWindow::newFrame() { ImGui_ImplSDL3_NewFrame(); }
 void SDLWindow::pullEvents(core::InputEvent& event) {
     SDL_Event e;
+
+    const std::vector<SDL_Scancode> keys_to_check = {
+        SDL_SCANCODE_W,     SDL_SCANCODE_A,     SDL_SCANCODE_S,
+        SDL_SCANCODE_D,     SDL_SCANCODE_SPACE, SDL_SCANCODE_LEFT,
+        SDL_SCANCODE_RIGHT, SDL_SCANCODE_DOWN,  SDL_SCANCODE_UP};
+    const auto* keyboardState = SDL_GetKeyboardState(nullptr);
+
+    for (auto sc : keys_to_check) {
+        if (keyboardState[sc]) {
+            auto key = transform_SDL_Key(sc);
+            if (key != core::InputKey::UN_SUPER) {
+                core::InputState state{};
+                state.key = key;
+                state.key_down.Assign(1);  // 持续推送“按下”事件
+                event.push_event(state);
+            }
+        }
+    }
+
+    float mx{}, my{};
+    Uint32 mouseState = SDL_GetMouseState(&mx, &my);
+    SDL_GetRelativeMouseState(&lastMouseX_, &lastMouseY_);
+    bool leftButton = mouseState & SDL_BUTTON_LEFT;
+    bool rightButton = mouseState & SDL_BUTTON_RIGHT;
+    bool middleButton = mouseState & SDL_BUTTON_MIDDLE;
+    if (leftButton) {
+        core::InputState state{};
+        state.mouse_button_left.Assign(1);
+        state.mouseX_ = mx;
+        state.mouseY_ = my;
+        state.key_down.Assign(1);
+        state.mouseRelativeX_ = lastMouseX_;
+        state.mouseRelativeY_ = lastMouseY_;
+        event.push_event(state);
+    }
+    if (rightButton) {
+        core::InputState state{};
+        state.mouse_button_right.Assign(1);
+        state.mouseX_ = mx;
+        state.mouseY_ = my;
+        state.key_down.Assign(1);
+        event.push_event(state);
+    }
+    if (middleButton) {
+        core::InputState state{};
+        state.mouse_button_center.Assign(1);
+        state.mouseX_ = mx;
+        state.mouseY_ = my;
+        state.key_down.Assign(1);
+        event.push_event(state);
+    }
+
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
@@ -128,11 +182,14 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
                 }
                 break;
             }
-            case SDL_EVENT_KEY_DOWN: {
+            case SDL_EVENT_KEY_UP: {
                 if (e.key.repeat == 0) {
-                    core::InputState input_state;
-                    input_state.key = transform_SDL_Key(e.key.scancode);
-                    event.push_event(input_state);
+                    if (transform_SDL_Key(e.key.scancode) != core::InputKey::UN_SUPER) {
+                        core::InputState input_state;
+                        input_state.key_up.Assign(1);
+                        input_state.key = transform_SDL_Key(e.key.scancode);
+                        event.push_event(input_state);
+                    }
                 }
                 break;
             }
@@ -140,12 +197,14 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
                 core::InputState input_state;
                 input_state.mouseX_ = e.motion.x;
                 input_state.mouseY_ = e.motion.y;
+                input_state.mouse_move.Assign(1);
                 event.push_event(input_state);
                 break;
             }
-            case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+            case SDL_EVENT_MOUSE_BUTTON_UP: {
                 if (e.button.button >= 1 && e.button.button <= 3) {
                     core::InputState input_state;
+                    input_state.key_up.Assign(1);
                     if (e.button.button == SDL_BUTTON_LEFT) {
                         input_state.mouse_button_left.Assign(1);
                     }

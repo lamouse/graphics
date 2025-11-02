@@ -30,6 +30,7 @@ class SkyBox {
             ModelResourceName names{
                 .shader_name = "skycube", .mesh_name = mesh_path, .texture_name = "skybox"};
             sky_box = SkyBoxInstance{manager, layout, names, "skybox instance"};
+            sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable = 0;
         }
 
         void update(const core::FrameInfo& frameInfo) {

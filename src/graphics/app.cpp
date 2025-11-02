@@ -14,6 +14,7 @@
 #include <thread>
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
+#include "system/camera_system.hpp"
 #define image_path ::std::string{"./images/"}
 #define models_path ::std::string{"./models/"}
 
@@ -44,31 +45,35 @@ void App::run() {
     auto camera = cameraComponent.getCamera();
     model_entt.insert(model_entt.end(), registry.getEntt().begin(), registry.getEntt().end());
     float current_mouse_X = 0, current_mouse_Y = 0;
+    const float speed = 5.0f;
     while (!window->shouldClose()) {
-        camera = cameraComponent.getCamera();
+        if (window->IsMinimized()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
         window->pullEvents(input_event);
-        if (auto e = input_event.pop_event()) {
+        while (auto e = input_event.pop_event()) {
+            if(show_debug_ui && ui::IsMouseControlledByImGui() && (e->mouse_button_left.Value() || e->mouse_button_right.Value())){
+                continue;
+            }
+            glm::vec3 moveDir(0.0f);
             switch (e->key) {
                 case core::InputKey::Insert: {
                     show_debug_ui = !show_debug_ui;
                     break;
                 }
             }
-
             if (e->mouseX_ > 0 && e->mouseY_ > 0) {
                 current_mouse_X = e->mouseX_;
                 current_mouse_Y = e->mouseY_;
             }
+            CameraSystem::update(cameraComponent, e.value());
         }
-        if (window->IsMinimized()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            continue;
-        }
-        if (cameraComponent.extentAspectRation != window->getAspectRatio()) {
-            cameraComponent.extentAspectRation = window->getAspectRatio();
-        }
-        frameInfo.frameTime = getRuntime();
+        cameraComponent.extentAspectRation = window->getAspectRatio();
+        camera = cameraComponent.getCamera();
         frameInfo.camera = &camera;
+        frameInfo.frameTime = getRuntime();
 
         registry.updateAll(frameInfo);
         registry.drawAll(graphics);
@@ -86,7 +91,8 @@ void App::run() {
                 ui::show_menu(menu_data);
                 draw_setting(menu_data.show_system_setting);
                 ui::ShowOutliner(model_entt, menu_data);
-                render_status_bar(menu_data, current_mouse_X, current_mouse_Y, static_cast<int>(registry.size()));
+                render_status_bar(menu_data, current_mouse_X, current_mouse_Y,
+                                  static_cast<int>(registry.size()));
                 ui::draw_texture(menu_data, imageId, window->getAspectRatio());
                 logger.drawUi(menu_data.show_log);
             });
