@@ -2,7 +2,6 @@
 
 #include "graphic.hpp"
 #include "resource/model_instance.hpp"
-#include "ecs/components/transform_component.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
@@ -37,13 +36,8 @@ void App::run() {
     core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
-    render::frame::FramebufferConfig frames{.width = 1920, .height = 1080, .stride = 1920};
-    render::DynamicPipelineState pipeline_state;
-    auto layout1 = window->getFramebufferLayout();
-    pipeline_state.viewport.width = layout1.screen.GetWidth();
-    pipeline_state.viewport.height = layout1.screen.GetHeight();
-    pipeline_state.scissors.width = layout1.screen.GetWidth();
-    pipeline_state.scissors.height = layout1.screen.GetHeight();
+    render::frame::FramebufferConfig frames{
+        .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
 
@@ -116,7 +110,7 @@ void App::run() {
             logger.drawUi(menu_data.show_log);
         });
         render_base->composite(std::span{&frames, 1});
-        //TODO 添加clear value
+        // TODO 添加clear value
         graphics->clean();
     }
 }
