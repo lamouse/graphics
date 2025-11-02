@@ -162,7 +162,6 @@ void pipeline_state(render::DynamicPipelineState& state) {
         ImGui::Checkbox("depthClampEnable", &depthClampEnable);
         state.depthClampEnable = depthClampEnable;
 
-
         bool depthWriteEnable = state.depthWriteEnable;
         ImGui::Checkbox("depthWriteEnable", &depthWriteEnable);
         state.depthWriteEnable = depthWriteEnable;
@@ -296,8 +295,8 @@ void init_imgui(float scale) {
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platform
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platform
     io.DisplayFramebufferScale = ImVec2(scale, scale);
     io.FontGlobalScale = scale;
     // io.ConfigViewportsNoAutoMerge = true;
@@ -420,6 +419,10 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
 
 void draw_detail(MenuData& data, ecs::Entity entity) {
     ImGui::Begin("Detail", &data.show_detail);
+    if (entity.hasComponent<ecs::TagComponent>()) {
+        auto& tag = entity.getComponent<ecs::TagComponent>();
+        ImGui::TextUnformatted(tag.tag.c_str());
+    }
 
     if (entity.hasComponent<ecs::TransformComponent>()) {
         if (ImGui::TreeNode("TransformComponent")) {
@@ -532,6 +535,7 @@ void show_menu(MenuData& data) {
             ImGui::MenuItem("\uf9c4 fps", "", &show_fps);
             ImGui::MenuItem("\uead8 Imgui Metrics", "", &show_imgui_debug_window);
             ImGui::MenuItem("\uf6c5 Detail", "", &data.show_detail);
+            ImGui::MenuItem("\uebf5 状态", "", &data.show_status);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -540,5 +544,15 @@ void show_menu(MenuData& data) {
 auto IsMouseControlledByImGui() -> bool {
     ImGuiIO& io = ImGui::GetIO();
     return io.WantCaptureMouse;
+}
+
+void show_status(MenuData& data, float mouseX_, float mouseY_) {
+    if (data.show_status) {
+        ImGui::Begin("状态", &data.show_status);
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
+        ImGui::TextColored({1.0F, 0.0F, 0.0F, 1.0F}, "Mouse: X: %.01f Y:  %.01f", mouseX_, mouseY_);
+        ImGui::End();
+    }
 }
 }  // namespace graphics::ui

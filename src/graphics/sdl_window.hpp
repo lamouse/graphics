@@ -2,7 +2,6 @@
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"
 #include <SDL3/SDL.h>
-
 namespace graphics {
 class SDLWindow : public core::frontend::BaseWindow {
     public:
@@ -21,7 +20,7 @@ class SDLWindow : public core::frontend::BaseWindow {
         void configGUI() override;
         void destroyGUI() override;
         void newFrame() override;
-        void pullEvents() override;
+        void pullEvents(core::InputEvent& event) override;
         auto getWindow() -> SDL_Window* { return window_; }
 
     private:

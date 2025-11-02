@@ -24,7 +24,7 @@ class App {
         ResourceManager resourceManager;
         RenderRegistry registry;
         std::vector<ecs::Entity> model_entt;
-
+        core::InputEvent input_event;
         void load_resource();
 };
 }  // namespace graphics

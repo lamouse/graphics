@@ -36,16 +36,30 @@ void App::run() {
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
-
+    bool show_debug_ui = false;
     world::World world;
     model_entt.push_back(world.getEntity(world::WorldEntityType::CAMERA));
     auto& cameraComponent =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto camera = cameraComponent.getCamera();
     model_entt.insert(model_entt.end(), registry.getEntt().begin(), registry.getEntt().end());
+    float current_mouse_X = 0, current_mouse_Y = 0;
     while (!window->shouldClose()) {
         camera = cameraComponent.getCamera();
-        window->pullEvents();
+        window->pullEvents(input_event);
+        if (auto e = input_event.pop_event()) {
+            switch (e->key) {
+                case core::InputKey::Insert: {
+                    show_debug_ui = !show_debug_ui;
+                    break;
+                }
+            }
+
+            if (e->mouseX_ > 0 && e->mouseY_ > 0) {
+                current_mouse_X = e->mouseX_;
+                current_mouse_Y = e->mouseY_;
+            }
+        }
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
@@ -67,13 +81,17 @@ void App::run() {
             window->setWindowTitle("graphics");
         }
         auto imageId = graphics->getDrawImage();
-        render_base->addImguiUI([&]() {
-            ui::show_menu(menu_data);
-            draw_setting(menu_data.show_system_setting);
-            ui::ShowOutliner(model_entt, menu_data);
-            ui::draw_result(menu_data, imageId, window->getAspectRatio());
-            logger.drawUi(menu_data.show_log);
-        });
+        if (show_debug_ui) {
+            render_base->addImguiUI([&]() {
+                ui::show_menu(menu_data);
+                draw_setting(menu_data.show_system_setting);
+                ui::ShowOutliner(model_entt, menu_data);
+                show_status(menu_data, current_mouse_X, current_mouse_Y);
+                ui::draw_result(menu_data, imageId, window->getAspectRatio());
+                logger.drawUi(menu_data.show_log);
+            });
+        }
+
         render_base->composite(std::span{&frames, 1});
         // TODO 添加clear value
         graphics->clean();

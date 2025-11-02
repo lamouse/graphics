@@ -3,6 +3,39 @@
 #include <stdexcept>
 #include "SDL_common.hpp"
 #include "imgui_impl_sdl3.h"
+namespace {
+auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey {
+    switch (scancode) {
+        case SDL_SCANCODE_W:
+            return core::InputKey::W;
+        case SDL_SCANCODE_A:
+            return core::InputKey::A;
+        case SDL_SCANCODE_S:
+            return core::InputKey::S;
+        case SDL_SCANCODE_D:
+            return core::InputKey::D;
+
+        case SDL_SCANCODE_LEFT:
+            return core::InputKey::Left;
+        case SDL_SCANCODE_RIGHT:
+            return core::InputKey::Right;
+        case SDL_SCANCODE_DOWN:
+            return core::InputKey::Down;
+        case SDL_SCANCODE_UP:
+            return core::InputKey::Up;
+
+        case SDL_SCANCODE_SPACE:
+            return core::InputKey::Space;
+        case SDL_SCANCODE_INSERT:
+            return core::InputKey::Insert;
+        case SDL_SCANCODE_ESCAPE:
+            return core::InputKey::Esc;
+
+        default:
+            return core::InputKey::UN_SUPER;  // 未支持的键
+    }
+}
+}  // namespace
 namespace graphics {
 SDLWindow::SDLWindow(int width, int height, std::string_view title) {
     core::frontend::BaseWindow::WindowConfig conf;
@@ -79,13 +112,59 @@ void SDLWindow::setWindowTitle(std::string_view title) {
 void SDLWindow::configGUI() { ImGui_ImplSDL3_InitForVulkan(window_); }
 void SDLWindow::destroyGUI() { ImGui_ImplSDL3_Shutdown(); }
 void SDLWindow::newFrame() { ImGui_ImplSDL3_NewFrame(); }
-void SDLWindow::pullEvents() {
+void SDLWindow::pullEvents(core::InputEvent& event) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {
             should_close_ = true;
+        }
+
+        switch (e.type) {
+            case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
+                if (e.window.windowID == SDL_GetWindowID(window_)) {
+                    should_close_ = true;
+                }
+                break;
+            }
+            case SDL_EVENT_KEY_DOWN: {
+                if (e.key.repeat == 0) {
+                    core::InputState input_state;
+                    input_state.key = transform_SDL_Key(e.key.scancode);
+                    event.push_event(input_state);
+                }
+                break;
+            }
+            case SDL_EVENT_MOUSE_MOTION: {
+                core::InputState input_state;
+                input_state.mouseX_ = e.motion.x;
+                input_state.mouseY_ = e.motion.y;
+                event.push_event(input_state);
+                break;
+            }
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                if (e.button.button >= 1 && e.button.button <= 3) {
+                    core::InputState input_state;
+                    if (e.button.button == SDL_BUTTON_LEFT) {
+                        input_state.mouse_button_left.Assign(1);
+                    }
+                    if (e.button.button == SDL_BUTTON_MIDDLE) {
+                        input_state.mouse_button_center.Assign(1);
+                    }
+                    if (e.button.button == SDL_BUTTON_RIGHT) {
+                        input_state.mouse_button_right.Assign(1);
+                    }
+                    event.push_event(input_state);
+                }
+                break;
+            }
+            case SDL_EVENT_MOUSE_WHEEL: {
+                core::InputState input_state;
+                input_state.scrollOffset_ += e.wheel.y;
+                event.push_event(input_state);
+                break;
+            }
         }
     }
 }

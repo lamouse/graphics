@@ -8,6 +8,8 @@ set (sources
     frontend/framebuffer_layout.cpp
     frontend/window.hpp
     frontend/window.cpp
+    frame_info.hpp
+    input.hpp
 )
 add_library(${LIB_CORE_NAME} STATIC ${sources})
 if (MSVC)
