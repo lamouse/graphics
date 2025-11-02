@@ -31,7 +31,7 @@ class SkyBox {
         void update(core::FrameInfo& frameInfo) {
             auto& transform = sky_box.entity_.getComponent<ecs::TransformComponent>();
             sky_box.getUBO().modelMatrix = transform.mat4();
-            sky_box.getUBO().projectionMatrix = glm::mat4(1.f);
+            sky_box.getUBO().projectionMatrix = frameInfo.camera->getProjection();
         }
         [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
             return std::vector{sky_box.entity_};
