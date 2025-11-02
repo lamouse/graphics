@@ -36,7 +36,7 @@ void App::run() {
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
-    bool show_debug_ui = false;
+    bool show_debug_ui = true;
     world::World world;
     model_entt.push_back(world.getEntity(world::WorldEntityType::CAMERA));
     auto& cameraComponent =
@@ -82,12 +82,12 @@ void App::run() {
         }
         auto imageId = graphics->getDrawImage();
         if (show_debug_ui) {
-            render_base->addImguiUI([&]() {
+            render_base->addImguiUI([&]() -> void {
                 ui::show_menu(menu_data);
                 draw_setting(menu_data.show_system_setting);
                 ui::ShowOutliner(model_entt, menu_data);
-                show_status(menu_data, current_mouse_X, current_mouse_Y);
-                ui::draw_result(menu_data, imageId, window->getAspectRatio());
+                render_status_bar(menu_data, current_mouse_X, current_mouse_Y, static_cast<int>(registry.size()));
+                ui::draw_texture(menu_data, imageId, window->getAspectRatio());
                 logger.drawUi(menu_data.show_log);
             });
         }

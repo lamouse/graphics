@@ -14,11 +14,11 @@ struct MenuData{
     bool show_status{true};
 };
 
-void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
+void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 void init_imgui(float scale);
 // 递归绘制树节点
 void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data);
 void show_menu(MenuData& data);
-void show_status(MenuData& data, float mouseX_, float mouseY_);
+void render_status_bar(MenuData& data, float mouseX_, float mouseY_, int registry_count);
 auto IsMouseControlledByImGui() -> bool;
 }  // namespace graphics::ui

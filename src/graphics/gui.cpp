@@ -26,6 +26,7 @@ void* GImGuiDemoMarkerCallbackUserData = NULL;
     } while (0)
 namespace {
 constexpr float OUTLINER_WIDTH = 0.3f;
+constexpr float RENDER_STATUS_BAR_HEIGHT = 45.f;
 // ======================================
 // 手动绘制箭头函数（替代不存在的 ImGui::RenderArrow）
 // ======================================
@@ -239,7 +240,7 @@ void fps() {
 }  // namespace
 namespace graphics::ui {
 
-void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio) {
+void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio) {
     // 设置窗口标志
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
@@ -253,6 +254,9 @@ void draw_result(MenuData& data, ImTextureID imguiTextureID, float aspectRatio) 
     auto window_size = viewport->Size;
     if (data.show_out_liner) {
         window_size.x *= (1.f - OUTLINER_WIDTH);
+    }
+    if(data.show_status){
+        window_size.y -= RENDER_STATUS_BAR_HEIGHT;
     }
     window_size.y -= ImGui::GetFrameHeight();
     ImGui::SetNextWindowSize(window_size);
@@ -473,6 +477,9 @@ void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         auto window_size = viewport->Size;
         window_size.y -= ImGui::GetFrameHeight();
+        if(data.show_status){
+            window_size.y -= RENDER_STATUS_BAR_HEIGHT;
+        }
         window_size.x *= OUTLINER_WIDTH;
 
         ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x),
@@ -546,13 +553,32 @@ auto IsMouseControlledByImGui() -> bool {
     return io.WantCaptureMouse;
 }
 
-void show_status(MenuData& data, float mouseX_, float mouseY_) {
-    if (data.show_status) {
-        ImGui::Begin("状态", &data.show_status);
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
-        ImGui::TextColored({1.0F, 0.0F, 0.0F, 1.0F}, "Mouse: X: %.01f Y:  %.01f", mouseX_, mouseY_);
-        ImGui::End();
+void render_status_bar(MenuData& data, float mouseX_, float mouseY_, int registry_count) {
+    if(!data.show_status){
+        return;
     }
+    auto& io = ImGui::GetIO();
+    auto *vp = ImGui::GetMainViewport();
+
+    ImGui::SetNextWindowPos(ImVec2(0, vp->Size.y - RENDER_STATUS_BAR_HEIGHT));
+    ImGui::SetNextWindowSize(ImVec2(vp->Size.x, RENDER_STATUS_BAR_HEIGHT));
+
+    ImGui::Begin("##status", nullptr,
+        ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoSavedSettings
+    );
+
+    ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); ImGui::SameLine();
+
+    ImGui::Text("Mouse: (%.1f, %.1f)", mouseX_, mouseY_);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); ImGui::SameLine();
+
+    ImGui::Text("Entities: %d", registry_count);
+
+    ImGui::End();
 }
 }  // namespace graphics::ui
