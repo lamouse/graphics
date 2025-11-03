@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "system/pick_system.hpp"
+#include <pmmintrin.h>
 namespace graphics {
 
 EmbreePicker::EmbreePicker() : device_(rtcNewDevice(nullptr)), scene_(nullptr) {
