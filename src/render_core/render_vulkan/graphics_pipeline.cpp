@@ -490,8 +490,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         }
         if (dynamic.has_extended_dynamic_state_3_enables) {
             static constexpr std::array extended3{
-                VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT,
-                VK_DYNAMIC_STATE_LOGIC_OP_ENABLE_EXT,
+                VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT
             };
             dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
         }

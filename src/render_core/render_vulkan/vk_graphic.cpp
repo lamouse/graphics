@@ -204,7 +204,6 @@ void VulkanGraphics::UpdateDynamicStates() {
                 UpdateDepthBiasEnable();
             }
             if (device.IsExtExtendedDynamicState3EnablesSupported()) {
-                UpdateLogicOpEnable();
                 UpdateDepthClampEnable();
             }
         }
@@ -307,12 +306,6 @@ void VulkanGraphics::UpdateDepthWriteEnable() {
 void VulkanGraphics::UpdateStencilTestEnable() {
     scheduler.record([enable = pipeline_state.stencilTestEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setStencilTestEnableEXT(enable);
-    });
-}
-
-void VulkanGraphics::UpdateLogicOpEnable() {
-    scheduler.record([enable = pipeline_state.logicOpEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setLogicOpEnableEXT(enable);
     });
 }
 

@@ -114,7 +114,6 @@
     FEATURE_NAME(features, imageCubeArray)                                           \
     FEATURE_NAME(features, independentBlend)                                         \
     FEATURE_NAME(features, largePoints)                                              \
-    FEATURE_NAME(features, logicOp)                                                  \
     FEATURE_NAME(features, multiDrawIndirect)                                        \
     FEATURE_NAME(features, multiViewport)                                            \
     FEATURE_NAME(features, occlusionQueryPrecise)                                    \

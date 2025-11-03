@@ -77,7 +77,6 @@ class VulkanGraphics : public render::Graphic {
         void UpdateDepthTestEnable();
         void UpdateDepthWriteEnable();
         void UpdateStencilTestEnable();
-        void UpdateLogicOpEnable();
         void UpdateDepthClampEnable();
         void UpdateLogicOp();
         void UpdateBlending();

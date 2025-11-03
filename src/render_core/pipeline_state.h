@@ -108,7 +108,6 @@ struct DynamicPipelineState {
         union {
                 struct {
                         uint32_t colorBlendEnable : 1;
-                        uint32_t logicOpEnable : 1;
                         uint32_t stencilTestEnable : 1;
                         uint32_t depthClampEnable : 1;
                         uint32_t depthWriteEnable : 1;
@@ -118,7 +117,7 @@ struct DynamicPipelineState {
                         uint32_t depthBiasEnable : 1;
                         uint32_t rasterizerDiscardEnable : 1;
                         uint32_t primitiveRestartEnable : 1;
-                        uint32_t reserved : 21;
+                        uint32_t reserved : 22;
                 };
                 uint32_t flags{};
         };
@@ -151,7 +150,6 @@ struct DynamicPipelineState {
         // 构造函数：设置默认标志位
         DynamicPipelineState()
             : colorBlendEnable(1),
-              logicOpEnable(0),
               stencilTestEnable(1),
               depthClampEnable(1),
               depthWriteEnable(1),

@@ -151,10 +151,6 @@ void pipeline_state(render::DynamicPipelineState& state) {
         ImGui::Checkbox("colorBlendEnable", &color_blend_able);
         state.colorBlendEnable = color_blend_able;
 
-        bool logicOpEnable = state.logicOpEnable;
-        ImGui::Checkbox("logicOpEnable", &logicOpEnable);
-        state.logicOpEnable = logicOpEnable;
-
         bool stencilTestEnable = state.stencilTestEnable;
         ImGui::Checkbox("stencilTestEnable", &stencilTestEnable);
         state.stencilTestEnable = stencilTestEnable;
