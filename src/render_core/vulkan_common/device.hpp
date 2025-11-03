@@ -382,11 +382,6 @@ class Device {
         [[nodiscard]] auto MustEmulateScaledFormats() const -> bool {
             return misc_features_.must_emulate_scaled_formats;
         }
-
-        [[nodiscard]] auto SupportsMultiViewport() const -> bool {
-            return features2_.features.multiViewport;
-        }
-
         [[nodiscard]] auto SupportsConditionalBarriers() const -> bool {
             return misc_features_.supports_conditional_barriers;
         }
