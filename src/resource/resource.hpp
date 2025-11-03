@@ -7,6 +7,7 @@
 #include <functional>
 #include "resource/texture/image.hpp"
 #include "resource/obj/mesh.hpp"
+#include <glm/glm.hpp>
 
 namespace graphics {
 struct ShaderHash {
@@ -35,20 +36,23 @@ class ResourceManager {
          * @param textureName
          * @param func
          */
-        void addTexture(std::span<std::string> textureName, const std::string& name, add_texture_func func = nullptr);
+        void addTexture(std::span<std::string> textureName, const std::string& name,
+                        add_texture_func func = nullptr);
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
-        explicit ResourceManager(render::Graphic* graphic_):graphic(graphic_) {}
+        explicit ResourceManager(render::Graphic* graphic_) : graphic(graphic_) {}
 
         void addMesh(std::string meshName, add_mesh_func func = nullptr);
         void addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr);
 
         [[nodiscard]] auto getMesh(std::string meshName) const -> render::MeshId;
-        void addGraphShader(const std::string& name,
-                            const std::function<std::uint64_t(std::span<const std::uint32_t>,
-                                                              render::ShaderType)>& upload_func = nullptr);
-        void addComputeShader(const std::string& name,
-                              const std::function<std::uint64_t(std::span<const std::uint32_t>,
-                                                                render::ShaderType)>& upload_func = nullptr);
+        void addGraphShader(
+            const std::string& name,
+            const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
+                upload_func = nullptr);
+        void addComputeShader(
+            const std::string& name,
+            const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
+                upload_func = nullptr);
 
         template <render::ShaderType type>
         [[nodiscard]] auto getShaderHash(const std::string& name) const -> std::uint64_t;
@@ -62,11 +66,19 @@ class ResourceManager {
             requires(IsUint64<T> || IsShaderHashStruct<T>)
         [[nodiscard]] auto getShaderHash(const std::string& name) const -> T;
 
+        auto getMeshVertex(const std::string& meshName) -> std::span<glm::vec3>;
+        auto getMeshIndics(const std::string& meshName) -> std::span<uint32_t>;
+
+        auto getMeshVertex(render::MeshId id) -> std::span<glm::vec3>;
+        auto getMeshIndics(render::MeshId id) -> std::span<uint32_t>;
+
     private:
         auto getShaderCode(render::ShaderType type, const std::string& name)
             -> std::vector<std::uint32_t>;
         std::unordered_map<std::string, render::TextureId> textures;
         std::unordered_map<std::string, render::MeshId> mesh;
+        std::unordered_map<render::MeshId, std::unique_ptr<std::vector<glm::vec3>>> mesh_vertex;
+        std::unordered_map<render::MeshId, std::unique_ptr<std::vector<std::uint32_t>>> mesh_indics;
         std::unordered_map<std::string, std::uint64_t> compute_shader_hash;
         std::unordered_map<std::string, ShaderHash> graphic_shader_hash;
 

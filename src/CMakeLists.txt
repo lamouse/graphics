@@ -4,20 +4,25 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # CMake seems to only define _DEBUG on Windows
 set_property(DIRECTORY APPEND PROPERTY
     COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
+
 if(WIN32)
     add_compile_definitions(NOMINMAX)
 endif()
+
 if(LINUX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
 endif()
+
+if(WIN32)
+    # Avoid windows.h junk
+    add_definitions(-DNOMINMAX)
+endif()
+
 if(MSVC)
     # set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING "" FORCE)
 
     # Silence "deprecation" warnings
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
-
-    # Avoid windows.h junk
-    add_definitions(-DNOMINMAX)
 
     # Avoid windows.h from including some usually unused libs like winsocks.h, since this might cause some redefinition errors.
     add_definitions(-DWIN32_LEAN_AND_MEAN)

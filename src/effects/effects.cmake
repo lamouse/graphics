@@ -1,6 +1,7 @@
 set(sources
     light/point_light.hpp
     model/model.hpp
+    model/model.cpp
     particle/particle.hpp
     particle/particle.cpp
     effect.hpp

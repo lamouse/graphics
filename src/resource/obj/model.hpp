@@ -95,7 +95,8 @@ class Model : public IMeshData {
             return u16_indices_.size();
         }
         ~Model() override = default;
-
+        std::vector<::glm::vec3> only_vertex;
+        std::vector<uint32_t> save32_indices;
     private:
         uint32_t vertexCount;
         uint32_t indicesSize;

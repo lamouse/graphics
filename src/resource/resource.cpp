@@ -53,11 +53,18 @@ void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     auto model = Model::createFromFile(meshName);
     addMesh(meshName, model, std::move(func));
+    auto meshId = getMesh(meshName);
+    if (!model.only_vertex.empty()) {
+        mesh_vertex[meshId] = std::make_unique<std::vector<::glm::vec3>>(model.only_vertex);
+    }
+    if (!model.save32_indices.empty()) {
+        mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(model.save32_indices);
+    }
 }
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func || graphic, "add_mesh_func is null");
-    if(mesh.contains(meshName)){
+    if (mesh.contains(meshName)) {
         SPDLOG_WARN("meshName {} in cache", meshName);
         return;
     }
@@ -74,7 +81,7 @@ auto ResourceManager::getMesh(std::string meshName) const -> render::MeshId {
     if (meshName.empty()) {
         return {};
     }
-    ASSERT_MSG(mesh.contains(meshName), meshName + " texture in catch");
+    ASSERT_MSG(mesh.contains(meshName), meshName + " mesh in catch");
     return mesh.find(meshName)->second;
 }
 
@@ -164,6 +171,40 @@ void ResourceManager::addComputeShader(
     }
     compute_shader_hash[name] = hash;
 }
+
+auto ResourceManager::getMeshVertex(const std::string& meshName) -> std::span<glm::vec3> {
+    auto meshId = getMesh(meshName);
+
+    if (meshId && mesh_vertex.contains(meshId)) {
+        auto& data = mesh_vertex.find(meshId)->second;
+        return std::span(data->data(), data->size());
+    }
+    return {};
+}
+auto ResourceManager::getMeshIndics(const std::string& meshName) -> std::span<uint32_t> {
+    auto meshId = getMesh(meshName);
+    if (meshId && mesh_indics.contains(meshId)) {
+        auto& data = mesh_indics.find(meshId)->second;
+        return std::span(data->data(), data->size());
+    }
+    return {};
+}
+
+auto ResourceManager::getMeshVertex(render::MeshId id) -> std::span<glm::vec3> {
+    if (mesh_vertex.contains(id)) {
+        auto& data = mesh_vertex.find(id)->second;
+        return std::span(data->data(), data->size());
+    }
+    return {};
+}
+auto ResourceManager::getMeshIndics(render::MeshId id) -> std::span<uint32_t> {
+    if (mesh_indics.contains(id)) {
+        auto& data = mesh_indics.find(id)->second;
+        return std::span(data->data(), data->size());
+    }
+    return {};
+}
+
 // 显式实例化模板成员函数
 template ShaderHash ResourceManager::getShaderHash<ShaderHash>(const std::string& name) const;
 template std::uint64_t ResourceManager::getShaderHash<std::uint64_t>(const std::string& name) const;

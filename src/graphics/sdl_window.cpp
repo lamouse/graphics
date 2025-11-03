@@ -222,6 +222,24 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
                 }
                 break;
             }
+            case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+                if (e.button.button >= 1 && e.button.button <= 3) {
+                    core::InputState input_state;
+                    input_state.key_down.Assign(1);
+                    input_state.first_down.Assign(1);
+                    if (e.button.button == SDL_BUTTON_LEFT) {
+                        input_state.mouse_button_left.Assign(1);
+                    }
+                    if (e.button.button == SDL_BUTTON_MIDDLE) {
+                        input_state.mouse_button_center.Assign(1);
+                    }
+                    if (e.button.button == SDL_BUTTON_RIGHT) {
+                        input_state.mouse_button_right.Assign(1);
+                    }
+                    event.push_event(input_state);
+                }
+                break;
+            }
             case SDL_EVENT_MOUSE_WHEEL: {
                 core::InputState input_state;
                 input_state.scrollOffset_ += e.wheel.y;

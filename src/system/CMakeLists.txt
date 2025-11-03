@@ -4,6 +4,10 @@ set(sources
     camera_system.hpp
     logger_system.cpp
     setting_ui.cpp
+    pick_system.hpp
+    pick_system.cpp
+    embree_picker.hpp
+    embree_picker.cpp
 )
 
 set(HEADER_FILES
@@ -57,8 +61,7 @@ else()
 endif()
 
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
-include_directories(${CMAKE_BINARY_DIR}/generated)
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog imgui ui utils absl::strings)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog imgui ui utils absl::strings embree)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_NAME}/lib)

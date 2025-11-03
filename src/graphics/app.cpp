@@ -33,6 +33,7 @@ void App::run() {
     std::vector<effects::LightModel> models;
     const auto frame_layout = window->getFramebufferLayout();
     core::FrameInfo frameInfo{};
+    frameInfo.frame_layout = frame_layout;
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
     render::frame::FramebufferConfig frames{
@@ -45,7 +46,6 @@ void App::run() {
     auto camera = cameraComponent.getCamera();
     model_entt.insert(model_entt.end(), registry.getEntt().begin(), registry.getEntt().end());
     float current_mouse_X = 0, current_mouse_Y = 0;
-    const float speed = 5.0f;
     while (!window->shouldClose()) {
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -53,8 +53,17 @@ void App::run() {
         }
 
         window->pullEvents(input_event);
+        cameraComponent.setAspect(window->getAspectRatio());
+        camera = cameraComponent.getCamera();
+        frameInfo.camera = &camera;
+        frameInfo.frameTime = getRuntime();
+        frameInfo.resource_manager = &resourceManager;
+        if(input_event.empty()){
+            registry.updateAll(frameInfo);
+        }
         while (auto e = input_event.pop_event()) {
-            // if(show_debug_ui && ui::IsMouseControlledByImGui() && (e->mouse_button_left.Value() || e->mouse_button_right.Value())){
+            // if(show_debug_ui && ui::IsMouseControlledByImGui() && (e->mouse_button_left.Value()
+            // || e->mouse_button_right.Value())){
             //     continue;
             // }
             glm::vec3 moveDir(0.0f);
@@ -69,13 +78,10 @@ void App::run() {
                 current_mouse_Y = e->mouseY_;
             }
             CameraSystem::update(cameraComponent, e.value());
+            frameInfo.input_state = e.value();
+            registry.updateAll(frameInfo);
         }
-        cameraComponent.setAspect(window->getAspectRatio());
-        camera = cameraComponent.getCamera();
-        frameInfo.camera = &camera;
-        frameInfo.frameTime = getRuntime();
 
-        registry.updateAll(frameInfo);
         registry.drawAll(graphics);
 
         auto& shader_notify = render_base->getShaderNotify();

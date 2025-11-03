@@ -75,7 +75,7 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
-
+find_package(embree 3 CONFIG REQUIRED)
 # need vcpkg end
 add_subdirectory(third-party)
 

@@ -8,7 +8,6 @@
 #include <format>
 #include <unordered_map>
 
-
 namespace {
 template <typename T>
 std::span<const std::byte> as_bytes(std::span<const T> s) {
@@ -27,15 +26,24 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t
       indicesSize(static_cast<uint32_t>(indices.size())),
       vertices_(vertices),
       u16_indices_(indices) {
+    for (const auto& full_vertex : vertices) {
+        only_vertex.push_back(full_vertex.position);
+    }
+    save32_indices.insert(save32_indices.begin(), indices.begin(), indices.end());
+
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices)
-    : vertexCount(static_cast<uint32_t>(vertices.size())),
+    : save32_indices(indices),
+      vertexCount(static_cast<uint32_t>(vertices.size())),
       indicesSize(static_cast<uint32_t>(indices.size())),
       vertices_(vertices),
       u32_indices_(indices),
       use32BitIndices(true) {
+    for (const auto& full_vertex : vertices) {
+        only_vertex.push_back(full_vertex.position);
+    }
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
@@ -68,10 +76,12 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
             }
 
             if (color > 0) {
-                model_vertex.color =  {mesh->mColors[0][j].r, mesh->mColors[0][j].g, mesh->mColors[0][j].b};
+                model_vertex.color = {mesh->mColors[0][j].r, mesh->mColors[0][j].g,
+                                      mesh->mColors[0][j].b};
             }
-            if(mesh->mNormals){
-                model_vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z };
+            if (mesh->mNormals) {
+                model_vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y,
+                                       mesh->mNormals[j].z};
             }
             if (!uniqueVertices.contains(model_vertex)) {
                 uniqueVertices[model_vertex] = static_cast<uint32_t>(vertices.size());

@@ -394,6 +394,9 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
     ImGui::Selectable(tag.tag.c_str(), false,
                       ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
     static unsigned int select_id = std::numeric_limits<unsigned int>::max();
+    if(render_state.is_select() && render_state.mouse_select){
+        select_id = render_state.select_id;
+    }
     // 仅当点击了名称区域（非箭头/复选框）时才选中
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
         select_id = render_state.id;

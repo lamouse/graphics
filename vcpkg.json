@@ -21,6 +21,7 @@
         "vulkan-memory-allocator",
         "vulkan-utility-libraries",
         "xxhash",
+        "embree3",
         {
             "name": "sdl3",
             "features": [

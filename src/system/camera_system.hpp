@@ -46,22 +46,22 @@ struct CameraSystem {
                 cam.setCenter(new_center);
             }
 
-            // 🎯 鼠标左键：根据位移平移摄像机（Pan）
-            if (state.mouse_button_left.Value() && state.key_down.Value()) {
-                float panSpeed = 0.0035f;  // 平移速度
+            // // 🎯 鼠标左键：根据位移平移摄像机（Pan）
+            // if (state.mouse_button_left.Value() && state.key_down.Value()) {
+            //     float panSpeed = 0.0035f;  // 平移速度
 
-                // 根据鼠标位移计算平移量
-                glm::vec3 panDelta =
-                    right * state.mouseRelativeX_ * panSpeed +  // 水平移动：鼠标右移 ->
-                    up * state.mouseRelativeY_ * panSpeed;      // 垂直移动：鼠标上移
+            //     // 根据鼠标位移计算平移量
+            //     glm::vec3 panDelta =
+            //         right * state.mouseRelativeX_ * panSpeed +  // 水平移动：鼠标右移 ->
+            //         up * state.mouseRelativeY_ * panSpeed;      // 垂直移动：鼠标上移
 
-                // 同时移动 eye 和 center，保持视角方向不变
+            //     // 同时移动 eye 和 center，保持视角方向不变
 
-                auto new_eye = cam.eye() + panDelta;
-                cam.setEye(new_eye);
-                auto new_center = cam.center() + panDelta;
-                cam.setCenter(new_center);
-            }
+            //     auto new_eye = cam.eye() + panDelta;
+            //     cam.setEye(new_eye);
+            //     auto new_center = cam.center() + panDelta;
+            //     cam.setCenter(new_center);
+            // }
 
             // 🔁 右键旋转视角（如果你还需要旋转功能）
             if (state.key_down.Value() && state.mouse_button_right.Value()) {
@@ -110,7 +110,7 @@ struct CameraSystem {
                 newDist = glm::clamp(newDist, 0.5f, 50.0f);
 
                 glm::vec3 direction = glm::normalize(cam.eye() - cam.center());
-                cam.eye() = cam.center() + direction * newDist;
+                cam.setEye( cam.center() + direction * newDist);
             }
         }
 };
