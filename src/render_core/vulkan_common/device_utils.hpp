@@ -99,37 +99,35 @@
     EXTENSION_NAME(VK_NV_VIEWPORT_SWIZZLE_EXTENSION_NAME)
 
 // Define features which must be supported.
-#define FOR_EACH_VK_MANDATORY_FEATURE(FEATURE_NAME)                                  \
-    FEATURE_NAME(bit16_storage, storageBuffer16BitAccess)                            \
-    FEATURE_NAME(bit16_storage, uniformAndStorageBuffer16BitAccess)                  \
-    FEATURE_NAME(bit8_storage, storageBuffer8BitAccess)                              \
-    FEATURE_NAME(bit8_storage, uniformAndStorageBuffer8BitAccess)                    \
-    FEATURE_NAME(features, depthBiasClamp)                                           \
-    FEATURE_NAME(features, depthClamp)                                               \
-    FEATURE_NAME(features, drawIndirectFirstInstance)                                \
-    FEATURE_NAME(features, dualSrcBlend)                                             \
-    FEATURE_NAME(features, fillModeNonSolid)                                         \
-    FEATURE_NAME(features, fragmentStoresAndAtomics)                                 \
-    FEATURE_NAME(features, geometryShader)                                           \
-    FEATURE_NAME(features, imageCubeArray)                                           \
-    FEATURE_NAME(features, independentBlend)                                         \
-    FEATURE_NAME(features, multiDrawIndirect)                                        \
-    FEATURE_NAME(features, occlusionQueryPrecise)                                    \
-    FEATURE_NAME(features, robustBufferAccess)                                       \
-    FEATURE_NAME(features, samplerAnisotropy)                                        \
-    FEATURE_NAME(features, sampleRateShading)                                        \
-    FEATURE_NAME(features, shaderClipDistance)                                       \
-    FEATURE_NAME(features, shaderCullDistance)                                       \
-    FEATURE_NAME(features, shaderImageGatherExtended)                                \
-    FEATURE_NAME(features, shaderStorageImageWriteWithoutFormat)                     \
-    FEATURE_NAME(features, tessellationShader)                                       \
-    FEATURE_NAME(features, vertexPipelineStoresAndAtomics)                           \
-    FEATURE_NAME(host_query_reset, hostQueryReset)                                   \
-    FEATURE_NAME(shader_demote_to_helper_invocation, shaderDemoteToHelperInvocation) \
+#define FOR_EACH_VK_MANDATORY_FEATURE(FEATURE_NAME)                 \
+    FEATURE_NAME(bit16_storage, storageBuffer16BitAccess)           \
+    FEATURE_NAME(bit16_storage, uniformAndStorageBuffer16BitAccess) \
+    FEATURE_NAME(features, depthBiasClamp)                          \
+    FEATURE_NAME(features, depthClamp)                              \
+    FEATURE_NAME(features, drawIndirectFirstInstance)               \
+    FEATURE_NAME(features, fillModeNonSolid)                        \
+    FEATURE_NAME(features, fragmentStoresAndAtomics)                \
+    FEATURE_NAME(features, geometryShader)                          \
+    FEATURE_NAME(features, imageCubeArray)                          \
+    FEATURE_NAME(features, independentBlend)                        \
+    FEATURE_NAME(features, multiDrawIndirect)                       \
+    FEATURE_NAME(features, occlusionQueryPrecise)                   \
+    FEATURE_NAME(features, robustBufferAccess)                      \
+    FEATURE_NAME(features, samplerAnisotropy)                       \
+    FEATURE_NAME(features, sampleRateShading)                       \
+    FEATURE_NAME(features, shaderClipDistance)                      \
+    FEATURE_NAME(features, shaderCullDistance)                      \
+    FEATURE_NAME(features, shaderImageGatherExtended)               \
+    FEATURE_NAME(features, shaderStorageImageWriteWithoutFormat)    \
+    FEATURE_NAME(features, vertexPipelineStoresAndAtomics)          \
+    FEATURE_NAME(host_query_reset, hostQueryReset)                  \
     FEATURE_NAME(shader_draw_parameters, shaderDrawParameters)
 
 // Define features where the absence of the feature may result in a degraded experience.
 #define FOR_EACH_VK_RECOMMENDED_FEATURE(FEATURE_NAME)                                 \
+    FEATURE_NAME(shader_demote_to_helper_invocation, shaderDemoteToHelperInvocation)  \
+    FEATURE_NAME(features, dualSrcBlend)                                              \
+    FEATURE_NAME(features, tessellationShader)                                        \
     FEATURE_NAME(custom_border_color, customBorderColors)                             \
     FEATURE_NAME(depth_bias_control, depthBiasControl)                                \
     FEATURE_NAME(depth_bias_control, leastRepresentableValueForceUnormRepresentation) \
