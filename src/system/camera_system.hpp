@@ -14,28 +14,36 @@ struct CameraSystem {
             float moveSpeed = 2.0f;
 
             // 计算相机坐标系
-            glm::vec3 forward = glm::normalize(cam.center - cam.eye);
-            glm::vec3 right = glm::normalize(glm::cross(cam.up, forward));
+            glm::vec3 forward = glm::normalize(cam.center() - cam.eye());
+            glm::vec3 right = glm::normalize(glm::cross(cam.up(), forward));
             glm::vec3 up = glm::normalize(glm::cross(forward, right));
 
             float frameSpeed = moveSpeed * deltaTime;
 
             // 🚶 WASD 移动
             if (state.key == core::InputKey::W && state.key_down.Value()) {
-                cam.eye += forward * frameSpeed;
-                cam.center += forward * frameSpeed;
+                auto new_eye = cam.eye() + forward * frameSpeed;
+                cam.setEye(new_eye);
+                auto new_center = cam.center() + forward * frameSpeed;
+                cam.setCenter(new_center);
             }
             if (state.key == core::InputKey::S && state.key_down.Value()) {
-                cam.eye -= forward * frameSpeed;
-                cam.center -= forward * frameSpeed;
+                auto new_eye = cam.eye() - forward * frameSpeed;
+                cam.setEye(new_eye);
+                auto new_center = cam.center() - forward * frameSpeed;
+                cam.setCenter(new_center);
             }
             if (state.key == core::InputKey::A && state.key_down.Value()) {
-                cam.eye -= right * frameSpeed;
-                cam.center -= right * frameSpeed;
+                auto new_eye = cam.eye() - right * frameSpeed;
+                cam.setEye(new_eye);
+                auto new_center = cam.center() - right * frameSpeed;
+                cam.setCenter(new_center);
             }
             if (state.key == core::InputKey::D && state.key_down.Value()) {
-                cam.eye += right * frameSpeed;
-                cam.center += right * frameSpeed;
+                auto new_eye = cam.eye() + right * frameSpeed;
+                cam.setEye(new_eye);
+                auto new_center = cam.center() + right * frameSpeed;
+                cam.setCenter(new_center);
             }
 
             // 🎯 鼠标左键：根据位移平移摄像机（Pan）
@@ -48,14 +56,17 @@ struct CameraSystem {
                     up * state.mouseRelativeY_ * panSpeed;      // 垂直移动：鼠标上移
 
                 // 同时移动 eye 和 center，保持视角方向不变
-                cam.eye += panDelta;
-                cam.center += panDelta;
+
+                auto new_eye = cam.eye() + panDelta;
+                cam.setEye(new_eye);
+                auto new_center = cam.center() + panDelta;
+                cam.setCenter(new_center);
             }
 
             // 🔁 右键旋转视角（如果你还需要旋转功能）
             if (state.key_down.Value() && state.mouse_button_right.Value()) {
                 const glm::vec3 WORLD_UP(0, 1, 0);
-                glm::vec3 toEye = cam.eye - cam.center;
+                glm::vec3 toEye = cam.eye() - cam.center();
                 float dist = glm::length(toEye);
                 if (dist < 0.1f) return;
 
@@ -89,17 +100,17 @@ struct CameraSystem {
                     toEye = newToEye;
                 }
 
-                cam.eye = cam.center + toEye * dist;
+                cam.setEye(cam.center() + toEye * dist);
             }
 
             // 🧮 缩放
             if (state.scrollOffset_ != 0.0f) {
-                float dist = glm::distance(cam.eye, cam.center);
+                float dist = glm::distance(cam.eye(), cam.center());
                 float newDist = dist * (1.0f - state.scrollOffset_ * 0.1f);
                 newDist = glm::clamp(newDist, 0.5f, 50.0f);
 
-                glm::vec3 direction = glm::normalize(cam.eye - cam.center);
-                cam.eye = cam.center + direction * newDist;
+                glm::vec3 direction = glm::normalize(cam.eye() - cam.center());
+                cam.eye() = cam.center() + direction * newDist;
             }
         }
 };
