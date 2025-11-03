@@ -127,9 +127,7 @@
     FEATURE_NAME(features, vertexPipelineStoresAndAtomics)                           \
     FEATURE_NAME(host_query_reset, hostQueryReset)                                   \
     FEATURE_NAME(shader_demote_to_helper_invocation, shaderDemoteToHelperInvocation) \
-    FEATURE_NAME(shader_draw_parameters, shaderDrawParameters)                       \
-    FEATURE_NAME(variable_pointer, variablePointers)                                 \
-    FEATURE_NAME(variable_pointer, variablePointersStorageBuffer)
+    FEATURE_NAME(shader_draw_parameters, shaderDrawParameters)
 
 // Define features where the absence of the feature may result in a degraded experience.
 #define FOR_EACH_VK_RECOMMENDED_FEATURE(FEATURE_NAME)                                 \
