@@ -107,20 +107,20 @@ enum class IndexFormat : u32 {
 struct DynamicPipelineState {
         union {
                 struct {
-                        uint32_t colorBlendEnable : 1 = 1;
-                        uint32_t logicOpEnable : 1 = 0;
-                        uint32_t stencilTestEnable : 1 = 1;
-                        uint32_t depthClampEnable : 1 = 1;
-                        uint32_t depthWriteEnable : 1 = 1;
-                        uint32_t depthTestEnable : 1 = 1;
-                        uint32_t depthBoundsTestEnable : 1 = 1;
-                        uint32_t cullMode : 1 = 0;
-                        uint32_t depthBiasEnable : 1 = 1;
-                        uint32_t rasterizerDiscardEnable : 1 = 0;
-                        uint32_t primitiveRestartEnable : 1 = 0;
+                        uint32_t colorBlendEnable : 1;
+                        uint32_t logicOpEnable : 1;
+                        uint32_t stencilTestEnable : 1;
+                        uint32_t depthClampEnable : 1;
+                        uint32_t depthWriteEnable : 1;
+                        uint32_t depthTestEnable : 1;
+                        uint32_t depthBoundsTestEnable : 1;
+                        uint32_t cullMode : 1;
+                        uint32_t depthBiasEnable : 1;
+                        uint32_t rasterizerDiscardEnable : 1;
+                        uint32_t primitiveRestartEnable : 1;
                         uint32_t reserved : 21;
                 };
-                uint32_t flags;
+                uint32_t flags{};
         };
         struct ViewPort {
                 f32 x{};
@@ -147,5 +147,23 @@ struct DynamicPipelineState {
                 float a{};
         };
         BlendColor blendColor;
+
+        // 构造函数：设置默认标志位
+        DynamicPipelineState()
+            : colorBlendEnable(1),
+              logicOpEnable(0),
+              stencilTestEnable(1),
+              depthClampEnable(1),
+              depthWriteEnable(1),
+              depthTestEnable(1),
+              depthBoundsTestEnable(1),
+              cullMode(0),
+              depthBiasEnable(1),
+              rasterizerDiscardEnable(0),
+              primitiveRestartEnable(0),
+              reserved(0)
+        // viewport, scissors, blendColor 使用 {} 初始化，已为 0
+        {}
+
 };
 }  // namespace render
