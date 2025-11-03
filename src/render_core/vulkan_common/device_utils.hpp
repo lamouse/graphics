@@ -141,7 +141,6 @@
     FEATURE_NAME(depth_bias_control, leastRepresentableValueForceUnormRepresentation) \
     FEATURE_NAME(depth_bias_control, depthBiasExact)                                  \
     FEATURE_NAME(extended_dynamic_state, extendedDynamicState)                        \
-    FEATURE_NAME(format_a4b4g4r4, formatA4B4G4R4)                                     \
     FEATURE_NAME(index_type_uint8, indexTypeUint8)                                    \
     FEATURE_NAME(primitive_topology_list_restart, primitiveTopologyListRestart)       \
     FEATURE_NAME(provoking_vertex, provokingVertexLast)                               \
