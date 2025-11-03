@@ -70,7 +70,7 @@ void App::run() {
             }
             CameraSystem::update(cameraComponent, e.value());
         }
-        cameraComponent.extentAspectRation = window->getAspectRatio();
+        cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
         frameInfo.camera = &camera;
         frameInfo.frameTime = getRuntime();
