@@ -235,11 +235,6 @@ constexpr std::array VK_FORMAT_R32G32B32_SFLOAT{
     VK_FORMAT_R32G32B32A32_SFLOAT,
     VK_FORMAT_UNDEFINED,
 };
-
-constexpr std::array VK_FORMAT_A4B4G4R4_UNORM_PACK16{
-    VK_FORMAT_R4G4B4A4_UNORM_PACK16,
-    VK_FORMAT_UNDEFINED,
-};
 }  // namespace Alternatives
 
 constexpr auto GetFormatAlternatives(VkFormat format) -> const VkFormat* {
@@ -264,8 +259,6 @@ constexpr auto GetFormatAlternatives(VkFormat format) -> const VkFormat* {
             return Alternatives::R8G8B8_SSCALED.data();
         case VK_FORMAT_R32G32B32_SFLOAT:
             return Alternatives::VK_FORMAT_R32G32B32_SFLOAT.data();
-        case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
-            return Alternatives::VK_FORMAT_A4B4G4R4_UNORM_PACK16.data();
         default:
             return nullptr;
     }
