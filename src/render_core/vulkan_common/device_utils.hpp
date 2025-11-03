@@ -113,7 +113,6 @@
     FEATURE_NAME(features, geometryShader)                                           \
     FEATURE_NAME(features, imageCubeArray)                                           \
     FEATURE_NAME(features, independentBlend)                                         \
-    FEATURE_NAME(features, largePoints)                                              \
     FEATURE_NAME(features, multiDrawIndirect)                                        \
     FEATURE_NAME(features, multiViewport)                                            \
     FEATURE_NAME(features, occlusionQueryPrecise)                                    \
@@ -126,7 +125,6 @@
     FEATURE_NAME(features, shaderStorageImageWriteWithoutFormat)                     \
     FEATURE_NAME(features, tessellationShader)                                       \
     FEATURE_NAME(features, vertexPipelineStoresAndAtomics)                           \
-    FEATURE_NAME(features, wideLines)                                                \
     FEATURE_NAME(host_query_reset, hostQueryReset)                                   \
     FEATURE_NAME(shader_demote_to_helper_invocation, shaderDemoteToHelperInvocation) \
     FEATURE_NAME(shader_draw_parameters, shaderDrawParameters)                       \
