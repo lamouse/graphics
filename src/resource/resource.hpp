@@ -1,13 +1,14 @@
 #pragma once
 #include "render_core/types.hpp"
 #include "render_core/graphic.hpp"
+#include "resource/obj/mesh.hpp"
+#include "common/common_funcs.hpp"
+#include "resource/texture/image.hpp"
 #include <unordered_map>
 #include <string>
-#include "common/common_funcs.hpp"
 #include <functional>
-#include "resource/texture/image.hpp"
-#include "resource/obj/mesh.hpp"
 #include <glm/glm.hpp>
+#include <vector>
 
 namespace graphics {
 struct ShaderHash {
@@ -44,7 +45,7 @@ class ResourceManager {
         void addMesh(std::string meshName, add_mesh_func func = nullptr);
         void addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr);
 
-        [[nodiscard]] auto getMesh(std::string meshName) const -> render::MeshId;
+        [[nodiscard]] auto getMesh(std::string meshName) const -> std::span<const render::MeshId>;
         void addGraphShader(
             const std::string& name,
             const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
@@ -66,9 +67,6 @@ class ResourceManager {
             requires(IsUint64<T> || IsShaderHashStruct<T>)
         [[nodiscard]] auto getShaderHash(const std::string& name) const -> T;
 
-        auto getMeshVertex(const std::string& meshName) -> std::span<glm::vec3>;
-        auto getMeshIndics(const std::string& meshName) -> std::span<uint32_t>;
-
         auto getMeshVertex(render::MeshId id) -> std::span<glm::vec3>;
         auto getMeshIndics(render::MeshId id) -> std::span<uint32_t>;
 
@@ -76,7 +74,7 @@ class ResourceManager {
         auto getShaderCode(render::ShaderType type, const std::string& name)
             -> std::vector<std::uint32_t>;
         std::unordered_map<std::string, render::TextureId> textures;
-        std::unordered_map<std::string, render::MeshId> mesh;
+        std::unordered_map<std::string, std::vector<render::MeshId>> model_mesh_ids_;
         std::unordered_map<render::MeshId, std::unique_ptr<std::vector<glm::vec3>>> mesh_vertex;
         std::unordered_map<render::MeshId, std::unique_ptr<std::vector<std::uint32_t>>> mesh_indics;
         std::unordered_map<std::string, std::uint64_t> compute_shader_hash;

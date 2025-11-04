@@ -70,7 +70,8 @@ class ModelInstance : public IModelInstance {
               mesh_name(resourceName.mesh_name),
               shader_name(resourceName.shader_name) {
             textureId = resource.getTexture(texture_name);
-            meshId = resource.getMesh(mesh_name);
+            auto mesh_ids = resource.getMesh(mesh_name);
+            meshId = mesh_ids.empty() ? render::MeshId{}: mesh_ids.front() ;
             auto hash = resource.getShaderHash<ShaderHash>(shader_name);
             vertex_shader_hash = hash.vertex;
             fragment_shader_hash = hash.fragment;

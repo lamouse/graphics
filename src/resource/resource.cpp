@@ -2,7 +2,7 @@
 #include "common/assert.hpp"
 #include "resource/obj/model.hpp"
 #include "resource/shader/shader.hpp"
-#include <cstring>
+#include "render_core/types.hpp"
 #include <spdlog/spdlog.h>
 namespace graphics {
 void ResourceManager::addTexture(std::string textureName, add_texture_func func) {
@@ -54,37 +54,39 @@ void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
     auto model_meshes = Model::createFromFile(meshName);
     for (const auto& model_mesh : model_meshes) {
         addMesh(meshName, model_mesh, std::move(func));
-        auto meshId = getMesh(meshName);
+        auto meshIds = getMesh(meshName);
         if (!model_mesh.only_vertex.empty()) {
-            mesh_vertex[meshId] = std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
+            mesh_vertex[*meshIds.rbegin()] =
+                std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
         }
         if (!model_mesh.save32_indices.empty()) {
-            mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(model_mesh.save32_indices);
+            mesh_indics[*meshIds.rbegin()] =
+                std::make_unique<std::vector<uint32_t>>(model_mesh.save32_indices);
         }
     }
 }
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func || graphic, "add_mesh_func is null");
-    if (mesh.contains(meshName)) {
-        SPDLOG_WARN("meshName {} in cache", meshName);
-        return;
-    }
-
     render::MeshId meshId;
     if (func) {
         meshId = func(meshData);
     } else {
         meshId = graphic->uploadModel(meshData);
     }
-    mesh[meshName] = meshId;
+    if (model_mesh_ids_.contains(meshName)) {
+        model_mesh_ids_.find(meshName)->second.push_back(meshId);
+    } else {
+        model_mesh_ids_[meshName] = std::vector<render::MeshId>{meshId};
+    }
 }
-auto ResourceManager::getMesh(std::string meshName) const -> render::MeshId {
+auto ResourceManager::getMesh(std::string meshName) const -> std::span<const render::MeshId> {
     if (meshName.empty()) {
         return {};
     }
-    ASSERT_MSG(mesh.contains(meshName), meshName + " mesh in catch");
-    return mesh.find(meshName)->second;
+    ASSERT_MSG(model_mesh_ids_.contains(meshName), meshName + " mesh in catch");
+    const auto& mesh_ids = model_mesh_ids_.find(meshName)->second;
+    return std::span(mesh_ids.data(), mesh_ids.size());
 }
 
 auto ResourceManager::getShaderCode(render::ShaderType type, const std::string& name)
@@ -172,24 +174,6 @@ void ResourceManager::addComputeShader(
         hash = graphic->addShader(shader_code, render::ShaderType::Compute);
     }
     compute_shader_hash[name] = hash;
-}
-
-auto ResourceManager::getMeshVertex(const std::string& meshName) -> std::span<glm::vec3> {
-    auto meshId = getMesh(meshName);
-
-    if (meshId && mesh_vertex.contains(meshId)) {
-        auto& data = mesh_vertex.find(meshId)->second;
-        return std::span(data->data(), data->size());
-    }
-    return {};
-}
-auto ResourceManager::getMeshIndics(const std::string& meshName) -> std::span<uint32_t> {
-    auto meshId = getMesh(meshName);
-    if (meshId && mesh_indics.contains(meshId)) {
-        auto& data = mesh_indics.find(meshId)->second;
-        return std::span(data->data(), data->size());
-    }
-    return {};
 }
 
 auto ResourceManager::getMeshVertex(render::MeshId id) -> std::span<glm::vec3> {
