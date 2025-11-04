@@ -49,11 +49,11 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t
 
 auto Model::createFromFile(const ::std::string& path) -> Model {
     std::vector<Model::Vertex> vertices;
-    std::vector<uint16_t> u32_indices;
-    ::std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
+    std::vector<uint32_t> u32_indices;
 
     Assimp::Importer importer;
-    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs;
+    constexpr auto ASSIMP_LOAD_FLAGS =
+        aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
     // NOLINTNEXTLINE
     const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
     if (!scene) {
@@ -62,34 +62,41 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
     }
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
         aiMesh* mesh = scene->mMeshes[i];
-        auto color = mesh->GetNumColorChannels();
-        auto texCoord = mesh->GetNumUVChannels();
         for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
             aiVector3D vertex = mesh->mVertices[j];
             Model::Vertex model_vertex{};
             model_vertex.position = {vertex.x, vertex.y, vertex.z};
-            if (texCoord > 0) {
-                model_vertex.texCoord = {mesh->mTextureCoords[0][j].x,
-                                         mesh->mTextureCoords[0][j].y};
+
+            if (mesh->HasTextureCoords(0)) {
+                const auto* textureCoords = mesh->mTextureCoords[0];
+                model_vertex.texCoord = {textureCoords[j].x, textureCoords[j].y};
             } else {
-                model_vertex.texCoord = {0.0F, 0.0F};
+                model_vertex.texCoord = {.0f, .0f};
             }
 
-            if (color > 0) {
-                model_vertex.color = {mesh->mColors[0][j].r, mesh->mColors[0][j].g,
-                                      mesh->mColors[0][j].b};
-            }
-            if (mesh->mNormals) {
+            if (mesh->HasNormals()) {
                 model_vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y,
                                        mesh->mNormals[j].z};
+            } else {
+                model_vertex.normal = {0.0f, 0.0f, 0.0f};
             }
-            if (!uniqueVertices.contains(model_vertex)) {
-                uniqueVertices[model_vertex] = static_cast<uint32_t>(vertices.size());
-                vertices.push_back(model_vertex);
+            if (mesh->HasVertexColors(0)) {
+                const auto* vertex_color = mesh->mColors[0];
+                model_vertex.color = {vertex_color[j].r, vertex_color[j].g, vertex_color[j].b};
+            } else {
+                model_vertex.color = {1.0f, 1.0f, 1.0f};
             }
+            vertices.push_back(model_vertex);
+        }
 
-            u32_indices.push_back(
-                static_cast<decltype(u32_indices)::value_type>(uniqueVertices[model_vertex]));
+        u32_indices.reserve(mesh->mNumFaces * 3);
+        for (u32 f = 0; f < mesh->mNumFaces; f++) {
+            const auto face = mesh->mFaces[f];
+            ASSERT_MSG(face.mNumIndices == 3, "face indices not equal 3");
+            for (unsigned int idx = 0; idx < 3; ++idx) {
+                uint32_t vertexIndex = face.mIndices[idx];
+                u32_indices.push_back(vertexIndex);
+            }
         }
     }
     // 判断是否需要使用 32 位索引
