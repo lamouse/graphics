@@ -53,7 +53,6 @@ struct FormatTuple {
     {.format = VK_FORMAT_A8B8G8R8_SNORM_PACK32, .usage = Attachable | Storage},  // A8B8G8R8_SNORM
     {.format = VK_FORMAT_A8B8G8R8_SINT_PACK32, .usage = Attachable | Storage},   // A8B8G8R8_SINT
     {.format = VK_FORMAT_A8B8G8R8_UINT_PACK32, .usage = Attachable | Storage},   // A8B8G8R8_UINT
-    {.format = VK_FORMAT_B5G6R5_UNORM_PACK16},                                   // B5G6R5_UNORM
     {.format = VK_FORMAT_A2B10G10R10_UNORM_PACK32,
      .usage = Attachable | Storage},  // A2B10G10R10_UNORM
     {.format = VK_FORMAT_A2B10G10R10_UINT_PACK32,
@@ -202,10 +201,6 @@ constexpr std::array DEPTH16_UNORM_STENCIL8_UINT{
     VK_FORMAT_UNDEFINED,
 };
 
-constexpr std::array B5G6R5_UNORM_PACK16{
-    VK_FORMAT_R5G6B5_UNORM_PACK16,
-    VK_FORMAT_UNDEFINED,
-};
 
 constexpr std::array R4G4_UNORM_PACK8{
     VK_FORMAT_R8_UNORM,
@@ -243,8 +238,6 @@ constexpr auto GetFormatAlternatives(VkFormat format) -> const VkFormat* {
             return Alternatives::DEPTH24_UNORM_DONTCARE8.data();
         case VK_FORMAT_D16_UNORM_S8_UINT:
             return Alternatives::DEPTH16_UNORM_STENCIL8_UINT.data();
-        case VK_FORMAT_B5G6R5_UNORM_PACK16:
-            return Alternatives::B5G6R5_UNORM_PACK16.data();
         case VK_FORMAT_R4G4_UNORM_PACK8:
             return Alternatives::R4G4_UNORM_PACK8.data();
         case VK_FORMAT_R16G16B16_SFLOAT:

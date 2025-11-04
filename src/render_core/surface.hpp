@@ -15,7 +15,6 @@ enum class PixelFormat {
     A8B8G8R8_SNORM,
     A8B8G8R8_SINT,
     A8B8G8R8_UINT,
-    B5G6R5_UNORM,
     A2B10G10R10_UNORM,
     A2B10G10R10_UINT,
     A2R10G10B10_UNORM,
@@ -151,7 +150,6 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_WIDTH_TABLE = {{
     1,   // A8B8G8R8_SNORM
     1,   // A8B8G8R8_SINT
     1,   // A8B8G8R8_UINT
-    1,   // B5G6R5_UNORM
     1,   // A2B10G10R10_UNORM
     1,   // A2B10G10R10_UINT
     1,   // A2R10G10B10_UNORM
@@ -256,7 +254,6 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_HEIGHT_TABLE = {{
     1,   // A8B8G8R8_SNORM
     1,   // A8B8G8R8_SINT
     1,   // A8B8G8R8_UINT
-    1,   // B5G6R5_UNORM
     1,   // A2B10G10R10_UNORM
     1,   // A2B10G10R10_UINT
     1,   // A2R10G10B10_UNORM
@@ -361,7 +358,6 @@ constexpr std::array<u8, MaxPixelFormat> BITS_PER_BLOCK_TABLE = {{
     32,   // A8B8G8R8_SNORM
     32,   // A8B8G8R8_SINT
     32,   // A8B8G8R8_UINT
-    16,   // B5G6R5_UNORM
     32,   // A2B10G10R10_UNORM
     32,   // A2B10G10R10_UINT
     32,   // A2R10G10B10_UNORM
