@@ -44,6 +44,9 @@ class LightModel {
                         entity_.getComponent<ecs::RenderStateComponent>().visible) {
                         check_pick(mesh.getId(), mesh.getMeshId(), frameInfo, render_state,
                                    transform);
+                        if(render_state.mouse_select){
+                            pending_pick_ = false;
+                        }
                     }
                     if (i == meshes.size()) {
                         pending_pick_ = false;
