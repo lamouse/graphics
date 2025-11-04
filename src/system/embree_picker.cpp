@@ -8,6 +8,7 @@
 
 #include "system/pick_system.hpp"
 #include <pmmintrin.h>
+#include <tracy/Tracy.hpp>
 namespace graphics {
 
 EmbreePicker::EmbreePicker() : device_(rtcNewDevice(nullptr)), scene_(nullptr) {
@@ -48,6 +49,7 @@ EmbreePicker::~EmbreePicker() {
 void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
                              std::span<const uint32_t> indices, bool rebuild) {
     if (geometries_.contains(id)) {
+        ZoneScopedN("EmbreePicker::buildMesh");
         if (!rebuild) {
             return;
         }
@@ -113,6 +115,7 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
 
 // 在每帧更新所有移动物体的 transform
 void EmbreePicker::updateTransform(id_t id, const ecs::TransformComponent& transform) {
+    ZoneScopedN("EmbreePicker::updateTransform");
     if (!geometries_.contains(id)) {
         return;
     }
@@ -122,9 +125,15 @@ void EmbreePicker::updateTransform(id_t id, const ecs::TransformComponent& trans
                             glm::value_ptr(transform.mat4()));
     rtcCommitGeometry(geometry);
 }
+void EmbreePicker::commit() {
+    ZoneScopedN("EmbreePicker::commit");
+    rtcCommitScene(scene_);
+    rtcCommitScene(main_scene_);
+}
 
 auto EmbreePicker::pick(id_t id, const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
     -> std::optional<PickResult> {
+    ZoneScopedN("EmbreePicker::pick");
     if (!geometries_.contains(id)) {
         return std::nullopt;
     }

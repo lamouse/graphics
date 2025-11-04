@@ -63,6 +63,18 @@ endif()
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
 target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog imgui ui utils absl::strings embree)
 
+if(TRACY_ENABLE)
+    message(STATUS "Tracy support is enabled")
+    # 添加 Tracy 相关的编译选项或源文件
+    add_definitions(-DTRACY_ENABLE)
+
+    if(TRACY_ON_DEMAND)
+        add_definitions(-DTRACY_ON_DEMAND)
+    endif()
+
+    target_link_libraries(${LIB_NAME} PRIVATE Tracy::TracyClient)
+endif()
+
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_NAME}/lib)
 set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)

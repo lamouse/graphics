@@ -45,7 +45,7 @@ else()
         set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-option(TRACY_ENABLE "Enable Tracy profiling support" OFF)
+option(TRACY_ENABLE "Enable Tracy profiling support" ON)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)
 
 # 设置可执行文件输出目录

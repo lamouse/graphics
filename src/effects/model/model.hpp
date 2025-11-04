@@ -29,12 +29,13 @@ class LightModel {
         void update(const core::FrameInfo& frameInfo) {
             auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
-            for (auto& mesh : meshes) {
+            for (std::size_t i = 0; auto& mesh : meshes) {
                 auto& transform = mesh.entity_.getComponent<ecs::TransformComponent>();
                 auto& render_state = mesh.entity_.getComponent<ecs::RenderStateComponent>();
                 if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
                     render_state.mouse_select = false;
                 }
+                i++;
 
                 if (first) {
                     pending_pick_ = true;
@@ -43,6 +44,9 @@ class LightModel {
                         entity_.getComponent<ecs::RenderStateComponent>().visible) {
                         check_pick(mesh.getId(), mesh.getMeshId(), frameInfo, render_state,
                                    transform);
+                    }
+                    if (i == meshes.size()) {
+                        pending_pick_ = false;
                     }
                 }
 

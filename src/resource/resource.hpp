@@ -30,7 +30,8 @@ class ResourceManager {
         ~ResourceManager() = default;
         CLASS_NON_COPYABLE(ResourceManager);
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
-        auto addTexture(std::string textureName, const add_texture_func& func = nullptr) -> render::TextureId;
+        auto addTexture(std::string textureName, const add_texture_func& func = nullptr)
+            -> render::TextureId;
         /**
          * @brief 暂时针对cube map的6张图片
          *
@@ -38,15 +39,17 @@ class ResourceManager {
          * @param func
          */
         auto addCubeMapTexture(std::span<std::string> textureNames, const std::string& name,
-                        const add_texture_func& func = nullptr) -> render::TextureId;
+                               const add_texture_func& func = nullptr) -> render::TextureId;
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         explicit ResourceManager(render::Graphic* graphic_) : graphic(graphic_) {}
 
-        auto addModel(std::string modelName, add_mesh_func func = nullptr) -> std::vector<render::MeshId>;
+        auto addModel(std::string modelName, add_mesh_func func = nullptr)
+            -> std::vector<render::MeshId>;
         auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
-        [[nodiscard]] auto getMesh(const std::string& name) const -> std::span<const render::MeshId>;
+        [[nodiscard]] auto getMesh(const std::string& name) const
+            -> std::span<const render::MeshId>;
         auto addGraphShader(
             const std::string& name,
             const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&

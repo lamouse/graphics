@@ -28,10 +28,7 @@ class EmbreePicker {
         EmbreePicker(const EmbreePicker&) = delete;
         auto operator=(const EmbreePicker&) -> EmbreePicker& = delete;
         // 所有物体更新完后，一次性 commit scene
-        void commit() {
-            rtcCommitScene(scene_);
-            rtcCommitScene(main_scene_);
-        }
+        void commit();
 
         // 构建三角形网格
         void buildMesh(id_t id, std::span<const glm::vec3> vertices,

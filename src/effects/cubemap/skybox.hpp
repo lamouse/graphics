@@ -25,12 +25,13 @@ class SkyBox {
 
             auto texture_id = manager.addCubeMapTexture(cube_map_images, "skybox");
             std::string mesh_path = "models/cube.obj";
-           auto meshes = manager.addModel(mesh_path);
-           ASSERT_MSG(!meshes.empty() || meshes.size() > 1, "cube mesh count error");
+            auto meshes = manager.addModel(mesh_path);
+            ASSERT_MSG(!meshes.empty() || meshes.size() > 1, "cube mesh count error");
 
-           auto shader_hash =  manager.addGraphShader("skycube");
+            auto shader_hash = manager.addGraphShader("skycube");
 
-            sky_box = SkyBoxInstance{shader_hash, layout, "skybox instance", meshes.at(0), texture_id};
+            sky_box =
+                SkyBoxInstance{shader_hash, layout, "skybox instance", meshes.at(0), texture_id};
             sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable =
                 0;
         }

@@ -1,8 +1,8 @@
 // picking_system.cpp
 #include "pick_system.hpp"
 #include <glm/gtx/norm.hpp>
-
 #include "system/embree_picker.hpp"
+#include <tracy/Tracy.hpp>
 
 auto get_embree_picker() -> graphics::EmbreePicker* {
     static graphics::EmbreePicker packer;
@@ -16,6 +16,7 @@ auto PickingSystem::pick(id_t id, const core::Camera& camera, const core::InputS
                          std::span<const glm::vec3> localVertices,
                          std::span<const uint32_t> indices,
                          const ecs::TransformComponent& transform) -> std::optional<PickResult> {
+    ZoneScopedN("PickingSystem::pick");
     // 📌 1. 获取视图-投影矩阵
     glm::mat4 viewProj = camera.getProjection() * camera.getView();
     glm::mat4 invViewProj = glm::inverse(viewProj);

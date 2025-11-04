@@ -43,8 +43,6 @@ if(TRACY_ENABLE)
     endif()
 
     target_link_libraries(${LIB_NAME} PRIVATE Tracy::TracyClient)
-else()
-    message(STATUS "Tracy support is disabled")
 endif()
 
 # 设置动态库/静态库生成路径
