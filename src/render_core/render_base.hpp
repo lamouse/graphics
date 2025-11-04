@@ -24,7 +24,8 @@ class RenderBase {
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }
-        virtual void composite(std::span<frame::FramebufferConfig> frame_buffers, const imgui_ui_fun& func = nullptr) = 0;
+        virtual void composite(std::span<frame::FramebufferConfig> frame_buffers,
+                               const imgui_ui_fun& func = nullptr) = 0;
         /// Refreshes the settings common to all renderers
         void RefreshBaseSettings();
 
@@ -34,6 +35,7 @@ class RenderBase {
     protected:
         core::frontend::BaseWindow* window_;
         std::unique_ptr<ShaderNotify> shader_notify_;
+
     private:
         void UpdateCurrentFramebufferLayout();
 };

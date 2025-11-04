@@ -83,8 +83,8 @@ void Layer::CreateRawImages(const frame::FramebufferConfig& framebuffer) {
         raw_images[i] = present::utils::CreateWrappedImage(
             memory_allocator, {framebuffer.width, framebuffer.height}, format);
         scheduler.record([image = *raw_images[i]](vk::CommandBuffer cmdbuf) -> void {
-            present::utils::TransitionImageLayout(cmdbuf, image,
-                                                  vk::ImageLayout::eGeneral, vk::ImageLayout::eUndefined);
+            present::utils::TransitionImageLayout(cmdbuf, image, vk::ImageLayout::eGeneral,
+                                                  vk::ImageLayout::eUndefined);
         });
 
         raw_image_views[i] = present::utils::CreateWrappedImageView(device, raw_images[i], format);

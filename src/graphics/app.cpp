@@ -67,16 +67,8 @@ void App::run() {
             registry.updateAll(frameInfo);
         }
         while (auto e = input_event.pop_event()) {
-            // if(show_debug_ui && ui::IsMouseControlledByImGui() && (e->mouse_button_left.Value()
-            // || e->mouse_button_right.Value())){
-            //     continue;
-            // }
-            glm::vec3 moveDir(0.0f);
-            switch (e->key) {
-                case core::InputKey::Insert: {
-                    show_debug_ui = !show_debug_ui;
-                    break;
-                }
+            if (e->key == core::InputKey::Insert) {
+                show_debug_ui = !show_debug_ui;
             }
             if (e->mouseX_ > 0 && e->mouseY_ > 0) {
                 current_mouse_X = e->mouseX_;

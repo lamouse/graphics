@@ -62,7 +62,8 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
 
 RendererVulkan::~RendererVulkan() { void(device.getLogical().waitIdle()); }
 
-void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers, const imgui_ui_fun& func) {
+void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers,
+                               const imgui_ui_fun& func) {
     if (frame_buffers.empty()) {
         return;
     }

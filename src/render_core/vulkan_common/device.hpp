@@ -271,7 +271,8 @@ class Device {
         /// Returns true if the device supports the provided subgroup feature.
         [[nodiscard]] auto IsSubgroupFeatureSupported(vk::SubgroupFeatureFlags feature) const
             -> bool {
-            return (properties_.subgroup_properties_.supportedOperations & feature) != vk::SubgroupFeatureFlags{};
+            return (properties_.subgroup_properties_.supportedOperations & feature) !=
+                   vk::SubgroupFeatureFlags{};
         }
 
         /// Returns true if the device supports VK_EXT_shader_viewport_index_layer.

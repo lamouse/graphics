@@ -56,8 +56,8 @@ struct FormatTuple {
     {.format = VK_FORMAT_A2B10G10R10_UNORM_PACK32,
      .usage = Attachable | Storage},  // A2B10G10R10_UNORM
     {.format = VK_FORMAT_A2B10G10R10_UINT_PACK32,
-     .usage = Attachable | Storage},                                      // A2B10G10R10_UINT
-    {.format = VK_FORMAT_A2R10G10B10_UNORM_PACK32, .usage = Attachable},  // A2R10G10B10_UNORM
+     .usage = Attachable | Storage},                                           // A2B10G10R10_UINT
+    {.format = VK_FORMAT_A2R10G10B10_UNORM_PACK32, .usage = Attachable},       // A2R10G10B10_UNORM
     {.format = VK_FORMAT_R8_UNORM, .usage = Attachable | Storage},             // R8_UNORM
     {.format = VK_FORMAT_R8_SNORM, .usage = Attachable | Storage},             // R8_SNORM
     {.format = VK_FORMAT_R8_SINT, .usage = Attachable | Storage},              // R8_SINT
@@ -200,7 +200,6 @@ constexpr std::array DEPTH16_UNORM_STENCIL8_UINT{
     VK_FORMAT_D32_SFLOAT_S8_UINT,
     VK_FORMAT_UNDEFINED,
 };
-
 
 constexpr std::array R4G4_UNORM_PACK8{
     VK_FORMAT_R8_UNORM,
@@ -715,7 +714,7 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
         SetNext(next, properties_.transform_feedback_);
     }
     physical_.getProperties2(&properties2_);
-    //properties2_ = physical_.getProperties2();
+    // properties2_ = physical_.getProperties2();
     properties_.properties_ = properties2_.properties;
     removeUnsuitableExtensions();
     // Check limits.
@@ -1191,8 +1190,9 @@ auto Device::surfaceFormat(FormatType format_type, bool with_srgb,
             }
             break;
     }
-    return {.format=getSupportedFormat(static_cast<vk::Format>(tuple.format), usage, format_type),
-            .attachable=attachable, .storage=storage};
+    return {.format = getSupportedFormat(static_cast<vk::Format>(tuple.format), usage, format_type),
+            .attachable = attachable,
+            .storage = storage};
 }
 
 auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
@@ -1231,9 +1231,7 @@ auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags
     return wanted_format;
 }
 
-auto Device::getDriverName() const -> std::string {
-   return properties_.driver_.driverName;
-}
+auto Device::getDriverName() const -> std::string { return properties_.driver_.driverName; }
 
 auto Device::getDeviceMemoryUsage() const -> u64 {
     vk::PhysicalDeviceMemoryBudgetPropertiesEXT budget;
