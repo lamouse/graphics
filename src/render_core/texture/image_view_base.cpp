@@ -17,7 +17,6 @@ ImageViewBase::ImageViewBase(const ImageViewInfo& info, const ImageInfo& image_i
           .depth = image_info.size.depth,
       } {}
 
-
 ImageViewBase::ImageViewBase(const NullImageViewParams& /*unused*/) : image_id{NULL_IMAGE_ID} {}
 
 auto ImageViewBase::SupportsAnisotropy() const noexcept -> bool {

@@ -5,8 +5,6 @@
 #include <utility>
 #include "ecs/scene/entity.hpp"
 
-
-
 // 前向声明
 namespace core {
 struct FrameInfo;
@@ -24,7 +22,6 @@ concept DrawableLike = requires(T t, const core::FrameInfo& info, render::Graphi
     { t->draw(gfx) } -> std::same_as<void>;
 };
 
-
 template <typename T>
 concept HasPointECSInterface = requires(T* t) {
     { t->entity_ } -> std::same_as<ecs::Entity&>;
@@ -36,7 +33,6 @@ concept HasValueECSInterface = requires(T t) {
     { t.entity_ } -> std::same_as<ecs::Entity&>;
     { t.getChildEntitys() } -> std::same_as<std::vector<ecs::Entity>>;
 };
-
 
 class RenderRegistry {
     private:

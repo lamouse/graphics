@@ -19,10 +19,10 @@ auto GetStreamBufferSize(const Device& device) -> size_t {
         ForEachDeviceLocalHostVisibleHeap(device, [&size](size_t index, vk::MemoryHeap& heap) {
             size = std::max(size, heap.size);
         });
-        //rebar Resizable Base Address Register
-        // If rebar is not supported, cut the max heap size to 40%. This will allow 2 captures to be
-        // loaded at the same time in RenderDoc. If rebar is supported, this shouldn't be an issue
-        // as the heap will be much larger.
+        // rebar Resizable Base Address Register
+        //  If rebar is not supported, cut the max heap size to 40%. This will allow 2 captures to
+        //  be loaded at the same time in RenderDoc. If rebar is supported, this shouldn't be an
+        //  issue as the heap will be much larger.
         if (size <= 256_MiB) {
             size = size * 40 / 100;
         }

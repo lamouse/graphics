@@ -35,20 +35,22 @@ class Particle : public render::IComputeInstance {
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             return u.as_byte_span();
         };
-        Particle(graphics::ResourceManager& manager,  const layout::FrameBufferLayout& layout, std::uint32_t count)
+        Particle(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
+                 std::uint32_t count)
             : id(getCurrentId()) {
-            graphics::ParticleModel model{count, static_cast<float>(layout.width)/static_cast<float>(layout.height)};
+            graphics::ParticleModel model{
+                count, static_cast<float>(layout.width) / static_cast<float>(layout.height)};
             manager.addMesh("particle_in", model);
             manager.addMesh("particle_out", model);
 
             // NOLINTNEXTLINE
-            in = DeltaParticleInstance(manager,layout,
+            in = DeltaParticleInstance(manager, layout,
                                        ModelResourceName{.shader_name = particle_shader_name,
                                                          .mesh_name = "particle_in",
                                                          .texture_name = ""},
                                        "particle");
             // NOLINTNEXTLINE
-            out = DeltaParticleInstance(manager,layout,
+            out = DeltaParticleInstance(manager, layout,
                                         ModelResourceName{.shader_name = particle_shader_name,
                                                           .mesh_name = "particle_out",
                                                           .texture_name = ""},
@@ -64,7 +66,7 @@ class Particle : public render::IComputeInstance {
             workgroup_size = {group_x, 1, 1};
         }
 
-        void update(const core::FrameInfo& frame){}
+        void update(const core::FrameInfo& frame) {}
         void draw(render::Graphic* graphics) {
             graphics->dispatchCompute(*this);
             std::swap(compute_mesh.at(0), compute_mesh.at(1));
@@ -84,6 +86,7 @@ class Particle : public render::IComputeInstance {
             return std::vector{in.entity_, out.entity_};
         }
         ecs::Entity entity_;
+
     private:
         id_t id;
         using DeltaParticleInstance =

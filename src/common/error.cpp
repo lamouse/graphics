@@ -18,10 +18,10 @@ auto NativeErrorToString(int e) -> std::string {
 #ifdef _WIN32
     LPSTR err_str;
 
-    DWORD res = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                                   FORMAT_MESSAGE_IGNORE_INSERTS,
-                               nullptr, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                               reinterpret_cast<LPSTR>(&err_str), 1, nullptr);
+    DWORD res = FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&err_str), 1,
+        nullptr);
     if (!res) {
         return "(FormatMessageA failed to format error)";
     }
@@ -30,7 +30,7 @@ auto NativeErrorToString(int e) -> std::string {
     return ret;
 #else
     char err_str[255];
-#if defined(ANDROID) ||                                                                            \
+#if defined(ANDROID) || \
     (defined(__GLIBC__) && (_GNU_SOURCE || (_POSIX_C_SOURCE < 200112L && _XOPEN_SOURCE < 600)))
     // Thread safe (GNU-specific)
     const char* str = strerror_r(e, err_str, sizeof(err_str));
@@ -42,8 +42,8 @@ auto NativeErrorToString(int e) -> std::string {
         return "(strerror_r failed to format error)";
     }
     return std::string(err_str);
-#endif // GLIBC etc.
-#endif // _WIN32
+#endif  // GLIBC etc.
+#endif  // _WIN32
 }
 
 auto GetLastErrorMsg() -> std::string {
@@ -55,4 +55,4 @@ auto GetLastErrorMsg() -> std::string {
 #endif
 }
 
-} // namespace Common
+}  // namespace common

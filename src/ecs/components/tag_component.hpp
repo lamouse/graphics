@@ -16,4 +16,4 @@ struct TagComponent {
         operator const std::string&() const { return tag; }
 };
 
-}
+}  // namespace ecs

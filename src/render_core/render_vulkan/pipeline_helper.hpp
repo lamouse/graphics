@@ -98,8 +98,8 @@ class DescriptorLayoutBuilder {
                         spdlog::debug("重复的声明 type={} stage={} descriptors={} binding:{}",
                                       vk::to_string(type), vk::to_string(stage), descriptors.size(),
                                       descriptors[i].binding);
-                        for(auto& bind : bindings){
-                            if(bind.binding == static_cast<u32>(shader_binding)){
+                        for (auto& bind : bindings) {
+                            if (bind.binding == static_cast<u32>(shader_binding)) {
                                 bind.stageFlags |= stage;
                                 break;
                             }

@@ -282,7 +282,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
             : Setting<Type, false>{
                   linkage, default_val,         name,          category_, specialization_,
                   save_,   runtime_modifiable_, other_setting_} {
-            linkage.restore_functions.emplace_back([this]() { });
+            linkage.restore_functions.emplace_back([this]() {});
         }
         virtual ~SwitchableSetting() = default;
 
@@ -327,12 +327,8 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
                                   save_,
                                   runtime_modifiable_,
                                   other_setting_} {
-            linkage.restore_functions.emplace_back([this]() { });
+            linkage.restore_functions.emplace_back([this]() {});
         }
-
-
-
-
 
         /**
          * Returns either the global or custom setting depending on the values of this setting's
@@ -342,7 +338,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
          *
          * @returns The required value of the setting
          */
-        [[nodiscard]] auto GetValue() const -> const Type&  final {
+        [[nodiscard]] auto GetValue() const -> const Type& final {
             if (use_global) {
                 return this->value;
             }
@@ -354,7 +350,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
          *
          * @param val The new value
          */
-        void SetValue(const Type& val)  final {
+        void SetValue(const Type& val) final {
             Type temp{ranged ? std::clamp(val, this->minimum, this->maximum) : val};
             if (use_global) {
                 std::swap(this->value, temp);
@@ -363,7 +359,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
             }
         }
 
-        [[nodiscard]] constexpr auto Switchable() const -> bool  final { return true; }
+        [[nodiscard]] constexpr auto Switchable() const -> bool final { return true; }
 
         /**
          * Assigns the current setting value depending on the global state.
@@ -372,7 +368,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
          *
          * @returns A reference to the current setting value
          */
-        auto operator=(const Type& val) -> const Type&  final {
+        auto operator=(const Type& val) -> const Type& final {
             Type temp{ranged ? std::clamp(val, this->minimum, this->maximum) : val};
             if (use_global) {
                 std::swap(this->value, temp);
@@ -387,7 +383,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
          *
          * @returns A reference to the current setting value
          */
-        explicit operator const Type&() const  final {
+        explicit operator const Type&() const final {
             if (use_global) {
                 return this->value;
             }

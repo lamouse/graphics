@@ -106,13 +106,13 @@ class TextureCache : public TextureCacheInfo {
         void TickFrame();
 
         // 添加一个纹理
-        auto addTexture(const Extent2D& extent, std::span<unsigned char> data, int layer_count = 1) -> ImageViewId;
+        auto addTexture(const Extent2D& extent, std::span<unsigned char> data, int layer_count = 1)
+            -> ImageViewId;
         auto getSampler(SamplerPreset preset) -> typename P::Sampler*;
         auto getCurrentTexture() -> std::pair<ImageView*, Sampler*>;
         void setCurrentTexture(ImageViewId viewId, SamplerPreset preset);
         void setCurrentFrameBuffer(const FramebufferKey& key);
-        auto TryFindFramebufferImageView()
-            -> std::pair<typename P::ImageView*, bool>;
+        auto TryFindFramebufferImageView() -> std::pair<typename P::ImageView*, bool>;
         auto getFramebuffer() -> Framebuffer*;
         std::recursive_mutex mutex;
 

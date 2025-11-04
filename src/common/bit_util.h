@@ -26,9 +26,13 @@ template <typename T>
     return 63U - static_cast<u32>(std::countl_zero(value));
 }
 
-[[nodiscard]] constexpr auto Log2Floor32(const u32 value) -> u32 { return MostSignificantBit32(value); }
+[[nodiscard]] constexpr auto Log2Floor32(const u32 value) -> u32 {
+    return MostSignificantBit32(value);
+}
 
-[[nodiscard]] constexpr auto Log2Floor64(const u64 value) -> u32 { return MostSignificantBit64(value); }
+[[nodiscard]] constexpr auto Log2Floor64(const u64 value) -> u32 {
+    return MostSignificantBit64(value);
+}
 
 [[nodiscard]] constexpr auto Log2Ceil32(const u32 value) -> u32 {
     const u32 log2_f = Log2Floor32(value);

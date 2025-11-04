@@ -10,7 +10,9 @@ class IComputeInstance {
         IComputeInstance() = default;
         [[nodiscard]] auto getMeshIds() const -> std::span<const MeshId> { return mesh_ids; }
         [[nodiscard]] auto getShaderHash() const { return compute_shader_hash; }
-        [[nodiscard]] auto getWorkgroupSize() const -> const std::array<u32, 3>& { return workgroup_size; }
+        [[nodiscard]] auto getWorkgroupSize() const -> const std::array<u32, 3>& {
+            return workgroup_size;
+        }
         CLASS_DEFAULT_MOVEABLE(IComputeInstance);
         CLASS_NON_COPYABLE(IComputeInstance);
 

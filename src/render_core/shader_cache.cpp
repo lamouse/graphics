@@ -47,5 +47,7 @@ void ShaderCache::mark_loaded(const std::array<const ShaderInfo*, NUM_PROGRAMS>&
         load_data.erase(info->unique_hash);
     }
 }
-auto ShaderCache::getShaderData(u64 hash) -> std::span<const u32> { return load_data.find(hash)->second; }
+auto ShaderCache::getShaderData(u64 hash) -> std::span<const u32> {
+    return load_data.find(hash)->second;
+}
 }  // namespace render

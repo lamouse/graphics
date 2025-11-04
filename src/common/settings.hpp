@@ -52,8 +52,7 @@ struct Values {
         Setting<bool, false> enable_compute_pipelines{linkage, true, "enable_compute_pipelines",
                                                       Category::render};
         Setting<bool, false> use_pipeline_cache{linkage, true, "use_pipeline_cache",
-                                                      Category::render};
-
+                                                Category::render};
 
         Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
         Setting<bool, false> log_file{linkage, true, "file", Category::log};

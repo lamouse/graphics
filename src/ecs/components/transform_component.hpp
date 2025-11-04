@@ -56,8 +56,6 @@ struct TransformComponent {
         }
 
         // 添加平移方法
-    void translate(const glm::vec3& delta) {
-        translation += delta;
-    }
+        void translate(const glm::vec3& delta) { translation += delta; }
 };
 }  // namespace ecs

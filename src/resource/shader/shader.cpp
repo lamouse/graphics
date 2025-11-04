@@ -4,7 +4,7 @@
 #include <fstream>
 #include <cstring>
 #include "source_shader.h"
-namespace graphics{
+namespace graphics {
 auto read_shader(const std::string& shader_name) -> std::vector<std::uint32_t> {
     namespace fs = std::filesystem;
 

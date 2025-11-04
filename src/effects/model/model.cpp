@@ -29,14 +29,13 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
     }
 };
 
-void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo, ecs::RenderStateComponent& render_state,
-               ecs::TransformComponent& transform) {
-    auto pick = PickingSystem::pick(
-        id, (*frameInfo.camera), frameInfo.input_state,
-        static_cast<float>(frameInfo.frame_layout.width),
-        static_cast<float>(frameInfo.frame_layout.height),
-        frameInfo.resource_manager->getMeshVertex(meshId),
-        frameInfo.resource_manager->getMeshIndics(meshId), transform);
+void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
+                ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform) {
+    auto pick = PickingSystem::pick(id, (*frameInfo.camera), frameInfo.input_state,
+                                    static_cast<float>(frameInfo.frame_layout.width),
+                                    static_cast<float>(frameInfo.frame_layout.height),
+                                    frameInfo.resource_manager->getMeshVertex(meshId),
+                                    frameInfo.resource_manager->getMeshIndics(meshId), transform);
     if (pick) {
         render_state.mouse_select = true;
         render_state.select_id = render_state.id;

@@ -4,7 +4,6 @@
 #include "common/common_types.hpp"
 #include "common/math_util.h"
 
-
 namespace render::frame {
 enum class BlendMode : uint8_t {
     Opaque,

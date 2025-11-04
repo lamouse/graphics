@@ -110,7 +110,7 @@ struct CameraSystem {
                 newDist = glm::clamp(newDist, 0.5f, 50.0f);
 
                 glm::vec3 direction = glm::normalize(cam.eye() - cam.center());
-                cam.setEye( cam.center() + direction * newDist);
+                cam.setEye(cam.center() + direction * newDist);
             }
         }
 };

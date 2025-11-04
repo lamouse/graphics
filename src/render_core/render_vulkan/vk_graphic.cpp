@@ -84,16 +84,14 @@ void VulkanGraphics::clear() {
     const vk::Extent2D render_area{static_cast<std::uint32_t>(config.extent.width),
                                    static_cast<std::uint32_t>(config.extent.height)};
 
-    auto clear_value = vk::ClearValue().setColor(
-        vk::ClearColorValue().setFloat32({1.f, 1.f, 1.f, 1.0F}));
+    auto clear_value =
+        vk::ClearValue().setColor(vk::ClearColorValue().setFloat32({1.f, 1.f, 1.f, 1.0F}));
     const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
                                                      .setAspectMask(vk::ImageAspectFlagBits::eColor)
                                                      .setColorAttachment(0)
                                                      .setClearValue(clear_value);
 
-    auto clear_depth = vk::ClearDepthStencilValue()
-                           .setDepth(1)
-                           .setStencil(0);
+    auto clear_depth = vk::ClearDepthStencilValue().setDepth(1).setStencil(0);
     auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
     const vk::ClearAttachment depth_attachment = vk::ClearAttachment()
                                                      .setAspectMask(vk::ImageAspectFlagBits::eDepth)

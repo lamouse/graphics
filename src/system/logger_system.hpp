@@ -14,7 +14,7 @@ template <typename Mutex>
 class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
     public:
         void draw(const char* title, bool& popen) {
-            if(!popen){
+            if (!popen) {
                 return;
             }
             ImGui::Begin(title, &popen);

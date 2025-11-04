@@ -234,7 +234,7 @@ auto VertexFormat(const Device& device, VertexAttribute::Type type, VertexAttrib
                                      FormatType::Buffer);
 }
 
-auto PrimitiveTopologyToVK(render::PrimitiveTopology topology) ->vk::PrimitiveTopology {
+auto PrimitiveTopologyToVK(render::PrimitiveTopology topology) -> vk::PrimitiveTopology {
     switch (topology) {
         case render::PrimitiveTopology::Points:
             return vk::PrimitiveTopology::ePointList;

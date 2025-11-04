@@ -1,5 +1,5 @@
 #pragma once
 
 namespace graphics {
-    void draw_setting(bool& show);
+void draw_setting(bool& show);
 }

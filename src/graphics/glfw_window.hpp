@@ -34,7 +34,7 @@ class ScreenWindow : public core::frontend::BaseWindow {
         void configGUI() override;
         void destroyGUI() override;
         void newFrame() override;
-        void pullEvents(core::InputEvent& event) override { glfwPollEvents(); }
+        void pullEvents(core::InputEvent &event) override { glfwPollEvents(); }
         [[nodiscard]] auto getScale() const -> float { return window_info.render_surface_scale; };
         auto getSurface(VkInstance instance) -> VkSurfaceKHR;
 };

@@ -39,7 +39,7 @@ ScreenWindow::ScreenWindow(int width, int height, ::std::string title) : title_{
     window_info.render_surface = GLFWCommon::get_windows_handles(window);
 #if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
     if (window_info.type == core::frontend::WindowSystemType::Wayland) {
-        //window_info.display_connection = glfwGetWaylandDisplay();
+        // window_info.display_connection = glfwGetWaylandDisplay();
     }
 #endif
 #if defined(GLFW_EXPOSE_NATIVE_X11)
@@ -82,16 +82,10 @@ ScreenWindow::~ScreenWindow() {
     }
 }
 
-void ScreenWindow::configGUI() {
-    ImGui_ImplGlfw_InitForVulkan(window, true);
-}
-void ScreenWindow::destroyGUI() {
-    ImGui_ImplGlfw_Shutdown();
-}
+void ScreenWindow::configGUI() { ImGui_ImplGlfw_InitForVulkan(window, true); }
+void ScreenWindow::destroyGUI() { ImGui_ImplGlfw_Shutdown(); }
 
-void ScreenWindow::newFrame() {
-    ImGui_ImplGlfw_NewFrame();
-}
+void ScreenWindow::newFrame() { ImGui_ImplGlfw_NewFrame(); }
 
 ScreenWindow::ScreenWindow(ScreenWindow&& w) noexcept
     : window(w.window), title_(std::move(w.title_)) {

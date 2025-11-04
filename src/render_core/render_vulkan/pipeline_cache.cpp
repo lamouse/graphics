@@ -75,17 +75,15 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
     };
 }
 
-PipelineCache::~PipelineCache() {
-
-}
+PipelineCache::~PipelineCache() {}
 
 auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> GraphicsPipeline* {
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Vertex)) =
         shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash;
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Fragment)) =
         shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash;
-        graphics_key.state.topology = state.topology;
-        graphics_key.state.dynamic_vertex_input.Assign(state.dynamic_vertex_input);
+    graphics_key.state.topology = state.topology;
+    graphics_key.state.dynamic_vertex_input.Assign(state.dynamic_vertex_input);
     if (current_pipeline) {
         GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
         if (next) {
@@ -112,7 +110,8 @@ auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> 
     return builtPipeline(current_pipeline);
 }
 
-auto PipelineCache::currentComputePipeline(const std::array<u32, 3>& workgroupSize) -> ComputePipeline* {
+auto PipelineCache::currentComputePipeline(const std::array<u32, 3>& workgroupSize)
+    -> ComputePipeline* {
     const ShaderInfo* shader = shader_infos.at(static_cast<u8>(ShaderType::Compute));
     if (!shader) {
         return nullptr;
@@ -199,7 +198,6 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
 }
 
 auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline> {
-
     graphics_key.state.color_formats[0] = surface::PixelFormat::B8G8R8A8_UNORM;
     for (size_t i = 1; i < graphics_key.state.color_formats.size(); i++) {
         graphics_key.state.color_formats.at(i) = surface::PixelFormat::Invalid;

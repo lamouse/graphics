@@ -137,7 +137,8 @@ auto GraphicsPipelineCacheKey::operator==(const GraphicsPipelineCacheKey& rhs) c
 }
 
 auto GraphicsPipelineCacheKey::Hash() const noexcept -> size_t {
-    const u64 hash = NAMESPACE_FOR_HASH_FUNCTIONS::Fingerprint64(reinterpret_cast<const char*>(this), Size());
+    const u64 hash =
+        NAMESPACE_FOR_HASH_FUNCTIONS::Fingerprint64(reinterpret_cast<const char*>(this), Size());
     return static_cast<size_t>(hash);
 }
 
@@ -207,15 +208,12 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
     transitions.push_back(transition);
 }
 
-
 void GraphicsPipeline::Configure() {
-
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindGraphicUniformBuffer();
     auto [view, sample] = texture_cache.getCurrentTexture();
-    if(view){
-        guest_descriptor_queue_.AddSampledImage(view->RenderTarget(),
-                                            sample->Handle());
+    if (view) {
+        guest_descriptor_queue_.AddSampledImage(view->RenderTarget(), sample->Handle());
     }
     ConfigureDraw();
 }
@@ -237,9 +235,9 @@ void GraphicsPipeline::ConfigureDraw() {
         if (bind_pipeline) {
             cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
         }
-        if(!push.empty())
-        {
-            cmdbuf.pushConstants(*pipeline_layout, vk::ShaderStageFlagBits::eAllGraphics, 0, push.size(), push.data());
+        if (!push.empty()) {
+            cmdbuf.pushConstants(*pipeline_layout, vk::ShaderStageFlagBits::eAllGraphics, 0,
+                                 push.size(), push.data());
         }
 
         if (!descriptor_set_layout) {
@@ -292,7 +290,8 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     if (!vertex_binding_divisors.empty()) {
         // vertex_input_ci.pNext = &input_divisor_ci;
     }
-    auto input_assembly_topology = static_cast<VkPrimitiveTopology>(PrimitiveTopologyToVK(key_.state.topology));
+    auto input_assembly_topology =
+        static_cast<VkPrimitiveTopology>(PrimitiveTopologyToVK(key_.state.topology));
     const VkPipelineInputAssemblyStateCreateInfo input_assembly_ci{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .pNext = nullptr,
@@ -301,7 +300,8 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .primitiveRestartEnable =
             (input_assembly_topology != VK_PRIMITIVE_TOPOLOGY_PATCH_LIST &&
              device_.IsTopologyListPrimitiveRestartSupported()) ||
-                    SupportsPrimitiveRestart(static_cast<vk::PrimitiveTopology>(input_assembly_topology)) ||
+                    SupportsPrimitiveRestart(
+                        static_cast<vk::PrimitiveTopology>(input_assembly_topology)) ||
                     (input_assembly_topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST &&
                      device_.IsPatchListPrimitiveRestartSupported())
                 ? VK_TRUE
@@ -335,7 +335,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .pScissors = nullptr,
     };
     if (device_.IsNvViewportSwizzleSupported()) {
-        //swizzle_ci.pNext = std::exchange(viewport_ci.pNext, &swizzle_ci);
+        // swizzle_ci.pNext = std::exchange(viewport_ci.pNext, &swizzle_ci);
     }
     if (device_.IsExtDepthClipControlSupported()) {
         ndc_info.pNext = std::exchange(viewport_ci.pNext, &ndc_info);
@@ -454,14 +454,10 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     };
     if (dynamic.has_extended_dynamic_state) {
         static constexpr std::array extended{
-            VK_DYNAMIC_STATE_CULL_MODE_EXT,
-            VK_DYNAMIC_STATE_FRONT_FACE_EXT,
-            VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT,
-            VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
-            VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
-            VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT,
-            VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
-            VK_DYNAMIC_STATE_STENCIL_OP_EXT,
+            VK_DYNAMIC_STATE_CULL_MODE_EXT,           VK_DYNAMIC_STATE_FRONT_FACE_EXT,
+            VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT,   VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
+            VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,    VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT,
+            VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT, VK_DYNAMIC_STATE_STENCIL_OP_EXT,
         };
         if (key_.state.dynamic_vertex_input) {
             dynamic_states.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_EXT);
@@ -489,9 +485,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
         }
         if (dynamic.has_extended_dynamic_state_3_enables) {
-            static constexpr std::array extended3{
-                VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT
-            };
+            static constexpr std::array extended3{VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT};
             dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
         }
     }

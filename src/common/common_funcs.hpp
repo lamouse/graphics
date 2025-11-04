@@ -125,4 +125,3 @@ constexpr auto constexpr_size(const C& c) -> std::size_t {
     [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> {        \
         return std::span{reinterpret_cast<const std::byte*>(this), sizeof(*this)}; \
     }
-

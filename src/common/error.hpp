@@ -15,4 +15,4 @@ namespace common {
 // Defined in error.cpp.
 [[nodiscard]] auto NativeErrorToString(int e) -> std::string;
 
-} // namespace Common
+}  // namespace common

@@ -7,7 +7,6 @@
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vma.hpp"
 
-
 namespace render::vulkan {
 namespace {
 

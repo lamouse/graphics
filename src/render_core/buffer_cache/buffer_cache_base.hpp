@@ -29,7 +29,6 @@ constexpr u32 NUM_TRANSFORM_FEEDBACK_BUFFERS = 4;
 constexpr u32 NUM_STORAGE_BUFFERS = 16;
 constexpr u32 NUM_TEXTURE_BUFFERS = 32;
 
-
 static constexpr u32 DEFAULT_SKIP_CACHE_SIZE = static_cast<u32>(4_KiB);
 
 struct Binding {
@@ -40,7 +39,6 @@ struct Binding {
 struct TextureBufferBinding : Binding {
         PixelFormat format;
 };
-
 
 template <typename Buffer>
 struct HostBindings {
@@ -91,13 +89,10 @@ class BufferCacheInfo {
         u32 uniform_buffer_skip_cache_size = DEFAULT_SKIP_CACHE_SIZE;
 
         bool has_deleted_buffers = false;
-
-
 };
 
 template <class P>
 class BufferCache : public BufferCacheInfo {
-
         static constexpr bool DISABLE_DOWNLOADS = true;
 
         using Runtime = typename P::Runtime;
@@ -123,7 +118,7 @@ class BufferCache : public BufferCacheInfo {
         void UploadComputeUniformBuffer(std::span<const std::byte> data);
 
         void UploadPushConstants(std::span<const std::byte> data);
-        auto GetPushConstants()->std::span<const std::byte>;
+        auto GetPushConstants() -> std::span<const std::byte>;
 
         void DoUpdateComputeBuffers();
         void UpdateComputeUniformBuffers();
@@ -135,7 +130,6 @@ class BufferCache : public BufferCacheInfo {
         std::recursive_mutex mutex;
 
     private:
-
         Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;
         DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
@@ -148,13 +142,13 @@ class BufferCache : public BufferCacheInfo {
 
         std::deque<Async_Buffer> async_buffers_death_ring;
 
-        //当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
+        // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
         std::span<const std::byte> graphic_uniform_buffer;
 
-        //当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
+        // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
         std::span<const std::byte> compute_uniform_buffer;
 
-        //当前需要bind的graphic的push constants，如果没有.empty()应该返回true
+        // 当前需要bind的graphic的push constants，如果没有.empty()应该返回true
         std::span<const std::byte> push_constants;
 
         size_t immediate_buffer_capacity = 0;

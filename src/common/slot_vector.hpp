@@ -67,7 +67,9 @@ class SlotVector {
                     return {id, std::addressof((*slot_vector)[id])};
                 }
 
-                auto operator->() const noexcept -> T* { return std::addressof((*slot_vector)[id]); }
+                auto operator->() const noexcept -> T* {
+                    return std::addressof((*slot_vector)[id]);
+                }
 
             private:
                 Iterator(SlotVector<T>* slot_vector_, SlotId id_) noexcept
@@ -134,7 +136,9 @@ class SlotVector {
             return Iterator(this, SlotId{SlotId::INVALID_INDEX});
         }
 
-        [[nodiscard]] auto size() const noexcept -> size_t { return values_capacity - free_list.size(); }
+        [[nodiscard]] auto size() const noexcept -> size_t {
+            return values_capacity - free_list.size();
+        }
 
     private:
         struct NonTrivialDummy {
@@ -180,10 +184,10 @@ class SlotVector {
         }
 
         void Reserve(size_t new_capacity) noexcept {
-            auto* const new_values = new Entry[new_capacity]; //NOLINT(cppcoreguidelines-owning-memory)
+            auto* const new_values =
+                new Entry[new_capacity];  // NOLINT(cppcoreguidelines-owning-memory)
             size_t index = 0;
             for (u64 bits : stored_bitset) {
-
                 u64 temp = bits;
                 while (temp) {
                     const size_t bit = std::countr_zero(temp);

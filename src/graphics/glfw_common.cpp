@@ -91,7 +91,7 @@ auto get_windows_handles(GLFWwindow* window) -> void* {
         }
 #elif defined(GLFW_EXPOSE_NATIVE_X11)
         case sys_type_enum::X11: {
-            return reinterpret_cast<void *>(glfwGetX11Window(window));  // 返回 Window
+            return reinterpret_cast<void*>(glfwGetX11Window(window));  // 返回 Window
         }
 #endif
         default:

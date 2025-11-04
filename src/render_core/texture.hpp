@@ -2,7 +2,7 @@
 #include <cstdint>
 namespace render {
 
-enum class SwizzleSource :  std::uint8_t {
+enum class SwizzleSource : std::uint8_t {
     Zero = 0,
 
     R = 2,
@@ -19,7 +19,7 @@ enum class SamplerReduction : std::uint8_t {
     Max = 2,
 };
 
-enum class SamplerPreset : std::uint8_t{
+enum class SamplerPreset : std::uint8_t {
     Linear,
     Nearest,
     ShadowMin,

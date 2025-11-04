@@ -23,7 +23,7 @@ ParticleModel::ParticleModel(std::uint64_t count, float aspect) {
 }
 
 [[nodiscard]] auto ParticleModel::getMesh() const -> std::span<const float> {
-        return std::span<const float>(reinterpret_cast<const float*>(particles.data()),
+    return std::span<const float>(reinterpret_cast<const float*>(particles.data()),
                                   particles.size() * sizeof(Vertex) / sizeof(float));
 }
 }  // namespace graphics

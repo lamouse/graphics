@@ -63,7 +63,9 @@ class Device {
             return extensions_.subgroup_size_control;
         }
 
-        [[nodiscard]] auto mustEmulateScaledFormats() const -> bool { return misc_features_.must_emulate_scaled_formats; }
+        [[nodiscard]] auto mustEmulateScaledFormats() const -> bool {
+            return misc_features_.must_emulate_scaled_formats;
+        }
 
         [[nodiscard]] auto mustEmulateBGR565() const -> bool {
             return misc_features_.must_emulate_bgr565;
@@ -226,7 +228,9 @@ class Device {
             return features_.features.shaderInt16;
         }
         /// @returns True if compute pipelines can cause crashing.
-        [[nodiscard]] auto HasBrokenCompute() const -> bool { return misc_features_.has_broken_compute; }
+        [[nodiscard]] auto HasBrokenCompute() const -> bool {
+            return misc_features_.has_broken_compute;
+        }
 
         [[nodiscard]] auto getDeviceLocalMemory() const -> u64 { return device_access_memory_; }
 
@@ -244,7 +248,7 @@ class Device {
         [[nodiscard]] auto GetUniformBufferAlignment() const -> VkDeviceSize {
             return properties_.properties_.limits.minUniformBufferOffsetAlignment;
         }
-            /// Reports a device loss.
+        /// Reports a device loss.
         void reportLoss() const;
         /// Returns true if the device supports VK_EXT_shader_stencil_export.
         [[nodiscard]] auto isExtShaderStencilExportSupported() const -> bool {

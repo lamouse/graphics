@@ -65,13 +65,10 @@ class PipelineStatistics;
 class RenderAreaPushConstant;
 }  // namespace pipeline
 
-
-
 class GraphicsPipeline {
         static constexpr size_t NUM_STAGES = 5;
 
     public:
-
         explicit GraphicsPipeline(
             scheduler::Scheduler& scheduler, VulkanPipelineCache& pipeline_cache,
             render::ShaderNotify* shader_notify, const Device& device,

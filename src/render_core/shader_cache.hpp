@@ -24,7 +24,7 @@ class ShaderCache {
         static constexpr u8 NUM_PROGRAMS = 3;
 
     public:
-        virtual ~ShaderCache() = default; // 如果你打算多态删除
+        virtual ~ShaderCache() = default;  // 如果你打算多态删除
         ShaderCache() = default;
         CLASS_NON_COPYABLE(ShaderCache);
         CLASS_DEFAULT_MOVEABLE(ShaderCache);
@@ -32,10 +32,12 @@ class ShaderCache {
         auto addShader(std::span<const u32> data, ShaderType type) -> u64;
         void setCurrentShader(u64 vertexHash, u64 fragmentHas);
         void setsetCurrentShader(u64 computeHash);
+
     protected:
         std::array<const ShaderInfo*, NUM_PROGRAMS> shader_infos{};
         void mark_loaded(const std::array<const ShaderInfo*, NUM_PROGRAMS>& infos);
         auto getShaderData(u64 hash) -> std::span<const u32>;
+
     private:
         std::unordered_map<u64, std::unique_ptr<ShaderInfo>> storage;
         std::unordered_map<u64, std::vector<u32>> load_data;

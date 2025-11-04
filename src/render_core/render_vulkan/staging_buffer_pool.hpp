@@ -74,10 +74,11 @@ class StagingBufferPool {
 
         [[nodiscard]] auto AreRegionsActive(size_t region_begin, size_t region_end) const -> bool;
 
-        auto GetStagingBuffer(size_t size, MemoryUsage usage, bool deferred = false) -> StagingBufferRef;
+        auto GetStagingBuffer(size_t size, MemoryUsage usage, bool deferred = false)
+            -> StagingBufferRef;
 
-        auto TryGetReservedBuffer(size_t size, MemoryUsage usage,
-                                                             bool deferred) -> std::optional<StagingBufferRef>;
+        auto TryGetReservedBuffer(size_t size, MemoryUsage usage, bool deferred)
+            -> std::optional<StagingBufferRef>;
 
         auto CreateStagingBuffer(size_t size, MemoryUsage usage, bool deferred) -> StagingBufferRef;
 

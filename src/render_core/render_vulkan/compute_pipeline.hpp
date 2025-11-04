@@ -38,8 +38,8 @@ class ComputePipeline {
                                  GuestDescriptorQueue& guest_descriptor_queue,
                                  common::ThreadWorker* thread_worker,
                                  pipeline::PipelineStatistics* pipeline_statistics,
-                                 ShaderNotify* shader_notify,
-                                 const shader::Info& info, ShaderModule spv_module);
+                                 ShaderNotify* shader_notify, const shader::Info& info,
+                                 ShaderModule spv_module);
 
         CLASS_NON_COPYABLE(ComputePipeline);
         CLASS_NON_MOVEABLE(ComputePipeline);

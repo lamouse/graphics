@@ -29,7 +29,7 @@ class EXPORT BaseWindow {
         };
         struct WindowConfig {
                 bool fullscreen = false;
-                Extent extent {.width=0,.height=0};
+                Extent extent{.width = 0, .height = 0};
         };
 
         /// Data describing host window system information

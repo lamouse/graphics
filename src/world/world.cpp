@@ -20,6 +20,6 @@ World::World() {
     }
 }
 
-World::~World()=default;
+World::~World() = default;
 
 }  // namespace world

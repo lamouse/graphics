@@ -113,14 +113,16 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     scheduler.record([this, view = *frame->image_view, renderPass, host_framebuffer,
                       extent](vk::CommandBuffer cmdbuf) -> void {
         vk::RenderingAttachmentInfo colorAttachment =
-            vk::RenderingAttachmentInfo().setImageView(view).setImageLayout(
-                vk::ImageLayout::eColorAttachmentOptimal)
+            vk::RenderingAttachmentInfo()
+                .setImageView(view)
+                .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
                 .setLoadOp(vk::AttachmentLoadOp::eClear)
                 .setStoreOp(vk::AttachmentStoreOp::eStore)
                 .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f}));
         vk::RenderingInfo renderingInfo{};
         renderingInfo.setColorAttachments(colorAttachment)
-        .setLayerCount(1).setRenderArea(vk::Rect2D().setExtent(extent));
+            .setLayerCount(1)
+            .setRenderArea(vk::Rect2D().setExtent(extent));
         // present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
         // 开始动态渲染
         cmdbuf.beginRendering(&renderingInfo);

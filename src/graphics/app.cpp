@@ -58,7 +58,7 @@ void App::run() {
         frameInfo.camera = &camera;
         frameInfo.frameTime = getRuntime();
         frameInfo.resource_manager = &resourceManager;
-        if(input_event.empty()){
+        if (input_event.empty()) {
             registry.updateAll(frameInfo);
         }
         while (auto e = input_event.pop_event()) {

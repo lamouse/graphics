@@ -20,9 +20,9 @@ constexpr ImageViewId NULL_IMAGE_VIEW_ID{0};
 /// Sampler ID for bugged sampler ids
 constexpr SamplerId NULL_SAMPLER_ID{0};
 
-enum class ImageType : std::uint8_t {e2D, e3D };
+enum class ImageType : std::uint8_t { e2D, e3D };
 
-enum class ImageViewType : std::uint8_t {e2D, Cube, e3D, e2DArray, CubeArray };
+enum class ImageViewType : std::uint8_t { e2D, Cube, e3D, e2DArray, CubeArray };
 constexpr size_t NUM_IMAGE_VIEW_TYPES = 9;
 
 enum class RelaxedOptions : u32 {
@@ -146,8 +146,8 @@ enum class MsaaMode : std::uint8_t {
 
 // 在全局命名空间或 std 内（推荐在 std 中特化）
 namespace std {
-    template<>
-    struct hash<render::texture::Extent3D> {
+template <>
+struct hash<render::texture::Extent3D> {
         auto operator()(const render::texture::Extent3D& ext) const noexcept -> size_t {
             // 使用哈希组合算法（推荐 FNV-1a 风格）
             size_t h1 = std::hash<u32>{}(ext.width);
@@ -155,5 +155,5 @@ namespace std {
             size_t h3 = std::hash<u32>{}(ext.depth);
             return h1 ^ (h2 << 1U) ^ (h3 << 2U);
         }
-    };
-}
+};
+}  // namespace std

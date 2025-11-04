@@ -64,8 +64,7 @@ class PointLightEffect {
             point_light.getUBO().projection = frameInfo.camera->getProjection();
             point_light.getUBO().view = frameInfo.camera->getView();
             point_light.getUBO().pointLights[0].position = glm::vec4(transform.translation, 1.f);
-            point_light.getUBO().pointLights[0].color =
-                glm::vec4(color, pointLight.lightIntensity);
+            point_light.getUBO().pointLights[0].color = glm::vec4(color, pointLight.lightIntensity);
         }
         void draw(render::Graphic* graphic) {
             auto& transform = point_light.entity_.getComponent<ecs::TransformComponent>();

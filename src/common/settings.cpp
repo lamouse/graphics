@@ -23,4 +23,4 @@ auto TranslateCategory(Category category) -> const char* {
     }
     return "Miscellaneous";
 }
-}
+}  // namespace settings

@@ -5,27 +5,26 @@
 #include <charconv>
 #include <array>
 namespace {
-    inline auto GetFloatFormatFromSpeed(float speed) -> std::string {
-        std::string str;
-        std::array<char, 32> buffer{};
-        auto result = std::to_chars(buffer.data(), buffer.data() + buffer.size(), speed);
+inline auto GetFloatFormatFromSpeed(float speed) -> std::string {
+    std::string str;
+    std::array<char, 32> buffer{};
+    auto result = std::to_chars(buffer.data(), buffer.data() + buffer.size(), speed);
 
-        if (result.ec == std::errc()) {
-            str = std::string(buffer.data(), result.ptr);
-        }
-        else {
-            str = std::to_string(speed);
-        }
-
-        auto dotPos = str.find('.');
-        auto precision = (dotPos != std::string::npos) ? str.size() - dotPos - 1 : 0;
-
-        return std::format("%.{}f", precision);
+    if (result.ec == std::errc()) {
+        str = std::string(buffer.data(), result.ptr);
+    } else {
+        str = std::to_string(speed);
     }
+
+    auto dotPos = str.find('.');
+    auto precision = (dotPos != std::string::npos) ? str.size() - dotPos - 1 : 0;
+
+    return std::format("%.{}f", precision);
 }
+}  // namespace
 
 void DrawVec3ColorControl(const std::string& label, glm::vec3& value, const glm::vec3& resetValue,
-    float speed, float columnWidth) {
+                          float speed, float columnWidth) {
     ImGui::PushID(label.c_str());
 
     if (ImGui::BeginTable("Vec3ControlTable", 2, ImGuiTableFlags_SizingFixedFit)) {
@@ -50,10 +49,10 @@ void DrawVec3ColorControl(const std::string& label, glm::vec3& value, const glm:
         // Value column
         ImGui::TableNextColumn();
         std::string precision = GetFloatFormatFromSpeed(speed);
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 4, 1 });
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{4, 1});
 
         float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0F;
-        ImVec2 dragSize = { ImGui::CalcItemWidth() / 3.0F - 8.0F, lineHeight };
+        ImVec2 dragSize = {ImGui::CalcItemWidth() / 3.0F - 8.0F, lineHeight};
 
         // X
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8F, 0.1F, 0.15F, 1.0F));
@@ -77,7 +76,7 @@ void DrawVec3ColorControl(const std::string& label, glm::vec3& value, const glm:
         ImGui::SameLine();
 
         // Reset button
-        if (ImGui::Button("\uead2", ImVec2{ lineHeight, lineHeight })) {
+        if (ImGui::Button("\uead2", ImVec2{lineHeight, lineHeight})) {
             value = resetValue;
         }
 
@@ -88,9 +87,8 @@ void DrawVec3ColorControl(const std::string& label, glm::vec3& value, const glm:
     ImGui::PopID();
 }
 
-
-void DrawFloatControl(const std::string& label, float& value, float speed,
-    float resetValue, float minValue, float maxValue, float labelWidth) {
+void DrawFloatControl(const std::string& label, float& value, float speed, float resetValue,
+                      float minValue, float maxValue, float labelWidth) {
     ImGui::PushID(label.c_str());
 
     if (ImGui::BeginTable("FloatControlTable", 2, ImGuiTableFlags_SizingFixedFit)) {
@@ -112,10 +110,10 @@ void DrawFloatControl(const std::string& label, float& value, float speed,
         // Value column
         ImGui::TableNextColumn();
         std::string format = GetFloatFormatFromSpeed(speed);
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 4, 1 });
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{4, 1});
 
         float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0F;
-        ImVec2 dragSize = { ImGui::CalcItemWidth() - lineHeight - 4.0F, lineHeight };
+        ImVec2 dragSize = {ImGui::CalcItemWidth() - lineHeight - 4.0F, lineHeight};
 
         // DragFloat
         ImGui::SetNextItemWidth(dragSize.x);
@@ -123,7 +121,7 @@ void DrawFloatControl(const std::string& label, float& value, float speed,
         ImGui::SameLine();
 
         // Reset button
-        if (ImGui::Button("\uead2", ImVec2{ lineHeight, lineHeight })) {
+        if (ImGui::Button("\uead2", ImVec2{lineHeight, lineHeight})) {
             value = resetValue;
         }
 
@@ -144,6 +142,4 @@ void HelpMarker(const char* desc) {
     }
 }
 
-namespace graphics {
-
-}  // namespace graphics
+namespace graphics {}  // namespace graphics

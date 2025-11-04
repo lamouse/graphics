@@ -78,8 +78,7 @@ BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, buffer::NullBuffer
 BaseBufferCache::BaseBufferCache(BufferCacheRuntime& runtime, u64 size_bytes_)
     : buffer::BufferBase(size_bytes_),
       device{&runtime.device},
-      buffer{CreateBuffer(*device, runtime.memory_allocator, sizeBytes())}
-      {}
+      buffer{CreateBuffer(*device, runtime.memory_allocator, sizeBytes())} {}
 
 auto BaseBufferCache::View(u32 offset, u32 size, surface::PixelFormat format) -> vk::BufferView {
     if (!device) {
@@ -165,7 +164,6 @@ void BufferCacheRuntime::TickFrame(common::SlotVector<BaseBufferCache>& slot_buf
 
 void BufferCacheRuntime::Finish() { scheduler.finish(); }
 
-
 void BufferCacheRuntime::CopyBuffer(vk::Buffer dst_buffer, vk::Buffer src_buffer,
                                     std::span<const texture::BufferCopy> copies, bool barrier,
                                     bool can_reorder_upload) {
@@ -220,7 +218,7 @@ void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t 
     };
 
     scheduler.requestOutsideRenderPassOperationContext();
-    scheduler.record([dest_buffer, offset, size, value](vk::CommandBuffer cmdbuf)-> void {
+    scheduler.record([dest_buffer, offset, size, value](vk::CommandBuffer cmdbuf) -> void {
         cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
                                vk::PipelineStageFlagBits::eTransfer, {}, READ_BARRIER, {}, {});
         cmdbuf.fillBuffer(dest_buffer, offset, size, value);

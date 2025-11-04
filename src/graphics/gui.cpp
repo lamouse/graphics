@@ -251,7 +251,7 @@ void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio)
     if (data.show_out_liner) {
         window_size.x *= (1.f - OUTLINER_WIDTH);
     }
-    if(data.show_status){
+    if (data.show_status) {
         window_size.y -= RENDER_STATUS_BAR_HEIGHT;
     }
     window_size.y -= ImGui::GetFrameHeight();
@@ -390,7 +390,7 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
     ImGui::Selectable(tag.tag.c_str(), false,
                       ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
     static unsigned int select_id = std::numeric_limits<unsigned int>::max();
-    if(render_state.is_select() && render_state.mouse_select){
+    if (render_state.is_select() && render_state.mouse_select) {
         select_id = render_state.select_id;
     }
     // 仅当点击了名称区域（非箭头/复选框）时才选中
@@ -476,7 +476,7 @@ void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         auto window_size = viewport->Size;
         window_size.y -= ImGui::GetFrameHeight();
-        if(data.show_status){
+        if (data.show_status) {
             window_size.y -= RENDER_STATUS_BAR_HEIGHT;
         }
         window_size.x *= OUTLINER_WIDTH;
@@ -553,28 +553,28 @@ auto IsMouseControlledByImGui() -> bool {
 }
 
 void render_status_bar(MenuData& data, float mouseX_, float mouseY_, int registry_count) {
-    if(!data.show_status){
+    if (!data.show_status) {
         return;
     }
     auto& io = ImGui::GetIO();
-    auto *vp = ImGui::GetMainViewport();
+    auto* vp = ImGui::GetMainViewport();
 
     ImGui::SetNextWindowPos(ImVec2(0, vp->Size.y - RENDER_STATUS_BAR_HEIGHT));
     ImGui::SetNextWindowSize(ImVec2(vp->Size.x, RENDER_STATUS_BAR_HEIGHT));
 
-    ImGui::Begin("##status", nullptr,
-        ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoSavedSettings
-    );
+    ImGui::Begin(
+        "##status", nullptr,
+        ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 
     ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
     ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ImGui::SameLine();
 
     ImGui::Text("Mouse: (%.1f, %.1f)", mouseX_, mouseY_);
     ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical); ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ImGui::SameLine();
 
     ImGui::Text("Entities: %d", registry_count);
 

@@ -6,8 +6,6 @@
 #endif
 #include "app.hpp"
 
-
-
 using namespace std;
 auto main(int /*argc*/, char** /*argv*/) -> int {
 #if defined(_WIN32)
@@ -24,8 +22,9 @@ auto main(int /*argc*/, char** /*argv*/) -> int {
     return EXIT_SUCCESS;
 }
 
-#if defined (_WIN32)
-auto WINAPI WinMain([[maybe_unused]]HINSTANCE hInstance, [[maybe_unused]]HINSTANCE hPrevInstance, [[maybe_unused]]LPSTR lpCmdLine, [[maybe_unused]]int nCmdShow)->int {
+#if defined(_WIN32)
+auto WINAPI WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
+                    [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow) -> int {
     return main(1, nullptr);
 }
 #endif

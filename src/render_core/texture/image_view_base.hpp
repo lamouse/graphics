@@ -9,7 +9,6 @@ struct ImageInfo;
 
 struct NullImageViewParams {};
 
-
 struct ImageViewBase {
         explicit ImageViewBase(const ImageViewInfo& info, const ImageInfo& image_info,
                                ImageId image_id);
@@ -21,7 +20,6 @@ struct ImageViewBase {
         surface::PixelFormat format{};
         ImageViewType type{};
         SubresourceRange range;
-        Extent3D size{.width=0, .height=0, .depth=0};
-
+        Extent3D size{.width = 0, .height = 0, .depth = 0};
 };
 }  // namespace render::texture

@@ -19,7 +19,7 @@ auto createWindow() -> std::unique_ptr<core::frontend::BaseWindow> {
     return nullptr;
 }
 
-auto createRender(core::frontend::BaseWindow* window) -> std::unique_ptr<render::RenderBase>{
+auto createRender(core::frontend::BaseWindow* window) -> std::unique_ptr<render::RenderBase> {
     ui::init_imgui(window->getWindowSystemInfo().render_surface_scale);
     return std::make_unique<render::vulkan::RendererVulkan>(window);
 }

@@ -6,6 +6,5 @@ namespace ecs {
 inline void DrawCameraUI(TagComponent& tag) {
     // NOLINTNEXTLINE(hicpp-vararg)
     ImGui::Text("%s", tag.tag.c_str());
-
 }
-}
+}  // namespace ecs

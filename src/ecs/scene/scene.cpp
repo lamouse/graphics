@@ -13,6 +13,6 @@ auto Scene::createEntity(const std::string& tag) -> Entity {
     return entity;
 }
 
-Scene::~Scene()=default;
+Scene::~Scene() = default;
 
 }  // namespace ecs

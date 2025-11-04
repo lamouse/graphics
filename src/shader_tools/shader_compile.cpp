@@ -208,10 +208,9 @@ auto IsRectTexture(const spirv_cross::Resource& resource) -> bool {
     const std::string& name = resource.name;
     // 常见命名：_rect, Rect, sampler2DRect, 甚至包含 "rect" 的名字
     std::string lower_name = name;
-    //msvc c4242 error fix
-    std::ranges::transform(lower_name, lower_name.begin(), [](auto c){
-        return static_cast<char>(::tolower(c));
-    });
+    // msvc c4242 error fix
+    std::ranges::transform(lower_name, lower_name.begin(),
+                           [](auto c) { return static_cast<char>(::tolower(c)); });
 
     return absl::StrContains(lower_name, "rect");
 }
@@ -474,7 +473,8 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
 
         shader::TexturePixelFormat format = GetTextureBufferPixelFormat(sampled_type);
 
-        shader::TextureBufferDescriptor desc{.binding = binding, .count = count, .set = set, .format = format};
+        shader::TextureBufferDescriptor desc{
+            .binding = binding, .count = count, .set = set, .format = format};
 
         // 添加到你的描述符列表
         info.texture_buffer_descriptors.push_back(desc);
@@ -583,7 +583,7 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
     return info;
 }
 
-//NOLINTNEXTLINE
+// NOLINTNEXTLINE
 auto ShaderCompile::compile(const std::string_view& shader_path) -> std::vector<uint32_t> {
     fs::path path{shader_path};
     auto shader = read_shader(path);

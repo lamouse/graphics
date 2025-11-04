@@ -13,6 +13,5 @@ struct FrameInfo {
         float frameTime{};
         InputState input_state;
         layout::FrameBufferLayout frame_layout;
-
 };
 }  // namespace core

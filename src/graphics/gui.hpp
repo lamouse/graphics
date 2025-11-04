@@ -4,14 +4,12 @@
 #include <span>
 namespace graphics::ui {
 
-
-
-struct MenuData{
-    bool show_system_setting{};
-    bool show_log{};
-    bool show_out_liner{true};
-    bool show_detail{true};
-    bool show_status{true};
+struct MenuData {
+        bool show_system_setting{};
+        bool show_log{};
+        bool show_out_liner{true};
+        bool show_detail{true};
+        bool show_status{true};
 };
 
 void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);

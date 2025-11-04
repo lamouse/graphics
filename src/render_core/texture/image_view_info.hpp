@@ -8,15 +8,16 @@ namespace render::texture {
 
 struct ImageViewInfo {
         explicit ImageViewInfo() noexcept = default;
-        explicit ImageViewInfo(const ImageInfo& info, ImageViewType type = ImageViewType::e2D) noexcept;
+        explicit ImageViewInfo(const ImageInfo& info,
+                               ImageViewType type = ImageViewType::e2D) noexcept;
         explicit ImageViewInfo(ImageViewType type, surface::PixelFormat format,
-                               SubresourceRange range = {}) noexcept :type(type),format(format), range(range) {}
+                               SubresourceRange range = {}) noexcept
+            : type(type), format(format), range(range) {}
 
         auto operator<=>(const ImageViewInfo&) const noexcept = default;
 
         ImageViewType type{};
         surface::PixelFormat format{};
         SubresourceRange range;
-
 };
 }  // namespace render::texture

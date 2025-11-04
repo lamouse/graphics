@@ -13,7 +13,7 @@ class ITexture {
         [[nodiscard]] virtual auto getMipLevels() const -> uint32_t = 0;
         [[nodiscard]] virtual auto size() const -> unsigned long long = 0;
         [[nodiscard]] virtual auto data() const -> std::span<unsigned char> = 0;
-        [[nodiscard]] auto count() const -> std::uint8_t {return image_count;};
+        [[nodiscard]] auto count() const -> std::uint8_t { return image_count; };
         virtual ~ITexture() = default;
 
     protected:
@@ -32,7 +32,9 @@ class Image : public ITexture {
         void readImage(const ::std::string& path);
         explicit Image(const ::std::string& path);
         Image(int width_, int height_, std::span<unsigned char> data, std::uint8_t image_count_)
-            : map_data(data), width(width_), height(height_) {image_count = image_count_;}
+            : map_data(data), width(width_), height(height_) {
+            image_count = image_count_;
+        }
         auto getData() -> unsigned char*;
         [[nodiscard]] auto getWidth() const -> int override { return width; }
         [[nodiscard]] auto getHeight() const -> int override { return height; }

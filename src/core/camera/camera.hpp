@@ -20,12 +20,13 @@ class Camera {
         [[nodiscard]] auto getView() const -> const glm::mat4& { return viewMatrix; }
         [[nodiscard]] auto getInverseView() const -> const glm::mat4& { return inverseViewMatrix; }
         auto getPosition() -> glm::vec3 { return {inverseViewMatrix[3]}; }
-        auto right(){return glm::vec3(inverseViewMatrix[0]);}
-        auto up(){return glm::vec3(inverseViewMatrix[1]);}
+        auto right() { return glm::vec3(inverseViewMatrix[0]); }
+        auto up() { return glm::vec3(inverseViewMatrix[1]); }
+
     private:
         glm::mat4 projectionMatrix{1.F};
         glm::mat4 viewMatrix{1.F};
         glm::mat4 inverseViewMatrix{1.F};
 };
 
-}  // namespace g
+}  // namespace core

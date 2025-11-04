@@ -41,10 +41,10 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
     std::memcpy(staging.mapped_span.data(), data.data(), data.size());
 
     std::vector<BufferImageCopy> copys;
-    auto single_data_size = data.size()/layer_count;
+    auto single_data_size = data.size() / layer_count;
     for (int i = 0; i < layer_count; i++) {
         BufferImageCopy copy{
-            .buffer_offset = i* single_data_size,
+            .buffer_offset = i * single_data_size,
             .buffer_size = single_data_size,
             .buffer_row_length = 0,
             .buffer_image_height = 0,

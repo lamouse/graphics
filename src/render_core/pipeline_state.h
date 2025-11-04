@@ -162,6 +162,5 @@ struct DynamicPipelineState {
               reserved(0)
         // viewport, scissors, blendColor 使用 {} 初始化，已为 0
         {}
-
 };
 }  // namespace render

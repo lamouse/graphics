@@ -3,9 +3,4 @@
 #include "resource/resource.hpp"
 #include <imgui.h>
 #include "id.hpp"
-namespace graphics {
-
-
-
-
-}  // namespace graphics
+namespace graphics {}  // namespace graphics

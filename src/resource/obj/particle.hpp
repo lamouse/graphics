@@ -10,8 +10,10 @@ struct ParticleModel : public IMeshData {
 
                 static auto getVertexBinding() -> std::vector<render::VertexBinding> {
                     std::vector<render::VertexBinding> bindings;
-                    bindings.push_back(
-                        render::VertexBinding{.binding = 0, .stride = sizeof(Vertex),.is_instance = false, .divisor = 1});
+                    bindings.push_back(render::VertexBinding{.binding = 0,
+                                                             .stride = sizeof(Vertex),
+                                                             .is_instance = false,
+                                                             .divisor = 1});
                     return bindings;
                 }
                 static auto getVertexAttribute() -> std::vector<render::VertexAttribute> {

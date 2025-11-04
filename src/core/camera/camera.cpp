@@ -103,4 +103,4 @@ void Camera::setViewYXZ(glm::vec3 position, glm::vec3 rotation) {
     inverseViewMatrix[3][2] = position.z;
 }
 
-}  // namespace g
+}  // namespace core

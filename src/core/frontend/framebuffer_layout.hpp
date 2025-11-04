@@ -8,7 +8,7 @@
 
 namespace layout {
 
-enum class  AspectRatio : std::uint8_t {
+enum class AspectRatio : std::uint8_t {
     Default,
     R4_3,
     R21_9,

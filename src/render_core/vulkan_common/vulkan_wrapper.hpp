@@ -26,9 +26,9 @@ struct NoOwner {
         // NOLINTNEXTLINE
         NoOwner(std::nullptr_t) {}
 
-        //auto operator=(std::nullptr_t) -> NoOwner { return {}; }  // NOLINT
-        //auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
-        operator bool() const { return false; }                   // NOLINT
+        // auto operator=(std::nullptr_t) -> NoOwner { return {}; }  // NOLINT
+        // auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
+        operator bool() const { return false; }  // NOLINT
 };
 inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
 inline void destroy(vk::Device owner, vk::Image handle) noexcept { owner.destroy(handle); }
@@ -61,12 +61,10 @@ inline void destroy(vk::Device owner, vk::DescriptorUpdateTemplate handle) noexc
 inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.destroy(val); }
 inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
 inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
-    owner.destroyDebugUtilsMessengerEXT(
-        handle, nullptr);
+    owner.destroyDebugUtilsMessengerEXT(handle, nullptr);
 }
 inline void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle) noexcept {
-    owner.destroyDebugReportCallbackEXT(
-        handle, nullptr);
+    owner.destroyDebugReportCallbackEXT(handle, nullptr);
 }
 
 template <typename Type, typename OwnerType>

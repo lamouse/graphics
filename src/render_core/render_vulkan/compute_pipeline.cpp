@@ -80,7 +80,7 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
 void ComputePipeline::Configure(scheduler::Scheduler& scheduler, BufferCache& buffer_cache) {
     guest_descriptor_queue.Acquire();
 
-    for(const auto& desc : info.storage_buffers_descriptors){
+    for (const auto& desc : info.storage_buffers_descriptors) {
         ASSERT(desc.count == 1);
     }
 

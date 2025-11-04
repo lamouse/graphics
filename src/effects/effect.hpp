@@ -1,7 +1,7 @@
 #pragma once
-namespace ecs{
-    class Scene;
+namespace ecs {
+class Scene;
 }
-namespace graphics::effects{
+namespace graphics::effects {
 auto getEffectsScene() -> ecs::Scene&;
 }
