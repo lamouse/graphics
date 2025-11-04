@@ -96,7 +96,7 @@ auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
             const auto face = mesh->mFaces[f];
             ASSERT_MSG(face.mNumIndices == 3, "face indices not equal 3");
             for (unsigned int idx = 0; idx < 3; ++idx) {
-                auto globalIndex = static_cast<uint32_t>(vertexOffset + face.mIndices[idx]);
+                auto globalIndex = static_cast<uint32_t>(face.mIndices[idx]);
                 u32_indices.push_back(globalIndex);
             }
         }

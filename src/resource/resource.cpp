@@ -5,27 +5,32 @@
 #include "render_core/types.hpp"
 #include <spdlog/spdlog.h>
 namespace graphics {
-void ResourceManager::addTexture(std::string textureName, add_texture_func func) {
+auto ResourceManager::addTexture(std::string textureName, const add_texture_func& func)
+    -> render::TextureId {
     ASSERT_MSG(!textureName.empty(), "textureName is null");
     ASSERT_MSG(!textures.contains(textureName), textureName + " texture in catch");
 
     resource::image::Image texture(textureName);
+    render::TextureId id;
     if (func) {
-        textures[textureName] = func(texture);
+        id = func(texture);
     } else {
-        textures[textureName] = graphic->uploadTexture(texture);
+        id = graphic->uploadTexture(texture);
     }
+    textures[textureName] = id;
+    return id;
 }
 
-void ResourceManager::addTexture(std::span<std::string> textureName, const std::string& name,
-                                 add_texture_func func) {
-    if (textureName.empty()) {
-        return;
+auto ResourceManager::addCubeMapTexture(std::span<std::string> textureNames,
+                                        const std::string& name, const add_texture_func& func)
+    -> render::TextureId {
+    if (textureNames.empty()) {
+        return {};
     }
     std::vector<resource::image::Image> images;
     int width{}, height{};
     std::vector<unsigned char> all_image;
-    for (const auto& n : textureName) {
+    for (const auto& n : textureNames) {
         resource::image::Image loaded_image{n};
         width = loaded_image.getWidth();
         height = loaded_image.getHeight();
@@ -33,12 +38,15 @@ void ResourceManager::addTexture(std::span<std::string> textureName, const std::
     }
 
     resource::image::Image uploadImage{width, height, all_image,
-                                       static_cast<std::uint8_t>(textureName.size())};
+                                       static_cast<std::uint8_t>(textureNames.size())};
+    render::TextureId id;
     if (func) {
-        textures[name] = func(uploadImage);
+        id = func(uploadImage);
     } else {
-        textures[name] = graphic->uploadTexture(uploadImage);
+        id = graphic->uploadTexture(uploadImage);
     }
+    textures[name] = id;
+    return id;
 }
 
 auto ResourceManager::getTexture(std::string textureName) const -> render::TextureId {
@@ -49,23 +57,26 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
     return textures.find(textureName)->second;
 }
 
-void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
-    ASSERT_MSG(!meshName.empty(), "meshName is null");
-    auto model_meshes = Model::createFromFile(meshName);
+auto ResourceManager::addModel(std::string modelName, add_mesh_func func)
+    -> std::vector<render::MeshId> {
+    ASSERT_MSG(!modelName.empty(), "meshName is null");
+    auto model_meshes = Model::createFromFile(modelName);
+    std::vector<render::MeshId> mesh_ids;
+    model_meshes.reserve(model_meshes.size());
     for (const auto& model_mesh : model_meshes) {
-        addMesh(meshName, model_mesh, std::move(func));
-        auto meshIds = getMesh(meshName);
+        auto id = addMesh(modelName, model_mesh, std::move(func));
         if (!model_mesh.only_vertex.empty()) {
-            mesh_vertex[*meshIds.rbegin()] =
-                std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
+            mesh_vertex[id] = std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
         }
         if (!model_mesh.save32_indices.empty()) {
-            mesh_indics[*meshIds.rbegin()] =
-                std::make_unique<std::vector<uint32_t>>(model_mesh.save32_indices);
+            mesh_indics[id] = std::make_unique<std::vector<uint32_t>>(model_mesh.save32_indices);
         }
+        mesh_ids.push_back(id);
     }
+    return mesh_ids;
 }
-void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
+auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func)
+    -> render::MeshId {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func || graphic, "add_mesh_func is null");
     render::MeshId meshId;
@@ -79,13 +90,14 @@ void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, a
     } else {
         model_mesh_ids_[meshName] = std::vector<render::MeshId>{meshId};
     }
+    return meshId;
 }
-auto ResourceManager::getMesh(std::string meshName) const -> std::span<const render::MeshId> {
-    if (meshName.empty()) {
+auto ResourceManager::getMesh(const std::string& name) const -> std::span<const render::MeshId> {
+    if (name.empty()) {
         return {};
     }
-    ASSERT_MSG(model_mesh_ids_.contains(meshName), meshName + " mesh in catch");
-    const auto& mesh_ids = model_mesh_ids_.find(meshName)->second;
+    ASSERT_MSG(model_mesh_ids_.contains(name), meshName + " mesh in catch");
+    const auto& mesh_ids = model_mesh_ids_.find(name)->second;
     return std::span(mesh_ids.data(), mesh_ids.size());
 }
 
@@ -145,10 +157,10 @@ template <typename T>
     return T{};
 }
 
-void ResourceManager::addGraphShader(
+auto ResourceManager::addGraphShader(
     const std::string& name,
     const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
-        upload_func) {
+        upload_func) -> ShaderHash {
     auto vertex_shader_code = getShaderCode(render::ShaderType::Vertex, name);
     auto fragment_shader_code = getShaderCode(render::ShaderType::Fragment, name);
 
@@ -161,6 +173,7 @@ void ResourceManager::addGraphShader(
         hash.fragment = graphic->addShader(fragment_shader_code, render::ShaderType::Fragment);
     }
     graphic_shader_hash[name] = hash;
+    return hash;
 }
 void ResourceManager::addComputeShader(
     const std::string& name,

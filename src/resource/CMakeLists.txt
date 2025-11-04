@@ -15,8 +15,7 @@ set (sources
     obj/particle.cpp
     shader/shader.hpp
     shader/shader.cpp
-    model_instance.hpp
-    model_instance.cpp
+    mesh_instance.hpp
     resource.hpp
     resource.cpp
 )

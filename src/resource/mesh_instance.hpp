@@ -41,13 +41,12 @@ struct ModelResourceName {
 template <typename UBO, typename PushConstants, render::PrimitiveTopology primitiveTopology>
     requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO> &&
              ByteSpanConvertible<PushConstants> && std::is_trivially_copyable_v<PushConstants>
-class ModelInstance : public IModelInstance {
+class MeshInstance : public IMeshInstance {
     public:
-        [[nodiscard]] auto getId() const -> id_t { return id; }
-        CLASS_DEFAULT_MOVEABLE(ModelInstance);
-        CLASS_NON_COPYABLE(ModelInstance);
+        CLASS_DEFAULT_MOVEABLE(MeshInstance);
+        CLASS_NON_COPYABLE(MeshInstance);
         [[nodiscard]] auto getEntity() -> ecs::Entity& { return entity_; }
-        ~ModelInstance() override = default;
+        ~MeshInstance() override = default;
         [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
             return ubo.as_byte_span();
         };
@@ -63,33 +62,22 @@ class ModelInstance : public IModelInstance {
         auto getUBO() -> UBO& { return ubo; }
         auto PushConstant() -> PushConstants& { return push_constants; }
 
-        ModelInstance(const ResourceManager& resource, const layout::FrameBufferLayout& layout,
-                      const ModelResourceName& resourceName, const std::string& modelName)
-            : id(getCurrentId()),
-              texture_name(resourceName.texture_name),
-              mesh_name(resourceName.mesh_name),
-              shader_name(resourceName.shader_name) {
-            textureId = resource.getTexture(texture_name);
-            auto mesh_ids = resource.getMesh(mesh_name);
-            meshId = mesh_ids.empty() ? render::MeshId{}: mesh_ids.front() ;
-            auto hash = resource.getShaderHash<ShaderHash>(shader_name);
-            vertex_shader_hash = hash.vertex;
-            fragment_shader_hash = hash.fragment;
-            entity_ = getModelScene().createEntity(
-                modelName.empty() ? "Model" + std::to_string(id) : modelName + std::to_string(id));
+        MeshInstance(ShaderHash shaderHash_, const layout::FrameBufferLayout& layout,
+                     const std::string& meshName = "", render::MeshId meshId_ = {},
+                     render::TextureId textureId_ = {})
+            : IMeshInstance(meshId_, textureId_, shaderHash_.vertex, shaderHash_.fragment) {
+            entity_ = getModelScene().createEntity(meshName.empty()
+                                                       ? "Mesh " + std::to_string(id)
+                                                       : meshName + " " + std::to_string(id));
             entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
             entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
         }
-        ModelInstance() = default;
+        MeshInstance() = default;
 
     private:
-        id_t id;
         UBO ubo{};
         PushConstants push_constants;
-        std::string texture_name;
-        std::string mesh_name;
-        std::string shader_name;
         render::PrimitiveTopology topology = primitiveTopology;
 };
 

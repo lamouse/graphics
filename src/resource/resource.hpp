@@ -30,26 +30,27 @@ class ResourceManager {
         ~ResourceManager() = default;
         CLASS_NON_COPYABLE(ResourceManager);
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
-        void addTexture(std::string textureName, add_texture_func func = nullptr);
+        auto addTexture(std::string textureName, const add_texture_func& func = nullptr) -> render::TextureId;
         /**
          * @brief 暂时针对cube map的6张图片
          *
-         * @param textureName
+         * @param textureNames
          * @param func
          */
-        void addTexture(std::span<std::string> textureName, const std::string& name,
-                        add_texture_func func = nullptr);
+        auto addCubeMapTexture(std::span<std::string> textureNames, const std::string& name,
+                        const add_texture_func& func = nullptr) -> render::TextureId;
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         explicit ResourceManager(render::Graphic* graphic_) : graphic(graphic_) {}
 
-        void addMesh(std::string meshName, add_mesh_func func = nullptr);
-        void addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr);
+        auto addModel(std::string modelName, add_mesh_func func = nullptr) -> std::vector<render::MeshId>;
+        auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
+            -> render::MeshId;
 
-        [[nodiscard]] auto getMesh(std::string meshName) const -> std::span<const render::MeshId>;
-        void addGraphShader(
+        [[nodiscard]] auto getMesh(const std::string& name) const -> std::span<const render::MeshId>;
+        auto addGraphShader(
             const std::string& name,
             const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
-                upload_func = nullptr);
+                upload_func = nullptr) -> ShaderHash;
         void addComputeShader(
             const std::string& name,
             const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&

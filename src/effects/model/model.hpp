@@ -14,57 +14,75 @@ class LightModel {
     public:
         LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
                    const ModelResourceName& names, const std::string& name)
-            : model_(manager, layout, names, "LightModel"), id(getCurrentId()) {
+            : id(getCurrentId()) {
+            auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
+            auto mesh_ids = manager.getMesh(names.mesh_name);
+            auto texture_id = manager.getTexture(names.texture_name);
+            meshes.reserve(mesh_ids.size());
+            for (const auto& mesh_id : mesh_ids) {
+                meshes.emplace_back(shader_hash, layout, name + "mesh", mesh_id, texture_id);
+            }
             entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
         }
 
         void update(const core::FrameInfo& frameInfo) {
-            auto& transform = model_.entity_.getComponent<ecs::TransformComponent>();
-            auto& render_state = model_.entity_.getComponent<ecs::RenderStateComponent>();
-
-            if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
-                render_state.mouse_select = false;
-            }
             auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
-            if (first) {
-                pending_pick_ = true;
-            } else {
-                if (!render_state.mouse_select && down) {
-                    check_pick(model_.getId(), model_.getMeshId(), frameInfo, render_state,
-                               transform);
+
+            for (auto& mesh : meshes) {
+                auto& transform = mesh.entity_.getComponent<ecs::TransformComponent>();
+                auto& render_state = mesh.entity_.getComponent<ecs::RenderStateComponent>();
+                if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
+                    render_state.mouse_select = false;
                 }
-                pending_pick_ = false;
+
+                if (first) {
+                    pending_pick_ = true;
+                } else {
+                    if (!render_state.mouse_select && down && pending_pick_ &&
+                        entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                        check_pick(mesh.getId(), mesh.getMeshId(), frameInfo, render_state,
+                                   transform);
+                    }
+                }
+
+                // 🚀 2. 如果已选中且按住左键 → 跟随鼠标移动
+                if (render_state.mouse_select) {
+                    move_model(frameInfo, transform);
+                }
+                mesh.PushConstant().modelMatrix = transform.mat4();
+                mesh.PushConstant().normalMatrix = transform.normalMatrix();
+                mesh.getUBO().numLights = 1;
+                mesh.getUBO().projection = frameInfo.camera->getProjection();
+                mesh.getUBO().view = frameInfo.camera->getView();
+                mesh.getUBO().ambientLightColor.w = 1.f;
+                mesh.getUBO().pointLights[0].position = glm::vec4(1.0, 0.5, 0.3, 1.f);
             }
-            // 🚀 2. 如果已选中且按住左键 → 跟随鼠标移动
-            if (render_state.mouse_select) {
-                move_model(frameInfo, transform);
-            }
-            model_.PushConstant().modelMatrix = transform.mat4();
-            model_.PushConstant().normalMatrix = transform.normalMatrix();
-            model_.getUBO().numLights = 1;
-            model_.getUBO().projection = frameInfo.camera->getProjection();
-            model_.getUBO().view = frameInfo.camera->getView();
-            model_.getUBO().ambientLightColor.w = 1.f;
-            model_.getUBO().pointLights[0].position = glm::vec4(1.0, 0.5, 0.3, 1.f);
         }
 
         void draw(render::Graphic* graphic) {
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                graphic->draw(model_);
+                for (auto& mesh : meshes) {
+                    graphic->draw(mesh);
+                }
             }
         }
 
         [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
-            return std::vector{model_.entity_};
+            std::vector<ecs::Entity> entity;
+            entity.reserve(meshes.size());
+            for (const auto& mesh : meshes) {
+                entity.push_back(mesh.entity_);
+            }
+            return entity;
         }
 
         ecs::Entity entity_;
 
     private:
-        using LightModelInstance = ModelInstance<PointLightUbo, ModelPushConstantData,
-                                                 render::PrimitiveTopology::Triangles>;
-        LightModelInstance model_;
+        using LightMeshInstance = MeshInstance<PointLightUbo, ModelPushConstantData,
+                                               render::PrimitiveTopology::Triangles>;
+        std::vector<LightMeshInstance> meshes;
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;
         id_t id;

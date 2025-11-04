@@ -1,5 +1,5 @@
 #pragma once
-#include "resource/model_instance.hpp"
+#include "resource/mesh_instance.hpp"
 #include "common/common_funcs.hpp"
 #include "core/frame_info.hpp"
 #include "effects/effect.hpp"
@@ -23,13 +23,14 @@ class SkyBox {
                 "images/cube/sky/posx.jpg", "images/cube/sky/negx.jpg", "images/cube/sky/posy.jpg",
                 "images/cube/sky/negy.jpg", "images/cube/sky/posz.jpg", "images/cube/sky/negz.jpg"};
 
-            manager.addTexture(cube_map_images, "skybox");
+            auto texture_id = manager.addCubeMapTexture(cube_map_images, "skybox");
             std::string mesh_path = "models/cube.obj";
-            manager.addMesh(mesh_path);
-            manager.addGraphShader("skycube");
-            ModelResourceName names{
-                .shader_name = "skycube", .mesh_name = mesh_path, .texture_name = "skybox"};
-            sky_box = SkyBoxInstance{manager, layout, names, "skybox instance"};
+           auto meshes = manager.addModel(mesh_path);
+           ASSERT_MSG(!meshes.empty() || meshes.size() > 1, "cube mesh count error");
+
+           auto shader_hash =  manager.addGraphShader("skycube");
+
+            sky_box = SkyBoxInstance{shader_hash, layout, "skybox instance", meshes.at(0), texture_id};
             sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable =
                 0;
         }
@@ -52,7 +53,7 @@ class SkyBox {
 
     private:
         using SkyBoxInstance =
-            ModelInstance<SkyUBO, EmptyPushConstants, render::PrimitiveTopology::Triangles>;
+            MeshInstance<SkyUBO, EmptyPushConstants, render::PrimitiveTopology::Triangles>;
         SkyBoxInstance sky_box;
         id_t id;
 };

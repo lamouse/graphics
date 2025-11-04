@@ -3,7 +3,7 @@
 #include "render_core/graphic.hpp"
 #include "resource/resource.hpp"
 #include "resource/obj/particle.hpp"
-#include "resource/model_instance.hpp"
+#include "resource/mesh_instance.hpp"
 #include "resource/id.hpp"
 #include "ecs/scene/entity.hpp"
 #include "ecs/components/render_state_component.hpp"
@@ -40,21 +40,14 @@ class Particle : public render::IComputeInstance {
             : id(getCurrentId()) {
             graphics::ParticleModel model{
                 count, static_cast<float>(layout.width) / static_cast<float>(layout.height)};
-            manager.addMesh("particle_in", model);
-            manager.addMesh("particle_out", model);
+            auto in_mesh = manager.addMesh("particle_in", model);
+            auto out_mesh = manager.addMesh("particle_out", model);
 
+            auto shader_hash = manager.getShaderHash<ShaderHash>(particle_shader_name);
             // NOLINTNEXTLINE
-            in = DeltaParticleInstance(manager, layout,
-                                       ModelResourceName{.shader_name = particle_shader_name,
-                                                         .mesh_name = "particle_in",
-                                                         .texture_name = ""},
-                                       "particle");
+            in = DeltaParticleInstance(shader_hash, layout, "particle", in_mesh);
             // NOLINTNEXTLINE
-            out = DeltaParticleInstance(manager, layout,
-                                        ModelResourceName{.shader_name = particle_shader_name,
-                                                          .mesh_name = "particle_out",
-                                                          .texture_name = ""},
-                                        "particle");
+            out = DeltaParticleInstance(shader_hash, layout, "particle", out_mesh);
             compute_mesh.at(0) = out.getMeshId();
             compute_mesh.at(1) = in.getMeshId();
             mesh_ids = compute_mesh;
@@ -90,7 +83,7 @@ class Particle : public render::IComputeInstance {
     private:
         id_t id;
         using DeltaParticleInstance =
-            ModelInstance<EmptyUnformBuffer, EmptyPushConstants, render::PrimitiveTopology::Points>;
+            MeshInstance<EmptyUnformBuffer, EmptyPushConstants, render::PrimitiveTopology::Points>;
 
         DeltaParticleInstance in;
         DeltaParticleInstance out;

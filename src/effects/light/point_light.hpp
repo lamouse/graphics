@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "resource/model_instance.hpp"
+#include "resource/mesh_instance.hpp"
 #include "common/common_funcs.hpp"
 #include "core/frame_info.hpp"
 #include "effects/effect.hpp"
@@ -33,13 +33,9 @@ class PointLightEffect {
         PointLightEffect(graphics::ResourceManager& manager,
                          const layout::FrameBufferLayout& layout, float intensity = 10.f,
                          float radius = 0.5f, glm::vec3 color_ = glm::vec3(1.f))
-            : point_light{manager, layout,
-                          ModelResourceName{
-                              .shader_name = "point_light", .mesh_name = "", .texture_name = ""},
-                          "PointLight"},
-              color(color_),
-              pointLight(),
-              id(getCurrentId()) {
+            : color(color_), pointLight(), id(getCurrentId()) {
+            auto hash = manager.getShaderHash<ShaderHash>("point_light");
+            point_light = PointLightInstance{hash, layout, "PointLightInstance"},
             point_light.entity_.getComponent<ecs::TransformComponent>().scale.x = radius;
             pointLight.lightIntensity = intensity;
             auto rotateLight =
@@ -84,8 +80,8 @@ class PointLightEffect {
         struct PointLightComponent {
                 float lightIntensity = .3f;
         };
-        using PointLightInstance = ModelInstance<PointLightUbo, PointLightPushConstants,
-                                                 render::PrimitiveTopology::Triangles>;
+        using PointLightInstance = MeshInstance<PointLightUbo, PointLightPushConstants,
+                                                render::PrimitiveTopology::Triangles>;
         PointLightInstance point_light;
         glm::vec3 color{};
         PointLightComponent pointLight;

@@ -1,7 +1,7 @@
 #include "app.hpp"
 
 #include "graphic.hpp"
-#include "resource/model_instance.hpp"
+#include "resource/mesh_instance.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
@@ -126,7 +126,7 @@ void App::load_resource() {
     resourceManager.addTexture(viking_room_path);
 
     std::string viking_obj_path = "models/viking_room.obj";
-    resourceManager.addMesh(viking_obj_path);
+    resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
     std::string point_light_shader_name = "point_light";

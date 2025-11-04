@@ -15,7 +15,7 @@ class Graphic {
         virtual auto getDrawImage() -> ImTextureID = 0;
         virtual auto uploadModel(const graphics::IMeshData& instance) -> MeshId = 0;
         virtual auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId = 0;
-        virtual void draw(const graphics::IModelInstance& instance) = 0;
+        virtual void draw(const graphics::IMeshInstance& instance) = 0;
         /**
          * @brief 添加shader，返回shader的hash，同过设置IModelInstance设置shader hash
          * 确认使用的shader
