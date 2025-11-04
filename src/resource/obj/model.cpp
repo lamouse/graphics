@@ -47,10 +47,7 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
-auto Model::createFromFile(const ::std::string& path) -> Model {
-    std::vector<Model::Vertex> vertices;
-    std::vector<uint32_t> u32_indices;
-
+auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
     Assimp::Importer importer;
     constexpr auto ASSIMP_LOAD_FLAGS =
         aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
@@ -60,7 +57,12 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
         throw std::runtime_error(
             std::format("Failed to load model: {}", importer.GetErrorString()));
     }
+    std::vector<Model> mesh_models;
+    size_t vertexOffset = 0;
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+        std::vector<Model::Vertex> vertices;
+        std::vector<uint32_t> u32_indices;
+
         aiMesh* mesh = scene->mMeshes[i];
         for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
             aiVector3D vertex = mesh->mVertices[j];
@@ -94,23 +96,26 @@ auto Model::createFromFile(const ::std::string& path) -> Model {
             const auto face = mesh->mFaces[f];
             ASSERT_MSG(face.mNumIndices == 3, "face indices not equal 3");
             for (unsigned int idx = 0; idx < 3; ++idx) {
-                uint32_t vertexIndex = face.mIndices[idx];
-                u32_indices.push_back(vertexIndex);
+                auto globalIndex = static_cast<uint32_t>(vertexOffset + face.mIndices[idx]);
+                u32_indices.push_back(globalIndex);
             }
         }
+        vertexOffset += mesh->mNumVertices;  // ✅ 更新偏移
+
+        // 判断是否需要使用 32 位索引
+        if (vertices.size() > std::numeric_limits<uint16_t>::max()) {
+            mesh_models.emplace_back(vertices, u32_indices);
+        } else {
+            // 转换为 16 位索引
+            std::vector<uint16_t> u16_indices;
+            u16_indices.resize(u32_indices.size());
+            std::ranges::transform(u32_indices, u16_indices.begin(),
+                                   [](uint32_t idx) { return static_cast<uint16_t>(idx); });
+            mesh_models.emplace_back(vertices, u16_indices);
+        }
     }
-    // 判断是否需要使用 32 位索引
-    if (vertices.size() > std::numeric_limits<uint16_t>::max()) {
-        // 使用 32 位索引
-        return Model(vertices,
-                     u32_indices);  // 你需要添加一个支持 uint32_t 的构造函数
-    }
-    // 转换为 16 位索引
-    std::vector<uint16_t> u16_indices;
-    u16_indices.resize(u32_indices.size());
-    std::ranges::transform(u32_indices, u16_indices.begin(),
-                           [](uint32_t idx) { return static_cast<uint16_t>(idx); });
-    return Model(vertices, u16_indices);
+
+    return mesh_models;
 }
 
 // 返回顶点坐标（仅 position），展平为 float 数组

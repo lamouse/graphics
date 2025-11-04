@@ -51,14 +51,16 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
 
 void ResourceManager::addMesh(std::string meshName, add_mesh_func func) {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
-    auto model = Model::createFromFile(meshName);
-    addMesh(meshName, model, std::move(func));
-    auto meshId = getMesh(meshName);
-    if (!model.only_vertex.empty()) {
-        mesh_vertex[meshId] = std::make_unique<std::vector<::glm::vec3>>(model.only_vertex);
-    }
-    if (!model.save32_indices.empty()) {
-        mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(model.save32_indices);
+    auto model_meshes = Model::createFromFile(meshName);
+    for (const auto& model_mesh : model_meshes) {
+        addMesh(meshName, model_mesh, std::move(func));
+        auto meshId = getMesh(meshName);
+        if (!model_mesh.only_vertex.empty()) {
+            mesh_vertex[meshId] = std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
+        }
+        if (!model_mesh.save32_indices.empty()) {
+            mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(model_mesh.save32_indices);
+        }
     }
 }
 void ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func) {
