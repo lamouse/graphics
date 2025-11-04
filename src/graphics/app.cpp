@@ -36,6 +36,11 @@ void App::run() {
     frameInfo.frame_layout = frame_layout;
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
+
+    ui::StatusBarData statusData;
+    auto deviceVendor = render_base->GetDeviceVendor();
+    statusData.device_name = deviceVendor;
+
     render::frame::FramebufferConfig frames{
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
     bool show_debug_ui = true;
@@ -86,25 +91,32 @@ void App::run() {
 
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
-        if (shaders_building > 0) {
-            window->setWindowTitle(fmt::format("Building {} shader(s)", shaders_building));
-        } else {
-            window->setWindowTitle("graphics");
-        }
+
         auto imageId = graphics->getDrawImage();
+
         if (show_debug_ui) {
-            render_base->addImguiUI([&]() -> void {
+            if (shaders_building > 0) {
+                statusData.build_shaders = shaders_building;
+            } else {
+                statusData.build_shaders = 0;
+            }
+            statusData.registry_count = static_cast<int>(registry.size());
+            statusData.mouseX_ = current_mouse_X;
+            statusData.mouseY_ = current_mouse_Y;
+
+            auto ui_fun = [&]() -> void {
                 ui::show_menu(menu_data);
                 draw_setting(menu_data.show_system_setting);
                 ui::ShowOutliner(model_entt, menu_data);
-                render_status_bar(menu_data, current_mouse_X, current_mouse_Y,
-                                  static_cast<int>(registry.size()));
+                render_status_bar(menu_data, statusData);
                 ui::draw_texture(menu_data, imageId, window->getAspectRatio());
                 logger.drawUi(menu_data.show_log);
-            });
+            };
+            render_base->composite(std::span{&frames, 1}, ui_fun);
+        } else {
+            render_base->composite(std::span{&frames, 1});
         }
 
-        render_base->composite(std::span{&frames, 1});
         // TODO 添加clear value
         graphics->clean();
     }

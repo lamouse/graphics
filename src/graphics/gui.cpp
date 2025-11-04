@@ -552,8 +552,8 @@ auto IsMouseControlledByImGui() -> bool {
     return io.WantCaptureMouse;
 }
 
-void render_status_bar(MenuData& data, float mouseX_, float mouseY_, int registry_count) {
-    if (!data.show_status) {
+void render_status_bar(MenuData& menuData, StatusBarData& barData) {
+    if (!menuData.show_status) {
         return;
     }
     auto& io = ImGui::GetIO();
@@ -570,13 +570,24 @@ void render_status_bar(MenuData& data, float mouseX_, float mouseY_, int registr
     ImGui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
+    ImGui::Text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
 
-    ImGui::Text("Mouse: (%.1f, %.1f)", mouseX_, mouseY_);
     ImGui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
+    ImGui::Text("Entities: %d", barData.registry_count);
 
-    ImGui::Text("Entities: %d", registry_count);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ImGui::SameLine();
+    ImGui::Text("device: %s", barData.device_name.data());
+
+    if (barData.build_shaders > 0) {
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+        ImGui::Text("build shaders: %d", barData.registry_count);
+    }
 
     ImGui::End();
 }

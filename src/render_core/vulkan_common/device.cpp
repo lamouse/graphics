@@ -714,7 +714,8 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
     if (extensions_.transform_feedback) {
         SetNext(next, properties_.transform_feedback_);
     }
-    properties2_ = physical_.getProperties2();
+    physical_.getProperties2(&properties2_);
+    //properties2_ = physical_.getProperties2();
     properties_.properties_ = properties2_.properties;
     removeUnsuitableExtensions();
     // Check limits.
@@ -1190,8 +1191,8 @@ auto Device::surfaceFormat(FormatType format_type, bool with_srgb,
             }
             break;
     }
-    return {getSupportedFormat(static_cast<vk::Format>(tuple.format), usage, format_type),
-            attachable, storage};
+    return {.format=getSupportedFormat(static_cast<vk::Format>(tuple.format), usage, format_type),
+            .attachable=attachable, .storage=storage};
 }
 
 auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
@@ -1231,56 +1232,7 @@ auto Device::getSupportedFormat(vk::Format wanted_format, vk::FormatFeatureFlags
 }
 
 auto Device::getDriverName() const -> std::string {
-    switch (properties_.driver_.driverID) {
-        case VK_DRIVER_ID_AMD_PROPRIETARY:
-            return "AMD";
-        case VK_DRIVER_ID_AMD_OPEN_SOURCE:
-            return "AMDVLK";
-        case VK_DRIVER_ID_MESA_RADV:
-            return "RADV";
-        case VK_DRIVER_ID_NVIDIA_PROPRIETARY:
-            return "NVIDIA";
-        case VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS:
-            return "Intel";
-        case VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA:
-            return "ANV";
-        case VK_DRIVER_ID_IMAGINATION_PROPRIETARY:
-            return "PowerVR";
-        case VK_DRIVER_ID_QUALCOMM_PROPRIETARY:
-            return "Qualcomm";
-        case VK_DRIVER_ID_ARM_PROPRIETARY:
-            return "Mali";
-        case VK_DRIVER_ID_SAMSUNG_PROPRIETARY:
-            return "Xclipse";
-        case VK_DRIVER_ID_GOOGLE_SWIFTSHADER:
-            return "SwiftShader";
-        case VK_DRIVER_ID_BROADCOM_PROPRIETARY:
-            return "Broadcom";
-        case VK_DRIVER_ID_MESA_LLVMPIPE:
-            return "Lavapipe";
-        case VK_DRIVER_ID_MOLTENVK:
-            return "MoltenVK";
-        case VK_DRIVER_ID_VERISILICON_PROPRIETARY:
-            return "Vivante";
-        case VK_DRIVER_ID_MESA_TURNIP:
-            return "Turnip";
-        case VK_DRIVER_ID_MESA_V3DV:
-            return "V3DV";
-        case VK_DRIVER_ID_MESA_PANVK:
-            return "PanVK";
-        case VK_DRIVER_ID_MESA_VENUS:
-            return "Venus";
-        case VK_DRIVER_ID_MESA_DOZEN:
-            return "Dozen";
-        case VK_DRIVER_ID_MESA_NVK:
-            return "NVK";
-        case VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA:
-            return "PVR";
-        // case VK_DRIVER_ID_MESA_AGXV:
-        //     return "Asahi";
-        default:
-            return "unknow";
-    }
+   return properties_.driver_.driverName;
 }
 
 auto Device::getDeviceMemoryUsage() const -> u64 {
@@ -1293,26 +1245,6 @@ auto Device::getDeviceMemoryUsage() const -> u64 {
         result += budget.heapUsage[heap];
     }
     return result;
-}
-
-auto Device::shouldBoostClocks() const -> bool {
-    const auto driver_id = properties_.driver_.driverID;
-    const auto vendor_id = properties_.properties_.vendorID;
-    const auto device_id = properties_.properties_.deviceID;
-
-    const bool validated_driver =
-        driver_id == VK_DRIVER_ID_AMD_PROPRIETARY || driver_id == VK_DRIVER_ID_AMD_OPEN_SOURCE ||
-        driver_id == VK_DRIVER_ID_MESA_RADV || driver_id == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
-        driver_id == VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS ||
-        driver_id == VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA ||
-        driver_id == VK_DRIVER_ID_QUALCOMM_PROPRIETARY || driver_id == VK_DRIVER_ID_MESA_TURNIP;
-
-    const bool is_steam_deck = (vendor_id == 0x1002 && device_id == 0x163F) ||
-                               (vendor_id == 0x1002 && device_id == 0x1435);
-
-    const bool is_debugging = this->hasDebuggingToolAttached();
-
-    return validated_driver && !is_steam_deck && !is_debugging;
 }
 
 auto Device::IsFormatSupport(vk::Format format, vk::FormatFeatureFlagBits feature) const -> bool {

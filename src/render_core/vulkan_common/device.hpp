@@ -77,7 +77,6 @@ class Device {
         [[nodiscard]] auto getMaxAnisotropy() const -> float {
             return properties_.properties_.limits.maxSamplerAnisotropy;
         }
-        [[nodiscard]] auto shouldBoostClocks() const -> bool;
 
         [[nodiscard]] auto cantBlitMSAA() const -> bool { return misc_features_.cant_blit_msaa; }
 
@@ -242,7 +241,7 @@ class Device {
 
         /// Checks if we are running MolvenVK.
         [[nodiscard]] auto isMoltenVK() const noexcept -> bool {
-            return properties_.driver_.driverID == VK_DRIVER_ID_MOLTENVK;
+            return properties_.driver_.driverID == vk::DriverId::eMoltenvk;
         }
         /// Returns uniform buffer alignment requirement.
         [[nodiscard]] auto GetUniformBufferAlignment() const -> VkDeviceSize {
@@ -270,9 +269,9 @@ class Device {
             return extensions_.workgroup_memory_explicit_layout;
         }
         /// Returns true if the device supports the provided subgroup feature.
-        [[nodiscard]] auto IsSubgroupFeatureSupported(VkSubgroupFeatureFlagBits feature) const
+        [[nodiscard]] auto IsSubgroupFeatureSupported(vk::SubgroupFeatureFlags feature) const
             -> bool {
-            return properties_.subgroup_properties_.supportedOperations & feature;
+            return (properties_.subgroup_properties_.supportedOperations & feature) != vk::SubgroupFeatureFlags{};
         }
 
         /// Returns true if the device supports VK_EXT_shader_viewport_index_layer.
@@ -394,7 +393,7 @@ class Device {
             return nvidia_arch;
         }
         [[nodiscard]] auto IsNvidia() const noexcept -> bool {
-            return properties_.driver_.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+            return properties_.driver_.driverID == vk::DriverId::eNvidiaProprietary;
         }
 
         [[nodiscard]] auto surfaceFormat(FormatType format_type, bool with_srgb,
@@ -435,14 +434,14 @@ class Device {
         std::vector<size_t> valid_heap_memory_;  ///< Heaps used.
 
         struct Properties {
-                VkPhysicalDeviceDriverProperties driver_;
-                VkPhysicalDeviceSubgroupProperties subgroup_properties_;
-                VkPhysicalDeviceFloatControlsProperties float_controls_;
-                VkPhysicalDevicePushDescriptorPropertiesKHR push_descriptor_;
-                VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_;
-                VkPhysicalDeviceTransformFeedbackPropertiesEXT transform_feedback_;
+                vk::PhysicalDeviceDriverProperties driver_;
+                vk::PhysicalDeviceSubgroupProperties subgroup_properties_;
+                vk::PhysicalDeviceFloatControlsProperties float_controls_;
+                vk::PhysicalDevicePushDescriptorPropertiesKHR push_descriptor_;
+                vk::PhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_;
+                vk::PhysicalDeviceTransformFeedbackPropertiesEXT transform_feedback_;
 
-                VkPhysicalDeviceProperties properties_;
+                vk::PhysicalDeviceProperties properties_;
         };
         utils::MiscFeatures misc_features_;
         uint64_t device_access_memory_{};  ///< Total size of device local memory in bytes.
@@ -501,7 +500,7 @@ class Device {
         Properties properties_;
         Features features_{};
         vk::PhysicalDeviceFeatures2 features2_;
-        VkPhysicalDeviceProperties2 properties2_{};
+        vk::PhysicalDeviceProperties2 properties2_{};
 };
 
 }  // namespace render::vulkan

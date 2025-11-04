@@ -10,8 +10,6 @@ RenderBase::RenderBase(core::frontend::BaseWindow* window) : window_(window) {
 
 void RenderBase::RefreshBaseSettings() { UpdateCurrentFramebufferLayout(); }
 
-auto RenderBase::getCurrentFPS() const -> float { return current_fps_; }
-auto RenderBase::getCurrentFrame() const -> int { return current_frame_; }
 void RenderBase::UpdateCurrentFramebufferLayout() {
     auto layout = window_->getFramebufferLayout();
     window_->UpdateCurrentFramebufferLayout(layout.width, layout.height);

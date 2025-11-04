@@ -2,6 +2,8 @@
 #include "imgui.h"
 #include "ecs/scene/entity.hpp"
 #include <span>
+#include <string_view>
+
 namespace graphics::ui {
 
 struct MenuData {
@@ -12,11 +14,19 @@ struct MenuData {
         bool show_status{true};
 };
 
+struct StatusBarData {
+        float mouseX_;
+        float mouseY_;
+        int registry_count;
+        int build_shaders;
+        std::string_view device_name;
+};
+
 void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 void init_imgui(float scale);
 // 递归绘制树节点
 void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data);
 void show_menu(MenuData& data);
-void render_status_bar(MenuData& data, float mouseX_, float mouseY_, int registry_count);
+void render_status_bar(MenuData& menuData, StatusBarData& barData);
 auto IsMouseControlledByImGui() -> bool;
 }  // namespace graphics::ui

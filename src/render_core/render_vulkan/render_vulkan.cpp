@@ -64,7 +64,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
 
 RendererVulkan::~RendererVulkan() { void(device.getLogical().waitIdle()); }
 
-void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers) {
+void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers, const imgui_ui_fun& func) {
     if (frame_buffers.empty()) {
         return;
     }
@@ -80,13 +80,12 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
-    if (imgui) {
-        imgui->draw(imgui_ui, frame);
+    if (func) {
+        imgui->draw(func, frame);
     }
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);
     vulkan_graphics.TickFrame();
-    imgui_ui = nullptr;
 }
 
 void RendererVulkan::RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers) {

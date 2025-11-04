@@ -24,11 +24,7 @@ class RenderBase {
         [[nodiscard]] auto GetRenderWindow(this auto&& self) -> decltype(auto) {
             return std::forward_like<decltype(self)>(self.window_);
         }
-        /// @endcond
-        void addImguiUI(const imgui_ui_fun& fun) { imgui_ui = fun; }
-        virtual void composite(std::span<frame::FramebufferConfig> frame_buffers) = 0;
-        [[nodiscard]] auto getCurrentFPS() const -> float;
-        [[nodiscard]] auto getCurrentFrame() const -> int;
+        virtual void composite(std::span<frame::FramebufferConfig> frame_buffers, const imgui_ui_fun& func = nullptr) = 0;
         /// Refreshes the settings common to all renderers
         void RefreshBaseSettings();
 
@@ -38,11 +34,7 @@ class RenderBase {
 
     protected:
         core::frontend::BaseWindow* window_;
-        float current_fps_ = 0.0f;  ///< Current framerate, should be set by the renderer
-        int current_frame_ = 0;     ///< Current frame, should be set by the renderer
         std::unique_ptr<ShaderNotify> shader_notify_;
-        imgui_ui_fun imgui_ui;
-
     private:
         void UpdateCurrentFramebufferLayout();
 };
