@@ -28,11 +28,6 @@ class RendererVulkan final : public render::RenderBase {
         /// @endcond
 
     private:
-        void RenderAppletCaptureLayer(std::span<const frame::FramebufferConfig> framebuffers);
-        void RenderScreenshot(std::span<const frame::FramebufferConfig> framebuffers);
-        auto RenderToBuffer(std::span<const frame::FramebufferConfig> framebuffers,
-                            const layout::FrameBufferLayout& layout, vk::Format format,
-                            vk::DeviceSize buffer_size) -> Buffer;
         Instance instance;
         DebugUtilsMessenger debug_messenger;
         SurfaceKHR surface;
@@ -42,10 +37,8 @@ class RendererVulkan final : public render::RenderBase {
         Swapchain swapchain;
         PresentManager present_manager;
         BlitScreen blit_swapchain;
-        BlitScreen blit_capture;
         std::unique_ptr<ImguiCore> imgui;
         VulkanGraphics vulkan_graphics;
-        Frame applet_frame;
 };
 
 }  // namespace render::vulkan
