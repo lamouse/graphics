@@ -28,7 +28,6 @@ class RenderBase {
         /// Refreshes the settings common to all renderers
         void RefreshBaseSettings();
 
-        virtual auto getAppletCaptureBuffer() -> std::vector<u8> = 0;
         virtual auto getGraphics() -> Graphic* = 0;
         [[nodiscard]] auto getShaderNotify() const -> ShaderNotify& { return *shader_notify_; };
 

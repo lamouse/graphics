@@ -21,7 +21,6 @@ class RendererVulkan final : public render::RenderBase {
             return device.getDriverName();
         }
         void composite(std::span<frame::FramebufferConfig> frame_buffers, const imgui_ui_fun& func = nullptr) override;
-        auto getAppletCaptureBuffer() -> std::vector<u8> override;
         /// @cond
         // TODO doxygen seems to have problems with this
         auto getGraphics() -> Graphic* override { return &vulkan_graphics; }

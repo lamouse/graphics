@@ -421,12 +421,12 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             VK_COLOR_COMPONENT_A_BIT,
         };
         VkColorComponentFlags write_mask{};
-        for (size_t i = 0; i < mask_table.size(); ++i) {
-            write_mask |= mask_table[i];
+        for (auto i : mask_table) {
+            write_mask |= i;
         }
         cb_attachments.push_back({
             .blendEnable = VK_TRUE,
-            .srcColorBlendFactor = VK_BLEND_FACTOR_SRC1_ALPHA,
+            .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
             .colorBlendOp = VK_BLEND_OP_ADD,
             .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
