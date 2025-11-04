@@ -37,10 +37,10 @@ Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
       image_count(image_count_) {
     CreateDescriptorPool();
     CreateDescriptorSets(layout);
-    // if (common::settings::get<settings::Graphics>().scaling_filter ==
-    //     settings::enums::ScalingFilter::Fsr) {
-    //     CreateFSR(output_size);
-    // }
+    if (common::settings::get<settings::Graphics>().scaling_filter ==
+        settings::enums::ScalingFilter::Fsr) {
+        CreateFSR(output_size);
+    }
 }
 Layer::~Layer() { ReleaseRawImages(); }
 
@@ -82,6 +82,11 @@ void Layer::CreateRawImages(const frame::FramebufferConfig& framebuffer) {
     for (size_t i = 0; i < image_count; ++i) {
         raw_images[i] = present::utils::CreateWrappedImage(
             memory_allocator, {framebuffer.width, framebuffer.height}, format);
+        scheduler.record([image = *raw_images[i]](vk::CommandBuffer cmdbuf) -> void {
+            present::utils::TransitionImageLayout(cmdbuf, image,
+                                                  vk::ImageLayout::eGeneral, vk::ImageLayout::eUndefined);
+        });
+
         raw_image_views[i] = present::utils::CreateWrappedImageView(device, raw_images[i], format);
     }
 }

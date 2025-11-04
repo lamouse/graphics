@@ -380,7 +380,7 @@ auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config, u
 
     FramebufferTextureInfo info{};
     info.image = image_view.first->ImageHandle();
-    info.image_view = image_view.first->Handle(shader::TextureType::Color2D);
+    info.image_view = image_view.first->RenderTarget();
     info.width = image_view.first->size.width;
     info.height = image_view.first->size.height;
     info.scaled_width = info.width;
