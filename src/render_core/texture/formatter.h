@@ -147,8 +147,6 @@ struct fmt::formatter<render::surface::PixelFormat> : fmt::formatter<fmt::string
                         return "BC3_SRGB";
                     case PixelFormat::BC7_SRGB:
                         return "BC7_SRGB";
-                    case PixelFormat::A4B4G4R4_UNORM:
-                        return "A4B4G4R4_UNORM";
                     case PixelFormat::G4R4_UNORM:
                         return "G4R4_UNORM";
                     case PixelFormat::ASTC_2D_4X4_SRGB:

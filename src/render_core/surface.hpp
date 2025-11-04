@@ -76,7 +76,6 @@ enum class PixelFormat {
     BC2_SRGB,
     BC3_SRGB,
     BC7_SRGB,
-    A4B4G4R4_UNORM,
     G4R4_UNORM,
     ASTC_2D_4X4_SRGB,
     ASTC_2D_8X8_SRGB,
@@ -214,7 +213,6 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_WIDTH_TABLE = {{
     4,   // BC2_SRGB
     4,   // BC3_SRGB
     4,   // BC7_SRGB
-    1,   // A4B4G4R4_UNORM
     1,   // G4R4_UNORM
     4,   // ASTC_2D_4X4_SRGB
     8,   // ASTC_2D_8X8_SRGB
@@ -321,7 +319,7 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_HEIGHT_TABLE = {{
     4,   // BC2_SRGB
     4,   // BC3_SRGB
     4,   // BC7_SRGB
-    1,   // A4B4G4R4_UNORM
+    1,   //
     1,   // G4R4_UNORM
     4,   // ASTC_2D_4X4_SRGB
     8,   // ASTC_2D_8X8_SRGB
@@ -428,7 +426,6 @@ constexpr std::array<u8, MaxPixelFormat> BITS_PER_BLOCK_TABLE = {{
     128,  // BC2_SRGB
     128,  // BC3_SRGB
     128,  // BC7_UNORM
-    16,   // A4B4G4R4_UNORM
     8,    // G4R4_UNORM
     128,  // ASTC_2D_4X4_SRGB
     128,  // ASTC_2D_8X8_SRGB

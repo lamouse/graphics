@@ -81,7 +81,6 @@ enum class TexturePixelFormat {
     BC2_SRGB,
     BC3_SRGB,
     BC7_SRGB,
-    A4B4G4R4_UNORM,
     G4R4_UNORM,
     ASTC_2D_4X4_SRGB,
     ASTC_2D_8X8_SRGB,
