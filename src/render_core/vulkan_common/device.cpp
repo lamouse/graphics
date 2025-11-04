@@ -53,7 +53,6 @@ struct FormatTuple {
     {.format = VK_FORMAT_A8B8G8R8_SNORM_PACK32, .usage = Attachable | Storage},  // A8B8G8R8_SNORM
     {.format = VK_FORMAT_A8B8G8R8_SINT_PACK32, .usage = Attachable | Storage},   // A8B8G8R8_SINT
     {.format = VK_FORMAT_A8B8G8R8_UINT_PACK32, .usage = Attachable | Storage},   // A8B8G8R8_UINT
-    {.format = VK_FORMAT_R5G6B5_UNORM_PACK16, .usage = Attachable},              // R5G6B5_UNORM
     {.format = VK_FORMAT_B5G6R5_UNORM_PACK16},                                   // B5G6R5_UNORM
     {.format = VK_FORMAT_A2B10G10R10_UNORM_PACK32,
      .usage = Attachable | Storage},  // A2B10G10R10_UNORM
@@ -292,9 +291,6 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
     const auto queue_cis = getDeviceQueueCreateInfos();
     // GetSuitability has already configured the linked list of features for us.
     // Reuse it here.
-    const vk::PhysicalDeviceDynamicRenderingFeatures dynamic =
-        vk::PhysicalDeviceDynamicRenderingFeatures().setDynamicRendering(VK_TRUE).setPNext(
-            &features2_);
     const void* first_next = &features2_;
     misc_features_.is_blit_depth24_stencil8_supported =
         testDepthStencilBlits(vk::Format::eD24UnormS8Uint);
