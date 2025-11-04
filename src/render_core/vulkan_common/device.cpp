@@ -60,7 +60,6 @@ struct FormatTuple {
     {.format = VK_FORMAT_A2B10G10R10_UINT_PACK32,
      .usage = Attachable | Storage},                                      // A2B10G10R10_UINT
     {.format = VK_FORMAT_A2R10G10B10_UNORM_PACK32, .usage = Attachable},  // A2R10G10B10_UNORM
-    {.format = VK_FORMAT_R5G5B5A1_UNORM_PACK16},  // A5B5G5R1_UNORM (specially swizzled)
     {.format = VK_FORMAT_R8_UNORM, .usage = Attachable | Storage},             // R8_UNORM
     {.format = VK_FORMAT_R8_SNORM, .usage = Attachable | Storage},             // R8_SNORM
     {.format = VK_FORMAT_R8_SINT, .usage = Attachable | Storage},              // R8_SINT
