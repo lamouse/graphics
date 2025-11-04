@@ -35,8 +35,6 @@ struct fmt::formatter<render::surface::PixelFormat> : fmt::formatter<fmt::string
                         return "A2B10G10R10_UINT";
                     case PixelFormat::A2R10G10B10_UNORM:
                         return "A2R10G10B10_UNORM";
-                    case PixelFormat::A1B5G5R5_UNORM:
-                        return "A1B5G5R5_UNORM";
                     case PixelFormat::A5B5G5R1_UNORM:
                         return "A5B5G5R1_UNORM";
                     case PixelFormat::R8_UNORM:

@@ -25,7 +25,6 @@ enum class TexturePixelFormat {
     A2B10G10R10_UNORM,
     A2B10G10R10_UINT,
     A2R10G10B10_UNORM,
-    A1B5G5R5_UNORM,
     A5B5G5R1_UNORM,
     R8_UNORM,
     R8_SNORM,
