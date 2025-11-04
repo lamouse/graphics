@@ -288,7 +288,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .pVertexBindingDivisors = vertex_binding_divisors.data(),
     };
     if (!vertex_binding_divisors.empty()) {
-        // vertex_input_ci.pNext = &input_divisor_ci;
+        vertex_input_ci.pNext = &input_divisor_ci;
     }
     auto input_assembly_topology =
         static_cast<VkPrimitiveTopology>(PrimitiveTopologyToVK(key_.state.topology));
