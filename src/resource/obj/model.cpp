@@ -10,7 +10,7 @@
 #include <fstream>
 
 namespace {
-constexpr const char* model_cache_path = "data/mesh/cache/";
+constexpr const char* model_cache_path = "data/cache/mesh/";
 constexpr const char* model_cache_extend = ".mesh";
 template <typename T>
 auto as_bytes(std::span<const T> s) -> std::span<const std::byte> {
