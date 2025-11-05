@@ -11,6 +11,8 @@ set(sources
     div_ceil.hpp
     error.hpp
     error.cpp
+    file.cpp
+    file.hpp
     literals.hpp
     lru_cache.h
     make_unique_for_overwrite.h

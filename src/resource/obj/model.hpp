@@ -6,6 +6,27 @@
 #include <glm/gtx/hash.hpp>
 #include "mesh.hpp"
 namespace graphics {
+
+struct ModelCacheHeader {
+        static constexpr uint32_t MAGIC = 0x4D4F4443;  // 'MODC' (Model Cache)
+        uint32_t magic = MAGIC;
+        uint32_t version = 1;
+        uint64_t objFileHash = 0;  // xxHash64 of .obj content
+        uint32_t modelCount = 0;
+};
+
+// Per-model metadata
+struct ModelDesc {
+        uint64_t vertexCount = 0;
+        uint64_t indexCount = 0;
+        uint64_t onlyVertexCount = 0;
+
+        // Offsets are in ELEMENTS (not bytes) for simplicity
+        uint64_t vertexOffset = 0;      // into global vertices array
+        uint64_t indexOffset = 0;       // into global indices array
+        uint64_t onlyVertexOffset = 0;  // into global only_vertex array
+};
+
 class Model : public IMeshData {
     public:
         struct Vertex {
@@ -67,9 +88,7 @@ class Model : public IMeshData {
         // 返回顶点坐标（仅 position），展平为 float 数组
         [[nodiscard]] auto getMesh() const -> std::span<const float> override;
 
-        [[nodiscard]] auto getVertexCount() const -> std::size_t override {
-            return vertices_.size();
-        };
+        [[nodiscard]] auto getVertexCount() const -> std::size_t override { return vertexCount; };
 
         // 返回索引数据（16位或32位）
         [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override;
@@ -85,19 +104,17 @@ class Model : public IMeshData {
         static auto createFromFile(const ::std::string& path) -> std::vector<Model>;
         CLASS_NON_COPYABLE(Model);
         CLASS_DEFAULT_MOVEABLE(Model);
-        Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices, const std::vector<::glm::vec3>& only_vertex);
-        [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override {
-            return indices_.size();
-        }
+        Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
+              const std::vector<::glm::vec3>& only_vertex);
+        [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override { return indicesSize; }
         ~Model() override = default;
         std::vector<::glm::vec3> only_vertex;
         std::vector<uint32_t> indices_;
+        std::vector<Model::Vertex> vertices_;
 
     private:
         uint32_t vertexCount;
         uint32_t indicesSize;
-        std::vector<Model::Vertex> vertices_;
-
 };
 
 }  // namespace graphics
