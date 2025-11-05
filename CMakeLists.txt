@@ -52,6 +52,7 @@ option(TRACY_ON_DEMAND "Tracy on on demand" ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Library output path")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib CACHE PATH "Single Directory for all static libraries.")
+set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 set(BUILD_TESTING ON)
 
 # need vcpkg start
@@ -76,6 +77,7 @@ find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
 find_package(embree 3 CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 # need vcpkg end
 add_subdirectory(third-party)
 
@@ -129,5 +131,7 @@ include(Resource)
 include(ClangFormat)
 
 add_subdirectory(shader)
+add_subdirectory(models)
+
 add_subdirectory(src)
 add_subdirectory(doc)

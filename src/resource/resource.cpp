@@ -3,7 +3,11 @@
 #include "resource/obj/model.hpp"
 #include "resource/shader/shader.hpp"
 #include "render_core/types.hpp"
+#include "model_config.hpp"
 #include <spdlog/spdlog.h>
+#include <nlohmann/json.hpp>
+#include <fstream>
+
 namespace graphics {
 auto ResourceManager::addTexture(std::string textureName, const add_texture_func& func)
     -> render::TextureId {
@@ -60,7 +64,7 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
 auto ResourceManager::addModel(std::string modelName, add_mesh_func func)
     -> std::vector<render::MeshId> {
     ASSERT_MSG(!modelName.empty(), "meshName is null");
-    auto model_meshes = Model::createFromFile(modelName);
+    auto model_meshes = Model::createFromFile(model::MODEL_ROOT_PATH +  modelName, model_file_hash[modelName]);
     std::vector<render::MeshId> mesh_ids;
     model_meshes.reserve(model_meshes.size());
     for (const auto& model_mesh : model_meshes) {
@@ -202,6 +206,16 @@ auto ResourceManager::getMeshIndics(render::MeshId id) -> std::span<uint32_t> {
         return std::span(data->data(), data->size());
     }
     return {};
+}
+
+ResourceManager::ResourceManager(render::Graphic* graphic_) : graphic(graphic_) {
+    using json = nlohmann::json;
+    std::ifstream f(model::MODEL_HASH_PATH);
+    json j;
+    f >> j;
+    for(const auto& m : j["assets"]){
+        model_file_hash[m["path"]] = m["hash"];
+    }
 }
 
 // 显式实例化模板成员函数

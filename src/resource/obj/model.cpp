@@ -143,12 +143,16 @@ Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
-auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
-    auto obj_hash = common::file_hash(path);
+auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash)
+    -> std::vector<Model> {
+    if (obj_hash == 0) {
+        auto file_hash = common::file_hash(path);
+        obj_hash = file_hash ? file_hash.value() : 0;
+    }
     if (!obj_hash) {
         return {};
     }
-    if (auto meshes = loadModelWithCache(obj_hash.value())) {
+    if (auto meshes = loadModelWithCache(obj_hash)) {
         return std::move(meshes.value());
     }
 
@@ -209,9 +213,8 @@ auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
         }
         mesh_models.emplace_back(vertices, indices, position);
     }
-    std::string cache_path =
-        model_cache_path + std::to_string(obj_hash.value()) + model_cache_extend;
-    saveToCache(cache_path, mesh_models, obj_hash.value());
+    std::string cache_path = model_cache_path + std::to_string(obj_hash) + model_cache_extend;
+    saveToCache(cache_path, mesh_models, obj_hash);
 
     return mesh_models;
 }

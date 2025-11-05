@@ -403,7 +403,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         .flags = 0,
         .depthTestEnable = VK_TRUE,
         .depthWriteEnable = VK_TRUE,
-        .depthCompareOp = VK_COMPARE_OP_ALWAYS,
+        .depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
         .depthBoundsTestEnable = device_.IsDepthBoundsSupported(),
         .stencilTestEnable = VK_FALSE,
         .front = {},

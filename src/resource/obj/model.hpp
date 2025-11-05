@@ -101,7 +101,7 @@ class Model : public IMeshData {
         [[nodiscard]] auto getVertexBinding() const -> std::vector<render::VertexBinding> override {
             return Vertex::getVertexBinding();
         }
-        static auto createFromFile(const ::std::string& path) -> std::vector<Model>;
+        static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash) -> std::vector<Model>;
         CLASS_NON_COPYABLE(Model);
         CLASS_DEFAULT_MOVEABLE(Model);
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,

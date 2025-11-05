@@ -24,7 +24,7 @@ class SkyBox {
                 "images/cube/sky/negy.jpg", "images/cube/sky/posz.jpg", "images/cube/sky/negz.jpg"};
 
             auto texture_id = manager.addCubeMapTexture(cube_map_images, "skybox");
-            std::string mesh_path = "models/cube.obj";
+            std::string mesh_path = "cube.obj";
             auto meshes = manager.addModel(mesh_path);
             ASSERT_MSG(!meshes.empty() || meshes.size() > 1, "cube mesh count error");
 

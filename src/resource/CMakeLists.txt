@@ -22,6 +22,7 @@ set (sources
 
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 add_dependencies(${LIB_RESOURCE_NAME} build_shaders)
+add_dependencies(${LIB_RESOURCE_NAME} AssetHashManifest)
 if (MSVC)
     target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
@@ -42,7 +43,9 @@ else()
 endif()
 
 target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${SHADER_PATH_INCLUDE})
+target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${MOUDLE_PATH_INCLUDE})
 target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE spdlog::spdlog glm::glm ecs Imgui::Imgui absl::strings)
+target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_RESOURCE_NAME}/lib)

@@ -60,18 +60,14 @@ else()
     )
 endif()
 
-target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/imgui/src)
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog imgui ui utils absl::strings embree)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog Imgui::Imgui ui utils absl::strings embree)
 
 if(TRACY_ENABLE)
-    message(STATUS "Tracy support is enabled")
     # 添加 Tracy 相关的编译选项或源文件
     add_definitions(-DTRACY_ENABLE)
-
     if(TRACY_ON_DEMAND)
         add_definitions(-DTRACY_ON_DEMAND)
     endif()
-
     target_link_libraries(${LIB_NAME} PRIVATE Tracy::TracyClient)
 endif()
 

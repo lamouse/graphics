@@ -41,7 +41,7 @@ class ResourceManager {
         auto addCubeMapTexture(std::span<std::string> textureNames, const std::string& name,
                                const add_texture_func& func = nullptr) -> render::TextureId;
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
-        explicit ResourceManager(render::Graphic* graphic_) : graphic(graphic_) {}
+        explicit ResourceManager(render::Graphic* graphic_);
 
         auto addModel(std::string modelName, add_mesh_func func = nullptr)
             -> std::vector<render::MeshId>;
@@ -83,6 +83,7 @@ class ResourceManager {
         std::unordered_map<render::MeshId, std::unique_ptr<std::vector<std::uint32_t>>> mesh_indics;
         std::unordered_map<std::string, std::uint64_t> compute_shader_hash;
         std::unordered_map<std::string, ShaderHash> graphic_shader_hash;
+        std::unordered_map<std::string, std::uint64_t> model_file_hash;
 
         render::Graphic* graphic;
 };

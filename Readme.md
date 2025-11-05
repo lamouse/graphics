@@ -81,27 +81,12 @@ $penv{path}获取系统的环境变量
 由于使用的c++20的module所以mingw的gcc无法编译因为mingw没有正确设置模块相关代码，但是在Linux中可以编译
 ```
 
-```yaml
-vulkan:  #{type:struct}
-  validation_layers: true    #{type:bool}
+## 需要安装一些python库
 
-log:  #{type:struct}
-  pattern: "[%Y-%m-%d %H:%M:%S.%e] %^[%l]%$ [thread %t] (%s:%# %!): %v"  #{type:string}
-  level: debug  #{type:string}
-  console:  #{type:struct}
-    enabled: true  #{type:bool}
-  file:  #{type:struct}
-    enabled: false  #{type:bool}
-    path: "logs/graphics.log" #{type:string}
-    append: true  #{type:bool}
-    points: #{type:vector} {name:point}
-    - x: 1.0 #{type:float}
-      y: 2.0 #{type:float}
-    - x: 1.0
-      y: 2.0
-    - x: 1.0
-      y: 2.0
-
+```python
+pip install xxhash
+pip install sphinx
+pip install sphinx-rtd-theme
 ```
 
 ## 学习vulkan的一些记录

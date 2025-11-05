@@ -1,0 +1,2 @@
+cube.obj
+viking_room.obj

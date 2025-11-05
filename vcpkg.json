@@ -22,6 +22,7 @@
         "vulkan-utility-libraries",
         "xxhash",
         "embree3",
+        "nlohmann-json",
         {
             "name": "sdl3",
             "features": [

@@ -125,7 +125,7 @@ void App::load_resource() {
     std::string viking_room_path = image_path + "viking_room.png";
     resourceManager.addTexture(viking_room_path);
 
-    std::string viking_obj_path = "models/viking_room.obj";
+    std::string viking_obj_path = "viking_room.obj";
     resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
@@ -136,13 +136,10 @@ void App::load_resource() {
     resourceManager.addGraphShader(point_light_shader_name);
     resourceManager.addComputeShader(particle_shader_name);
     auto frame_layout = window->getFramebufferLayout();
-    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
-    registry.add(sky_box);
 
     ModelResourceName names{.shader_name = model_shader_name,
                             .mesh_name = viking_obj_path,
                             .texture_name = viking_room_path};
-
     auto light_model =
         std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
     registry.add(light_model);
@@ -153,6 +150,8 @@ void App::load_resource() {
     auto delta_particle =
         std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
     registry.add(delta_particle);
+    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
+    registry.add(sky_box);
 }
 
 }  // namespace graphics
