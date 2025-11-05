@@ -488,8 +488,9 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();
     }
-    PrepareDraw([instance_vertex_count, this] -> void {
-        uint32_t indices_size = 0;
+
+    auto render_command = instance.getRenderCommand();
+    PrepareDraw([instance_vertex_count, render_command, this] -> void {
         uint32_t vertexCount = instance_vertex_count;
 
         if (current_modelId) {
@@ -500,13 +501,12 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
             if (resource.indices_buffer_id) {
                 buffer_cache.BindIndexBuffer(IndexFormat::UnsignedInt, resource.indices_buffer_id);
             }
-            indices_size = resource.indices_count;
             vertexCount = resource.vertex_count;
         }
 
-        scheduler.record([indices_size, vertexCount](vk::CommandBuffer cmdbuf) -> void {
-            if (indices_size > 0) {
-                cmdbuf.drawIndexed(indices_size, 1, 0, 0, 0);
+        scheduler.record([render_command, vertexCount](vk::CommandBuffer cmdbuf) -> void {
+            if (render_command.indexCount > 0) {
+                cmdbuf.drawIndexed(render_command.indexCount, 1, render_command.indexOffset, 0, 0);
             } else {
                 cmdbuf.draw(vertexCount, 1, 0, 0);
             }
