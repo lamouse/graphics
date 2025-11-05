@@ -29,7 +29,7 @@ class SkyBox {
                 "images/cube/sky2/front.jpg", "images/cube/sky2/back.jpg"};
 
             // auto texture_id = manager.addCubeMapTexture(cube_map_images2, "skybox2");
-            auto ret_id = manager.addKtxTexture("images/cube/sky.ktx2");
+            auto ret_id = manager.addKtxTexture("images/cube/sky2.ktx2");
             std::string mesh_path = "cube.obj";
             auto meshes = manager.addModel(mesh_path);
             ASSERT_MSG(!meshes.empty() || meshes.size() > 1, "cube mesh count error");

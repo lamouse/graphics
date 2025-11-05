@@ -15,44 +15,68 @@ file(MAKE_DIRECTORY ${SKYBOX_BUILD_DIR})
 file(GLOB SKYBOX_NAMES RELATIVE ${SKYBOX_SOURCE_DIR} ${SKYBOX_SOURCE_DIR}/*)
 list(FILTER SKYBOX_NAMES EXCLUDE REGEX "^[.].*") # 排除 .DS_Store 等
 
+# 两套命名方案
+set(FACE_SET_POSXYZ posx negx posy negy posz negz)
+set(FACE_SET_FRONTBACK right left top bottom front back)
+
 # 为每个 skybox 生成 KTX2 规则
 foreach(SKYBOX_NAME ${SKYBOX_NAMES})
     set(SRC_DIR "${SKYBOX_SOURCE_DIR}/${SKYBOX_NAME}")
     set(DST_FILE "${SKYBOX_BUILD_DIR}/${SKYBOX_NAME}.ktx2")
 
-    # 检查 6 个面是否存在
-    set(FACES posx negx posy negy posz negz)
-    set(SRC_FILES "")
-    foreach(FACE ${FACES})
-        list(APPEND SRC_FILES "${SRC_DIR}/${FACE}.jpg")
-        list(APPEND SRC_FILES "${SRC_DIR}/${FACE}.png")
-        list(APPEND SRC_FILES "${SRC_DIR}/${FACE}.hdr")
-    endforeach()
-
-    # 找到第一个存在的文件作为参考（假设格式统一）
+    # === 第一步：确定使用哪套命名 + 文件扩展名 ===
+    set(USED_FACE_SET "")
     set(EXT "")
-    foreach(FACE posx) # 只需检查一个面确定格式
+
+    # 先尝试 posx... 命名
+    foreach(FACE ${FACE_SET_POSXYZ})
         if(EXISTS "${SRC_DIR}/${FACE}.hdr")
+            set(USED_FACE_SET ${FACE_SET_POSXYZ})
             set(EXT ".hdr")
+            break()
         elseif(EXISTS "${SRC_DIR}/${FACE}.jpg")
+            set(USED_FACE_SET ${FACE_SET_POSXYZ})
             set(EXT ".jpg")
+            break()
         elseif(EXISTS "${SRC_DIR}/${FACE}.png")
+            set(USED_FACE_SET ${FACE_SET_POSXYZ})
             set(EXT ".png")
+            break()
         endif()
     endforeach()
 
-    if(EXT STREQUAL "")
-        message(WARNING "Skybox ${SKYBOX_NAME} missing face files!")
+    # 如果没找到，再尝试 front... 命名
+    if(USED_FACE_SET STREQUAL "")
+        foreach(FACE ${FACE_SET_FRONTBACK})
+            if(EXISTS "${SRC_DIR}/${FACE}.hdr")
+                set(USED_FACE_SET ${FACE_SET_FRONTBACK})
+                set(EXT ".hdr")
+                break()
+            elseif(EXISTS "${SRC_DIR}/${FACE}.jpg")
+                set(USED_FACE_SET ${FACE_SET_FRONTBACK})
+                set(EXT ".jpg")
+                break()
+            elseif(EXISTS "${SRC_DIR}/${FACE}.png")
+                set(USED_FACE_SET ${FACE_SET_FRONTBACK})
+                set(EXT ".png")
+                break()
+            endif()
+        endforeach()
+    endif()
+
+    # 如果两套都没匹配上，报错跳过
+    if(USED_FACE_SET STREQUAL "" OR EXT STREQUAL "")
+        message(WARNING "Skybox ${SKYBOX_NAME}: missing or unsupported face files (expected posx/negx/... or front/right/... with .png/.jpg/.hdr)")
         continue()
     endif()
 
-    # 构建 6 个源文件路径
+    # === 第二步：构建输入文件列表 ===
     set(INPUT_FILES "")
-    foreach(FACE ${FACES})
+    foreach(FACE ${USED_FACE_SET})
         list(APPEND INPUT_FILES "${SRC_DIR}/${FACE}${EXT}")
     endforeach()
 
-    # 添加自定义命令：调用 toktx
+    # === 第三步：生成 KTX2 ===
     add_custom_command(
         OUTPUT ${DST_FILE}
         COMMAND ${TOKTX_EXECUTABLE}
@@ -61,10 +85,9 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
             ${DST_FILE}
             ${INPUT_FILES}
         DEPENDS ${INPUT_FILES}
-        COMMENT "Generating KTX2 cubemap: ${SKYBOX_NAME}"
+        COMMENT "Generating KTX2 cubemap: ${SKYBOX_NAME} (faces: ${USED_FACE_SET}, ext: ${EXT})"
     )
 
-    # 将 .ktx2 文件加入 ALL 构建目标
     add_custom_target(ktx2_${SKYBOX_NAME} ALL DEPENDS ${DST_FILE})
     list(APPEND KTX2_TARGETS ktx2_${SKYBOX_NAME})
 endforeach()
