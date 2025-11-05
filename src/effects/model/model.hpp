@@ -16,11 +16,17 @@ class LightModel {
                    const ModelResourceName& names, const std::string& name)
             : id(getCurrentId()) {
             auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
-            auto mesh_ids = manager.getMesh(names.mesh_name);
+            auto mesh_id = manager.getMesh(names.mesh_name);
+            auto sub_mesh = manager.getModelSubMesh(mesh_id);
             auto texture_id = manager.getTexture(names.texture_name);
-            meshes.reserve(mesh_ids.size());
-            for (const auto& mesh_id : mesh_ids) {
-                meshes.emplace_back(shader_hash, layout, name + "mesh", mesh_id, texture_id);
+            meshes.reserve(sub_mesh.size());
+            for (const auto& mesh : sub_mesh) {
+                meshes.emplace_back(
+                    render::RenderCommand{
+                        .indexOffset = mesh.indexOffset,
+                        .indexCount = mesh.indexCount,
+                    },
+                    shader_hash, layout, name + "mesh", mesh_id, texture_id);
             }
             entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
@@ -42,9 +48,9 @@ class LightModel {
                 } else {
                     if (!render_state.mouse_select && down && pending_pick_ &&
                         entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                        check_pick(mesh.getId(), mesh.getMeshId(), frameInfo, render_state,
+                        check_pick(id, mesh.getMeshId(), frameInfo, render_state,
                                    transform);
-                        if(render_state.mouse_select){
+                        if (render_state.mouse_select) {
                             pending_pick_ = false;
                         }
                     }

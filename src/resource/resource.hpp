@@ -2,6 +2,7 @@
 #include "render_core/types.hpp"
 #include "render_core/graphic.hpp"
 #include "resource/obj/mesh.hpp"
+#include "resource/obj/model.hpp"
 #include "common/common_funcs.hpp"
 #include "resource/texture/image.hpp"
 #include <unordered_map>
@@ -46,12 +47,14 @@ class ResourceManager {
         explicit ResourceManager(render::Graphic* graphic_);
 
         auto addModel(std::string modelName, add_mesh_func func = nullptr)
-            -> std::vector<render::MeshId>;
+            -> render::MeshId;
         auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
+        [[nodiscard]] auto getModelSubMesh(render::MeshId id) const -> std::span<const SubMesh>;
+
         [[nodiscard]] auto getMesh(const std::string& name) const
-            -> std::span<const render::MeshId>;
+            -> render::MeshId;
         auto addGraphShader(
             const std::string& name,
             const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
@@ -80,12 +83,13 @@ class ResourceManager {
         auto getShaderCode(render::ShaderType type, const std::string& name)
             -> std::vector<std::uint32_t>;
         std::unordered_map<std::string, render::TextureId> textures;
-        std::unordered_map<std::string, std::vector<render::MeshId>> model_mesh_ids_;
+        std::unordered_map<std::string, render::MeshId> model_mesh_id_;
         std::unordered_map<render::MeshId, std::unique_ptr<std::vector<glm::vec3>>> mesh_vertex;
         std::unordered_map<render::MeshId, std::unique_ptr<std::vector<std::uint32_t>>> mesh_indics;
         std::unordered_map<std::string, std::uint64_t> compute_shader_hash;
         std::unordered_map<std::string, ShaderHash> graphic_shader_hash;
         std::unordered_map<std::string, std::uint64_t> model_file_hash;
+        std::unordered_map<render::MeshId, std::unique_ptr<std::vector<SubMesh>>> model_sub_mesh;
 
         render::Graphic* graphic;
 };

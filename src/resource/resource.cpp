@@ -8,6 +8,7 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <utility>
 
 namespace graphics {
 auto ResourceManager::addTexture(std::string textureName, const add_texture_func& func)
@@ -26,12 +27,11 @@ auto ResourceManager::addTexture(std::string textureName, const add_texture_func
     return id;
 }
 
-auto ResourceManager::addKtxTexture(std::string name)
-    -> render::TextureId {
+auto ResourceManager::addKtxTexture(std::string name) -> render::TextureId {
     ASSERT_MSG(!name.empty(), "textureName is null");
     ASSERT_MSG(!textures.contains(name), name + " texture in catch");
     resource::image::KtxImage image(name);
-    auto *texture = image.getKtxTexture();
+    auto* texture = image.getKtxTexture();
     return graphic->uploadTexture(texture);
 }
 
@@ -71,24 +71,15 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
     return textures.find(textureName)->second;
 }
 
-auto ResourceManager::addModel(std::string modelName, add_mesh_func func)
-    -> std::vector<render::MeshId> {
+auto ResourceManager::addModel(std::string modelName, add_mesh_func func) -> render::MeshId {
     ASSERT_MSG(!modelName.empty(), "meshName is null");
-    auto model_meshes =
+    auto model_ =
         Model::createFromFile(model::MODEL_ROOT_PATH + modelName, model_file_hash[modelName]);
-    std::vector<render::MeshId> mesh_ids;
-    model_meshes.reserve(model_meshes.size());
-    for (const auto& model_mesh : model_meshes) {
-        auto id = addMesh(modelName, model_mesh, std::move(func));
-        if (!model_mesh.only_vertex.empty()) {
-            mesh_vertex[id] = std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
-        }
-        if (!model_mesh.indices_.empty()) {
-            mesh_indics[id] = std::make_unique<std::vector<uint32_t>>(model_mesh.indices_);
-        }
-        mesh_ids.push_back(id);
-    }
-    return mesh_ids;
+    auto mesh_id = addMesh(modelName, model_, std::move(func));
+    mesh_vertex[mesh_id] = std::make_unique<std::vector<::glm::vec3>>(model_.only_vertex);
+    mesh_indics[mesh_id] = std::make_unique<std::vector<uint32_t>>(model_.indices_);
+    model_sub_mesh[mesh_id] = std::make_unique<std::vector<SubMesh>>(model_.subMeshes);;
+    return mesh_id;
 }
 auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func)
     -> render::MeshId {
@@ -100,20 +91,23 @@ auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, a
     } else {
         meshId = graphic->uploadModel(meshData);
     }
-    if (model_mesh_ids_.contains(meshName)) {
-        model_mesh_ids_.find(meshName)->second.push_back(meshId);
-    } else {
-        model_mesh_ids_[meshName] = std::vector<render::MeshId>{meshId};
-    }
+    model_mesh_id_[meshName] = meshId;
     return meshId;
 }
-auto ResourceManager::getMesh(const std::string& name) const -> std::span<const render::MeshId> {
+auto ResourceManager::getMesh(const std::string& name) const ->  render::MeshId {
     if (name.empty()) {
         return {};
     }
-    ASSERT_MSG(model_mesh_ids_.contains(name), meshName + " mesh in catch");
-    const auto& mesh_ids = model_mesh_ids_.find(name)->second;
-    return std::span(mesh_ids.data(), mesh_ids.size());
+    ASSERT_MSG(model_mesh_id_.contains(name), meshName + " mesh in catch");
+    return model_mesh_id_.find(name)->second;
+}
+
+[[nodiscard]] auto ResourceManager::getModelSubMesh(render::MeshId id) const -> std::span<const SubMesh>{
+    if(!model_sub_mesh.contains(id)){
+        return {};
+    }
+    const auto &sub_mesh = model_sub_mesh.find(id)->second;
+    return std::span<const SubMesh>(sub_mesh->data(), sub_mesh->size());
 }
 
 auto ResourceManager::getShaderCode(render::ShaderType type, const std::string& name)

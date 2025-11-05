@@ -30,9 +30,10 @@ class IMeshInstance {
         virtual ~IMeshInstance() = default;
         CLASS_DEFAULT_COPYABLE(IMeshInstance);
         CLASS_DEFAULT_MOVEABLE(IMeshInstance);
-        IMeshInstance(render::MeshId meshId_, render::TextureId textureId_,
+        IMeshInstance(render::RenderCommand render_command_, render::MeshId meshId_, render::TextureId textureId_,
                       std::uint64_t vertex_shader_hash_, std::uint64_t fragment_shader_hash_)
-            : textureId(textureId_),
+            : render_command(render_command_),
+            textureId(textureId_),
               meshId(meshId_),
               vertex_shader_hash(vertex_shader_hash_),
               fragment_shader_hash(fragment_shader_hash_),
@@ -53,12 +54,16 @@ class IMeshInstance {
         [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getPrimitiveTopology() const -> render::PrimitiveTopology = 0;
         [[nodiscard]] virtual auto getPipelineState() const -> render::DynamicPipelineState = 0;
-        void setTextureId(render::TextureId id_) { textureId = id_; }
 
+        void setTextureId(render::TextureId id_) { textureId = id_; }
+        [[nodiscard]] auto getRenderCommand() const -> render::RenderCommand {
+            return render_command;
+        }
         ecs::Entity entity_;
         [[nodiscard]] auto getId() const -> id_t { return id; }
 
     protected:
+        render::RenderCommand render_command;
         render::TextureId textureId;
         render::MeshId meshId;
         std::uint64_t vertex_shader_hash{0};

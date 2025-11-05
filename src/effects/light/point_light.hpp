@@ -35,7 +35,7 @@ class PointLightEffect {
                          float radius = 0.5f, glm::vec3 color_ = glm::vec3(1.f))
             : color(color_), pointLight(), id(getCurrentId()) {
             auto hash = manager.getShaderHash<ShaderHash>("point_light");
-            point_light = PointLightInstance{hash, layout, "PointLightInstance"},
+            point_light = PointLightInstance{{}, hash, layout, "PointLightInstance"},
             point_light.entity_.getComponent<ecs::TransformComponent>().scale.x = radius;
             pointLight.lightIntensity = intensity;
             auto rotateLight =

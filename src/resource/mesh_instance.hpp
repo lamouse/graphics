@@ -1,15 +1,11 @@
 #pragma once
 #include <glm/gtc/matrix_transform.hpp>
-#include <memory>
 #include "ecs/scene/entity.hpp"
 #include "ecs/scene/scene.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/render_state_component.hpp"
-#include "ecs/components/camera_component.hpp"
 #include "ecs/components/dynamic_pipeline_state_component.hpp"
-#include "resource/obj/model.hpp"
 #include "resource/instance.hpp"
-#include "resource/id.hpp"
 #include "resource/resource.hpp"
 #include <type_traits>
 
@@ -62,10 +58,11 @@ class MeshInstance : public IMeshInstance {
         auto getUBO() -> UBO& { return ubo; }
         auto PushConstant() -> PushConstants& { return push_constants; }
 
-        MeshInstance(ShaderHash shaderHash_, const layout::FrameBufferLayout& layout,
-                     const std::string& meshName = "", render::MeshId meshId_ = {},
-                     render::TextureId textureId_ = {})
-            : IMeshInstance(meshId_, textureId_, shaderHash_.vertex, shaderHash_.fragment) {
+        MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
+                     const layout::FrameBufferLayout& layout, const std::string& meshName = "",
+                     render::MeshId meshId_ = {}, render::TextureId textureId_ = {})
+            : IMeshInstance(render_command_, meshId_, textureId_, shaderHash_.vertex,
+                            shaderHash_.fragment) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));

@@ -6,7 +6,6 @@
 
 #include <assimp/Importer.hpp>
 #include <cassert>
-#include <format>
 #include <fstream>
 
 namespace {
@@ -20,148 +19,235 @@ auto as_bytes(std::span<const T> s) -> std::span<const std::byte> {
     return std::span<const std::byte>(ptr, s.size() * sizeof(T));
 }
 
-void saveToCache(const std::string& cachePath, const std::vector<graphics::Model>& models,
-                 uint64_t objFileHash) {
-    common::create_dir(model_cache_path);
+void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
+    auto cachePath = std::string(model_cache_path) + std::to_string(file_hash) + model_cache_extend;
     std::ofstream file(cachePath, std::ios::binary);
-    if (!file) {
-        return;
-    }
+    if (!file) return;
 
-    // Header
-    graphics::ModelCacheHeader header;
-    header.objFileHash = objFileHash;
-    header.modelCount = static_cast<uint32_t>(models.size());
+    graphics::ModelCacheHeader header{};
+    // ✅ 显式初始化所有字段（推荐用 {} 零初始化 + 赋值）
+    header.magic = graphics::ModelCacheHeader::MAGIC;
+    header.version = graphics::MESH_CACHE_VERSION;
+    header.objFileHash = file_hash;
+    header.subMeshCount = static_cast<uint32_t>(model.subMeshes.size());
+
     file.write(reinterpret_cast<const char*>(&header), sizeof(header));
 
-    // Gather all data & build descriptors
-    std::vector<graphics::Model::Vertex> allVertices;
-    std::vector<uint32_t> allIndices;
-    std::vector<glm::vec3> allOnlyVertices;
+    // 写入数量
+    uint64_t vcount = model.vertices_.size();
+    uint64_t icount = model.indices_.size();
+    uint64_t ocount = model.only_vertex.size();
+    file.write(reinterpret_cast<const char*>(&vcount), sizeof(vcount));
+    file.write(reinterpret_cast<const char*>(&icount), sizeof(icount));
+    file.write(reinterpret_cast<const char*>(&ocount), sizeof(ocount));
 
-    std::vector<graphics::ModelDesc> descs;
-    for (const auto& model : models) {
-        graphics::ModelDesc desc;
-        desc.vertexCount = model.vertices_.size();
-        desc.indexCount = model.indices_.size();
-        desc.onlyVertexCount = model.only_vertex.size();
-
-        desc.vertexOffset = allVertices.size();
-        desc.indexOffset = allIndices.size();
-        desc.onlyVertexOffset = allOnlyVertices.size();
-
-        // Append data
-        allVertices.insert(allVertices.end(), model.vertices_.begin(), model.vertices_.end());
-        allIndices.insert(allIndices.end(), model.indices_.begin(), model.indices_.end());
-        allOnlyVertices.insert(allOnlyVertices.end(), model.only_vertex.begin(),
-                               model.only_vertex.end());
-
-        descs.push_back(desc);
+    // 写入数据
+    if (vcount > 0) {
+        file.write(reinterpret_cast<const char*>(model.vertices_.data()),
+                   sizeof(graphics::Model::Vertex) * vcount);
+    }
+    if (icount > 0) {
+        file.write(reinterpret_cast<const char*>(model.indices_.data()), sizeof(uint32_t) * icount);
+    }
+    if (ocount > 0) {
+        file.write(reinterpret_cast<const char*>(model.only_vertex.data()),
+                   sizeof(glm::vec3) * ocount);
     }
 
-    // Write ModelDesc array
-    file.write(reinterpret_cast<const char*>(descs.data()),
-               sizeof(graphics::ModelDesc) * descs.size());
-
-    // Write data blocks (raw binary)
-    file.write(reinterpret_cast<const char*>(allVertices.data()),
-               sizeof(graphics::Model::Vertex) * allVertices.size());
-    file.write(reinterpret_cast<const char*>(allIndices.data()),
-               sizeof(uint32_t) * allIndices.size());
-    file.write(reinterpret_cast<const char*>(allOnlyVertices.data()),
-               sizeof(glm::vec3) * allOnlyVertices.size());
-
-    // 🔥 NEW: Write all MeshMaterial entries
-    for (const auto& model : models) {
-        model.material.serialize(file);
+    // 写入 submeshes
+    for (const auto& sub : model.subMeshes) {
+        file.write(reinterpret_cast<const char*>(&sub.indexOffset), sizeof(sub.indexOffset));
+        file.write(reinterpret_cast<const char*>(&sub.indexCount), sizeof(sub.indexCount));
+        sub.material.serialize(file);
     }
 }
 
-auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<std::vector<graphics::Model>> {
+auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Model> {
     auto cachePath = std::string(model_cache_path) + std::to_string(file_hash) + model_cache_extend;
     std::ifstream file(cachePath, std::ios::binary);
     if (!file) {
         return std::nullopt;
     }
+
     graphics::ModelCacheHeader header;
     file.read(reinterpret_cast<char*>(&header), sizeof(header));
-    if (header.magic != graphics::ModelCacheHeader::MAGIC || header.version != graphics::MESH_CACHE_VERSION) {
+    if (header.magic != graphics::ModelCacheHeader::MAGIC ||
+        header.version != graphics::MESH_CACHE_VERSION || header.objFileHash != file_hash) {
         return std::nullopt;
     }
-    if (header.objFileHash != file_hash) {
-        return std::nullopt;  // outdated
-    }
 
-    std::vector<graphics::ModelDesc> descs(header.modelCount);
-    file.read(reinterpret_cast<char*>(descs.data()),
-              sizeof(graphics::ModelDesc) * header.modelCount);
+    // 读取全局顶点/索引数量
+    uint64_t vertexCount = 0, indexCount = 0, onlyVertexCount = 0;
+    file.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+    file.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+    file.read(reinterpret_cast<char*>(&onlyVertexCount), sizeof(onlyVertexCount));
 
-    // Pre-read all data blocks
-    size_t totalVertices = 0, totalIndices = 0, totalOnly = 0;
-    for (const auto& d : descs) {
-        totalVertices += d.vertexCount;
-        totalIndices += d.indexCount;
-        totalOnly += d.onlyVertexCount;
-    }
+    // 读取数据
+    std::vector<graphics::Model::Vertex> vertices(vertexCount);
+    std::vector<uint32_t> indices(indexCount);
+    std::vector<glm::vec3> only_vertices(onlyVertexCount);
 
-    std::vector<graphics::Model::Vertex> allVertices(totalVertices);
-    std::vector<uint32_t> allIndices(totalIndices);
-    std::vector<glm::vec3> allOnlyVertices(totalOnly);
+    file.read(reinterpret_cast<char*>(vertices.data()),
+              sizeof(graphics::Model::Vertex) * vertexCount);
+    file.read(reinterpret_cast<char*>(indices.data()), sizeof(uint32_t) * indexCount);
+    file.read(reinterpret_cast<char*>(only_vertices.data()), sizeof(glm::vec3) * onlyVertexCount);
 
-    file.read(reinterpret_cast<char*>(allVertices.data()),
-              sizeof(graphics::Model::Vertex) * totalVertices);
-    file.read(reinterpret_cast<char*>(allIndices.data()), sizeof(uint32_t) * totalIndices);
-    file.read(reinterpret_cast<char*>(allOnlyVertices.data()), sizeof(glm::vec3) * totalOnly);
-
-    // 🔥 NEW: Read all materials
-    std::vector<graphics::MeshMaterial> materials;
-    materials.reserve(header.modelCount);
-    for (uint32_t i = 0; i < header.modelCount; ++i) {
-        graphics::MeshMaterial mat;
-        if (!mat.deserialize(file)) {
-            return std::nullopt;  // corrupted
+    // 读取所有 SubMesh
+    std::vector<graphics::SubMesh> subMeshes;
+    subMeshes.reserve(header.subMeshCount);
+    for (uint32_t i = 0; i < header.subMeshCount; ++i) {
+        graphics::SubMesh sub;
+        file.read(reinterpret_cast<char*>(&sub.indexOffset), sizeof(sub.indexOffset));
+        file.read(reinterpret_cast<char*>(&sub.indexCount), sizeof(sub.indexCount));
+        if (!sub.material.deserialize(file)) {
+            return std::nullopt;
         }
-        materials.push_back(std::move(mat));
+        subMeshes.push_back(std::move(sub));
     }
 
-    // Reconstruct models
-    std::vector<graphics::Model> models;
-    models.reserve(header.modelCount);
-    for (size_t i = 0; i < header.modelCount; ++i) {
-        const auto& d = descs[i];
-        const auto& mat = materials[i];  // 🔥 use cached material
-        std::vector<graphics::Model::Vertex> verts(
-            allVertices.begin() + d.vertexOffset,
-            allVertices.begin() + d.vertexOffset + d.vertexCount);
-        std::vector<uint32_t> indices(allIndices.begin() + d.indexOffset,
-                                      allIndices.begin() + d.indexOffset + d.indexCount);
-        std::vector<glm::vec3> onlyVerts(
-            allOnlyVertices.begin() + d.onlyVertexOffset,
-            allOnlyVertices.begin() + d.onlyVertexOffset + d.onlyVertexCount);
+    // 构建 Model
+    graphics::Model model;
+    model.vertices_ = std::move(vertices);
+    model.indices_ = std::move(indices);
+    model.only_vertex = std::move(only_vertices);
+    model.subMeshes = std::move(subMeshes);
 
-        models.emplace_back(std::move(verts), std::move(indices), std::move(onlyVerts), mat);
+    // 返回 vector（兼容你现有接口）
+    return std::move(model);
+}
+
+auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
+    graphics::Model model;
+    if (!scene || !scene->HasMeshes()) {
+        return model;  // empty
     }
 
-    return models;
+    uint32_t vertexOffset = 0;  // 当前 mesh 的顶点在全局 vertices_ 中的起始索引
+    uint32_t indexOffset = 0;   // 当前 mesh 的索引在全局 indices_ 中的起始位置
+
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        aiMesh* mesh = scene->mMeshes[i];
+        if (!mesh) {
+            continue;
+        }
+
+        // === 1. 加载顶点 ===
+        for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
+            graphics::Model::Vertex v{};
+
+            // Position
+            const aiVector3D& pos = mesh->mVertices[j];
+            v.position = {pos.x, pos.y, pos.z};
+            model.only_vertex.push_back(v.position);  // 你额外需要的
+
+            // TexCoord
+            if (mesh->HasTextureCoords(0)) {
+                const aiVector3D& tex = mesh->mTextureCoords[0][j];
+                v.texCoord = {tex.x, tex.y};
+            } else {
+                v.texCoord = {0.0f, 0.0f};
+            }
+
+            // Normal
+            if (mesh->HasNormals()) {
+                const aiVector3D& n = mesh->mNormals[j];
+                v.normal = {n.x, n.y, n.z};
+            } else {
+                v.normal = {0.0f, 1.0f, 0.0f};  // 更合理的默认法线（朝上）
+            }
+
+            // Vertex Color
+            if (mesh->HasVertexColors(0)) {
+                const aiColor4D& c = mesh->mColors[0][j];
+                v.color = {c.r, c.g, c.b};
+            } else {
+                v.color = {1.0f, 1.0f, 1.0f};
+            }
+
+            model.vertices_.push_back(v);
+        }
+
+        // === 2. 加载索引（关键：使用 vertexOffset）===
+        for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
+            const aiFace& face = mesh->mFaces[f];
+            if (face.mNumIndices != 3) {
+                continue;  // 跳过非三角面（或报错）
+            }
+
+            for (unsigned int idx = 0; idx < 3; ++idx) {
+                uint32_t localVertexIndex = face.mIndices[idx];
+                uint32_t globalVertexIndex = localVertexIndex + vertexOffset;  // ✅ 修复点！
+                model.indices_.push_back(globalVertexIndex);
+            }
+        }
+
+        // === 3. 创建 SubMesh ===
+        graphics::SubMesh sub;
+        sub.indexOffset = indexOffset;
+        sub.indexCount = mesh->mNumFaces * 3;
+
+        // === 4. 加载材质 ===
+        graphics::MeshMaterial mat;
+        if (scene->HasMaterials() && mesh->mMaterialIndex < scene->mNumMaterials) {
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+            // 名称
+            aiString name;
+            if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
+                mat.name = name.C_Str();
+            }
+
+            // 颜色
+            aiColor3D ka(1.f, 1.f, 1.f), kd(1.f, 1.f, 1.f), ks(1.f, 1.f, 1.f), ke(0.f, 0.f, 0.f);
+            material->Get(AI_MATKEY_COLOR_AMBIENT, ka);
+            mat.ambientColor = {ka.r, ka.g, ka.b};
+            material->Get(AI_MATKEY_COLOR_DIFFUSE, kd);
+            mat.diffuseColor = {kd.r, kd.g, kd.b};
+            material->Get(AI_MATKEY_COLOR_SPECULAR, ks);
+            mat.specularColor = {ks.r, ks.g, ks.b};
+            material->Get(AI_MATKEY_COLOR_EMISSIVE, ke);
+            mat.emissiveColor = {ke.r, ke.g, ke.b};
+
+            // 标量
+            material->Get(AI_MATKEY_SHININESS, mat.shininess);
+            material->Get(AI_MATKEY_OPACITY, mat.opacity);
+            material->Get(AI_MATKEY_REFRACTI, mat.ior);
+
+            // 纹理
+            aiString path;
+            if (material->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS) {
+                mat.ambientTexture = path.C_Str();
+            }
+            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+                mat.diffuseTexture = path.C_Str();
+            }
+            if (material->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS) {
+                mat.specularTexture = path.C_Str();
+            }
+            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+                mat.normalTexture = path.C_Str();
+            }
+            if (material->GetTexture(aiTextureType_EMISSIVE, 0, &path) == AI_SUCCESS) {
+                mat.emissiveTexture = path.C_Str();
+            }
+        }
+
+        sub.material = mat;
+        model.subMeshes.push_back(sub);
+
+        // === 5. 更新偏移 ===
+        vertexOffset += mesh->mNumVertices;
+        indexOffset += sub.indexCount;
+    }
+
+    return model;
 }
 
 }  // namespace
 
 namespace graphics {
 
-Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
-             const std::vector<::glm::vec3>& only_vertex_, MeshMaterial material_)
-    : only_vertex(only_vertex_),
-      indices_(indices),
-      vertices_(vertices),
-      material(std::move(material_)),
-      vertexCount(static_cast<uint32_t>(vertices.size())),
-      indicesSize(static_cast<uint32_t>(indices.size())) {
-    assert(vertexCount >= 3 && "Vertex count must be at least 3");
-}
-
-auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash)
-    -> std::vector<Model> {
+auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) -> Model {
     if (obj_hash == 0) {
         auto file_hash = common::file_hash(path);
         obj_hash = file_hash ? file_hash.value() : 0;
@@ -178,100 +264,11 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash)
         aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
     // NOLINTNEXTLINE
     const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
-    if (!scene) {
-        throw std::runtime_error(
-            std::format("Failed to load model: {}", importer.GetErrorString()));
-    }
-    std::vector<Model> mesh_models;
-    for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-        aiMesh* mesh = scene->mMeshes[i];
-
-        std::vector<Model::Vertex> vertices;
-        std::vector<uint32_t> indices;
-        std::vector<glm::vec3> position;
-        vertices.reserve(mesh->mNumVertices);
-        position.reserve(mesh->mNumVertices);
-
-        for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-            aiVector3D vertex = mesh->mVertices[j];
-            Model::Vertex model_vertex{};
-            model_vertex.position = {vertex.x, vertex.y, vertex.z};
-            position.push_back(model_vertex.position);
-            if (mesh->HasTextureCoords(0)) {
-                const auto* textureCoords = mesh->mTextureCoords[0];
-                model_vertex.texCoord = {textureCoords[j].x, textureCoords[j].y};
-            } else {
-                model_vertex.texCoord = {.0f, .0f};
-            }
-
-            if (mesh->HasNormals()) {
-                model_vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y,
-                                       mesh->mNormals[j].z};
-            } else {
-                model_vertex.normal = {0.0f, 0.0f, 0.0f};
-            }
-            if (mesh->HasVertexColors(0)) {
-                const auto* vertex_color = mesh->mColors[0];
-                model_vertex.color = {vertex_color[j].r, vertex_color[j].g, vertex_color[j].b};
-            } else {
-                model_vertex.color = {1.0f, 1.0f, 1.0f};
-            }
-            vertices.push_back(model_vertex);
-        }
-
-        indices.reserve(static_cast<std::size_t>(mesh->mNumFaces * 3));
-        for (u32 f = 0; f < mesh->mNumFaces; f++) {
-            const auto face = mesh->mFaces[f];
-            ASSERT_MSG(face.mNumIndices == 3, "face indices not equal 3");
-            for (unsigned int idx = 0; idx < 3; ++idx) {
-                auto globalIndex = static_cast<uint32_t>(face.mIndices[idx]);
-                indices.push_back(globalIndex);
-            }
-        }
-        MeshMaterial meshMaterial_{};
-        if (scene->HasMaterials()) {
-            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-            if (material) {
-                aiColor3D ka, kd, ks, ke;
-                material->Get(AI_MATKEY_COLOR_AMBIENT, ka);
-                meshMaterial_.ambientColor = {ka.r, ka.g, ka.b};
-                material->Get(AI_MATKEY_COLOR_DIFFUSE, kd);
-                meshMaterial_.diffuseColor = {kd.r, kd.g, kd.b};
-                material->Get(AI_MATKEY_COLOR_SPECULAR, ks);
-                meshMaterial_.specularColor = {ks.r, ks.g, ks.b};
-                material->Get(AI_MATKEY_COLOR_EMISSIVE, ke);
-                meshMaterial_.emissiveColor = {ke.r, ke.g, ke.b};
-
-                material->Get(AI_MATKEY_SHININESS, meshMaterial_.shininess);
-                material->Get(AI_MATKEY_OPACITY, meshMaterial_.opacity);
-                material->Get(AI_MATKEY_REFRACTI,
-                              meshMaterial_.ior);  // 注意：有些导出器用 AI_MATKEY_REFRACTI_VACUUM
-
-                aiString texture_path;
-                if (material->GetTexture(aiTextureType_AMBIENT, 0, &texture_path) == AI_SUCCESS) {
-                    meshMaterial_.ambientTexture = texture_path.C_Str();
-                }
-                if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texture_path) == AI_SUCCESS) {
-                    meshMaterial_.diffuseTexture = texture_path.C_Str();
-                }
-                if (material->GetTexture(aiTextureType_SPECULAR, 0, &texture_path) == AI_SUCCESS) {
-                    meshMaterial_.specularTexture = texture_path.C_Str();
-                }
-                if (material->GetTexture(aiTextureType_NORMALS, 0, &texture_path) == AI_SUCCESS) {
-                    meshMaterial_.normalTexture = texture_path.C_Str();
-                }
-                if (material->GetTexture(aiTextureType_EMISSIVE, 0, &texture_path) == AI_SUCCESS) {
-                    meshMaterial_.emissiveTexture = texture_path.C_Str();
-                }
-            }
-        }
-
-        mesh_models.emplace_back(vertices, indices, position, meshMaterial_);
-    }
+    Model model = loadModelFromAssimpScene(scene);
     std::string cache_path = model_cache_path + std::to_string(obj_hash) + model_cache_extend;
-    saveToCache(cache_path, mesh_models, obj_hash);
+    saveModelToCache(obj_hash, model);
 
-    return mesh_models;
+    return model;
 }
 
 // 返回顶点坐标（仅 position），展平为 float 数组

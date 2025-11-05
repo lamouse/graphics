@@ -5,28 +5,19 @@
 #include <glm/gtx/hash.hpp>
 #include "mesh.hpp"
 namespace graphics {
-constexpr const uint32_t MESH_CACHE_VERSION = 1;
+constexpr const uint32_t MESH_CACHE_VERSION = 3;
+constexpr uint32_t MODEL_CACHE_MAGIC = 0x4D4F444C; // 'MODL'
 struct ModelCacheHeader {
-        static constexpr uint32_t MAGIC = 0x4D4F4443;  // 'MODC' (Model Cache)
-        uint32_t magic = MAGIC;
-        uint32_t version = MESH_CACHE_VERSION;
-        uint64_t objFileHash = 0;  // xxHash64 of .obj content
-        uint32_t modelCount = 0;
+ static constexpr uint32_t MAGIC = MODEL_CACHE_MAGIC;
+
+    uint32_t magic = MAGIC;
+    uint32_t version = MESH_CACHE_VERSION;
+    uint64_t objFileHash = 0;
+    uint32_t subMeshCount = 0; // 改为 subMeshCount
+    uint32_t padding = 0;      // 对齐
 };
-
-// Per-model metadata
-struct ModelDesc {
-        uint64_t vertexCount = 0;
-        uint64_t indexCount = 0;
-        uint64_t onlyVertexCount = 0;
-
-        // Offsets are in ELEMENTS (not bytes) for simplicity
-        uint64_t vertexOffset = 0;      // into global vertices array
-        uint64_t indexOffset = 0;       // into global indices array
-        uint64_t onlyVertexOffset = 0;  // into global only_vertex array
-};
-
 struct MeshMaterial {
+        std::string name = "default";
         // 颜色属性（来自 .mtl）
         glm::vec3 ambientColor = {1.0f, 1.0f, 1.0f};   // Ka
         glm::vec3 diffuseColor = {1.0f, 1.0f, 1.0f};   // Kd
@@ -69,6 +60,7 @@ struct MeshMaterial {
                 }
             };
 
+            write_string(name);
             write_string(ambientTexture);
             write_string(diffuseTexture);
             write_string(specularTexture);
@@ -122,6 +114,9 @@ struct MeshMaterial {
                 return true;
             };
 
+            if (!read_string(name)) {
+                return false;
+            }
             if (!read_string(ambientTexture)) {
                 return false;
             }
@@ -140,6 +135,12 @@ struct MeshMaterial {
 
             return true;
         }
+};
+
+struct SubMesh {
+        uint32_t indexOffset = 0;
+        uint32_t indexCount = 0;
+        MeshMaterial material;  // 每个子网格有自己的材质
 };
 
 class Model : public IMeshData {
@@ -203,12 +204,10 @@ class Model : public IMeshData {
         // 返回顶点坐标（仅 position），展平为 float 数组
         [[nodiscard]] auto getMesh() const -> std::span<const float> override;
 
-        [[nodiscard]] auto getVertexCount() const -> std::size_t override { return vertexCount; };
+        [[nodiscard]] auto getVertexCount() const -> std::size_t override { return vertices_.size(); };
 
-        // 返回索引数据（16位或32位）
         [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override;
 
-        // 判断是否使用 32 位索引
         [[nodiscard]] auto getVertexAttribute() const
             -> std::vector<render::VertexAttribute> override {
             return Vertex::getVertexAttribute();
@@ -217,21 +216,18 @@ class Model : public IMeshData {
             return Vertex::getVertexBinding();
         }
         static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash)
-            -> std::vector<Model>;
+            -> Model;
         CLASS_NON_COPYABLE(Model);
         CLASS_DEFAULT_MOVEABLE(Model);
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
               const std::vector<::glm::vec3>& only_vertex, MeshMaterial material);
-        [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override { return indicesSize; }
+        [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override { return indices_.size(); }
         ~Model() override = default;
         std::vector<::glm::vec3> only_vertex;
         std::vector<uint32_t> indices_;
         std::vector<Model::Vertex> vertices_;
-        MeshMaterial material;
-
-    private:
-        uint32_t vertexCount;
-        uint32_t indicesSize;
+        std::vector<SubMesh> subMeshes;
+        Model() = default;
 };
 
 }  // namespace graphics
