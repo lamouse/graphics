@@ -139,9 +139,6 @@ void PipelineCache::savePipelineCache() {
     std::vector<char> cacheData(dataSize);
     vulkan_pipeline_cache.Read(&dataSize, cacheData.data());
     XXH64_hash_t hash = XXH64(cacheData.data(), dataSize * sizeof(char), 0);
-    if (hash == pipe_line_cache_header.hash) {
-        return;
-    }
     std::ofstream file(PIPELINE_CACHE_BIN_PATH, std::ios::binary);
     if (file.is_open()) {
         // 构造头部
