@@ -494,11 +494,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
             buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size,
                                            bindings[0].stride);
             if (resource.indices_buffer_id) {
-                IndexFormat index_format{IndexFormat::UnsignedShort};
-                if (resource.indices_count > std::numeric_limits<uint16_t>::max()) {
-                    index_format = IndexFormat::UnsignedInt;
-                }
-                buffer_cache.BindIndexBuffer(IndexFormat::UnsignedShort,
+                buffer_cache.BindIndexBuffer(IndexFormat::UnsignedInt,
                                              resource.indices_buffer_id);
             }
             indices_size = resource.indices_count;

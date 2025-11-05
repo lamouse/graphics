@@ -21,29 +21,13 @@ std::span<const std::byte> as_bytes(std::span<const T> s) {
 
 namespace graphics {
 
-Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices)
-    : vertexCount(static_cast<uint32_t>(vertices.size())),
-      indicesSize(static_cast<uint32_t>(indices.size())),
-      vertices_(vertices),
-      u16_indices_(indices) {
-    for (const auto& full_vertex : vertices) {
-        only_vertex.push_back(full_vertex.position);
-    }
-    save32_indices.insert(save32_indices.begin(), indices.begin(), indices.end());
 
-    assert(vertexCount >= 3 && "Vertex count must be at least 3");
-}
-
-Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices)
-    : save32_indices(indices),
+Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices, const std::vector<::glm::vec3>& only_vertex_)
+    : only_vertex(only_vertex_),
+      indices_(indices),
       vertexCount(static_cast<uint32_t>(vertices.size())),
       indicesSize(static_cast<uint32_t>(indices.size())),
-      vertices_(vertices),
-      u32_indices_(indices),
-      use32BitIndices(true) {
-    for (const auto& full_vertex : vertices) {
-        only_vertex.push_back(full_vertex.position);
-    }
+      vertices_(vertices) {
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
 }
 
@@ -60,15 +44,19 @@ auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
     std::vector<Model> mesh_models;
     size_t vertexOffset = 0;
     for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-        std::vector<Model::Vertex> vertices;
-        std::vector<uint32_t> u32_indices;
-
         aiMesh* mesh = scene->mMeshes[i];
+
+        std::vector<Model::Vertex> vertices;
+        std::vector<uint32_t> indices;
+        std::vector<glm::vec3> position;
+        vertices.reserve(mesh->mNumVertices);
+        position.reserve(mesh->mNumVertices);
+
         for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
             aiVector3D vertex = mesh->mVertices[j];
             Model::Vertex model_vertex{};
             model_vertex.position = {vertex.x, vertex.y, vertex.z};
-
+            position.push_back(model_vertex.position);
             if (mesh->HasTextureCoords(0)) {
                 const auto* textureCoords = mesh->mTextureCoords[0];
                 model_vertex.texCoord = {textureCoords[j].x, textureCoords[j].y};
@@ -91,28 +79,20 @@ auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
             vertices.push_back(model_vertex);
         }
 
-        u32_indices.reserve(mesh->mNumFaces * 3);
+        indices.reserve(static_cast<std::size_t>(mesh->mNumFaces * 3));
         for (u32 f = 0; f < mesh->mNumFaces; f++) {
             const auto face = mesh->mFaces[f];
             ASSERT_MSG(face.mNumIndices == 3, "face indices not equal 3");
             for (unsigned int idx = 0; idx < 3; ++idx) {
                 auto globalIndex = static_cast<uint32_t>(face.mIndices[idx]);
-                u32_indices.push_back(globalIndex);
+                indices.push_back(globalIndex);
             }
         }
         vertexOffset += mesh->mNumVertices;  // ✅ 更新偏移
 
-        // 判断是否需要使用 32 位索引
-        if (vertices.size() > std::numeric_limits<uint16_t>::max()) {
-            mesh_models.emplace_back(vertices, u32_indices);
-        } else {
-            // 转换为 16 位索引
-            std::vector<uint16_t> u16_indices;
-            u16_indices.resize(u32_indices.size());
-            std::ranges::transform(u32_indices, u16_indices.begin(),
-                                   [](uint32_t idx) { return static_cast<uint16_t>(idx); });
-            mesh_models.emplace_back(vertices, u16_indices);
-        }
+
+            mesh_models.emplace_back(vertices, indices, position);
+
     }
 
     return mesh_models;
@@ -125,11 +105,9 @@ auto Model::createFromFile(const ::std::string& path) -> std::vector<Model> {
 }
 
 auto Model::getIndices() const -> std::span<const std::byte> {
-    if (use32BitIndices) {
-        return as_bytes(std::span(u32_indices_));
-    }
+        return as_bytes(std::span(indices_));
 
-    return as_bytes(std::span(u16_indices_));
+
 }
 
 }  // namespace graphics

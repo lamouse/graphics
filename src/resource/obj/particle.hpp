@@ -52,7 +52,6 @@ struct ParticleModel : public IMeshData {
             return Vertex::getVertexBinding();
         }
 
-        [[nodiscard]] auto uses32BitIndices() const -> bool override { return false; }
         ParticleModel(std::uint64_t count, float aspect);
         ~ParticleModel() override = default;
 

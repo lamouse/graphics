@@ -19,7 +19,5 @@ class IMeshData {
             -> std::vector<render::VertexAttribute> = 0;
         [[nodiscard]] virtual auto getVertexBinding() const
             -> std::vector<render::VertexBinding> = 0;
-        // 判断是否使用 32 位索引
-        [[nodiscard]] virtual auto uses32BitIndices() const -> bool = 0;
 };
 }  // namespace graphics

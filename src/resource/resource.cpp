@@ -68,8 +68,8 @@ auto ResourceManager::addModel(std::string modelName, add_mesh_func func)
         if (!model_mesh.only_vertex.empty()) {
             mesh_vertex[id] = std::make_unique<std::vector<::glm::vec3>>(model_mesh.only_vertex);
         }
-        if (!model_mesh.save32_indices.empty()) {
-            mesh_indics[id] = std::make_unique<std::vector<uint32_t>>(model_mesh.save32_indices);
+        if (!model_mesh.indices_.empty()) {
+            mesh_indics[id] = std::make_unique<std::vector<uint32_t>>(model_mesh.indices_);
         }
         mesh_ids.push_back(id);
     }

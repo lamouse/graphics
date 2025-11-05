@@ -125,7 +125,7 @@ void App::load_resource() {
     std::string viking_room_path = image_path + "viking_room.png";
     resourceManager.addTexture(viking_room_path);
 
-    std::string viking_obj_path = "models/1.obj";
+    std::string viking_obj_path = "models/viking_room.obj";
     resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";

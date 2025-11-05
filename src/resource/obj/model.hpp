@@ -75,7 +75,6 @@ class Model : public IMeshData {
         [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override;
 
         // 判断是否使用 32 位索引
-        [[nodiscard]] auto uses32BitIndices() const -> bool override { return use32BitIndices; }
         [[nodiscard]] auto getVertexAttribute() const
             -> std::vector<render::VertexAttribute> override {
             return Vertex::getVertexAttribute();
@@ -86,25 +85,19 @@ class Model : public IMeshData {
         static auto createFromFile(const ::std::string& path) -> std::vector<Model>;
         CLASS_NON_COPYABLE(Model);
         CLASS_DEFAULT_MOVEABLE(Model);
-        Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint16_t>& indices);
-        Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices);
+        Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices, const std::vector<::glm::vec3>& only_vertex);
         [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override {
-            if (use32BitIndices) {
-                return u32_indices_.size();
-            }
-            return u16_indices_.size();
+            return indices_.size();
         }
         ~Model() override = default;
         std::vector<::glm::vec3> only_vertex;
-        std::vector<uint32_t> save32_indices;
+        std::vector<uint32_t> indices_;
 
     private:
         uint32_t vertexCount;
         uint32_t indicesSize;
         std::vector<Model::Vertex> vertices_;
-        std::vector<uint16_t> u16_indices_;
-        std::vector<uint32_t> u32_indices_;
-        bool use32BitIndices{false};
+
 };
 
 }  // namespace graphics
