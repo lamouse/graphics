@@ -43,6 +43,7 @@ class VulkanGraphics : public render::Graphic {
         void dispatchCompute(const IComputeInstance& instance) override;
         auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
+        auto uploadTexture(ktxTexture* ktxTexture) -> TextureId override;
         void draw(const graphics::IMeshInstance& instance) override;
         auto getDrawImage() -> ImTextureID override;
         auto addShader(std::span<const u32> data, ShaderType type) -> u64 override {

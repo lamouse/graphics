@@ -61,6 +61,46 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
         slot_image_views.insert(runtime, view_info, new_image_id, new_image);
     return image_view_id;
 }
+template <class P>
+auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
+    ImageInfo info;
+    info.size.width = ktxTexture->baseWidth;
+    info.size.height = ktxTexture->baseHeight;
+    info.type = render::texture::ImageType::e2D;
+    info.num_samples = 1;
+    info.resources.layers = static_cast<s32>(ktxTexture->numFaces);
+    info.resources.levels = 1;
+    info.format = PixelFormat::A8B8G8R8_UNORM;
+    const ImageId new_image_id = slot_images.insert(runtime, info);
+    Image& new_image = slot_images[new_image_id];
+    auto staging = runtime.UploadStagingBuffer(ktxTexture->dataSize);
+    std::memcpy(staging.mapped_span.data(), ktxTexture->pData, ktxTexture->dataSize);
+
+    std::vector<BufferImageCopy> copys;
+    for (uint32_t face = 0; face < ktxTexture->numFaces; face++) {
+        for (uint32_t level = 0; level < ktxTexture->numLevels; ++level) {
+            ktx_size_t offset{};
+            KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, 0, face, &offset);
+            BufferImageCopy copy{.buffer_offset = offset,
+                                 .buffer_size = 0,
+                                 .buffer_row_length = 0,
+                                 .buffer_image_height = 0,
+                                 .image_subresource = {.base_level = 0,
+                                                       .base_layer = static_cast<int>(face),
+                                                       .num_layers = 1},
+                                 .image_offset = {.x = 0, .y = 0, .z = 0},
+                                 .image_extent = info.size};
+            copys.push_back(copy);
+        }
+    }
+    new_image.UploadMemory(staging, copys);
+
+    ImageViewType type = ktxTexture->isCubemap ? ImageViewType::Cube : ImageViewType::e2D;
+    const ImageViewInfo view_info(info, type);
+    const ImageViewId image_view_id =
+        slot_image_views.insert(runtime, view_info, new_image_id, new_image);
+    return image_view_id;
+}
 
 template <class P>
 auto TextureCache<P>::getSampler(SamplerPreset preset) -> typename P::Sampler* {

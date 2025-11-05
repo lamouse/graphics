@@ -452,6 +452,10 @@ auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -
                                     texture.data(), texture.count());
 }
 
+auto VulkanGraphics::uploadTexture(ktxTexture* ktxTexture) -> TextureId {
+    return texture_cache.addTexture(ktxTexture);
+}
+
 void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     pipeline_state = instance.getPipelineState();
     pipeline_cache.setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
@@ -494,8 +498,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
             buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size,
                                            bindings[0].stride);
             if (resource.indices_buffer_id) {
-                buffer_cache.BindIndexBuffer(IndexFormat::UnsignedInt,
-                                             resource.indices_buffer_id);
+                buffer_cache.BindIndexBuffer(IndexFormat::UnsignedInt, resource.indices_buffer_id);
             }
             indices_size = resource.indices_count;
             vertexCount = resource.vertex_count;

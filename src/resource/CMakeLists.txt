@@ -8,6 +8,8 @@ set (sources
     instance.cpp
     texture/image.hpp
     texture/image.cpp
+    texture/ktx_image.hpp
+    texture/ktx_image.cpp
     obj/mesh.hpp
     obj/model.hpp
     obj/model.cpp
@@ -23,6 +25,7 @@ set (sources
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 add_dependencies(${LIB_RESOURCE_NAME} build_shaders)
 add_dependencies(${LIB_RESOURCE_NAME} AssetHashManifest)
+add_dependencies(${LIB_RESOURCE_NAME} skyboxes_ktx2)
 if (MSVC)
     target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
@@ -45,7 +48,7 @@ endif()
 target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${SHADER_PATH_INCLUDE})
 target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${MOUDLE_PATH_INCLUDE})
 target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE spdlog::spdlog glm::glm ecs Imgui::Imgui absl::strings)
-target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(${LIB_RESOURCE_NAME} PUBLIC nlohmann_json::nlohmann_json KTX::ktx)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_RESOURCE_NAME}/lib)

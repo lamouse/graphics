@@ -81,6 +81,11 @@ find_package(nlohmann_json CONFIG REQUIRED)
 # need vcpkg end
 add_subdirectory(third-party)
 
+# 由于vcpkg安装不了ktx所以先这样写了
+find_package(ktx REQUIRED
+        PATHS "D:/libs/scoop/apps/ktx-software/current/lib/cmake/ktx"
+)
+
 # This function should be passed a list of all files in a target. It will automatically generate
 # file groups following the directory hierarchy, so that the layout of the files in IDEs matches the
 # one in the filesystem.
@@ -132,6 +137,7 @@ include(ClangFormat)
 
 add_subdirectory(shader)
 add_subdirectory(models)
+add_subdirectory(images)
 
 add_subdirectory(src)
 add_subdirectory(doc)

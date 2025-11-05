@@ -12,6 +12,7 @@
 #include "render_core/texture/render_targets.h"
 #include <unordered_set>
 #include "common/common_funcs.hpp"
+#include <ktx.h>
 namespace render::texture {
 // 定义 key
 struct FramebufferKey {
@@ -108,6 +109,8 @@ class TextureCache : public TextureCacheInfo {
         // 添加一个纹理
         auto addTexture(const Extent2D& extent, std::span<unsigned char> data, int layer_count = 1)
             -> ImageViewId;
+
+        auto addTexture(ktxTexture* ktxTexture) -> ImageViewId;
         auto getSampler(SamplerPreset preset) -> typename P::Sampler*;
         auto getCurrentTexture() -> std::pair<ImageView*, Sampler*>;
         void setCurrentTexture(ImageViewId viewId, SamplerPreset preset);

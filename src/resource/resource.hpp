@@ -40,6 +40,8 @@ class ResourceManager {
          */
         auto addCubeMapTexture(std::span<std::string> textureNames, const std::string& name,
                                const add_texture_func& func = nullptr) -> render::TextureId;
+
+        auto addKtxTexture(std::string name) -> render::TextureId;
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         explicit ResourceManager(render::Graphic* graphic_);
 

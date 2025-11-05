@@ -31,7 +31,7 @@ add_dependencies(${LIB_NAME} host_shaders)
 target_include_directories(${LIB_NAME} PRIVATE ${HOST_SHADERS_INCLUDE})
 target_link_libraries(${LIB_NAME} PRIVATE core common shader Imgui::Imgui)
 target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers GPUOpen::VulkanMemoryAllocator GOOGLE::farmhash)
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog xxHash::xxhash)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog xxHash::xxhash KTX::ktx)
 
 if(TRACY_ENABLE)
     message(STATUS "Tracy support is enabled")

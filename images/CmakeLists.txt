@@ -1,0 +1,73 @@
+# 找到 toktx（可从 PATH 或指定路径）
+find_program(TOKTX_EXECUTABLE toktx REQUIRED
+    PATHS ENV PATH
+    DOC "Path to toktx executable from KTX-Software"
+)
+
+# 定义 cubemap 源目录
+set(SKYBOX_SOURCE_DIR "${CMAKE_SOURCE_DIR}/images/cube")
+set(SKYBOX_BUILD_DIR "${CMAKE_BINARY_DIR}/bin/images/cube")
+
+# 确保输出目录存在
+file(MAKE_DIRECTORY ${SKYBOX_BUILD_DIR})
+
+# 列出所有 skybox 名称（目录名）
+file(GLOB SKYBOX_NAMES RELATIVE ${SKYBOX_SOURCE_DIR} ${SKYBOX_SOURCE_DIR}/*)
+list(FILTER SKYBOX_NAMES EXCLUDE REGEX "^[.].*") # 排除 .DS_Store 等
+
+# 为每个 skybox 生成 KTX2 规则
+foreach(SKYBOX_NAME ${SKYBOX_NAMES})
+    set(SRC_DIR "${SKYBOX_SOURCE_DIR}/${SKYBOX_NAME}")
+    set(DST_FILE "${SKYBOX_BUILD_DIR}/${SKYBOX_NAME}.ktx2")
+
+    # 检查 6 个面是否存在
+    set(FACES posx negx posy negy posz negz)
+    set(SRC_FILES "")
+    foreach(FACE ${FACES})
+        list(APPEND SRC_FILES "${SRC_DIR}/${FACE}.jpg")
+        list(APPEND SRC_FILES "${SRC_DIR}/${FACE}.png")
+        list(APPEND SRC_FILES "${SRC_DIR}/${FACE}.hdr")
+    endforeach()
+
+    # 找到第一个存在的文件作为参考（假设格式统一）
+    set(EXT "")
+    foreach(FACE posx) # 只需检查一个面确定格式
+        if(EXISTS "${SRC_DIR}/${FACE}.hdr")
+            set(EXT ".hdr")
+        elseif(EXISTS "${SRC_DIR}/${FACE}.jpg")
+            set(EXT ".jpg")
+        elseif(EXISTS "${SRC_DIR}/${FACE}.png")
+            set(EXT ".png")
+        endif()
+    endforeach()
+
+    if(EXT STREQUAL "")
+        message(WARNING "Skybox ${SKYBOX_NAME} missing face files!")
+        continue()
+    endif()
+
+    # 构建 6 个源文件路径
+    set(INPUT_FILES "")
+    foreach(FACE ${FACES})
+        list(APPEND INPUT_FILES "${SRC_DIR}/${FACE}${EXT}")
+    endforeach()
+
+    # 添加自定义命令：调用 toktx
+    add_custom_command(
+        OUTPUT ${DST_FILE}
+        COMMAND ${TOKTX_EXECUTABLE}
+            --cubemap
+            --target_type RGBA
+            ${DST_FILE}
+            ${INPUT_FILES}
+        DEPENDS ${INPUT_FILES}
+        COMMENT "Generating KTX2 cubemap: ${SKYBOX_NAME}"
+    )
+
+    # 将 .ktx2 文件加入 ALL 构建目标
+    add_custom_target(ktx2_${SKYBOX_NAME} ALL DEPENDS ${DST_FILE})
+    list(APPEND KTX2_TARGETS ktx2_${SKYBOX_NAME})
+endforeach()
+
+# 创建总目标
+add_custom_target(skyboxes_ktx2 DEPENDS ${KTX2_TARGETS})

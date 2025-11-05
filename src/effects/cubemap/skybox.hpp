@@ -23,15 +23,20 @@ class SkyBox {
                 "images/cube/sky/posx.jpg", "images/cube/sky/negx.jpg", "images/cube/sky/posy.jpg",
                 "images/cube/sky/negy.jpg", "images/cube/sky/posz.jpg", "images/cube/sky/negz.jpg"};
 
-            auto texture_id = manager.addCubeMapTexture(cube_map_images, "skybox");
+            std::vector<std::string> cube_map_images2 = {
+                "images/cube/sky2/right.jpg", "images/cube/sky2/left.jpg",
+                "images/cube/sky2/top.jpg",   "images/cube/sky2/bottom.jpg",
+                "images/cube/sky2/front.jpg", "images/cube/sky2/back.jpg"};
+
+            // auto texture_id = manager.addCubeMapTexture(cube_map_images2, "skybox2");
+            auto ret_id = manager.addKtxTexture("images/cube/sky.ktx2");
             std::string mesh_path = "cube.obj";
             auto meshes = manager.addModel(mesh_path);
             ASSERT_MSG(!meshes.empty() || meshes.size() > 1, "cube mesh count error");
 
             auto shader_hash = manager.addGraphShader("skycube");
 
-            sky_box =
-                SkyBoxInstance{shader_hash, layout, "skybox instance", meshes.at(0), texture_id};
+            sky_box = SkyBoxInstance{shader_hash, layout, "skybox instance", meshes.at(0), ret_id};
             sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable =
                 0;
         }
