@@ -1,16 +1,15 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <string>
 #include <glm/gtx/hash.hpp>
 #include "mesh.hpp"
 namespace graphics {
-
+constexpr const uint32_t MESH_CACHE_VERSION = 1;
 struct ModelCacheHeader {
         static constexpr uint32_t MAGIC = 0x4D4F4443;  // 'MODC' (Model Cache)
         uint32_t magic = MAGIC;
-        uint32_t version = 1;
+        uint32_t version = MESH_CACHE_VERSION;
         uint64_t objFileHash = 0;  // xxHash64 of .obj content
         uint32_t modelCount = 0;
 };
@@ -25,6 +24,122 @@ struct ModelDesc {
         uint64_t vertexOffset = 0;      // into global vertices array
         uint64_t indexOffset = 0;       // into global indices array
         uint64_t onlyVertexOffset = 0;  // into global only_vertex array
+};
+
+struct MeshMaterial {
+        // 颜色属性（来自 .mtl）
+        glm::vec3 ambientColor = {1.0f, 1.0f, 1.0f};   // Ka
+        glm::vec3 diffuseColor = {1.0f, 1.0f, 1.0f};   // Kd
+        glm::vec3 specularColor = {1.0f, 1.0f, 1.0f};  // Ks
+        glm::vec3 emissiveColor = {0.0f, 0.0f, 0.0f};  // Ke
+
+        // 标量属性
+        float shininess = 64.0f;  // Ns (specular exponent)
+        float opacity = 1.0f;     // d (1.0 = opaque, 0.0 = fully transparent)
+        float ior = 1.0f;         // Ni (index of refraction)
+
+        // 纹理路径（相对路径，来自 .mtl 的 map_*）
+        std::string ambientTexture;   // map_Ka
+        std::string diffuseTexture;   // map_Kd
+        std::string specularTexture;  // map_Ks
+        std::string normalTexture;    // map_Bump or map_Ns
+        std::string emissiveTexture;  // map_Ke (rare, but supported by some tools)
+
+        // ----------------------------
+        // 序列化：写入二进制流
+        // ----------------------------
+        void serialize(std::ostream& os) const {
+            // 写入颜色
+            os.write(reinterpret_cast<const char*>(&ambientColor), sizeof(ambientColor));
+            os.write(reinterpret_cast<const char*>(&diffuseColor), sizeof(diffuseColor));
+            os.write(reinterpret_cast<const char*>(&specularColor), sizeof(specularColor));
+            os.write(reinterpret_cast<const char*>(&emissiveColor), sizeof(emissiveColor));
+
+            // 写入标量
+            os.write(reinterpret_cast<const char*>(&shininess), sizeof(shininess));
+            os.write(reinterpret_cast<const char*>(&opacity), sizeof(opacity));
+            os.write(reinterpret_cast<const char*>(&ior), sizeof(ior));
+
+            // 写入字符串（长度 + 内容）
+            auto write_string = [&](const std::string& str) {
+                auto len = static_cast<uint32_t>(str.size());
+                os.write(reinterpret_cast<const char*>(&len), sizeof(len));
+                if (len > 0) {
+                    os.write(str.data(), len);
+                }
+            };
+
+            write_string(ambientTexture);
+            write_string(diffuseTexture);
+            write_string(specularTexture);
+            write_string(normalTexture);
+            write_string(emissiveTexture);
+        }
+
+        // ----------------------------
+        // 反序列化：从二进制流读取
+        // ----------------------------
+        [[nodiscard]] auto deserialize(std::istream& is) -> bool {
+            // 读取颜色
+            if (!is.read(reinterpret_cast<char*>(&ambientColor), sizeof(ambientColor))) {
+                return false;
+            }
+            if (!is.read(reinterpret_cast<char*>(&diffuseColor), sizeof(diffuseColor))) {
+                return false;
+            }
+            if (!is.read(reinterpret_cast<char*>(&specularColor), sizeof(specularColor))) {
+                return false;
+            }
+            if (!is.read(reinterpret_cast<char*>(&emissiveColor), sizeof(emissiveColor))) {
+                return false;
+            }
+
+            // 读取标量
+            if (!is.read(reinterpret_cast<char*>(&shininess), sizeof(shininess))) {
+                return false;
+            }
+            if (!is.read(reinterpret_cast<char*>(&opacity), sizeof(opacity))) {
+                return false;
+            }
+            if (!is.read(reinterpret_cast<char*>(&ior), sizeof(ior))) {
+                return false;
+            }
+
+            // 读取字符串
+            auto read_string = [&](std::string& str) -> bool {
+                uint32_t len = 0;
+                if (!is.read(reinterpret_cast<char*>(&len), sizeof(len))) {
+                    return false;
+                }
+                if (len > 0) {
+                    str.resize(len);
+                    if (!is.read(str.data(), len)) {
+                        return false;
+                    }
+                } else {
+                    str.clear();
+                }
+                return true;
+            };
+
+            if (!read_string(ambientTexture)) {
+                return false;
+            }
+            if (!read_string(diffuseTexture)) {
+                return false;
+            }
+            if (!read_string(specularTexture)) {
+                return false;
+            }
+            if (!read_string(normalTexture)) {
+                return false;
+            }
+            if (!read_string(emissiveTexture)) {
+                return false;
+            }
+
+            return true;
+        }
 };
 
 class Model : public IMeshData {
@@ -101,16 +216,18 @@ class Model : public IMeshData {
         [[nodiscard]] auto getVertexBinding() const -> std::vector<render::VertexBinding> override {
             return Vertex::getVertexBinding();
         }
-        static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash) -> std::vector<Model>;
+        static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash)
+            -> std::vector<Model>;
         CLASS_NON_COPYABLE(Model);
         CLASS_DEFAULT_MOVEABLE(Model);
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
-              const std::vector<::glm::vec3>& only_vertex);
+              const std::vector<::glm::vec3>& only_vertex, MeshMaterial material);
         [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override { return indicesSize; }
         ~Model() override = default;
         std::vector<::glm::vec3> only_vertex;
         std::vector<uint32_t> indices_;
         std::vector<Model::Vertex> vertices_;
+        MeshMaterial material;
 
     private:
         uint32_t vertexCount;

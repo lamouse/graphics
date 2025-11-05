@@ -70,6 +70,11 @@ void saveToCache(const std::string& cachePath, const std::vector<graphics::Model
                sizeof(uint32_t) * allIndices.size());
     file.write(reinterpret_cast<const char*>(allOnlyVertices.data()),
                sizeof(glm::vec3) * allOnlyVertices.size());
+
+    // 🔥 NEW: Write all MeshMaterial entries
+    for (const auto& model : models) {
+        model.material.serialize(file);
+    }
 }
 
 auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<std::vector<graphics::Model>> {
@@ -80,7 +85,7 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<std::vector<gr
     }
     graphics::ModelCacheHeader header;
     file.read(reinterpret_cast<char*>(&header), sizeof(header));
-    if (header.magic != graphics::ModelCacheHeader::MAGIC || header.version != 1) {
+    if (header.magic != graphics::ModelCacheHeader::MAGIC || header.version != graphics::MESH_CACHE_VERSION) {
         return std::nullopt;
     }
     if (header.objFileHash != file_hash) {
@@ -108,12 +113,23 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<std::vector<gr
     file.read(reinterpret_cast<char*>(allIndices.data()), sizeof(uint32_t) * totalIndices);
     file.read(reinterpret_cast<char*>(allOnlyVertices.data()), sizeof(glm::vec3) * totalOnly);
 
+    // 🔥 NEW: Read all materials
+    std::vector<graphics::MeshMaterial> materials;
+    materials.reserve(header.modelCount);
+    for (uint32_t i = 0; i < header.modelCount; ++i) {
+        graphics::MeshMaterial mat;
+        if (!mat.deserialize(file)) {
+            return std::nullopt;  // corrupted
+        }
+        materials.push_back(std::move(mat));
+    }
+
     // Reconstruct models
     std::vector<graphics::Model> models;
     models.reserve(header.modelCount);
     for (size_t i = 0; i < header.modelCount; ++i) {
         const auto& d = descs[i];
-
+        const auto& mat = materials[i];  // 🔥 use cached material
         std::vector<graphics::Model::Vertex> verts(
             allVertices.begin() + d.vertexOffset,
             allVertices.begin() + d.vertexOffset + d.vertexCount);
@@ -123,7 +139,7 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<std::vector<gr
             allOnlyVertices.begin() + d.onlyVertexOffset,
             allOnlyVertices.begin() + d.onlyVertexOffset + d.onlyVertexCount);
 
-        models.emplace_back(std::move(verts), std::move(indices), std::move(onlyVerts));
+        models.emplace_back(std::move(verts), std::move(indices), std::move(onlyVerts), mat);
     }
 
     return models;
@@ -134,10 +150,11 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<std::vector<gr
 namespace graphics {
 
 Model::Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
-             const std::vector<::glm::vec3>& only_vertex_)
+             const std::vector<::glm::vec3>& only_vertex_, MeshMaterial material_)
     : only_vertex(only_vertex_),
       indices_(indices),
       vertices_(vertices),
+      material(std::move(material_)),
       vertexCount(static_cast<uint32_t>(vertices.size())),
       indicesSize(static_cast<uint32_t>(indices.size())) {
     assert(vertexCount >= 3 && "Vertex count must be at least 3");
@@ -211,7 +228,45 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash)
                 indices.push_back(globalIndex);
             }
         }
-        mesh_models.emplace_back(vertices, indices, position);
+        MeshMaterial meshMaterial_{};
+        if (scene->HasMaterials()) {
+            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+            if (material) {
+                aiColor3D ka, kd, ks, ke;
+                material->Get(AI_MATKEY_COLOR_AMBIENT, ka);
+                meshMaterial_.ambientColor = {ka.r, ka.g, ka.b};
+                material->Get(AI_MATKEY_COLOR_DIFFUSE, kd);
+                meshMaterial_.diffuseColor = {kd.r, kd.g, kd.b};
+                material->Get(AI_MATKEY_COLOR_SPECULAR, ks);
+                meshMaterial_.specularColor = {ks.r, ks.g, ks.b};
+                material->Get(AI_MATKEY_COLOR_EMISSIVE, ke);
+                meshMaterial_.emissiveColor = {ke.r, ke.g, ke.b};
+
+                material->Get(AI_MATKEY_SHININESS, meshMaterial_.shininess);
+                material->Get(AI_MATKEY_OPACITY, meshMaterial_.opacity);
+                material->Get(AI_MATKEY_REFRACTI,
+                              meshMaterial_.ior);  // 注意：有些导出器用 AI_MATKEY_REFRACTI_VACUUM
+
+                aiString texture_path;
+                if (material->GetTexture(aiTextureType_AMBIENT, 0, &texture_path) == AI_SUCCESS) {
+                    meshMaterial_.ambientTexture = texture_path.C_Str();
+                }
+                if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texture_path) == AI_SUCCESS) {
+                    meshMaterial_.diffuseTexture = texture_path.C_Str();
+                }
+                if (material->GetTexture(aiTextureType_SPECULAR, 0, &texture_path) == AI_SUCCESS) {
+                    meshMaterial_.specularTexture = texture_path.C_Str();
+                }
+                if (material->GetTexture(aiTextureType_NORMALS, 0, &texture_path) == AI_SUCCESS) {
+                    meshMaterial_.normalTexture = texture_path.C_Str();
+                }
+                if (material->GetTexture(aiTextureType_EMISSIVE, 0, &texture_path) == AI_SUCCESS) {
+                    meshMaterial_.emissiveTexture = texture_path.C_Str();
+                }
+            }
+        }
+
+        mesh_models.emplace_back(vertices, indices, position, meshMaterial_);
     }
     std::string cache_path = model_cache_path + std::to_string(obj_hash) + model_cache_extend;
     saveToCache(cache_path, mesh_models, obj_hash);
