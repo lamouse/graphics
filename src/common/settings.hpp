@@ -53,6 +53,8 @@ struct Values {
                                                       Category::render};
         Setting<bool, false> use_pipeline_cache{linkage, true, "use_pipeline_cache",
                                                 Category::render};
+        Setting<bool, false> use_asynchronous_shaders{linkage, true, "use_asynchronous_shaders",
+                                                      Category::render};
 
         Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
         Setting<bool, false> log_file{linkage, true, "file", Category::log};

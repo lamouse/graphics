@@ -3,7 +3,7 @@
 #include "render_vulkan/pipeline_statistics.hpp"
 #include "scheduler.hpp"
 #include "render_pass.hpp"
-#include <filesystem>
+#include "common/file.hpp"
 #include <fstream>
 #include <memory>
 #include <utility>
@@ -13,8 +13,11 @@
 #include "render_core/render_vulkan/vk_shader_util.hpp"
 #include "shader_tools/shader_compile.hpp"
 #include <farmhash.h>
+#include <xxhash.h>
 namespace render::vulkan {
 
+constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";
+constexpr const char* PIPELINE_CACHE_BIN_PATH = "data/cache/pipeline/vulkan.bin";
 namespace {
 
 constexpr u32 CACHE_VERSION = 11;
@@ -59,8 +62,7 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
       buffer_cache(buffer_cache),
       texture_cache(texture_cache),
       shader_notify(shader_notify_),
-      use_asynchronous_shaders(
-          common::settings::get<settings::Graphics>().use_asynchronous_shaders),
+      use_asynchronous_shaders(settings::values.use_asynchronous_shaders.GetValue()),
       use_vulkan_pipeline_cache(settings::values.use_pipeline_cache.GetValue()),
       workers(device.hasBrokenParallelShaderCompiling() ? 1ULL : GetTotalPipelineWorkers(),
               "VkPipelineBuilder"),
@@ -73,9 +75,87 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
         .has_extended_dynamic_state_3_enables = device.IsExtExtendedDynamicState3EnablesSupported(),
         .has_dynamic_vertex_input = device.IsExtVertexInputDynamicStateSupported(),
     };
+
+    loadPipelineCacheFromDisk();
 }
 
-PipelineCache::~PipelineCache() {}
+void PipelineCache::loadPipelineCacheFromDisk() {
+    if (use_vulkan_pipeline_cache) {
+        common::create_dir(PIPELINE_CACHE_PATH);
+        std::vector<char> cacheData;
+
+        try {
+            // 尝试读取缓存文件
+            std::ifstream file(PIPELINE_CACHE_BIN_PATH, std::ios::binary);
+            if (file.is_open()) {
+                // 读取头部
+
+                file.read(reinterpret_cast<char*>(&pipe_line_cache_header),
+                          sizeof(pipe_line_cache_header));
+                if (file.gcount() != sizeof(pipe_line_cache_header)) {
+                    file.close();
+                    throw std::exception("file header error");
+                }
+
+                if(pipe_line_cache_header.magic != PipelineCacheHeader::MAGIC || pipe_line_cache_header.version != CACHE_VERSION){
+                    throw std::exception("cache need update");
+                }
+                file.seekg(0, std::ios::end);
+                size_t totalSize = static_cast<size_t>(file.tellg());
+                file.seekg(sizeof(pipe_line_cache_header), std::ios::beg);
+                size_t vkDataSize = totalSize - sizeof(PipelineCacheHeader);
+                cacheData.resize(vkDataSize);
+                file.read(cacheData.data(), vkDataSize);
+                file.close();
+
+                vk::PipelineCacheCreateInfo cacheInfo{};
+                cacheInfo.initialDataSize = cacheData.size();
+                cacheInfo.pInitialData = cacheData.data();
+                vulkan_pipeline_cache = device.logical().createPipelineCache(cacheInfo);
+            } else {
+                VkPipelineCacheCreateInfo cacheInfo{};
+                cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+                vulkan_pipeline_cache = device.logical().createPipelineCache(cacheInfo);
+            }
+        } catch (const std::exception& e) {
+            VkPipelineCacheCreateInfo cacheInfo{};
+            cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+            vulkan_pipeline_cache = device.logical().createPipelineCache(cacheInfo);
+        }
+    }
+}
+
+void PipelineCache::savePipelineCache() {
+    if (!use_vulkan_pipeline_cache) {
+        return;
+    }
+    size_t dataSize = 0;
+
+    vulkan_pipeline_cache.Read(&dataSize, nullptr);
+
+    if (dataSize == 0) {
+        return;
+    }
+    std::vector<char> cacheData(dataSize);
+    vulkan_pipeline_cache.Read(&dataSize, cacheData.data());
+    XXH64_hash_t hash = XXH64(cacheData.data(), dataSize * sizeof(char), 0);
+    if (hash == pipe_line_cache_header.hash) {
+        return;
+    }
+    std::ofstream file(PIPELINE_CACHE_BIN_PATH, std::ios::binary);
+    if (file.is_open()) {
+        // 构造头部
+        PipelineCacheHeader header{};
+        header.magic = PipelineCacheHeader::MAGIC;
+        header.version = CACHE_VERSION;
+        header.hash = hash;
+        file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+        file.write(cacheData.data(), dataSize);
+        file.close();
+    }
+}
+
+PipelineCache::~PipelineCache() { savePipelineCache(); }
 
 auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> GraphicsPipeline* {
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Vertex)) =

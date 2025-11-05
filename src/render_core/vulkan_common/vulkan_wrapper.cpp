@@ -264,6 +264,11 @@ auto LogicDevice::createPipeline(const vk::ComputePipelineCreateInfo& ci,
     return Pipeline{result.value, handle};
 }
 
+[[nodiscard]] auto LogicDevice::createPipelineCache(const vk::PipelineCacheCreateInfo& ci) const -> VulkanPipelineCache{
+    auto result = handle.createPipelineCache(ci);
+    return VulkanPipelineCache{result, handle};
+}
+
 auto LogicDevice::createFence(const vk::FenceCreateInfo& ci) const -> Fence {
     auto fence = handle.createFence(ci);
     return Fence{fence, handle};

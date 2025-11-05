@@ -26,6 +26,14 @@ static_assert(std::has_unique_object_representations_v<ComputePipelineCacheKey>)
 static_assert(std::is_trivially_copyable_v<ComputePipelineCacheKey>);
 static_assert(std::is_trivially_constructible_v<ComputePipelineCacheKey>);
 
+struct PipelineCacheHeader {
+        static constexpr uint32_t MAGIC = 0x43504B56;  // 'VKPC' in little-endian
+
+        uint32_t magic;
+        uint32_t version;
+        uint64_t hash;  // xxHash64 of your pipeline key (shaders + state)
+};
+
 }  // namespace render::vulkan
 
 namespace std {
@@ -90,6 +98,9 @@ class PipelineCache : public ShaderCache {
 
         [[nodiscard]] auto CurrentGraphicsPipelineSlowPath() -> GraphicsPipeline*;
 
+        void loadPipelineCacheFromDisk();
+        void savePipelineCache();
+
         const Device& device;
         scheduler::Scheduler& scheduler;
         resource::DescriptorPool& descriptor_pool;
@@ -115,6 +126,7 @@ class PipelineCache : public ShaderCache {
         common::ThreadWorker workers;
         common::ThreadWorker serialization_thread;
         DynamicFeatures dynamic_features;
+        PipelineCacheHeader pipe_line_cache_header{};
 };
 
 }  // namespace render::vulkan
