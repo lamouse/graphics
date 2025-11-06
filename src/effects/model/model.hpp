@@ -21,6 +21,10 @@ class LightModel {
             auto texture_id = manager.getTexture(names.texture_name);
             meshes.reserve(sub_mesh.size());
             for (const auto& mesh : sub_mesh) {
+
+                if(!mesh.material.diffuseTextures.empty()){
+                    texture_id = manager.addTexture("./images/" + mesh.material.diffuseTextures[0]);
+                }
                 meshes.emplace_back(
                     render::RenderCommand{
                         .indexOffset = mesh.indexOffset,
@@ -43,20 +47,20 @@ class LightModel {
                 }
                 i++;
 
-                if (first) {
-                    pending_pick_ = true;
-                } else {
-                    if (!render_state.mouse_select && down && pending_pick_ &&
-                        entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                        check_pick(id, mesh.getMeshId(), frameInfo, render_state, transform);
-                        if (render_state.mouse_select) {
-                            pending_pick_ = false;
-                        }
-                    }
-                    if (i == meshes.size()) {
-                        pending_pick_ = false;
-                    }
-                }
+                // if (first) {
+                //     pending_pick_ = true;
+                // } else {
+                //     if (!render_state.mouse_select && down && pending_pick_ &&
+                //         entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                //         check_pick(id, mesh.getMeshId(), frameInfo, render_state, transform);
+                //         if (render_state.mouse_select) {
+                //             pending_pick_ = false;
+                //         }
+                //     }
+                //     if (i == meshes.size()) {
+                //         pending_pick_ = false;
+                //     }
+                // }
 
                 // 🚀 2. 如果已选中且按住左键 → 跟随鼠标移动
                 if (render_state.mouse_select) {

@@ -14,8 +14,11 @@ namespace graphics {
 auto ResourceManager::addTexture(std::string textureName, const add_texture_func& func)
     -> render::TextureId {
     ASSERT_MSG(!textureName.empty(), "textureName is null");
-    ASSERT_MSG(!textures.contains(textureName), textureName + " texture in catch");
 
+    const auto [pair, is_new]{ textures.try_emplace(textureName)};
+    if(!is_new){
+        return pair->second;
+    }
     resource::image::Image texture(textureName);
     render::TextureId id;
     if (func) {
@@ -23,7 +26,7 @@ auto ResourceManager::addTexture(std::string textureName, const add_texture_func
     } else {
         id = graphic->uploadTexture(texture);
     }
-    textures[textureName] = id;
+    pair->second = id;
     return id;
 }
 
