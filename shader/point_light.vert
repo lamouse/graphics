@@ -10,7 +10,7 @@ const vec2 OFFSETS[6] = vec2[](
 );
 
 layout (location = 0) out vec2 fragOffset;
-
+layout (location = 1) out vec3 fragWorldPos;
 struct PointLight {
   vec4 position; // ignore w
   vec4 color; // w is intensity
@@ -40,6 +40,6 @@ void main() {
   vec3 positionWorld = push.position.xyz
     + push.radius * fragOffset.x * cameraRightWorld
     + push.radius * fragOffset.y * cameraUpWorld;
-
+  fragWorldPos = positionWorld;
   gl_Position = ubo.projection * ubo.view * vec4(positionWorld, 1.0);
 }

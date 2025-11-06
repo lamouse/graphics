@@ -64,8 +64,8 @@ class LightModel {
                     move_model(frameInfo, transform);
                 }
                 PointLight light{};
-                light.color = {.2f, .4f, 1.f, 3.f};
-                light.position = {.0f,.0f, 0.f, 1.f};
+                light.color = {1.f, 1.f, 1.f, 1.f};
+                light.position = {.0f,.0f, 0.f, .3f};
                 mesh.PushConstant().modelMatrix = transform.mat4();
                 mesh.PushConstant().normalMatrix = transform.normalMatrix();
                 mesh.getUBO().numLights = 1;
@@ -73,7 +73,6 @@ class LightModel {
                 mesh.getUBO().view = frameInfo.camera->getView();
                 mesh.getUBO().ambientLightColor.w = 1.f;
                 mesh.getUBO().pointLights[0] = light;
-                mesh.getUBO().pointLights[0].position = glm::vec4(1.0, 0.5, 0.3, 1.f);
             }
         }
 

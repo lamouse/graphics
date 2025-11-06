@@ -32,7 +32,7 @@ class PointLightEffect {
     public:
         PointLightEffect(graphics::ResourceManager& manager,
                          const layout::FrameBufferLayout& layout, float intensity = 10.f,
-                         float radius = 0.5f, glm::vec3 color_ = glm::vec3(1.f))
+                         float radius = .4f, glm::vec3 color_ = glm::vec3(.2f, .3f, .4f))
             : color(color_), pointLight(), id(getCurrentId()) {
             auto hash = manager.getShaderHash<ShaderHash>("point_light");
             point_light = PointLightInstance{{}, hash, layout, "PointLightInstance"},
@@ -51,11 +51,21 @@ class PointLightEffect {
         CLASS_DEFAULT_MOVEABLE(PointLightEffect);
 
         void update(const core::FrameInfo& frameInfo) {
-            auto rotateLight =
-                glm::rotate(glm::mat4(1.f), 0.5f * frameInfo.frameTime, {0.f, -1.f, 0.f});
+            // 2. 定义旋转参数
+            constexpr float angularSpeed = 1.4f;  // 弧度/秒
+            constexpr float radius = 2.0f;        // 旋转半径
+                                                  // 3. 计算当前角度（绝对角度，不是增量！）
+            float angle = angularSpeed * frameInfo.frameTime;
             auto& transform = point_light.entity_.getComponent<ecs::TransformComponent>();
-            // update light position
-            transform.translation = glm::vec3(rotateLight * glm::vec4(transform.translation, 1.f));
+            // 4. 构造旋转矩阵（绕 Y 轴）
+            glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+            // 5. 初始偏移向量（在 XZ 平面）
+            glm::vec4 localOffset(radius, 0.0f, 0.0f, 1.0f);
+
+            // 6. 计算世界位置：center + 旋转后的偏移
+            glm::vec3 newPosition = glm::vec3(rotation * localOffset);
+
+            transform.translation = newPosition;
             point_light.getUBO().numLights = 6;
             point_light.getUBO().projection = frameInfo.camera->getProjection();
             point_light.getUBO().view = frameInfo.camera->getView();
