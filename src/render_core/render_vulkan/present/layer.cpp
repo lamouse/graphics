@@ -49,7 +49,7 @@ void Layer::CreateDescriptorPool() {
 }
 
 void Layer::CreateDescriptorSets(vk::DescriptorSetLayout layout) {
-    const std::vector layouts(image_count, layout);
+    std::vector<vk::DescriptorSetLayout> layouts(image_count, layout);
     descriptor_sets = present::utils::CreateWrappedDescriptorSets(descriptor_pool, layouts);
 }
 

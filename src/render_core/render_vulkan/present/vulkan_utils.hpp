@@ -2,6 +2,7 @@
 #include "vulkan_common/device.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
+#include <span>
 namespace render::vulkan::present::utils {
 auto CreateWrappedDescriptorSetLayout(const Device& device,
                                       std::initializer_list<vk::DescriptorType> types)
@@ -38,7 +39,7 @@ auto CreateWrappedDescriptorPool(
     -> VulkanDescriptorPool;
 
 auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
-                                 render::vulkan::utils::Span<vk::DescriptorSetLayout> layouts)
+                                 std::span<vk::DescriptorSetLayout> layouts)
     -> DescriptorSets;
 
 auto CreateWriteDescriptorSet(std::vector<vk::DescriptorImageInfo>& images, vk::Sampler sampler,

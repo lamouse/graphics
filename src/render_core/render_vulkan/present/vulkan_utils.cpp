@@ -286,7 +286,7 @@ auto CreateWrappedDescriptorPool(const Device& device, size_t max_descriptors, s
 }
 
 auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
-                                 render::vulkan::utils::Span<vk::DescriptorSetLayout> layouts)
+                                 std::span<vk::DescriptorSetLayout> layouts)
     -> DescriptorSets {
     return pool.Allocate(vk::DescriptorSetAllocateInfo{
         *pool,
