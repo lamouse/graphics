@@ -6,6 +6,10 @@ namespace ecs {
 constexpr auto DEFAULT_FOVY = 45.F;
 constexpr auto DEFAULT_NEAR = 0.1F;
 constexpr auto DEFAULT_FAR = 10.F;
+constexpr auto DEFAULT_SPEED = 2.5f;
+constexpr auto DEFAULT_SENSITIVITY = 0.02f;
+
+
 constexpr glm::vec3 DEFAULT_UP{.0F, 1.F, 0.F};
 constexpr glm::vec3 DEFAULT_EYE{0.F, .0F, 5.0F};
 constexpr glm::vec3 DEFAULT_CENTER{.0F, .0F, .0F};
@@ -25,6 +29,8 @@ struct CameraComponent {
         mutable bool projDirty{true};
 
     public:
+        float speed{DEFAULT_SPEED};
+        float sensitivity{DEFAULT_SENSITIVITY};
         CameraComponent() = default;
         ~CameraComponent() = default;
         CLASS_DEFAULT_COPYABLE(CameraComponent);

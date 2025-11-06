@@ -10,15 +10,14 @@ namespace graphics {
 struct CameraSystem {
     public:
         static void update(ecs::CameraComponent& cam, core::InputState state,
-                           float deltaTime = 1.0f / 60.0f) {
-            float moveSpeed = 2.0f;
+                           float deltaTime) {
 
             // 计算相机坐标系
             glm::vec3 forward = glm::normalize(cam.center() - cam.eye());
             glm::vec3 right = glm::normalize(glm::cross(cam.up(), forward));
             glm::vec3 up = glm::normalize(glm::cross(forward, right));
 
-            float frameSpeed = moveSpeed * deltaTime;
+            float frameSpeed = cam.speed * deltaTime;
 
             // 🚶 WASD 移动
             if (state.key == core::InputKey::W && state.key_down.Value()) {
@@ -74,9 +73,9 @@ struct CameraSystem {
 
                 toEye = glm::normalize(toEye);
 
-                float sensitivity = 0.002f;
-                float dx = state.mouseRelativeX_ * sensitivity;
-                float dy = -state.mouseRelativeY_ * sensitivity;
+
+                float dx = state.mouseRelativeX_ * cam.sensitivity;
+                float dy = -state.mouseRelativeY_ * cam.sensitivity;
 
                 // 🔁 1. 先绕 WORLD_UP 旋转（yaw）—— 左右
                 glm::mat4 yawRot = glm::rotate(glm::mat4(1.0f), -dx, WORLD_UP);

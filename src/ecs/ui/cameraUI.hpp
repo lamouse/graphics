@@ -27,5 +27,7 @@ inline void DrawCameraUI(CameraComponent& cam) {
     auto fovy = cam.getFovy();
     DrawFloatControl("FOV", fovy, 0.1F, DEFAULT_FOVY);
     cam.setFovy(fovy);
+    DrawFloatControl("speed", cam.speed, 0.01f, DEFAULT_SPEED, 1.0f, 3.f);
+    DrawFloatControl("sensitivity", cam.sensitivity, .001f, DEFAULT_SENSITIVITY, .001f, .1f);
 }
 }  // namespace ecs

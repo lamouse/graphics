@@ -77,7 +77,7 @@ void App::run() {
                 current_mouse_X = e->mouseX_;
                 current_mouse_Y = e->mouseY_;
             }
-            CameraSystem::update(cameraComponent, e.value());
+            CameraSystem::update(cameraComponent, e.value(), frameInfo.frameTime);
             frameInfo.input_state = e.value();
             registry.updateAll(frameInfo);
         }
