@@ -20,11 +20,23 @@
 
 namespace graphics {
 namespace {
-auto getRuntime() -> float {
+struct FrameTime {
+        float duration;
+        float frame;
+};
+auto getRuntime() -> FrameTime {
+    FrameTime frameTIme{};
     static auto startTime = ::std::chrono::high_resolution_clock::now();
+    static auto lastTime = startTime;
     auto currentTime = ::std::chrono::high_resolution_clock::now();
-    return ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
-        .count();
+    frameTIme.duration =
+        ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
+            .count();
+    frameTIme.frame =
+        ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - lastTime)
+            .count();
+    lastTime = currentTime;
+    return frameTIme;
 }
 }  // namespace
 
@@ -61,7 +73,8 @@ void App::run() {
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
         frameInfo.camera = &camera;
-        frameInfo.frameTime = getRuntime();
+        auto [duration, frame] = getRuntime();
+        frameInfo.frameTime = duration;
         frameInfo.resource_manager = &resourceManager;
         if (input_event.empty()) {
             registry.updateAll(frameInfo);
@@ -77,7 +90,7 @@ void App::run() {
                 current_mouse_X = e->mouseX_;
                 current_mouse_Y = e->mouseY_;
             }
-            CameraSystem::update(cameraComponent, e.value(), frameInfo.frameTime);
+            CameraSystem::update(cameraComponent, e.value(), frame);
             frameInfo.input_state = e.value();
             registry.updateAll(frameInfo);
         }

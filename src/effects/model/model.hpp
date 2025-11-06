@@ -48,8 +48,7 @@ class LightModel {
                 } else {
                     if (!render_state.mouse_select && down && pending_pick_ &&
                         entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                        check_pick(id, mesh.getMeshId(), frameInfo, render_state,
-                                   transform);
+                        check_pick(id, mesh.getMeshId(), frameInfo, render_state, transform);
                         if (render_state.mouse_select) {
                             pending_pick_ = false;
                         }
@@ -65,13 +64,13 @@ class LightModel {
                 }
                 PointLight light{};
                 light.color = {1.f, 1.f, 1.f, 1.f};
-                light.position = {.0f,.0f, 0.f, .3f};
+                light.position = {2.0f, 2.0f, 2.f, .4};
                 mesh.PushConstant().modelMatrix = transform.mat4();
                 mesh.PushConstant().normalMatrix = transform.normalMatrix();
-                mesh.getUBO().numLights = 1;
+                mesh.getUBO().numLights = 6;
                 mesh.getUBO().projection = frameInfo.camera->getProjection();
                 mesh.getUBO().view = frameInfo.camera->getView();
-                mesh.getUBO().ambientLightColor.w = 1.f;
+                mesh.getUBO().ambientLightColor.w = .3f;
                 mesh.getUBO().pointLights[0] = light;
             }
         }
