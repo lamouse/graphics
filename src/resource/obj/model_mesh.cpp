@@ -67,6 +67,17 @@ void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
     }
 }
 
+auto getTexturePath(aiMaterial* mat, aiTextureType type) -> std::vector<std::string> {
+    std::vector<std::string> paths;
+    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+        aiString str;
+        if (mat->GetTexture(type, i, &str) == AI_SUCCESS) {
+            paths.emplace_back(str.C_Str());
+        }
+    }
+    return paths;
+}
+
 auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Model> {
     auto cachePath = std::string(model_cache_path) + std::to_string(file_hash) + model_cache_extend;
     std::ifstream file(cachePath, std::ios::binary);
@@ -225,62 +236,32 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
             }
 
             // 纹理
-            aiString path;
-            if (material->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS) {
-                mat.ambientTexture = path.C_Str();
+            mat.ambientTextures = getTexturePath(material, aiTextureType_AMBIENT);
+            mat.diffuseTextures = getTexturePath(material, aiTextureType_DIFFUSE);
+            mat.specularTextures = getTexturePath(material, aiTextureType_SPECULAR);
+            mat.heightTextures = getTexturePath(material, aiTextureType_HEIGHT);
+            mat.normalTextures = getTexturePath(material, aiTextureType_NORMALS);
+            if (mat.normalTextures.empty()) {
+                mat.normalTextures = mat.heightTextures;
             }
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-                mat.diffuseTexture = path.C_Str();
-            }
-            if (material->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS) {
-                mat.specularTexture = path.C_Str();
-            }
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
-                mat.normalTexture = path.C_Str();
-            }  // 如果没有，再看 HEIGHT（可能是 bump/height map）
-            else if (material->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS) {
-                // 可以当作法线贴图处理，或者作为高度图（需视渲染管线而定）
-                mat.normalTexture = path.C_Str();  // 或者存到 heightTexture
-            }
-            if (material->GetTexture(aiTextureType_EMISSIVE, 0, &path) == AI_SUCCESS) {
-                mat.emissiveTexture = path.C_Str();
-            }
+            mat.emissiveTextures = getTexturePath(material, aiTextureType_EMISSIVE);
 
             // ========== PBR 贴图（Assimp 5.0+ 支持）==========
 
             // Albedo (Base Color) —— PBR 中的 diffuse 替代
-            if (material->GetTexture(aiTextureType_BASE_COLOR, 0, &path) == AI_SUCCESS) {
-                mat.albedoTexture = path.C_Str();
-            } else {
-                // Fallback: 如果没有 BASE_COLOR，用 DIFFUSE 作为 albedo（兼容非 PBR 模型）
-                if (!mat.diffuseTexture.empty()) {
-                    mat.albedoTexture = mat.diffuseTexture;
-                }
+            mat.albedoTextures = getTexturePath(material, aiTextureType_BASE_COLOR);
+            if (mat.albedoTextures.empty()) {
+                mat.albedoTextures = mat.diffuseTextures;
             }
-
             // Metallic
-            if (material->GetTexture(aiTextureType_METALNESS, 0, &path) == AI_SUCCESS) {
-                mat.metallicTexture = path.C_Str();
-            }
-
+            mat.metallicTextures = getTexturePath(material, aiTextureType_METALNESS);
             // Roughness
-            if (material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &path) == AI_SUCCESS) {
-                mat.metallicRoughnessTexture = path.C_Str();
-            }
+            mat.metallicRoughnessTextures =
+                getTexturePath(material, aiTextureType_DIFFUSE_ROUGHNESS);
 
-            // Ambient Occlusion (AO)
-            if (material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &path) == AI_SUCCESS) {
-                mat.aoTexture = path.C_Str();
-            } else {
-                // Fallback: 某些工具把 AO 写成 AMBIENT（map_Ka）
-                if (!mat.ambientTexture.empty()) {
-                    mat.aoTexture = mat.ambientTexture;
-                }
-            }
-
-            // Height / Displacement（如果你需要独立的高度图，不要和 normal 混用）
-            if (material->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS) {
-                mat.heightTexture = path.C_Str();
+            mat.aoTextures = getTexturePath(material, aiTextureType_AMBIENT_OCCLUSION);
+            if (mat.aoTextures.empty()) {
+                mat.aoTextures = mat.ambientTextures;
             }
         }
 

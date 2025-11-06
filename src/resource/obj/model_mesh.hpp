@@ -5,6 +5,43 @@
 #include <glm/gtx/hash.hpp>
 #include "mesh.hpp"
 namespace graphics {
+
+// 辅助 lambda：写入 vector<string>
+const auto write_string_vector = [](std::ostream& os, const std::vector<std::string>& vec) -> void {
+    auto size = static_cast<uint32_t>(vec.size());
+    os.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    for (const auto& str : vec) {
+        auto len = static_cast<uint32_t>(str.size());
+        os.write(reinterpret_cast<const char*>(&len), sizeof(len));
+        if (len > 0) {
+            os.write(str.data(), len);
+        }
+    }
+};
+
+// 辅助 lambda：读取 vector<string>
+const auto read_string_vector = [](std::istream& is, std::vector<std::string>& vec) -> bool {
+    uint32_t size = 0;
+    if (!is.read(reinterpret_cast<char*>(&size), sizeof(size))) {
+        return false;
+    }
+    vec.resize(size);
+    for (auto& str : vec) {
+        uint32_t len = 0;
+        if (!is.read(reinterpret_cast<char*>(&len), sizeof(len))) {
+            return false;
+        }
+        if (len > 0) {
+            str.resize(len);
+            if (!is.read(str.data(), len)) {
+                return false;
+            }
+        } else {
+            str.clear();
+        }
+    }
+    return true;
+};
 constexpr const uint32_t MESH_CACHE_VERSION = 1;
 constexpr uint32_t MODEL_CACHE_MAGIC = 0x4D4F444C;  // 'MODL'
 struct ModelCacheHeader {
@@ -16,8 +53,10 @@ struct ModelCacheHeader {
         uint32_t subMeshCount = 0;  // 改为 subMeshCount
         uint32_t padding = 0;       // 对齐
 };
+
 struct MeshMaterial {
         std::string name = "default";
+
         // 颜色属性（来自 .mtl）
         glm::vec3 ambientColor = {1.0f, 1.0f, 1.0f};   // Ka
         glm::vec3 diffuseColor = {1.0f, 1.0f, 1.0f};   // Kd
@@ -25,26 +64,27 @@ struct MeshMaterial {
         glm::vec3 emissiveColor = {0.0f, 0.0f, 0.0f};  // Ke
 
         // 标量属性
-        float shininess = 64.0f;  // Ns (specular exponent)
-        float opacity = 1.0f;     // d (1.0 = opaque, 0.0 = fully transparent)
-        float ior = 1.0f;         // Ni (index of refraction)
+        float shininess = 64.0f;  // Ns
+        float opacity = 1.0f;     // d
+        float ior = 1.0f;         // Ni
 
         // PBR
         float metallic = 0.0f;
         float roughness = 1.0f;
         float ao = 1.0f;
 
-        // 纹理路径（相对路径，来自 .mtl 的 map_*）
-        std::string ambientTexture;   // map_Ka
-        std::string diffuseTexture;   // map_Kd
-        std::string specularTexture;  // map_Ks
-        std::string normalTexture;    // map_Bump or map_Ns
-        std::string emissiveTexture;  // map_Ke (rare, but supported by some tools)
-        std::string aoTexture;
-        std::string metallicTexture;  // 或合并为 metallicRoughnessTexture
-        std::string albedoTexture;
-        std::string metallicRoughnessTexture;
-        std::string heightTexture;
+        // 纹理路径 —— 改为 vector 支持多贴图
+        std::vector<std::string> ambientTextures;   // map_Ka
+        std::vector<std::string> diffuseTextures;   // map_Kd
+        std::vector<std::string> specularTextures;  // map_Ks
+        std::vector<std::string> normalTextures;    // map_Bump / map_Ns
+        std::vector<std::string> emissiveTextures;  // map_Ke
+        std::vector<std::string> aoTextures;
+        std::vector<std::string> metallicTextures;
+        std::vector<std::string> albedoTextures;
+        std::vector<std::string> metallicRoughnessTextures;
+        std::vector<std::string> heightTextures;
+
         // ----------------------------
         // 序列化：写入二进制流
         // ----------------------------
@@ -65,26 +105,24 @@ struct MeshMaterial {
             os.write(reinterpret_cast<const char*>(&roughness), sizeof(roughness));
             os.write(reinterpret_cast<const char*>(&ao), sizeof(ao));
 
-            // 写入字符串（长度 + 内容）
-            auto write_string = [&](const std::string& str) {
-                auto len = static_cast<uint32_t>(str.size());
+            // 写入 name（保持为单 string）
+            {
+                auto len = static_cast<uint32_t>(name.size());
                 os.write(reinterpret_cast<const char*>(&len), sizeof(len));
-                if (len > 0) {
-                    os.write(str.data(), len);
-                }
-            };
+                if (len > 0) os.write(name.data(), len);
+            }
 
-            write_string(name);
-            write_string(ambientTexture);
-            write_string(diffuseTexture);
-            write_string(specularTexture);
-            write_string(normalTexture);
-            write_string(emissiveTexture);
-            write_string(aoTexture);
-            write_string(metallicTexture);
-            write_string(albedoTexture);
-            write_string(metallicRoughnessTexture);
-            write_string(heightTexture);
+            // 写入所有纹理 vector
+            write_string_vector(os, ambientTextures);
+            write_string_vector(os, diffuseTextures);
+            write_string_vector(os, specularTextures);
+            write_string_vector(os, normalTextures);
+            write_string_vector(os, emissiveTextures);
+            write_string_vector(os, aoTextures);
+            write_string_vector(os, metallicTextures);
+            write_string_vector(os, albedoTextures);
+            write_string_vector(os, metallicRoughnessTextures);
+            write_string_vector(os, heightTextures);
         }
 
         // ----------------------------
@@ -92,94 +130,46 @@ struct MeshMaterial {
         // ----------------------------
         [[nodiscard]] auto deserialize(std::istream& is) -> bool {
             // 读取颜色
-            if (!is.read(reinterpret_cast<char*>(&ambientColor), sizeof(ambientColor))) {
+            if (!is.read(reinterpret_cast<char*>(&ambientColor), sizeof(ambientColor)))
                 return false;
-            }
-            if (!is.read(reinterpret_cast<char*>(&diffuseColor), sizeof(diffuseColor))) {
+            if (!is.read(reinterpret_cast<char*>(&diffuseColor), sizeof(diffuseColor)))
                 return false;
-            }
-            if (!is.read(reinterpret_cast<char*>(&specularColor), sizeof(specularColor))) {
+            if (!is.read(reinterpret_cast<char*>(&specularColor), sizeof(specularColor)))
                 return false;
-            }
-            if (!is.read(reinterpret_cast<char*>(&emissiveColor), sizeof(emissiveColor))) {
+            if (!is.read(reinterpret_cast<char*>(&emissiveColor), sizeof(emissiveColor)))
                 return false;
-            }
 
             // 读取标量
-            if (!is.read(reinterpret_cast<char*>(&shininess), sizeof(shininess))) {
-                return false;
-            }
-            if (!is.read(reinterpret_cast<char*>(&opacity), sizeof(opacity))) {
-                return false;
-            }
-            if (!is.read(reinterpret_cast<char*>(&ior), sizeof(ior))) {
-                return false;
-            }
+            if (!is.read(reinterpret_cast<char*>(&shininess), sizeof(shininess))) return false;
+            if (!is.read(reinterpret_cast<char*>(&opacity), sizeof(opacity))) return false;
+            if (!is.read(reinterpret_cast<char*>(&ior), sizeof(ior))) return false;
+            if (!is.read(reinterpret_cast<char*>(&metallic), sizeof(metallic))) return false;
+            if (!is.read(reinterpret_cast<char*>(&roughness), sizeof(roughness))) return false;
+            if (!is.read(reinterpret_cast<char*>(&ao), sizeof(ao))) return false;
 
-            if (!is.read(reinterpret_cast<char*>(&metallic), sizeof(metallic))) {
-                return false;
-            }
-
-            if (!is.read(reinterpret_cast<char*>(&roughness), sizeof(roughness))) {
-                return false;
-            }
-
-            if (!is.read(reinterpret_cast<char*>(&ao), sizeof(ao))) {
-                return false;
-            }
-
-            // 读取字符串
-            auto read_string = [&](std::string& str) -> bool {
+            // 读取 name
+            {
                 uint32_t len = 0;
-                if (!is.read(reinterpret_cast<char*>(&len), sizeof(len))) {
-                    return false;
-                }
+                if (!is.read(reinterpret_cast<char*>(&len), sizeof(len))) return false;
                 if (len > 0) {
-                    str.resize(len);
-                    if (!is.read(str.data(), len)) {
-                        return false;
-                    }
+                    name.resize(len);
+                    if (!is.read(name.data(), len)) return false;
                 } else {
-                    str.clear();
+                    name.clear();
                 }
-                return true;
-            };
-
-            if (!read_string(name)) {
-                return false;
-            }
-            if (!read_string(ambientTexture)) {
-                return false;
-            }
-            if (!read_string(diffuseTexture)) {
-                return false;
-            }
-            if (!read_string(specularTexture)) {
-                return false;
-            }
-            if (!read_string(normalTexture)) {
-                return false;
-            }
-            if (!read_string(emissiveTexture)) {
-                return false;
-            }
-            if (!read_string(aoTexture)) {
-                return false;
-            }
-            if (!read_string(metallicTexture)) {
-                return false;
             }
 
-            if (!read_string(albedoTexture)) {
-                return false;
-            }
-
-            if (!read_string(metallicRoughnessTexture)) {
-                return false;
-            }
-            if (!read_string(heightTexture)) {
-                return false;
-            }
+            // 读取所有纹理 vector
+            if (!read_string_vector(is, ambientTextures)) return false;
+            if (!read_string_vector(is, diffuseTextures)) return false;
+            if (!read_string_vector(is, specularTextures)) return false;
+            if (!read_string_vector(is, normalTextures)) return false;
+            if (!read_string_vector(is, emissiveTextures)) return false;
+            if (!read_string_vector(is, aoTextures)) return false;
+            if (!read_string_vector(is, metallicTextures)) return false;
+            if (!read_string_vector(is, albedoTextures)) return false;
+            if (!read_string_vector(is, metallicRoughnessTextures)) return false;
+            if (!read_string_vector(is, heightTextures)) return false;
 
             return true;
         }
