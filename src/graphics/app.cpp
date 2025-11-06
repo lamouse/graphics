@@ -70,6 +70,9 @@ void App::run() {
             if (e->key == core::InputKey::Insert) {
                 show_debug_ui = !show_debug_ui;
             }
+            if (e->key == core::InputKey::Esc) {
+                window->setShouldClose();
+            }
             if (e->mouseX_ > 0 && e->mouseY_ > 0) {
                 current_mouse_X = e->mouseX_;
                 current_mouse_Y = e->mouseY_;

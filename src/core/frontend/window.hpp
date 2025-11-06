@@ -65,6 +65,7 @@ class EXPORT BaseWindow {
         /// Returns if window is minimized
         [[nodiscard]] virtual auto IsMinimized() const -> bool = 0;
         [[nodiscard]] virtual auto shouldClose() const -> bool = 0;
+        [[nodiscard]] virtual void setShouldClose() = 0;
         // 这两个主要在imgui使用
         virtual void configGUI() = 0;
         virtual void destroyGUI() = 0;

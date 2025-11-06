@@ -21,6 +21,7 @@ class SDLWindow : public core::frontend::BaseWindow {
         void destroyGUI() override;
         void newFrame() override;
         void pullEvents(core::InputEvent& event) override;
+        void setShouldClose() override { should_close_ = true; };
         auto getWindow() -> SDL_Window* { return window_; }
 
     private:
