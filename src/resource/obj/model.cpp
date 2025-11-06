@@ -118,9 +118,6 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
 
 auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
     graphics::Model model;
-    if (!scene || !scene->HasMeshes()) {
-        return model;  // empty
-    }
 
     uint32_t vertexOffset = 0;  // 当前 mesh 的顶点在全局 vertices_ 中的起始索引
     uint32_t indexOffset = 0;   // 当前 mesh 的索引在全局 indices_ 中的起始位置
@@ -264,6 +261,9 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) ->
         aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
     // NOLINTNEXTLINE
     const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
+    if (!scene || !scene->HasMeshes() || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
+        throw std::runtime_error("load empty model");
+    }
     Model model = loadModelFromAssimpScene(scene);
     std::string cache_path = model_cache_path + std::to_string(obj_hash) + model_cache_extend;
     saveModelToCache(obj_hash, model);
