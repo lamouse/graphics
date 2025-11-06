@@ -580,6 +580,12 @@ auto getShaderInfo(std::span<const uint32_t> spirv) -> Info {
         });
     }
 
+    for (const auto& resource : compiler.get_shader_resources().push_constant_buffers) {
+        const auto& type = compiler.get_type(resource.type_id);
+        auto size = static_cast<uint32_t>(compiler.get_declared_struct_size(type));
+        info.push_constants.size = size;
+    }
+
     return info;
 }
 

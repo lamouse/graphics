@@ -67,6 +67,11 @@ struct ImageDescriptor {
         uint32_t size_shift;
         auto operator<=>(const ImageDescriptor&) const = default;
 };
+
+struct PushConstant{
+        uint32_t size;
+};
+
 using ImageDescriptors = boost::container::small_vector<ImageDescriptor, 4>;
 
 struct Info {
@@ -81,6 +86,7 @@ struct Info {
         ImageBufferDescriptors image_buffer_descriptors;
         TextureDescriptors texture_descriptors;
         ImageDescriptors image_descriptors;
+        PushConstant push_constants;
 };
 template <typename Descriptors>
 auto NumDescriptors(const Descriptors& descriptors) -> uint32_t {
