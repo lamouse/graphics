@@ -258,7 +258,7 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) ->
 
     Assimp::Importer importer;
     constexpr auto ASSIMP_LOAD_FLAGS =
-        aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
+        aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices | aiProcess_GenNormals;
     // NOLINTNEXTLINE
     const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
