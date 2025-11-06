@@ -68,7 +68,9 @@ struct CameraSystem {
                 const glm::vec3 WORLD_UP(0, 1, 0);
                 glm::vec3 toEye = cam.eye() - cam.center();
                 float dist = glm::length(toEye);
-                if (dist < 0.1f) return;
+                if (dist < 0.1f) {
+                    return;
+                }
 
                 toEye = glm::normalize(toEye);
 
@@ -105,12 +107,17 @@ struct CameraSystem {
 
             // 🧮 缩放
             if (state.scrollOffset_ != 0.0f) {
-                float dist = glm::distance(cam.eye(), cam.center());
-                float newDist = dist * (1.0f - state.scrollOffset_ * 0.1f);
-                newDist = glm::clamp(newDist, 0.5f, 50.0f);
-
-                glm::vec3 direction = glm::normalize(cam.eye() - cam.center());
-                cam.setEye(cam.center() + direction * newDist);
+                auto fov = cam.getFovy();
+                if(fov >.1f && fov <= 45.F){
+                    fov -= state.scrollOffset_;
+                }
+                if(fov <= 1.f){
+                    fov = 1.f;
+                }
+                if(fov >= 45.f){
+                    fov = 45.f;
+                }
+                cam.setFovy(fov);
             }
         }
 };
