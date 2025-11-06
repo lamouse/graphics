@@ -162,6 +162,7 @@ GraphicsPipeline::GraphicsPipeline(
     if (shader_notify) {
         shader_notify->MarkShaderBuilding();
     }
+    uint32_t push_constant_size = 0;
     for (u32 stage = 0; stage < NUM_STAGES; ++stage) {
         const shader::Info* const info{gsl::at(infos, stage)};
         if (!info) {
@@ -169,8 +170,11 @@ GraphicsPipeline::GraphicsPipeline(
         }
         gsl::at(stage_infos, stage) = *info;
         num_textures += shader::NumDescriptors(info->texture_descriptors);
+        if(info->push_constants.size > 0){
+            push_constant_size = info->push_constants.size;
+        }
     }
-    auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool, pipeline_statistics] {
+    auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool, pipeline_statistics, push_constant_size] -> void {
         pipeline::DescriptorLayoutBuilder builder{MakeBuilder(device_, stage_infos)};
         uses_push_descriptor = builder.CanUsePushDescriptor();
         descriptor_set_layout = builder.CreateDescriptorSetLayout(uses_push_descriptor);
@@ -178,7 +182,7 @@ GraphicsPipeline::GraphicsPipeline(
             descriptor_allocator = descriptor_pool.allocator(*descriptor_set_layout, stage_infos);
         }
         const vk::DescriptorSetLayout set_layout{*descriptor_set_layout};
-        pipeline_layout = builder.CreatePipelineLayout(set_layout);
+        pipeline_layout = builder.CreatePipelineLayout(set_layout, push_constant_size);
         descriptor_update_template =
             builder.CreateTemplate(set_layout, *pipeline_layout, uses_push_descriptor);
 

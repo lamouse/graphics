@@ -69,7 +69,7 @@ struct ImageDescriptor {
 };
 
 struct PushConstant{
-        uint32_t size;
+        uint32_t size{};
 };
 
 using ImageDescriptors = boost::container::small_vector<ImageDescriptor, 4>;

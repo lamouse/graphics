@@ -30,13 +30,17 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
     if (shader_notify) {
         shader_notify->MarkShaderBuilding();
     }
+    uint32_t push_const_size{0};
+    if(info_.push_constants.size > 0){
+        push_const_size = info_.push_constants.size;
+    }
 
-    auto func{[this, &descriptor_pool, shader_notify, pipeline_statistics] {
+    auto func{[this, &descriptor_pool, shader_notify, pipeline_statistics, push_const_size] {
         pipeline::DescriptorLayoutBuilder builder{device};
         builder.Add(info, vk::ShaderStageFlagBits::eCompute);
 
         descriptor_set_layout = builder.CreateDescriptorSetLayout(false);
-        pipeline_layout = builder.CreatePipelineLayout(*descriptor_set_layout);
+        pipeline_layout = builder.CreatePipelineLayout(*descriptor_set_layout, push_const_size);
         descriptor_update_template =
             builder.CreateTemplate(*descriptor_set_layout, *pipeline_layout, false);
         descriptor_allocator = descriptor_pool.allocator(*descriptor_set_layout, info);

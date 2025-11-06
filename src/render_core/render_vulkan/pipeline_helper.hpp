@@ -58,19 +58,22 @@ class DescriptorLayoutBuilder {
                     .setSet(0));
         }
 
-        [[nodiscard]] auto CreatePipelineLayout(vk::DescriptorSetLayout descriptor_set_layout) const
+        [[nodiscard]] auto CreatePipelineLayout(vk::DescriptorSetLayout descriptor_set_layout,
+                                                uint32_t push_constant_size) const
             -> PipelineLayout {
             const vk::PushConstantRange range =
                 vk::PushConstantRange()
                     .setStageFlags(is_compute ? vk::ShaderStageFlagBits::eCompute
                                               : vk::ShaderStageFlagBits::eAllGraphics)
-                    .setSize(128);
+                    .setSize(push_constant_size);
+            auto layout = vk::PipelineLayoutCreateInfo()
+                              .setSetLayoutCount(descriptor_set_layout ? 1u : 0u)
+                              .setPSetLayouts(bindings.empty() ? nullptr : &descriptor_set_layout);
 
-            return device->logical().createPipelineLayout(
-                vk::PipelineLayoutCreateInfo()
-                    .setSetLayoutCount(descriptor_set_layout ? 1u : 0u)
-                    .setPSetLayouts(bindings.empty() ? nullptr : &descriptor_set_layout)
-                    .setPushConstantRanges(range));
+            if (push_constant_size > 0) {
+                layout.setPushConstantRanges(range);
+            }
+            return device->logical().createPipelineLayout(layout);
         }
         void Add(const shader::Info& info, vk::ShaderStageFlags stage) {
             is_compute |=
