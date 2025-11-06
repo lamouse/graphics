@@ -1,6 +1,6 @@
 #include "resource/resource.hpp"
 #include "common/assert.hpp"
-#include "resource/obj/model.hpp"
+#include "resource/obj/model_mesh.hpp"
 #include "resource/shader/shader.hpp"
 #include "resource/texture/ktx_image.hpp"
 #include "render_core/types.hpp"

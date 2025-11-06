@@ -11,8 +11,8 @@ set (sources
     texture/ktx_image.hpp
     texture/ktx_image.cpp
     obj/mesh.hpp
-    obj/model.hpp
-    obj/model.cpp
+    obj/model_mesh.hpp
+    obj/model_mesh.cpp
     obj/particle.hpp
     obj/particle.cpp
     shader/shader.hpp

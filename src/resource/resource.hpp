@@ -2,7 +2,7 @@
 #include "render_core/types.hpp"
 #include "render_core/graphic.hpp"
 #include "resource/obj/mesh.hpp"
-#include "resource/obj/model.hpp"
+#include "resource/obj/model_mesh.hpp"
 #include "common/common_funcs.hpp"
 #include "resource/texture/image.hpp"
 #include <unordered_map>

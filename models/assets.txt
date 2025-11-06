@@ -1,3 +1,4 @@
 cube.obj
 viking_room.obj
 cottage_obj.obj
+backpack.obj

@@ -78,7 +78,9 @@ class LightModel {
         void draw(render::Graphic* graphic) {
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 for (auto& mesh : meshes) {
-                    graphic->draw(mesh);
+                    if (mesh.entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                        graphic->draw(mesh);
+                    }
                 }
             }
         }

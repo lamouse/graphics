@@ -141,7 +141,7 @@ void App::load_resource() {
     std::string viking_room_path = image_path + "viking_room.png";
     resourceManager.addTexture(viking_room_path);
 
-    std::string viking_obj_path = "viking_room.obj";
+    std::string viking_obj_path = "backpack.obj";
     resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
@@ -156,14 +156,14 @@ void App::load_resource() {
     ModelResourceName names{.shader_name = model_shader_name,
                             .mesh_name = viking_obj_path,
                             .texture_name = viking_room_path};
-    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
-    registry.add(sky_box);
+    // auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
+    // registry.add(sky_box);
     auto light_model =
         std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
     registry.add(light_model);
 
-    auto point_light = std::make_shared<effects::PointLightEffect>(resourceManager, frame_layout);
-    registry.add(point_light);
+    // auto point_light = std::make_shared<effects::PointLightEffect>(resourceManager, frame_layout);
+    // registry.add(point_light);
 
     // auto delta_particle =
     //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
