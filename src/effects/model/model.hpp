@@ -21,8 +21,7 @@ class LightModel {
             auto texture_id = manager.getTexture(names.texture_name);
             meshes.reserve(sub_mesh.size());
             for (const auto& mesh : sub_mesh) {
-
-                if(!mesh.material.diffuseTextures.empty()){
+                if (!mesh.material.diffuseTextures.empty()) {
                     texture_id = manager.addTexture("./images/" + mesh.material.diffuseTextures[0]);
                 }
                 meshes.emplace_back(
@@ -37,40 +36,38 @@ class LightModel {
         }
 
         void update(const core::FrameInfo& frameInfo) {
-            auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
+            const auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
-            for (std::size_t i = 0; auto& mesh : meshes) {
-                auto& transform = mesh.entity_.getComponent<ecs::TransformComponent>();
-                auto& render_state = mesh.entity_.getComponent<ecs::RenderStateComponent>();
-                if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
-                    render_state.mouse_select = false;
+            auto& transform = meshes[0].entity_.getComponent<ecs::TransformComponent>();
+            auto modelMatrix = transform.mat4();
+            auto normalMatrix = transform.normalMatrix();
+            auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
+            if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
+                render_state.mouse_select = false;
+            }
+            // // 🚀 2. 如果已选中且按住左键 → 跟随鼠标移动
+            if (render_state.mouse_select) {
+                move_model(frameInfo, transform);
+            }
+
+            if (first) {
+                pending_pick_ = true;
+            } else {
+                if (!render_state.mouse_select && down && pending_pick_ &&
+                    entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                    check_pick(id, meshes[0].getMeshId(), frameInfo, render_state, transform);
+                    if (render_state.mouse_select) {
+                        pending_pick_ = false;
+                    }
                 }
-                i++;
-
-                // if (first) {
-                //     pending_pick_ = true;
-                // } else {
-                //     if (!render_state.mouse_select && down && pending_pick_ &&
-                //         entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                //         check_pick(id, mesh.getMeshId(), frameInfo, render_state, transform);
-                //         if (render_state.mouse_select) {
-                //             pending_pick_ = false;
-                //         }
-                //     }
-                //     if (i == meshes.size()) {
-                //         pending_pick_ = false;
-                //     }
-                // }
-
-                // 🚀 2. 如果已选中且按住左键 → 跟随鼠标移动
-                if (render_state.mouse_select) {
-                    move_model(frameInfo, transform);
-                }
+                pending_pick_ = false;
+            }
+            for (auto& mesh : meshes) {
                 PointLight light{};
                 light.color = {1.f, 1.f, 1.f, 1.f};
                 light.position = {1.0f, 1.0f, 1.f, .4};
-                mesh.PushConstant().modelMatrix = transform.mat4();
-                mesh.PushConstant().normalMatrix = transform.normalMatrix();
+                mesh.PushConstant().modelMatrix = modelMatrix;
+                mesh.PushConstant().normalMatrix = normalMatrix;
                 mesh.getUBO().numLights = 6;
                 mesh.getUBO().projection = frameInfo.camera->getProjection();
                 mesh.getUBO().view = frameInfo.camera->getView();

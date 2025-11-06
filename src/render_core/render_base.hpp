@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <span>
-#include <vector>
 #include "framebufferConfig.hpp"
 #include "core/frontend/window.hpp"
 #include "common/common_funcs.hpp"

@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 #include "vulkan_common/debug_callback.hpp"
 #include "vulkan_common/vk_surface.hpp"
+#include <tracy/Tracy.hpp>
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
@@ -64,6 +65,7 @@ RendererVulkan::~RendererVulkan() { void(device.getLogical().waitIdle()); }
 
 void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers,
                                const imgui_ui_fun& func) {
+                                ZoneScopedNC("RendererVulkan::composit", 130);
     if (frame_buffers.empty()) {
         return;
     }
