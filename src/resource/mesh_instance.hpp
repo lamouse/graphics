@@ -8,6 +8,7 @@
 #include "resource/instance.hpp"
 #include "resource/resource.hpp"
 #include <type_traits>
+#include <tuple>
 
 namespace graphics {
 class ResourceManager;
@@ -34,18 +35,17 @@ struct ModelResourceName {
         std::string texture_name;
 };
 
-template <typename UBO, typename PushConstants, render::PrimitiveTopology primitiveTopology>
-    requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO> &&
-             ByteSpanConvertible<PushConstants> && std::is_trivially_copyable_v<PushConstants>
+template <typename PushConstants, render::PrimitiveTopology primitiveTopology, typename... UBO>
+    requires ByteSpanConvertible<PushConstants> && std::is_trivially_copyable_v<PushConstants> &&
+             (ByteSpanConvertible<UBO> && ...) && (std::is_trivially_copyable_v<UBO> && ...)
 class MeshInstance : public IMeshInstance {
     public:
+        using UBOs = std::tuple<UBO...>;
+
         CLASS_DEFAULT_MOVEABLE(MeshInstance);
         CLASS_NON_COPYABLE(MeshInstance);
         [[nodiscard]] auto getEntity() -> ecs::Entity& { return entity_; }
         ~MeshInstance() override = default;
-        [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
-            return ubo.as_byte_span();
-        };
         [[nodiscard]] auto getPushConstants() const -> std::span<const std::byte> override {
             return push_constants.as_byte_span();
         };
@@ -55,7 +55,53 @@ class MeshInstance : public IMeshInstance {
         [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
             return entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;
         }
-        auto getUBO() -> UBO& { return ubo; }
+        auto getUBO() -> UBOs& { return ubos; }
+
+        template <std::size_t N>
+        auto getUBO() -> std::tuple_element_t<N, std::tuple<UBO...>>& {
+            return std::get<N>(ubos);
+        }
+
+        template <std::size_t N>
+        auto getUBO() const -> const std::tuple_element_t<N, std::tuple<UBO...>>& {
+            return std::get<N>(ubos);
+        }
+
+        template <std::size_t N, typename T = std::tuple_element_t<N, std::tuple<UBO...>>>
+        void setUBO(const T& value) {
+            std::get<N>(ubos) = value;
+        }
+
+        // ✅ 根据类型获取 UBO（可读写）
+        template <typename T>
+        auto getUBO() -> T& {
+            static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
+            return std::get<T>(ubos);
+        }
+
+        // ✅ const 版本
+        template <typename T>
+        auto getUBO() const -> const T& {
+            static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
+            return std::get<T>(ubos);
+        }
+
+        // ✅ 设置 UBO（通过类型）
+        template <typename T>
+        void setUBO(const T& value) {
+            static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
+            std::get<T>(ubos) = value;
+        }
+
+        // === 获取所有 UBO 的 byte spans（用于渲染）===
+        [[nodiscard]] auto getUBOs() const -> std::vector<std::span<const std::byte>> override {
+            return std::apply(
+                [](const auto&... ubo) -> auto {
+                    return std::vector<std::span<const std::byte>>{(ubo).as_byte_span() ...};
+                },
+                ubos);
+        }
+
         auto PushConstant() -> PushConstants& { return push_constants; }
 
         MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
@@ -73,7 +119,7 @@ class MeshInstance : public IMeshInstance {
         MeshInstance() = default;
 
     private:
-        UBO ubo{};
+        UBOs ubos{};
         PushConstants push_constants;
         render::PrimitiveTopology topology = primitiveTopology;
 };

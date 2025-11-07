@@ -32,8 +32,8 @@ class Particle : public render::IComputeInstance {
         CLASS_DEFAULT_MOVEABLE(Particle);
         CLASS_NON_COPYABLE(Particle);
 
-        [[nodiscard]] auto getUBOData() const -> std::span<const std::byte> override {
-            return u.as_byte_span();
+        [[nodiscard]] auto getUBOData() const -> std::vector<std::span<const std::byte>> override {
+            return std::vector<std::span<const std::byte>>{u.as_byte_span()};
         };
         Particle(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
                  std::uint32_t count)
@@ -83,7 +83,7 @@ class Particle : public render::IComputeInstance {
     private:
         id_t id;
         using DeltaParticleInstance =
-            MeshInstance<EmptyUnformBuffer, EmptyPushConstants, render::PrimitiveTopology::Points>;
+            MeshInstance<EmptyPushConstants, render::PrimitiveTopology::Points, EmptyUnformBuffer>;
 
         DeltaParticleInstance in;
         DeltaParticleInstance out;

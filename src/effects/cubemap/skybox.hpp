@@ -52,8 +52,8 @@ class SkyBox {
         void update(const core::FrameInfo& frameInfo) {
             glm::mat4 view = frameInfo.camera->getView();
             glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(view));  // 去除平移
-            sky_box.getUBO().modelMatrix = viewNoTranslate;
-            sky_box.getUBO().projectionMatrix = frameInfo.camera->getProjection();
+            sky_box.getUBO<SkyUBO>().modelMatrix = viewNoTranslate;
+            sky_box.getUBO<SkyUBO>().projectionMatrix = frameInfo.camera->getProjection();
         }
         [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
             return std::vector{sky_box.entity_};
@@ -67,7 +67,7 @@ class SkyBox {
 
     private:
         using SkyBoxInstance =
-            MeshInstance<SkyUBO, EmptyPushConstants, render::PrimitiveTopology::Triangles>;
+            MeshInstance<EmptyPushConstants, render::PrimitiveTopology::Triangles, SkyUBO>;
         SkyBoxInstance sky_box;
         id_t id;
 };

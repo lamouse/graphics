@@ -165,9 +165,9 @@ void App::load_resource() {
     auto point_light = std::make_shared<effects::PointLightEffect>(resourceManager, frame_layout);
     registry.add(point_light);
 
-    // auto delta_particle =
-    //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
-    // registry.add(delta_particle);
+    auto delta_particle =
+        std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
+    registry.add(delta_particle);
 }
 
 }  // namespace graphics

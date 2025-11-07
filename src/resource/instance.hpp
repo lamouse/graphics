@@ -30,10 +30,11 @@ class IMeshInstance {
         virtual ~IMeshInstance() = default;
         CLASS_DEFAULT_COPYABLE(IMeshInstance);
         CLASS_DEFAULT_MOVEABLE(IMeshInstance);
-        IMeshInstance(render::RenderCommand render_command_, render::MeshId meshId_, render::TextureId textureId_,
-                      std::uint64_t vertex_shader_hash_, std::uint64_t fragment_shader_hash_)
+        IMeshInstance(render::RenderCommand render_command_, render::MeshId meshId_,
+                      render::TextureId textureId_, std::uint64_t vertex_shader_hash_,
+                      std::uint64_t fragment_shader_hash_)
             : render_command(render_command_),
-            textureId(textureId_),
+              textureId(textureId_),
               meshId(meshId_),
               vertex_shader_hash(vertex_shader_hash_),
               fragment_shader_hash(fragment_shader_hash_),
@@ -50,17 +51,27 @@ class IMeshInstance {
         }
         [[nodiscard]] auto getVertexCount() const -> std::int32_t { return vertex_count; }
         [[nodiscard]] void setVertexCount(std::int32_t count) { vertex_count = count; }
-        [[nodiscard]] virtual auto getUBOData() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
         [[nodiscard]] virtual auto getPrimitiveTopology() const -> render::PrimitiveTopology = 0;
         [[nodiscard]] virtual auto getPipelineState() const -> render::DynamicPipelineState = 0;
-
+        [[nodiscard]] virtual auto getUBOs() const -> std::vector<std::span<const std::byte>> = 0;
         void setTextureId(render::TextureId id_) { textureId = id_; }
         [[nodiscard]] auto getRenderCommand() const -> render::RenderCommand {
             return render_command;
         }
         ecs::Entity entity_;
         [[nodiscard]] auto getId() const -> id_t { return id; }
+        template <typename T>
+        void setUBO(uint32_t binding, const T& data) {
+            static_assert(std::is_trivially_copyable_v<T>, "UBO must be trivially copyable");
+            std::vector<std::byte> buf(sizeof(T));
+            std::memcpy(buf.data(), &data, sizeof(T));
+
+            if (binding >= ubo_buffers_.size()) {
+                ubo_buffers_.resize(binding + 1);
+            }
+            ubo_buffers_[binding] = std::move(buf);
+        }
 
     protected:
         render::RenderCommand render_command;
@@ -69,6 +80,7 @@ class IMeshInstance {
         std::uint64_t vertex_shader_hash{0};
         std::uint64_t fragment_shader_hash{0};
         std::int32_t vertex_count{-1};
+        std::vector<std::vector<std::byte>> ubo_buffers_;
         id_t id{};
 };
 }  // namespace graphics

@@ -68,11 +68,11 @@ class LightModel {
                 light.position = {1.0f, 1.0f, 1.f, .4};
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
-                mesh.getUBO().numLights = 6;
-                mesh.getUBO().projection = frameInfo.camera->getProjection();
-                mesh.getUBO().view = frameInfo.camera->getView();
-                mesh.getUBO().ambientLightColor.w = 1.f;
-                mesh.getUBO().pointLights[0] = light;
+                mesh.getUBO<PointLightUbo>().numLights = 6;
+                mesh.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
+                mesh.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
+                mesh.getUBO<PointLightUbo>().ambientLightColor.w = 1.f;
+                mesh.getUBO<PointLightUbo>().pointLights[0] = light;
             }
         }
 
@@ -98,8 +98,8 @@ class LightModel {
         ecs::Entity entity_;
 
     private:
-        using LightMeshInstance = MeshInstance<PointLightUbo, ModelPushConstantData,
-                                               render::PrimitiveTopology::Triangles>;
+        using LightMeshInstance = MeshInstance<ModelPushConstantData,
+                                               render::PrimitiveTopology::Triangles, PointLightUbo>;
         std::vector<LightMeshInstance> meshes;
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;

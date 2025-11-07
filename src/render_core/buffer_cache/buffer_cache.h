@@ -3,6 +3,7 @@
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
 #include "render_core/texture/types.hpp"
 #include <algorithm>
+#include <utility>
 #undef min
 #undef max
 namespace render::buffer {
@@ -98,20 +99,23 @@ void BufferCache<P>::TickFrame() {
 
 template <class P>
 void BufferCache<P>::BindGraphicUniformBuffer() {
-    if (graphic_uniform_buffer.empty()) {
+    if (graphic_uniform_buffers.empty()) {
         return;
     }
-    auto map = runtime.BindMappedUniformBuffer(0, 0, graphic_uniform_buffer.size());
-    std::memcpy(map.data(), graphic_uniform_buffer.data(), graphic_uniform_buffer.size());
-    graphic_uniform_buffer = {};
+    for (const auto& ubo : graphic_uniform_buffers) {
+        auto map = runtime.BindMappedUniformBuffer(0, 0, ubo.size());
+        std::memcpy(map.data(), ubo.data(), ubo.size());
+    }
+
+    graphic_uniform_buffers = {};
 }
 template <class P>
-void BufferCache<P>::UploadGraphicUniformBuffer(std::span<const std::byte> data) {
-    graphic_uniform_buffer = data;
+void BufferCache<P>::UploadGraphicUniformBuffer(std::vector<std::span<const std::byte>> data) {
+    graphic_uniform_buffers = std::move(data);
 }
 template <class P>
-void BufferCache<P>::UploadComputeUniformBuffer(std::span<const std::byte> data) {
-    compute_uniform_buffer = data;
+void BufferCache<P>::UploadComputeUniformBuffer(std::vector<std::span<const std::byte>> data) {
+    compute_uniform_buffers = std::move(data);
 }
 
 template <class P>
@@ -123,12 +127,14 @@ void BufferCache<P>::DoUpdateComputeBuffers() {
 
 template <class P>
 void BufferCache<P>::UpdateComputeUniformBuffers() {
-    if (compute_uniform_buffer.empty()) {
+    if (compute_uniform_buffers.empty()) {
         return;
     }
-    auto map = runtime.BindMappedUniformBuffer(0, 0, compute_uniform_buffer.size());
-    std::memcpy(map.data(), compute_uniform_buffer.data(), compute_uniform_buffer.size());
-    compute_uniform_buffer = {};
+    for (const auto& ubo : compute_uniform_buffers) {
+        auto map = runtime.BindMappedUniformBuffer(0, 0, ubo.size());
+        std::memcpy(map.data(), ubo.data(), ubo.size());
+    }
+    compute_uniform_buffers = {};
 }
 
 template <class P>

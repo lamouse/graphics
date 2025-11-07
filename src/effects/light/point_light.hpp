@@ -66,11 +66,11 @@ class PointLightEffect {
             glm::vec3 newPosition = glm::vec3(rotation * localOffset);
 
             transform.translation = newPosition;
-            point_light.getUBO().numLights = 6;
-            point_light.getUBO().projection = frameInfo.camera->getProjection();
-            point_light.getUBO().view = frameInfo.camera->getView();
-            point_light.getUBO().pointLights[0].position = glm::vec4(transform.translation, 1.f);
-            point_light.getUBO().pointLights[0].color = glm::vec4(color, pointLight.lightIntensity);
+            point_light.getUBO<PointLightUbo>().numLights = 6;
+            point_light.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
+            point_light.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
+            point_light.getUBO<PointLightUbo>().pointLights[0].position = glm::vec4(transform.translation, 1.f);
+            point_light.getUBO<PointLightUbo>().pointLights[0].color = glm::vec4(color, pointLight.lightIntensity);
         }
         void draw(render::Graphic* graphic) {
             auto& transform = point_light.entity_.getComponent<ecs::TransformComponent>();
@@ -90,8 +90,8 @@ class PointLightEffect {
         struct PointLightComponent {
                 float lightIntensity = .3f;
         };
-        using PointLightInstance = MeshInstance<PointLightUbo, PointLightPushConstants,
-                                                render::PrimitiveTopology::Triangles>;
+        using PointLightInstance = MeshInstance<PointLightPushConstants,
+                                                render::PrimitiveTopology::Triangles, PointLightUbo>;
         PointLightInstance point_light;
         glm::vec3 color{};
         PointLightComponent pointLight;

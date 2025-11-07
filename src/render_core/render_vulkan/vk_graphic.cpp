@@ -463,8 +463,8 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     if (instance.getTextureId()) {
         texture_cache.setCurrentTexture(instance.getTextureId(), SamplerPreset::Linear);
     }
-    if (!instance.getUBOData().empty()) {
-        buffer_cache.UploadGraphicUniformBuffer(instance.getUBOData());
+    if (!instance.getUBOs().empty()) {
+        buffer_cache.UploadGraphicUniformBuffer(instance.getUBOs());
     }
     if (!instance.getPushConstants().empty()) {
         buffer_cache.UploadPushConstants(instance.getPushConstants());

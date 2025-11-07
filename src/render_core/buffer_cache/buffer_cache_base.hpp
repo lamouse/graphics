@@ -112,10 +112,10 @@ class BufferCache : public BufferCacheInfo {
         void BindIndexBuffer(IndexFormat format, BufferId id);
         void BindVertexBuffers(BufferId id, u32 size, u64 stride);
         void BindGraphicUniformBuffer();
-        void UploadGraphicUniformBuffer(std::span<const std::byte> data);
+        void UploadGraphicUniformBuffer(std::vector<std::span<const std::byte>> data);
 
         void bindComputeStorageBuffers(BufferId id);
-        void UploadComputeUniformBuffer(std::span<const std::byte> data);
+        void UploadComputeUniformBuffer(std::vector<std::span<const std::byte>> data);
 
         void UploadPushConstants(std::span<const std::byte> data);
         auto GetPushConstants() -> std::span<const std::byte>;
@@ -143,10 +143,10 @@ class BufferCache : public BufferCacheInfo {
         std::deque<Async_Buffer> async_buffers_death_ring;
 
         // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
-        std::span<const std::byte> graphic_uniform_buffer;
+        std::vector<std::span<const std::byte>> graphic_uniform_buffers;
 
         // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
-        std::span<const std::byte> compute_uniform_buffer;
+        std::vector<std::span<const std::byte>> compute_uniform_buffers;
 
         // 当前需要bind的graphic的push constants，如果没有.empty()应该返回true
         std::span<const std::byte> push_constants;
