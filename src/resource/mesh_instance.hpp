@@ -2,7 +2,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "ecs/scene/entity.hpp"
 #include "ecs/scene/scene.hpp"
-#include "ecs/components/transform_component.hpp"
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/components/dynamic_pipeline_state_component.hpp"
 #include "resource/instance.hpp"
@@ -112,7 +111,6 @@ class MeshInstance : public IMeshInstance {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));
-            entity_.addComponent<ecs::TransformComponent>();
             entity_.addComponent<ecs::RenderStateComponent>(id);
             entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
         }

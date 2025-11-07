@@ -1,5 +1,6 @@
 #pragma once
 #include "effects/light/point_light.hpp"
+#include "ecs/components/transform_component.hpp"
 namespace graphics::effects {
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform);
 void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
@@ -33,12 +34,13 @@ class LightModel {
             }
             entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
+            entity_.addComponent<ecs::TransformComponent>();
         }
 
         void update(const core::FrameInfo& frameInfo) {
             const auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
-            auto& transform = meshes[0].entity_.getComponent<ecs::TransformComponent>();
+            auto& transform = entity_.getComponent<ecs::TransformComponent>();
             auto modelMatrix = transform.mat4();
             auto normalMatrix = transform.normalMatrix();
             auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
@@ -62,17 +64,16 @@ class LightModel {
                 }
                 pending_pick_ = false;
             }
+            PointLight light{};
+            light.color = {1.f, 1.f, 1.f, 1.f};
+            light.position = {1.0f, 1.0f, 1.f, .4};
             for (auto& mesh : meshes) {
-                PointLight light{};
-                light.color = {1.f, 1.f, 1.f, 1.f};
-                light.position = {1.0f, 1.0f, 1.f, .4};
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
-                mesh.getUBO<PointLightUbo>().numLights = 6;
+                mesh.getUBO<PointLightUbo>().numLights = 0;
                 mesh.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
                 mesh.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
                 mesh.getUBO<PointLightUbo>().ambientLightColor.w = 1.f;
-                mesh.getUBO<PointLightUbo>().pointLights[0] = light;
             }
         }
 

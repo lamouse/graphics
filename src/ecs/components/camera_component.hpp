@@ -6,7 +6,7 @@ namespace ecs {
 constexpr auto DEFAULT_FOVY = 45.F;
 constexpr auto DEFAULT_NEAR = 0.1F;
 constexpr auto DEFAULT_FAR = 100.F;
-constexpr auto DEFAULT_SPEED = 2.5f;
+constexpr auto DEFAULT_SPEED = 5.5f;
 constexpr auto DEFAULT_SENSITIVITY = 0.02f;
 
 
