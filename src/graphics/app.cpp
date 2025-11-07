@@ -158,8 +158,7 @@ void App::load_resource() {
     ModelResourceName names{.shader_name = model_shader_name,
                             .mesh_name = viking_obj_path,
                             .texture_name = viking_room_path};
-    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
-    registry.add(sky_box);
+
     auto light_model =
         std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
     registry.add(light_model);
@@ -170,6 +169,8 @@ void App::load_resource() {
     // auto delta_particle =
     //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
     // registry.add(delta_particle);
+    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
+    registry.add(sky_box);
 }
 
 }  // namespace graphics

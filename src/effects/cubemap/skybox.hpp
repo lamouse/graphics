@@ -45,8 +45,10 @@ class SkyBox {
                                      "sky box instance",
                                      mesh_id,
                                      ret_id};
-            sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>().state.depthTestEnable =
-                0;
+            auto& pipeline_state = sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>();
+            pipeline_state.state.depthTestEnable = 1;
+            pipeline_state.state.depthWriteEnable = 0;
+
         }
 
         void update(const core::FrameInfo& frameInfo) {
