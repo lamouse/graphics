@@ -45,7 +45,6 @@ void App::run() {
     std::vector<effects::LightModel> models;
     const auto frame_layout = window->getFramebufferLayout();
     core::FrameInfo frameInfo{};
-    frameInfo.frame_layout = frame_layout;
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
 
@@ -76,6 +75,8 @@ void App::run() {
         auto [duration, frame] = getRuntime();
         frameInfo.frameTime = duration;
         frameInfo.resource_manager = &resourceManager;
+        frameInfo.window_width = window->getActiveConfig().extent.width;
+        frameInfo.window_hight = window->getActiveConfig().extent.height;
         if (input_event.empty()) {
             registry.updateAll(frameInfo);
         }
@@ -127,6 +128,7 @@ void App::run() {
 
         // TODO 添加clear value
         graphics->clean();
+        frameInfo.clean();
     }
 }
 
@@ -141,7 +143,7 @@ void App::load_resource() {
     std::string viking_room_path = image_path + "viking_room.png";
     resourceManager.addTexture(viking_room_path);
 
-    std::string viking_obj_path = "viking_room.obj";
+    std::string viking_obj_path = "body.obj";
     resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
@@ -165,9 +167,9 @@ void App::load_resource() {
     auto point_light = std::make_shared<effects::PointLightEffect>(resourceManager, frame_layout);
     registry.add(point_light);
 
-    auto delta_particle =
-        std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
-    registry.add(delta_particle);
+    // auto delta_particle =
+    //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
+    // registry.add(delta_particle);
 }
 
 }  // namespace graphics

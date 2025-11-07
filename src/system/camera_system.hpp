@@ -87,7 +87,7 @@ struct CameraSystem {
             }
 
             // 🧮 缩放
-            if (state.scrollOffset_ != 0.0f) {
+            if (state.scrollOffset_ != 0.0f && !state.keyDown(core::InputKey::LCtrl)) {
                 auto fov = cam.getFovy();
                 if(fov >.1f && fov <= 45.F){
                     fov -= state.scrollOffset_;

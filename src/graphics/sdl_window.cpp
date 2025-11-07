@@ -4,37 +4,7 @@
 #include "SDL_common.hpp"
 #include "imgui_impl_sdl3.h"
 namespace {
-auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey {
-    switch (scancode) {
-        case SDL_SCANCODE_W:
-            return core::InputKey::W;
-        case SDL_SCANCODE_A:
-            return core::InputKey::A;
-        case SDL_SCANCODE_S:
-            return core::InputKey::S;
-        case SDL_SCANCODE_D:
-            return core::InputKey::D;
 
-        case SDL_SCANCODE_LEFT:
-            return core::InputKey::Left;
-        case SDL_SCANCODE_RIGHT:
-            return core::InputKey::Right;
-        case SDL_SCANCODE_DOWN:
-            return core::InputKey::Down;
-        case SDL_SCANCODE_UP:
-            return core::InputKey::Up;
-
-        case SDL_SCANCODE_SPACE:
-            return core::InputKey::Space;
-        case SDL_SCANCODE_INSERT:
-            return core::InputKey::Insert;
-        case SDL_SCANCODE_ESCAPE:
-            return core::InputKey::Esc;
-
-        default:
-            return core::InputKey::UN_SUPER;  // 未支持的键
-    }
-}
 static inline float lastMouseX_ = 0.0f;
 static inline float lastMouseY_ = 0.0f;
 }  // namespace
@@ -81,9 +51,13 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
             if (event->type == SDL_EVENT_WINDOW_RESIZED) {
                 auto* base_window = reinterpret_cast<SDLWindow*>(userdata);
                 if (event->window.windowID == SDL_GetWindowID(base_window->getWindow())) {
-                    base_window->UpdateCurrentFramebufferLayout(
-                        static_cast<uint32_t>(event->window.data1),
-                        static_cast<uint32_t>(event->window.data2));
+                    base_window->setWindowConfig(WindowConfig{.extent = {
+                        .width = static_cast<int>(event->window.data1),
+                        .height = static_cast<int>(event->window.data2)
+                    }});
+                    // base_window->UpdateCurrentFramebufferLayout(
+                    //     static_cast<uint32_t>(event->window.data1),
+                    //     static_cast<uint32_t>(event->window.data2));
                 }
             }
             return false;
@@ -242,6 +216,12 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
             }
             case SDL_EVENT_MOUSE_WHEEL: {
                 core::InputState input_state;
+                const auto* sdl_key_state = SDL_GetKeyboardState(nullptr);
+                if (sdl_key_state[SDL_SCANCODE_LCTRL]) {
+                    // 左 Ctrl 被按下
+                    input_state.key = core::InputKey::LCtrl;
+                    input_state.key_down.Assign(1);
+                }
                 input_state.scrollOffset_ += e.wheel.y;
                 event.push_event(input_state);
                 break;

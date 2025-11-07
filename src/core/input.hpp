@@ -16,7 +16,8 @@ enum class InputKey : std::int16_t {
     Down,
     Up,
     Insert,
-    Esc
+    Esc,
+    LCtrl,
 };
 
 struct InputState {
@@ -57,6 +58,13 @@ struct InputState {
         }
 
         [[nodiscard]] auto mouseLeftButtonUp() const -> bool { return mouse_button_left && key_up; }
+
+        [[nodiscard]] auto keyDown(InputKey key_)const  -> bool {
+            if(key_ == key){
+                return key_down;
+            }
+            return false;
+        }
 };
 
 class InputEvent {

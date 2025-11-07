@@ -3,6 +3,11 @@
 #include "ecs/components/transform_component.hpp"
 namespace graphics::effects {
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform);
+void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform,
+                bool startDragThisFrame,
+                float& out_initialWorldZ,         // 👈 只需记录一个 Z 值（更轻量）
+                glm::vec3& out_dragStartWorldPos  // 仍需要完整位置用于 delta 计算
+);
 void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
                 ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform);
 struct ModelPushConstantData {
@@ -41,16 +46,35 @@ class LightModel {
             const auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
-            auto modelMatrix = transform.mat4();
-            auto normalMatrix = transform.normalMatrix();
             auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
+
+            //transform.rotation.x = 4.8f;
+
             if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
                 render_state.mouse_select = false;
             }
-            // // 🚀 2. 如果已选中且按住左键 → 跟随鼠标移动
             if (render_state.mouse_select) {
-                move_model(frameInfo, transform);
+                // move_model(frameInfo, transform);
+                move_model(frameInfo, transform, false, out_initialWorldZ, out_dragStartWorldPos);
             }
+            if (render_state.is_select()) {
+                if (frameInfo.input_state.key == core::InputKey::LCtrl) {
+                    if (frameInfo.input_state.scrollOffset_ != 0.0f) {
+                        auto scale = transform.scale.x;
+                        scale += frameInfo.input_state.scrollOffset_ * 0.02f;
+                        if (scale <= 0.01) {
+                            scale = 0.01f;
+                        }
+                        if (scale > 2.0) {
+                            scale = 2.0f;
+                        }
+                        transform.scale = glm::vec3(scale);
+                    }
+                }
+            }
+
+            auto modelMatrix = transform.mat4();
+            auto normalMatrix = transform.normalMatrix();
 
             if (first) {
                 pending_pick_ = true;
@@ -58,15 +82,16 @@ class LightModel {
                 if (!render_state.mouse_select && down && pending_pick_ &&
                     entity_.getComponent<ecs::RenderStateComponent>().visible) {
                     check_pick(id, meshes[0].getMeshId(), frameInfo, render_state, transform);
-                    if (render_state.mouse_select) {
-                        pending_pick_ = false;
-                    }
+                }
+                if (render_state.mouse_select) {
+                    move_model(frameInfo, transform, true, out_initialWorldZ, out_dragStartWorldPos);
                 }
                 pending_pick_ = false;
             }
             PointLight light{};
             light.color = {1.f, 1.f, 1.f, 1.f};
             light.position = {1.0f, 1.0f, 1.f, .4};
+
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
@@ -105,6 +130,10 @@ class LightModel {
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;
         id_t id;
+
+        // 用于鼠标移动
+        glm::vec3 out_dragStartWorldPos;
+        float out_initialWorldZ;
 };
 
 }  // namespace graphics::effects

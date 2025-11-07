@@ -12,6 +12,10 @@ struct FrameInfo {
         Camera* camera{};
         float frameTime{};
         InputState input_state;
-        layout::FrameBufferLayout frame_layout;
+        int window_width;
+        int window_hight;
+        void clean(){
+                input_state = {};
+        }
 };
 }  // namespace core
