@@ -281,7 +281,7 @@ auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline
     }
     graphics_key.state.depth_format = surface::PixelFormat::D32_FLOAT;
     graphics_key.state.msaa_mode = MsaaMode::Msaa1x1;
-    graphics_key.state.depth_enabled = 1;
+    graphics_key.state.depth_enabled.Assign(1);
     return createGraphicsPipeline(graphics_key, nullptr, false);
 }
 

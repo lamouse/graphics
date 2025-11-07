@@ -63,14 +63,60 @@ struct FixedPipelineState {
                 BitField<3, 1, u32> extended_dynamic_state_3_blend;
                 BitField<4, 1, u32> extended_dynamic_state_3_enables;
                 BitField<5, 1, u32> dynamic_vertex_input;
+                BitField<6, 1, u32> xfb_enabled;
+                BitField<7, 1, u32> ndc_minus_one_to_one;
+        };
+
+        union {
+                u32 raw2;
+                BitField<1, 3, u32> alpha_test_func;
+                BitField<4, 1, u32> early_z;
+                BitField<5, 1, u32> depth_enabled;
+                BitField<11, 1, u32> y_negate;
+                BitField<12, 1, u32> provoking_vertex_last;
+                BitField<13, 1, u32> conservative_raster_enable;
+                BitField<14, 1, u32> smooth_lines;
+                BitField<15, 1, u32> alpha_to_coverage_enabled;
+                BitField<16, 1, u32> alpha_to_one_enabled;
+        };
+        struct DynamicState {
+                union {
+                        u32 raw1;
+                        BitField<0, 2, u32> cull_face;
+                        BitField<2, 1, u32> cull_enable;
+                        BitField<3, 1, u32> primitive_restart_enable;
+                        BitField<4, 1, u32> depth_bias_enable;
+                        BitField<5, 1, u32> rasterize_enable;
+                        BitField<6, 4, u32> logic_op;
+                        BitField<10, 1, u32> logic_op_enable;
+                        BitField<11, 1, u32> depth_clamp_disabled;
+                        BitField<12, 1, u32> line_stipple_enable;
+                };
+                union {
+                        u32 raw2;
+                        //     StencilFace<0> front;
+                        //     StencilFace<12> back;
+                        BitField<24, 1, u32> stencil_enable;
+                        BitField<25, 1, u32> depth_write_enable;
+                        BitField<26, 1, u32> depth_bounds_enable;
+                        BitField<27, 1, u32> depth_test_enable;
+                        BitField<28, 1, u32> front_face;
+                        BitField<29, 3, u32> depth_test_func;
+                };
         };
 
         std::array<surface::PixelFormat, 8> color_formats;
         surface::PixelFormat depth_format;
         PrimitiveTopology topology;
         u32 point_size;
-        int depth_enabled;
         MsaaMode msaa_mode;
+        DynamicState dynamicState;
+
+        u32 line_stipple_factor;
+        u32 line_stipple_pattern;
+
+        u32 depth_bounds_min;
+        u32 depth_bounds_max;
         [[nodiscard]] auto Hash() const noexcept -> size_t;
 
         auto operator==(const FixedPipelineState& rhs) const noexcept -> bool;
@@ -88,7 +134,6 @@ static_assert(std::is_trivially_constructible_v<FixedPipelineState>);
 }  // namespace render
 
 namespace std {
-
 template <>
 struct hash<render::FixedPipelineState> {
         auto operator()(const render::FixedPipelineState& k) const noexcept -> size_t {

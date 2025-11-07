@@ -83,7 +83,7 @@ class GraphicsPipeline {
         CLASS_NON_MOVEABLE(GraphicsPipeline);
         void AddTransition(GraphicsPipeline* transition);
         void Configure();
-
+        auto HasDynamicVertexInput() const noexcept -> bool { return key_.state.dynamic_vertex_input; }
         [[nodiscard]] auto Next(const GraphicsPipelineCacheKey& current_key) noexcept
             -> GraphicsPipeline* {
             if (key_ == current_key) {

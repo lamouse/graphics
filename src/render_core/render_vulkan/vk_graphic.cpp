@@ -214,7 +214,11 @@ void VulkanGraphics::UpdateDynamicStates() {
     }
 
     if (device.IsExtVertexInputDynamicStateSupported()) {
-        UpdateVertexInput();
+        auto* pipeline = pipeline_cache.currentGraphicsPipeline(fixedPipelineState);
+
+        if (pipeline && pipeline->HasDynamicVertexInput()) {
+            UpdateVertexInput();
+        }
     }
 }
 // 用于启用或禁用 图元重启（Primitive

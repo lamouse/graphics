@@ -231,6 +231,10 @@ class Device {
             return misc_features_.has_broken_compute;
         }
 
+        [[nodiscard]] auto GetMaxViewports() const -> u32 {
+            return properties_.properties_.limits.maxViewports;
+        }
+
         [[nodiscard]] auto getDeviceLocalMemory() const -> u64 { return device_access_memory_; }
 
         [[nodiscard]] auto getDeviceMemoryUsage() const -> u64;
