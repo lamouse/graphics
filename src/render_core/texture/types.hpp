@@ -23,15 +23,7 @@ constexpr SamplerId NULL_SAMPLER_ID{0};
 enum class ImageType : std::uint8_t { e2D, e3D };
 
 enum class ImageViewType : std::uint8_t { e2D, Cube, e3D, e2DArray, CubeArray };
-constexpr size_t NUM_IMAGE_VIEW_TYPES = 9;
-
-enum class RelaxedOptions : u32 {
-    Size = 1 << 0,
-    Format = 1 << 1,
-    Samples = 1 << 2,
-    ForceBrokenViews = 1 << 3,
-};
-DECLARE_ENUM_FLAG_OPERATORS(RelaxedOptions)
+constexpr size_t NUM_IMAGE_VIEW_TYPES = 5;
 
 struct Offset2D {
         constexpr auto operator<=>(const Offset2D&) const noexcept = default;

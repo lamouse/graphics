@@ -90,7 +90,6 @@ auto SupportsPrimitiveRestart(vk::PrimitiveTopology topology) -> bool {
         vk::PrimitiveTopology::eLineListWithAdjacency,
         vk::PrimitiveTopology::eTriangleListWithAdjacency,
         vk::PrimitiveTopology::ePatchList,
-        // VK_PRIMITIVE_TOPOLOGY_QUAD_LIST_EXT,
     };
     return std::ranges::find(unsupported_topologies, topology) == unsupported_topologies.end();
 }
@@ -98,7 +97,6 @@ auto SupportsPrimitiveRestart(vk::PrimitiveTopology topology) -> bool {
 auto IsLine(vk::PrimitiveTopology topology) -> bool {
     static constexpr std::array line_topologies{
         vk::PrimitiveTopology::eLineList, vk::PrimitiveTopology::eLineStrip
-        // VK_PRIMITIVE_TOPOLOGY_LINE_LOOP_EXT,
     };
     return std::ranges::find(line_topologies, topology) == line_topologies.end();
 }
