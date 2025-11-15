@@ -1,6 +1,7 @@
 set(sources
     compute_instance.hpp
     delayed_destruction_ring.h
+    pipeline_dynamic_state.hpp
     pipeline_state.cpp
     pipeline_state.h
     framebufferConfig.hpp

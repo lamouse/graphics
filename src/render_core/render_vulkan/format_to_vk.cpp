@@ -264,4 +264,53 @@ auto PrimitiveTopologyToVK(render::PrimitiveTopology topology) -> vk::PrimitiveT
     return {};
 }
 
+auto StencilOp(render::StencilOp::Op stencilOp) -> vk::StencilOp {
+    using Op = render::StencilOp::Op;
+
+    switch (stencilOp) {
+        case Op::Keep:
+            return vk::StencilOp::eKeep;
+        case Op::Zero:
+            return vk::StencilOp::eZero;
+        case Op::Replace:
+            return vk::StencilOp::eReplace;
+        case Op::IncrementAndClamp:
+            return vk::StencilOp::eIncrementAndClamp;
+        case Op::DecrementAndClamp:
+            return vk::StencilOp::eDecrementAndClamp;
+        case Op::Invert:
+            return vk::StencilOp::eInvert;
+        case Op::IncrementAndWrap:
+            return vk::StencilOp::eIncrementAndWrap;
+        case Op::DecrementAndWrap:
+            return vk::StencilOp::eDecrementAndWrap;
+    }
+    spdlog::warn("Unimplemented stencil op={}", static_cast<int>(stencilOp));
+    return {};
+}
+
+auto ComparisonOp(render::ComparisonOp compreOp) -> vk::CompareOp {
+    switch (compreOp) {
+        case render::ComparisonOp::Never:
+            return ::vk::CompareOp::eNever;
+        case render::ComparisonOp::Less:
+            return ::vk::CompareOp::eLess;
+        case render::ComparisonOp::Equal:
+            return ::vk::CompareOp::eEqual;
+        case render::ComparisonOp::LessEqual:
+            return ::vk::CompareOp::eLessOrEqual;
+        case render::ComparisonOp::Greater:
+            return ::vk::CompareOp::eGreater;
+        case render::ComparisonOp::NotEqual:
+            return ::vk::CompareOp::eNotEqual;
+        case render::ComparisonOp::GreaterEqual:
+            return ::vk::CompareOp::eGreaterOrEqual;
+        case render::ComparisonOp::Always:
+            return ::vk::CompareOp::eAlways;
+    }
+
+    spdlog::warn("Unimplemented comparison op={}", static_cast<int>(compreOp));
+    return {};
+}
+
 }  // namespace render::vulkan

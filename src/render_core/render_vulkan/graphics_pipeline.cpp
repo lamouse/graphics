@@ -62,10 +62,10 @@ auto MakeBuilder(const Device& device, std::span<const shader::Info> infos)
 }
 template <class StencilFace>
 auto GetStencilFaceState(const StencilFace& face) -> vk::StencilOpState {
-    return vk::StencilOpState{vk::StencilOp::eKeep,
-                              vk::StencilOp::eReplace,
-                              vk::StencilOp::eKeep,
-                              vk::CompareOp::eAlways,
+    return vk::StencilOpState{StencilOp(face.fail),
+                              StencilOp(face.pass),
+                              StencilOp(face.depthFail),
+                              ComparisonOp(face.compare),
                               0xFF,
                               0xFF,
                               1};
@@ -391,8 +391,8 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             .setDepthWriteEnable(pipeline_dynamic.depth_write_enable)
             .setDepthCompareOp(pipeline_dynamic.depth_test_enable ? vk::CompareOp::eLess
                                                                   : vk::CompareOp::eAlways)
-            .setFront(vk::StencilOpState().setCompareOp(vk::CompareOp::eLess))
-            .setBack(vk::StencilOpState().setCompareOp(vk::CompareOp::eLess))
+            .setFront(GetStencilFaceState(pipeline_dynamic.front))
+            .setBack(GetStencilFaceState(pipeline_dynamic.back))
             .setMinDepthBounds(static_cast<f32>(key_.state.depth_bounds_min))
             .setMaxDepthBounds(static_cast<f32>(key_.state.depth_bounds_max));
 

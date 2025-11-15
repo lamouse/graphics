@@ -16,5 +16,9 @@ auto VertexFormat(const Device& device, VertexAttribute::Type type, VertexAttrib
 
 auto PrimitiveTopologyToVK(render::PrimitiveTopology topology) -> vk::PrimitiveTopology;
 
+auto StencilOp(render::StencilOp::Op stencilOp) -> vk::StencilOp;
+
+auto ComparisonOp(render::ComparisonOp compreOp)-> vk::CompareOp;
+
 }  // namespace render::vulkan
 #endif  // GRAPHICS_FORMAT_TO_VK_HPP

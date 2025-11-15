@@ -5,10 +5,10 @@
 
 #include <array>
 #include <type_traits>
-#include <functional>
 #include "common/bit_field.hpp"
 #include "common/common_types.hpp"
 #include "render_core/surface.hpp"
+#include "pipeline_dynamic_state.hpp"
 namespace render {
 
 enum class PrimitiveTopology : u32 {
@@ -23,12 +23,6 @@ enum class PrimitiveTopology : u32 {
     TrianglesAdjacency = 0xC,
     TriangleStripAdjacency = 0xD,
     Patches = 0xE,
-};
-
-// None Engine
-enum class EngineHint : u32 {
-    None = 0x0,
-    OnHLEMacro = 0x1,
 };
 
 enum class MsaaMode : u32 {
@@ -103,6 +97,9 @@ struct FixedPipelineState {
                         BitField<28, 1, u32> front_face;
                         BitField<29, 3, u32> depth_test_func;
                 };
+
+                StencilOp front;
+                StencilOp back;
         };
 
         std::array<surface::PixelFormat, 8> color_formats;
