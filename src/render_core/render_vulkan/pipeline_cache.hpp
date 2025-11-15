@@ -2,7 +2,6 @@
 #include <array>
 #include <filesystem>
 #include <memory>
-#include <stop_token>
 #include "render_core/render_vulkan/buffer_cache.h"
 #include "common/common_types.hpp"
 #include "common/common_funcs.hpp"
