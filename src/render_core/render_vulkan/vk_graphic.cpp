@@ -13,8 +13,7 @@ auto buildVertexAttribute(const render::vulkan::Device& device,
                           std::span<render::VertexAttribute> attributes)
     -> boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32> {
     boost::container::static_vector<vk::VertexInputAttributeDescription2EXT, 32> attrs;
-    for (size_t i = 0; i < attributes.size(); i++) {
-        auto attribute = attributes[i];
+    for (const auto& attribute : attributes) {
         attrs.push_back(
             vk::VertexInputAttributeDescription2EXT()
                 .setBinding(0)
@@ -243,15 +242,18 @@ void VulkanGraphics::UpdateDepthBiasEnable() {
 }
 
 void VulkanGraphics::UpdateVertexInput() {
-    if (!fixedPipelineState.dynamic_vertex_input) {
-        return;
+    if (current_modelId) {
+        auto resource = modelResource[current_modelId];
+        auto attrs = vertex_attributes[resource.vertex_attribute_id];
+        auto bindings = vertex_bindings[resource.vertex_binding_id];
+        scheduler.record([bindings, attrs](vk::CommandBuffer cmdbuf) -> void {
+            cmdbuf.setVertexInputEXT(bindings, attrs);
+        });
+    } else {
+        scheduler.record([](vk::CommandBuffer cmdbuf) -> void {
+            cmdbuf.setVertexInputEXT(0, nullptr, 0, nullptr);
+        });
     }
-    auto resource = modelResource[current_modelId];
-    auto attrs = vertex_attributes[resource.vertex_attribute_id];
-    auto bindings = vertex_bindings[resource.vertex_binding_id];
-    scheduler.record([bindings, attrs](vk::CommandBuffer cmdbuf) -> void {
-        cmdbuf.setVertexInputEXT(bindings, attrs);
-    });
 }
 
 void VulkanGraphics::UpdateCullMode() {
@@ -295,10 +297,8 @@ void VulkanGraphics::UpdateDepthTestEnable() {
         cmdbuf.setDepthTestEnableEXT(enable);
     });
 }
-/**
- * @brief 设置这个后深度信息显示正常了
- *
- */
+
+
 void VulkanGraphics::UpdateDepthWriteEnable() {
     scheduler.record([enable = pipeline_state.depthWriteEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthWriteEnableEXT(enable);
@@ -473,11 +473,6 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     if (!instance.getPushConstants().empty()) {
         buffer_cache.UploadPushConstants(instance.getPushConstants());
     }
-    if (instance.getMeshId()) {
-        fixedPipelineState.dynamic_vertex_input.Assign(1);
-    } else {
-        fixedPipelineState.dynamic_vertex_input.Assign(0);
-    }
 
     texture::FramebufferKey key;
     key.size.width = emu_window->getActiveConfig().extent.width;
@@ -487,7 +482,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
-    fixedPipelineState.topology = instance.getPrimitiveTopology();
+    fixedPipelineState.topology.Assign(instance.getPrimitiveTopology());
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();

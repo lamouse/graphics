@@ -51,9 +51,10 @@ struct VertexAttribute {
             Float = 7,
         };
         union {
-                BitField<0, 5, u32> location;
+                BitField<0, 1, u32> enable;
+                BitField<1, 5, u32> location;
                 BitField<6, 14, u32> offset;
-                BitField<21, 6, Size> size;
+                BitField<20, 6, Size> size;
                 BitField<28, 3, Type> type;
                 u32 hex;
         };

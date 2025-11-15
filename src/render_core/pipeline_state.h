@@ -59,6 +59,9 @@ struct FixedPipelineState {
                 BitField<5, 1, u32> dynamic_vertex_input;
                 BitField<6, 1, u32> xfb_enabled;
                 BitField<7, 1, u32> ndc_minus_one_to_one;
+
+                BitField<24, 4, PrimitiveTopology> topology;
+                BitField<28, 4, MsaaMode> msaa_mode;
         };
 
         union {
@@ -104,9 +107,7 @@ struct FixedPipelineState {
 
         std::array<surface::PixelFormat, 8> color_formats;
         surface::PixelFormat depth_format;
-        PrimitiveTopology topology;
         u32 point_size;
-        MsaaMode msaa_mode;
         DynamicState dynamicState;
 
         u32 line_stipple_factor;
@@ -123,6 +124,8 @@ struct FixedPipelineState {
         }
 
         [[nodiscard]] auto Size() const noexcept -> size_t { return sizeof(*this); }
+
+        void Refresh(DynamicFeatures& features);
 };
 static_assert(std::has_unique_object_representations_v<FixedPipelineState>);
 static_assert(std::is_trivially_copyable_v<FixedPipelineState>);

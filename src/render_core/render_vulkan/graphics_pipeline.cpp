@@ -300,7 +300,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
 
     const FixedPipelineState::DynamicState& pipeline_dynamic = key_.state.dynamicState;
 
-    auto input_assembly_topology = PrimitiveTopologyToVK(key_.state.topology);
+    auto input_assembly_topology = PrimitiveTopologyToVK(key_.state.topology.Value());
     auto primitiveRestartEnable = (input_assembly_topology != vk::PrimitiveTopology::ePatchList &&
                                    device_.IsTopologyListPrimitiveRestartSupported()) ||
                                   (SupportsPrimitiveRestart(input_assembly_topology) ||

@@ -97,7 +97,8 @@ void PipelineCache::loadPipelineCacheFromDisk() {
                     throw std::exception("file header error");
                 }
 
-                if(pipe_line_cache_header.magic != PipelineCacheHeader::MAGIC || pipe_line_cache_header.version != CACHE_VERSION){
+                if (pipe_line_cache_header.magic != PipelineCacheHeader::MAGIC ||
+                    pipe_line_cache_header.version != CACHE_VERSION) {
                     throw std::exception("cache need update");
                 }
                 file.seekg(0, std::ios::end);
@@ -159,8 +160,10 @@ auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> 
         shader_infos.at(static_cast<u8>(ShaderType::Vertex))->unique_hash;
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Fragment)) =
         shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash;
-    graphics_key.state.topology = state.topology;
-    graphics_key.state.dynamic_vertex_input.Assign(state.dynamic_vertex_input);
+
+    graphics_key.state.Refresh(dynamic_features);
+    graphics_key.state.topology.Assign(state.topology);
+    graphics_key.state.msaa_mode.Assign(MsaaMode::Msaa1x1);
     if (current_pipeline) {
         GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
         if (next) {
@@ -280,7 +283,7 @@ auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline
         graphics_key.state.color_formats.at(i) = surface::PixelFormat::Invalid;
     }
     graphics_key.state.depth_format = surface::PixelFormat::D32_FLOAT;
-    graphics_key.state.msaa_mode = MsaaMode::Msaa1x1;
+
     graphics_key.state.depth_enabled.Assign(1);
     return createGraphicsPipeline(graphics_key, nullptr, false);
 }
