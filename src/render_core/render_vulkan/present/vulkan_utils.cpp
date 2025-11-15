@@ -4,58 +4,37 @@ namespace {
 constexpr auto PIPELINE_COLOR_WRITE_MASK =
     vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
     vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-auto CreateWrappedPipelineImpl(const Device& device, RenderPass& renderpass, PipelineLayout& layout,
+auto CreateWrappedPipelineImpl(const Device& device, vk::Format format, PipelineLayout& layout,
                                std::tuple<ShaderModule&, ShaderModule&> shaders,
                                vk::PipelineColorBlendAttachmentState blending) -> Pipeline {
-    const std::array<vk::PipelineShaderStageCreateInfo, 2> shader_stages{{
-        vk::PipelineShaderStageCreateInfo{
+    const std::array shader_stages{vk::PipelineShaderStageCreateInfo()
+                                       .setStage(vk::ShaderStageFlagBits::eVertex)
+                                       .setModule(*std::get<0>(shaders))
+                                       .setPName("main"),
 
-            {},
-            vk::ShaderStageFlagBits::eVertex,
-            *std::get<0>(shaders),
-            "main",
-            nullptr,
-        },
-        vk::PipelineShaderStageCreateInfo{
-            {},
-            vk::ShaderStageFlagBits::eFragment,
-            *std::get<1>(shaders),
-            "main",
-            nullptr,
-        },
-    }};
+                                   vk::PipelineShaderStageCreateInfo()
+                                       .setStage(vk::ShaderStageFlagBits::eFragment)
+                                       .setModule(*std::get<1>(shaders))
+                                       .setPName("main")};
 
-    constexpr vk::PipelineVertexInputStateCreateInfo vertex_input_ci{
-        {}, 0, nullptr, 0, nullptr,
-    };
+    constexpr vk::PipelineVertexInputStateCreateInfo vertex_input_ci;
 
-    constexpr vk::PipelineInputAssemblyStateCreateInfo input_assembly_ci{
-        {},
-        vk::PrimitiveTopology::eTriangleStrip,
-        VK_FALSE,
-    };
+    constexpr auto input_assembly_ci = vk::PipelineInputAssemblyStateCreateInfo().setTopology(
+        vk::PrimitiveTopology::eTriangleStrip);
 
-    constexpr vk::PipelineViewportStateCreateInfo viewport_state_ci{
-        {}, 1, nullptr, 1, nullptr,
-    };
+    constexpr auto viewport_state_ci =
+        vk::PipelineViewportStateCreateInfo().setViewportCount(1).setScissorCount(1);
 
-    constexpr vk::PipelineRasterizationStateCreateInfo rasterization_ci{
-        {},
-        VK_FALSE,
-        VK_FALSE,
-        vk::PolygonMode::eFill,
-        vk::CullModeFlagBits::eNone,
-        vk::FrontFace::eClockwise,
-        VK_FALSE,
-        0.0f,
-        0.0f,
-        0.0f,
-        1.0f,
-    };
+    constexpr auto rasterization_ci = vk::PipelineRasterizationStateCreateInfo()
+                                          .setDepthClampEnable(VK_FALSE)
+                                          .setRasterizerDiscardEnable(VK_FALSE)
+                                          .setPolygonMode(vk::PolygonMode::eFill)
+                                          .setCullMode(vk::CullModeFlagBits::eNone)
+                                          .setFrontFace(vk::FrontFace::eClockwise)
+                                          .setDepthBiasEnable(VK_FALSE)
+                                          .setLineWidth(1.f);
 
-    constexpr vk::PipelineMultisampleStateCreateInfo multisampling_ci{
-        {}, vk::SampleCountFlagBits::e1, VK_FALSE, 0.0f, nullptr, VK_FALSE, VK_FALSE,
-    };
+    constexpr auto multi_sampling_ci = vk::PipelineMultisampleStateCreateInfo();
 
     const vk::PipelineColorBlendStateCreateInfo color_blend_ci{
         {}, VK_FALSE, vk::LogicOp::eCopy, blending, {0.0f, 0.0f, 0.0f, 0.0f},
@@ -63,27 +42,24 @@ auto CreateWrappedPipelineImpl(const Device& device, RenderPass& renderpass, Pip
 
     constexpr std::array dynamic_states{vk::DynamicState::eViewport, vk::DynamicState::eScissor};
 
-    const vk::PipelineDynamicStateCreateInfo dynamic_state_ci{
-        {},
-        dynamic_states,
-    };
+    const auto dynamic_state_ci =
+        vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamic_states);
 
-    return device.logical().createPipeline(vk::GraphicsPipelineCreateInfo{{},
-                                                                          shader_stages,
-                                                                          &vertex_input_ci,
-                                                                          &input_assembly_ci,
-                                                                          nullptr,
-                                                                          &viewport_state_ci,
-                                                                          &rasterization_ci,
-                                                                          &multisampling_ci,
-                                                                          nullptr,
-                                                                          &color_blend_ci,
-                                                                          &dynamic_state_ci,
-                                                                          *layout,
-                                                                          *renderpass,
-                                                                          0,
-                                                                          VK_NULL_HANDLE,
-                                                                          0});
+    auto rendering_ci = vk::PipelineRenderingCreateInfo().setColorAttachmentFormats(format);
+
+    const auto pipeline_ci = vk::GraphicsPipelineCreateInfo()
+                                 .setStages(shader_stages)
+                                 .setPVertexInputState(&vertex_input_ci)
+                                 .setPInputAssemblyState(&input_assembly_ci)
+                                 .setPViewportState(&viewport_state_ci)
+                                 .setPRasterizationState(&rasterization_ci)
+                                 .setPMultisampleState(&multi_sampling_ci)
+                                 .setPColorBlendState(&color_blend_ci)
+                                 .setPDynamicState(&dynamic_state_ci)
+                                 .setLayout(*layout)
+                                 .setPNext(&rendering_ci);
+
+    return device.logical().createPipeline(pipeline_ci);
 }
 }  // namespace
 
@@ -150,7 +126,7 @@ auto CreateWrappedPipelineLayout(const Device& device, DescriptorSetLayout& layo
         vk::PipelineLayoutCreateInfo().setSetLayoutCount(1).setPSetLayouts(layout.address()));
 }
 
-auto CreateWrappedPipeline(const Device& device, RenderPass& render_pass, PipelineLayout& layout,
+auto CreateWrappedPipeline(const Device& device, vk::Format format, PipelineLayout& layout,
                            std::tuple<ShaderModule&, ShaderModule&> shaders) -> Pipeline {
     constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_disabled =
         vk::PipelineColorBlendAttachmentState()
@@ -164,35 +140,45 @@ auto CreateWrappedPipeline(const Device& device, RenderPass& render_pass, Pipeli
             .setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
                                vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
 
-    return CreateWrappedPipelineImpl(device, render_pass, layout, shaders,
+    return CreateWrappedPipelineImpl(device, format, layout, shaders,
                                      color_blend_attachment_disabled);
 }
 
-auto CreateWrappedPremultipliedBlendingPipeline(const Device& device, RenderPass& renderpass,
+auto CreateWrappedPremultipliedBlendingPipeline(const Device& device, vk::Format format,
                                                 PipelineLayout& layout,
                                                 std::tuple<ShaderModule&, ShaderModule&> shaders)
     -> Pipeline {
-    constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_premultiplied{
-        VK_TRUE,           vk::BlendFactor::eOne,     vk::BlendFactor::eOneMinusConstantAlpha,
-        vk::BlendOp::eAdd, vk::BlendFactor::eOne,     vk::BlendFactor::eZero,
-        vk::BlendOp::eAdd, PIPELINE_COLOR_WRITE_MASK,
-    };
+    constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_premultiplied =
+        vk::PipelineColorBlendAttachmentState()
+            .setBlendEnable(VK_TRUE)
+            .setSrcColorBlendFactor(vk::BlendFactor::eOne)
+            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusConstantAlpha)
+            .setColorBlendOp(vk::BlendOp::eAdd)
+            .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+            .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+            .setAlphaBlendOp(vk::BlendOp::eAdd)
+            .setColorWriteMask(PIPELINE_COLOR_WRITE_MASK);
 
-    return CreateWrappedPipelineImpl(device, renderpass, layout, shaders,
+    return CreateWrappedPipelineImpl(device, format, layout, shaders,
                                      color_blend_attachment_premultiplied);
 }
 
-auto CreateWrappedCoverageBlendingPipeline(const Device& device, RenderPass& renderpass,
+auto CreateWrappedCoverageBlendingPipeline(const Device& device, vk::Format format,
                                            PipelineLayout& layout,
                                            std::tuple<ShaderModule&, ShaderModule&> shaders)
     -> Pipeline {
-    constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_coverage{
-        VK_TRUE,           vk::BlendFactor::eSrc1Alpha, vk::BlendFactor::eOneMinusSrcAlpha,
-        vk::BlendOp::eAdd, vk::BlendFactor::eOne,       vk::BlendFactor::eZero,
-        vk::BlendOp::eAdd, PIPELINE_COLOR_WRITE_MASK,
-    };
+    constexpr vk::PipelineColorBlendAttachmentState color_blend_attachment_coverage =
+        vk::PipelineColorBlendAttachmentState()
+            .setBlendEnable(VK_TRUE)
+            .setSrcColorBlendFactor(vk::BlendFactor::eSrc1Alpha)
+            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+            .setColorBlendOp(vk::BlendOp::eAdd)
+            .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+            .setDstAlphaBlendFactor(vk::BlendFactor::eZero)
+            .setAlphaBlendOp(vk::BlendOp::eAdd)
+            .setColorWriteMask(PIPELINE_COLOR_WRITE_MASK);
 
-    return CreateWrappedPipelineImpl(device, renderpass, layout, shaders,
+    return CreateWrappedPipelineImpl(device, format, layout, shaders,
                                      color_blend_attachment_coverage);
 }
 
@@ -286,8 +272,7 @@ auto CreateWrappedDescriptorPool(const Device& device, size_t max_descriptors, s
 }
 
 auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
-                                 std::span<vk::DescriptorSetLayout> layouts)
-    -> DescriptorSets {
+                                 std::span<vk::DescriptorSetLayout> layouts) -> DescriptorSets {
     return pool.Allocate(vk::DescriptorSetAllocateInfo{
         *pool,
         layouts,
@@ -365,6 +350,30 @@ void BeginRenderPass(vk::CommandBuffer& cmdbuf, vk::RenderPass render_pass,
         {0, 0},
         extent,
     };
+    cmdbuf.setViewport(0, viewport);
+    cmdbuf.setScissor(0, scissor);
+}
+
+void BeginDynamicRendering(vk::CommandBuffer& cmdbuf, vk::ImageView image_view,
+                           vk::Extent2D extent) {
+    vk::RenderingAttachmentInfo colorAttachment =
+        vk::RenderingAttachmentInfo()
+            .setImageView(image_view)
+            .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+            .setLoadOp(vk::AttachmentLoadOp::eClear)
+            .setStoreOp(vk::AttachmentStoreOp::eStore)
+            .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f}));
+    vk::RenderingInfo renderingInfo = vk::RenderingInfo()
+                                          .setLayerCount(1)
+                                          .setRenderArea(vk::Rect2D().setExtent(extent))
+                                          .setColorAttachments(colorAttachment);
+    cmdbuf.beginRendering(&renderingInfo);
+
+    const vk::Viewport viewport = vk::Viewport()
+                                      .setWidth(static_cast<float>(extent.width))
+                                      .setHeight(static_cast<float>(extent.height))
+                                      .setMaxDepth(1.f);
+    const vk::Rect2D scissor = vk::Rect2D().setExtent(extent);
     cmdbuf.setViewport(0, viewport);
     cmdbuf.setScissor(0, scissor);
 }

@@ -45,16 +45,9 @@ class BlitScreen {
                          std::span<const frame::FramebufferConfig> framebuffers,
                          size_t current_swapchain_image_count,
                          vk::Format current_swapchain_view_format);
-
-        [[nodiscard]] auto CreateFramebuffer(vk::ImageView image_view,
-                                             const layout::FrameBufferLayout& layout,
-                                             vk::Format current_view_format) -> VulkanFramebuffer;
-
     private:
         void WaitIdle();
         void SetWindowAdaptPass();
-        auto CreateFramebuffer(const vk::ImageView& image_view, vk::Extent2D extent,
-                               vk::RenderPass render_pass) -> VulkanFramebuffer;
 
         const Device& device;
         MemoryAllocator& memory_allocator;

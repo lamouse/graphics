@@ -22,7 +22,6 @@ struct Frame {
         uint32_t height;
         Image image;
         ImageView image_view;
-        VulkanFramebuffer framebuffer;
         vk::CommandBuffer cmdbuf;
         Semaphore render_ready;
         Fence present_done;
@@ -44,7 +43,7 @@ class PresentManager {
 
         /// Recreates the present frame to match the provided parameters
         void recreateFrame(Frame* frame, uint32_t width, uint32_t height,
-                           vk::Format image_view_format, vk::RenderPass rd);
+                           vk::Format image_view_format);
 
         /// Waits for the present thread to finish presenting all queued frames.
         void waitPresent();
@@ -60,7 +59,7 @@ class PresentManager {
 
         void setImageCount();
 
-    private:
+
         const vk::Instance instance_;
         core::frontend::BaseWindow& render_window_;
         const Device& device_;

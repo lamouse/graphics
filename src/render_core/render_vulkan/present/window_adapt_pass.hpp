@@ -21,7 +21,6 @@ class WindowAdaptPass final {
         ~WindowAdaptPass();
 
         auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
-        auto getRenderPass() -> vk::RenderPass;
         void Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
                   std::list<Layer>& layers, std::span<const frame::FramebufferConfig> configs,
                   const layout::FrameBufferLayout& layout, Frame* dst);
@@ -30,8 +29,7 @@ class WindowAdaptPass final {
         void CreateDescriptorSetLayout();
         void CreatePipelineLayout();
         void CreateVertexShader();
-        void CreateRenderPass(vk::Format frame_format);
-        void CreatePipelines();
+        void CreatePipelines(vk::Format format);
 
         const Device& device;
         DescriptorSetLayout descriptor_set_layout;
@@ -39,7 +37,6 @@ class WindowAdaptPass final {
         Sampler sampler;
         ShaderModule vertex_shader;
         ShaderModule fragment_shader;
-        RenderPass render_pass;
         Pipeline opaque_pipeline;
         Pipeline premultiplied_pipeline;
         Pipeline coverage_pipeline;

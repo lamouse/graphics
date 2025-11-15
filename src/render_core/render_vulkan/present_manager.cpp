@@ -1,4 +1,5 @@
 #include "present_manager.hpp"
+#include "present/vulkan_utils.hpp"
 #include "swapchain.hpp"
 #include "vulkan_common/device.hpp"
 #include "scheduler.hpp"
@@ -336,7 +337,7 @@ void PresentManager::waitPresent() {
 }
 
 void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
-                                   vk::Format image_view_format, vk::RenderPass rd) {
+                                   vk::Format image_view_format) {
     frame->width = width;
     frame->height = height;
 
@@ -362,6 +363,9 @@ void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
         .pQueueFamilyIndices = nullptr,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     });
+    scheduler_.record([frame_image = *frame->image](vk::CommandBuffer cmdbuf) {
+        present::utils::TransitionImageLayout(cmdbuf, frame_image, vk::ImageLayout::eGeneral, vk::ImageLayout::eUndefined);
+    });
     frame->image_view = device_.logical().CreateImageView(
         vk::ImageViewCreateInfo()
             .setImage(*frame->image)
@@ -378,15 +382,6 @@ void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
                                      .setLevelCount(1)
                                      .setBaseArrayLayer(0)
                                      .setLayerCount(1)));
-
-    const vk::ImageView image_view{*frame->image_view};
-
-    frame->framebuffer = device_.logical().createFramerBuffer(vk::FramebufferCreateInfo()
-                                                                  .setRenderPass(rd)
-                                                                  .setAttachments(image_view)
-                                                                  .setWidth(width)
-                                                                  .setHeight(height)
-                                                                  .setLayers(1));
 }
 
 }  // namespace render::vulkan

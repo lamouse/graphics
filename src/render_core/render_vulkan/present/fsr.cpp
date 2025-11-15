@@ -21,7 +21,6 @@ FSR::FSR(const Device& device, MemoryAllocator& memory_allocator, size_t image_c
       m_image_count{image_count},
       m_extent{extent} {
     CreateImages();
-    CreateRenderPasses();
     CreateSampler();
     CreateShaders();
     CreateDescriptorPool();
@@ -42,17 +41,6 @@ void FSR::CreateImages() {
             present::utils::CreateWrappedImageView(m_device, images.images[Easu], format_);
         images.image_views[Rcas] =
             present::utils::CreateWrappedImageView(m_device, images.images[Rcas], format_);
-    }
-}
-
-void FSR::CreateRenderPasses() {
-    m_renderpass = present::utils::CreateWrappedRenderPass(m_device, format_);
-
-    for (auto& images : m_dynamic_images) {
-        images.framebuffers[Easu] = present::utils::CreateWrappedFramebuffer(
-            m_device, m_renderpass, images.image_views[Easu], m_extent);
-        images.framebuffers[Rcas] = present::utils::CreateWrappedFramebuffer(
-            m_device, m_renderpass, images.image_views[Rcas], m_extent);
     }
 }
 
@@ -110,10 +98,10 @@ void FSR::CreatePipelineLayouts() {
 }
 
 void FSR::CreatePipelines() {
-    m_easu_pipeline = present::utils::CreateWrappedPipeline(
-        m_device, m_renderpass, m_pipeline_layout, std::tie(m_vert_shader, m_easu_shader));
-    m_rcas_pipeline = present::utils::CreateWrappedPipeline(
-        m_device, m_renderpass, m_pipeline_layout, std::tie(m_vert_shader, m_rcas_shader));
+    m_easu_pipeline = present::utils::CreateWrappedPipeline(m_device, format_, m_pipeline_layout,
+                                                            std::tie(m_vert_shader, m_easu_shader));
+    m_rcas_pipeline = present::utils::CreateWrappedPipeline(m_device, format_, m_pipeline_layout,
+                                                            std::tie(m_vert_shader, m_rcas_shader));
 }
 
 void FSR::UpdateDescriptorSets(vk::ImageView image_view, size_t image_index) {
@@ -156,11 +144,14 @@ auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image so
     vk::DescriptorSet easu_descriptor_set = images.descriptor_sets[Easu];
     vk::DescriptorSet rcas_descriptor_set = images.descriptor_sets[Rcas];
     vk::Framebuffer easu_framebuffer = *images.framebuffers[Easu];
+
+    vk::ImageView easu_image_view = *images.image_views[Easu];
     vk::Framebuffer rcas_framebuffer = *images.framebuffers[Rcas];
+    vk::ImageView rcas_image_view = *images.image_views[Rcas];
+
     vk::Pipeline easu_pipeline = *m_easu_pipeline;
     vk::Pipeline rcas_pipeline = *m_rcas_pipeline;
     vk::PipelineLayout pipeline_layout = *m_pipeline_layout;
-    vk::RenderPass renderpass = *m_renderpass;
     vk::Extent2D extent = m_extent;
 
     const f32 input_image_width = static_cast<f32>(input_image_extent.width);
@@ -191,25 +182,26 @@ auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image so
     scheduler.record([=](vk::CommandBuffer cmdbuf) {
         present::utils::TransitionImageLayout(cmdbuf, source_image, vk::ImageLayout::eGeneral);
         present::utils::TransitionImageLayout(cmdbuf, easu_image, vk::ImageLayout::eGeneral);
-        present::utils::BeginRenderPass(cmdbuf, renderpass, easu_framebuffer, extent);
+
+        present::utils::BeginDynamicRendering(cmdbuf, easu_image_view, extent);
         cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, easu_pipeline);
         cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0,
                                   easu_descriptor_set, {});
         cmdbuf.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eFragment, 0,
                              sizeof(easu_con), &easu_con);
         cmdbuf.draw(3, 1, 0, 0);
-        cmdbuf.endRenderPass();
+        cmdbuf.endRendering();
 
         present::utils::TransitionImageLayout(cmdbuf, easu_image, vk::ImageLayout::eGeneral);
         present::utils::TransitionImageLayout(cmdbuf, rcas_image, vk::ImageLayout::eGeneral);
-        present::utils::BeginRenderPass(cmdbuf, renderpass, rcas_framebuffer, extent);
+        present::utils::BeginDynamicRendering(cmdbuf, rcas_image_view, extent);
         cmdbuf.bindPipeline(vk::PipelineBindPoint::eGraphics, rcas_pipeline);
         cmdbuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0,
                                   rcas_descriptor_set, {});
         cmdbuf.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eFragment, 0,
                              sizeof(rcas_con), &rcas_con);
         cmdbuf.draw(3, 1, 0, 0);
-        cmdbuf.endRenderPass();
+        cmdbuf.endRendering();
 
         present::utils::TransitionImageLayout(cmdbuf, rcas_image, vk::ImageLayout::eGeneral);
     });

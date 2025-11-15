@@ -18,7 +18,6 @@ class FSR {
 
     private:
         void CreateImages();
-        void CreateRenderPasses();
         void CreateSampler();
         void CreateShaders();
         void CreateDescriptorPool();
@@ -43,7 +42,6 @@ class FSR {
         ShaderModule m_rcas_shader;
         Pipeline m_easu_pipeline;
         Pipeline m_rcas_pipeline;
-        RenderPass m_renderpass;
         Sampler m_sampler;
         static constexpr vk::Format format_ = vk::Format::eR16G16B16A16Sfloat;
 

@@ -15,15 +15,15 @@ auto CreateWrappedRenderPass(const Device& device, vk::Format format,
 auto CreateWrappedPipelineLayout(const Device& device, DescriptorSetLayout& layout)
     -> PipelineLayout;
 
-auto CreateWrappedPipeline(const Device& device, RenderPass& render_pass, PipelineLayout& layout,
+auto CreateWrappedPipeline(const Device& device, vk::Format format, PipelineLayout& layout,
                            std::tuple<ShaderModule&, ShaderModule&> shaders) -> Pipeline;
 
-auto CreateWrappedPremultipliedBlendingPipeline(const Device& device, RenderPass& renderpass,
+auto CreateWrappedPremultipliedBlendingPipeline(const Device& device, vk::Format format,
                                                 PipelineLayout& layout,
                                                 std::tuple<ShaderModule&, ShaderModule&> shaders)
     -> Pipeline;
 
-auto CreateWrappedCoverageBlendingPipeline(const Device& device, RenderPass& renderpass,
+auto CreateWrappedCoverageBlendingPipeline(const Device& device, vk::Format format,
                                            PipelineLayout& layout,
                                            std::tuple<ShaderModule&, ShaderModule&> shaders)
     -> Pipeline;
@@ -59,6 +59,8 @@ void TransitionImageLayout(vk::CommandBuffer& cmdbuf, vk::Image image,
 
 void BeginRenderPass(vk::CommandBuffer& cmdbuf, vk::RenderPass render_pass,
                      vk::Framebuffer framebuffer, vk::Extent2D extent);
+
+void BeginDynamicRendering(vk::CommandBuffer& cmdbuf, vk::ImageView image_view, vk::Extent2D extent);
 
 auto CreateNearestNeighborSampler(const Device& device) -> Sampler;
 

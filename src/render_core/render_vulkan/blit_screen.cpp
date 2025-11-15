@@ -1,7 +1,6 @@
 #include "blit_screen.hpp"
 #include <spdlog/spdlog.h>
 #include "present/filters.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/device.hpp"
 #include "vulkan_common/memory_allocator.hpp"
 #include "scheduler.hpp"
@@ -53,31 +52,6 @@ void BlitScreen::SetWindowAdaptPass() {
     }
 }
 
-auto BlitScreen::CreateFramebuffer(const vk::ImageView& image_view, vk::Extent2D extent,
-                                   vk::RenderPass render_pass) -> VulkanFramebuffer {
-    return device.logical().createFramerBuffer(
-        vk::FramebufferCreateInfo{{}, render_pass, image_view, extent.width, extent.height, 1});
-}
-
-[[nodiscard]] auto BlitScreen::CreateFramebuffer(vk::ImageView image_view,
-                                                 const layout::FrameBufferLayout& layout,
-                                                 vk::Format current_view_format)
-    -> VulkanFramebuffer {
-    const bool format_updated =
-        std::exchange(swapchain_view_format, current_view_format) != current_view_format;
-    if (!window_adapt ||
-        scaling_filter != common::settings::get<settings::Graphics>().scaling_filter ||
-        format_updated) {
-        WaitIdle();
-        SetWindowAdaptPass();
-    }
-    const vk::Extent2D extent{
-        layout.width,
-        layout.height,
-    };
-    return CreateFramebuffer(image_view, extent, window_adapt->getRenderPass());
-}
-
 void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
                              const layout::FrameBufferLayout& layout,
                              std::span<const frame::FramebufferConfig> framebuffers,
@@ -118,8 +92,7 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
 
         // Update frame format if needed
         if (presentation_recreate_required) {
-            present_manager.recreateFrame(frame, layout.width, layout.height, swapchain_view_format,
-                                          window_adapt->getRenderPass());
+            present_manager.recreateFrame(frame, layout.width, layout.height, swapchain_view_format);
         }
     }
 
