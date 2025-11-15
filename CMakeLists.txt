@@ -78,13 +78,9 @@ find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
 find_package(embree 3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(Ktx CONFIG REQUIRED) # vcpkg install ktx --x-abi-tools-use-exact-versions
 # need vcpkg end
 add_subdirectory(third-party)
-
-# 由于vcpkg安装不了ktx所以先这样写了
-find_package(ktx REQUIRED
-        PATHS "D:/libs/scoop/apps/ktx-software/current/lib/cmake/ktx"
-)
 
 # This function should be passed a list of all files in a target. It will automatically generate
 # file groups following the directory hierarchy, so that the layout of the files in IDEs matches the

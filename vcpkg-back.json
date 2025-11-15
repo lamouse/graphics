@@ -23,6 +23,7 @@
         "xxhash",
         "embree3",
         "nlohmann-json",
+        "ktx",
         {
             "name": "sdl3",
             "features": [
