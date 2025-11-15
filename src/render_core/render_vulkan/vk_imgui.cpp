@@ -101,8 +101,6 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
         is_render_finish.exchange(false);
     }
 
-    const vk::Framebuffer host_framebuffer{*frame->framebuffer};
-    const vk::RenderPass renderPass(*render_pass);
     const vk::Extent2D extent{
         frame->width,
         frame->height,
@@ -110,8 +108,7 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
     newFrame();
     draw_func();
     ImGui::Render();
-    scheduler.record([this, view = *frame->image_view, renderPass, host_framebuffer,
-                      extent](vk::CommandBuffer cmdbuf) -> void {
+    scheduler.record([this, view = *frame->image_view, extent](vk::CommandBuffer cmdbuf) -> void {
         vk::RenderingAttachmentInfo colorAttachment =
             vk::RenderingAttachmentInfo()
                 .setImageView(view)
@@ -123,11 +120,9 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
         renderingInfo.setColorAttachments(colorAttachment)
             .setLayerCount(1)
             .setRenderArea(vk::Rect2D().setExtent(extent));
-        // present::utils::BeginRenderPass(cmdbuf, renderPass, host_framebuffer, extent);
         // 开始动态渲染
         cmdbuf.beginRendering(&renderingInfo);
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdbuf);
-        // cmdbuf.endRenderPass();
         // 结束动态渲染
         cmdbuf.endRendering();
         if (settings::values.use_present_thread.GetValue()) {
