@@ -61,7 +61,7 @@ struct InputState {
 
         [[nodiscard]] auto keyDown(InputKey key_)const  -> bool {
             if(key_ == key){
-                return key_down;
+                return static_cast<bool>(key_down);
             }
             return false;
         }
