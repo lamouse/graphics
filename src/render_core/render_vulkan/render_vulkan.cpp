@@ -65,7 +65,7 @@ RendererVulkan::~RendererVulkan() { void(device.getLogical().waitIdle()); }
 
 void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers,
                                const imgui_ui_fun& func) {
-                                ZoneScopedNC("RendererVulkan::composit", 130);
+                                ZoneScopedNC("RendererVulkan::composite", 130);
     if (frame_buffers.empty()) {
         return;
     }

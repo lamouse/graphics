@@ -82,7 +82,8 @@ PresentManager::PresentManager(const vk::Instance& instance,
     }
 
     if (use_present_thread_) {
-        present_thread_ = std::jthread([this](std::stop_token token) { presentThread(token); });
+        present_thread_ =
+            std::jthread([this](std::stop_token token) { presentThread(token); });  // NOLINT
     }
 }
 
@@ -90,7 +91,7 @@ void PresentManager::setImageCount() {
     image_count_ = std::min<size_t>(swapchain_.getImageCount(), 7);
 }
 
-void PresentManager::presentThread(std::stop_token token) {
+void PresentManager::presentThread(std::stop_token token) {  // NOLINT
     common::thread::SetCurrentThreadName("VulkanPresent");
     while (!token.stop_requested()) {
         std::unique_lock lock{queue_mutex_};
