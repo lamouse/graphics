@@ -26,8 +26,7 @@ namespace {
 auto ShaderStage(uint32_t stage) -> vk::ShaderStageFlagBits {
     auto shader_stage = shader::StageFromIndex(stage);
     switch (shader_stage) {
-        case shader::Stage::VertexA:
-        case shader::Stage::VertexB:
+        case shader::Stage::Vertex:
             return  vk::ShaderStageFlagBits::eVertex;
         case shader::Stage::TessellationControl:
             return vk::ShaderStageFlagBits::eTessellationControl;

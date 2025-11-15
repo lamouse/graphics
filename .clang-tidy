@@ -165,6 +165,7 @@ bugprone-virtual-near-miss,
   -modernize-avoid-c-arrays,
   -hicpp-explicit-conversions,
   -cert-err58-cpp,
+  -performance-enum-size,
 '
 
 
