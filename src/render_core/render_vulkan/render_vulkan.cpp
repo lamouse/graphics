@@ -1,6 +1,6 @@
 #include "render_vulkan.hpp"
 #include "common/scope_exit.h"
-#include "vulkan_common/instance.hpp"
+#include "vulkan_common/vk_instance.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 #include "vulkan_common/debug_callback.hpp"

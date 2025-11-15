@@ -103,8 +103,8 @@ set(sources
     vulkan_common/device.hpp
     vulkan_common/device_utils.cpp
     vulkan_common/device_utils.hpp
-    vulkan_common/instance.cpp
-    vulkan_common/instance.hpp
+    vulkan_common/vk_instance.cpp
+    vulkan_common/vk_instance.hpp
     vulkan_common/memory_allocator.cpp
     vulkan_common/memory_allocator.hpp
     vulkan_common/vk_surface.cpp
