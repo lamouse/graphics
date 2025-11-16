@@ -52,8 +52,6 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
                      scheduler::Scheduler& scheduler_, vk::PhysicalDevice physical,
                      vk::Instance instance)
     : device(device_),
-      render_pass(present::utils::CreateWrappedRenderPass(device, vk::Format::eB8G8R8A8Unorm,
-                                                          vk::ImageLayout::eUndefined)),
       descriptorPool(createDescriptorPool(device)),
       window(window_),
       scheduler(scheduler_),

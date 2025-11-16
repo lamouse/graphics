@@ -18,7 +18,6 @@ class ImguiCore {
     private:
         const Device& device;
 
-        RenderPass render_pass;
         VulkanDescriptorPool descriptorPool;
         core::frontend::BaseWindow* window;
         scheduler::Scheduler& scheduler;

@@ -129,6 +129,8 @@ class Scheduler {
                         return false;
                     }
                     Command* const current_last = last;
+
+                    //NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                     last = new (data.data() + command_offset) FuncType(std::move(command));
 
                     if (current_last) {
@@ -141,9 +143,7 @@ class Scheduler {
                 }
 
                 void markSubmit() { submit = true; }
-
                 [[nodiscard]] auto empty() const -> bool { return command_offset == 0; }
-
                 [[nodiscard]] auto hasSubmit() const -> bool { return submit; }
 
             private:
