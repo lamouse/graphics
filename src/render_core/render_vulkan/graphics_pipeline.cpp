@@ -4,6 +4,7 @@
 #include "descriptor_pool.hpp"
 #include "scheduler.hpp"
 #include "common/assert.hpp"
+#include "common/settings.hpp"
 #include "shader_notify.hpp"
 #include "pipeline_statistics.hpp"
 #include <boost/container/small_vector.hpp>
@@ -27,7 +28,7 @@ auto ShaderStage(uint32_t stage) -> vk::ShaderStageFlagBits {
     auto shader_stage = shader::StageFromIndex(stage);
     switch (shader_stage) {
         case shader::Stage::Vertex:
-            return  vk::ShaderStageFlagBits::eVertex;
+            return vk::ShaderStageFlagBits::eVertex;
         case shader::Stage::TessellationControl:
             return vk::ShaderStageFlagBits::eTessellationControl;
         case shader::Stage::TessellationEval:
@@ -95,9 +96,8 @@ auto SupportsPrimitiveRestart(vk::PrimitiveTopology topology) -> bool {
 }
 
 auto IsLine(vk::PrimitiveTopology topology) -> bool {
-    static constexpr std::array line_topologies{
-        vk::PrimitiveTopology::eLineList, vk::PrimitiveTopology::eLineStrip
-    };
+    static constexpr std::array line_topologies{vk::PrimitiveTopology::eLineList,
+                                                vk::PrimitiveTopology::eLineStrip};
     return std::ranges::find(line_topologies, topology) == line_topologies.end();
 }
 
@@ -168,7 +168,8 @@ GraphicsPipeline::GraphicsPipeline(
       spv_modules_{std::move(stages)},
       dynamic(dynamic_),
       texture_cache(texture_cache_),
-      buffer_cache(buffer_cache_) {
+      buffer_cache(buffer_cache_),
+      use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {
     if (shader_notify) {
         shader_notify->MarkShaderBuilding();
     }
@@ -197,7 +198,9 @@ GraphicsPipeline::GraphicsPipeline(
         descriptor_update_template =
             builder.CreateTemplate(set_layout, *pipeline_layout, uses_push_descriptor);
 
-        const vk::RenderPass render_pass = render_pass_cache.get(MakeRenderPassKey(key_.state));
+        const vk::RenderPass render_pass =
+            use_dynamic_render ? VK_NULL_HANDLE
+                               : render_pass_cache.get(MakeRenderPassKey(key_.state));
         validate();
         makePipeline(render_pass);
         if (pipeline_statistics) {
@@ -503,20 +506,35 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     if (device_.IsKhrPipelineExecutablePropertiesEnabled()) {
         flags |= vk::PipelineCreateFlagBits::eCaptureStatisticsKHR;
     }
-    vk::GraphicsPipelineCreateInfo pipeline_ci = vk::GraphicsPipelineCreateInfo()
-    .setFlags(flags).setStages(shader_stages)
-    .setPVertexInputState(&vertex_input_ci)
-    .setPInputAssemblyState(&input_assembly_ci)
-    .setPTessellationState(&tessellation_ci)
-    .setPViewportState(&viewport_ci)
-    .setPRasterizationState(&rasterization_ci)
-    .setPMultisampleState(&multisample_ci)
-    .setPDepthStencilState(&depth_stencil_ci)
-    .setPColorBlendState(&color_blend_ci)
-    .setPDynamicState(&dynamic_state_ci)
-    .setLayout(*pipeline_layout)
-    .setRenderPass(render_pass);
-    pipeline =
-        device_.logical().createPipeline(pipeline_ci);
+    small_vector<vk::Format, 8> formats;
+    for (const auto& format : key_.state.color_formats) {
+        if (format != surface::PixelFormat::Invalid) {
+            auto vk_format = device_.surfaceFormat(FormatType::Optimal, true, format);
+            formats.push_back(vk_format.format);
+        }
+    }
+    auto rendering_ci = vk::PipelineRenderingCreateInfo().setColorAttachmentFormats(formats);
+    if (key_.state.depth_format != surface::PixelFormat::Invalid) {
+        auto vk_format = device_.surfaceFormat(FormatType::Optimal, true, key_.state.depth_format);
+        rendering_ci.setDepthAttachmentFormat(vk_format.format);
+    }
+
+    const vk::GraphicsPipelineCreateInfo pipeline_ci =
+        vk::GraphicsPipelineCreateInfo()
+            .setFlags(flags)
+            .setStages(shader_stages)
+            .setPVertexInputState(&vertex_input_ci)
+            .setPInputAssemblyState(&input_assembly_ci)
+            .setPTessellationState(&tessellation_ci)
+            .setPViewportState(&viewport_ci)
+            .setPRasterizationState(&rasterization_ci)
+            .setPMultisampleState(&multisample_ci)
+            .setPDepthStencilState(&depth_stencil_ci)
+            .setPColorBlendState(&color_blend_ci)
+            .setPDynamicState(&dynamic_state_ci)
+            .setLayout(*pipeline_layout)
+            .setRenderPass(render_pass)
+            .setPNext(use_dynamic_render ? &rendering_ci : nullptr);
+    pipeline = device_.logical().createPipeline(pipeline_ci);
 }
 }  // namespace render::vulkan

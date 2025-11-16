@@ -657,7 +657,7 @@ void TextureFramebuffer::CreateFramebuffer(
             render_pass_key.color_formats.at(index) = surface::PixelFormat::Invalid;
             continue;
         }
-        color_views.at(index) = depth_buffer->RenderTarget();
+        color_views.at(index) = color_buffer->RenderTarget();
         width = color_buffer->size.width;
         height = color_buffer->size.height;
         attachments.push_back(color_buffer->RenderTarget());
@@ -690,7 +690,6 @@ void TextureFramebuffer::CreateFramebuffer(
         render_pass_key.depth_format = surface::PixelFormat::Invalid;
     }
     render_pass_key.samples = samples;
-
     render_pass = runtime.render_pass_cache.get(render_pass_key);
     render_area.width = std::min(render_area.width, width);
     render_area.height = std::min(render_area.height, height);

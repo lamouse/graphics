@@ -132,6 +132,8 @@ class GraphicsPipeline {
         std::mutex build_mutex;
         std::atomic_bool is_built{false};
         bool uses_push_descriptor{false};
+
+        bool use_dynamic_render;
 };
 
 }  // namespace render::vulkan

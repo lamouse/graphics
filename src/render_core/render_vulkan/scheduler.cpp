@@ -186,7 +186,7 @@ void Scheduler::endRendering() {
                                    vk::PipelineStageFlagBits::eColorAttachmentOutput,
                                vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, barriers);
     });
-    state_.render_pass_ = nullptr;
+    dynamic_state.begin_rendering = false;
     num_render_pass_images_ = 0;
 }
 
@@ -306,7 +306,7 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
 }
 
 void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
-    if (framebuffer->DepthView() == dynamic_state.depth_view &&
+    if (dynamic_state.begin_rendering && framebuffer->DepthView() == dynamic_state.depth_view &&
         framebuffer->RenderArea() == dynamic_state.render_area_ &&
         dynamic_state.color_views == framebuffer->ImageViews()) {
         return;
@@ -327,7 +327,7 @@ void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
                         .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
                         .setLoadOp(vk::AttachmentLoadOp::eLoad)
                         .setStoreOp(vk::AttachmentStoreOp::eStore)
-                        .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f})));
+                        .setClearValue(vk::ClearValue().setColor({1.0f, 1.0f, 1.0f, 1.0f})));
             }
         }
 
