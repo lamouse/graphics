@@ -234,7 +234,7 @@ void GraphicsPipeline::Configure() {
 }
 
 void GraphicsPipeline::ConfigureDraw() {
-    scheduler_.requestRenderPass(texture_cache.getFramebuffer());
+    scheduler_.requestRender(texture_cache.getFramebuffer());
 
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built

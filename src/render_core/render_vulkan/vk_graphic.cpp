@@ -5,7 +5,9 @@
 #include <imgui_impl_vulkan.h>
 #include <algorithm>
 #include <tracy/Tracy.hpp>
-
+#ifdef MemoryBarrier
+#undef MemoryBarrier
+#endif
 using IsInstance = bool;
 
 namespace {
@@ -74,7 +76,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 VulkanGraphics::~VulkanGraphics() = default;
 
 void VulkanGraphics::clean() {
-    scheduler.requestRenderPass(texture_cache.getFramebuffer());
+    scheduler.requestRender(texture_cache.getFramebuffer());
     clear();
 }
 
@@ -123,14 +125,12 @@ void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
 
     std::scoped_lock lock{texture_cache.mutex, buffer_cache.mutex};
     pipeline->Configure(scheduler, buffer_cache);
-#ifdef MemoryBarrier
-#undef MemoryBarrier
-#endif
+
     static constexpr vk::MemoryBarrier READ_BARRIER =
         vk::MemoryBarrier()
             .setSrcAccessMask(vk::AccessFlagBits::eMemoryWrite)
             .setDstAccessMask(vk::AccessFlagBits::eMemoryRead);
-    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.requestOutsideRenderOperationContext();
     scheduler.record([](vk::CommandBuffer cmdbuf) {
         cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
                                vk::PipelineStageFlagBits::eComputeShader, {}, READ_BARRIER, nullptr,

@@ -54,6 +54,8 @@ struct Values {
                                                 Category::render};
         Setting<bool, false> use_asynchronous_shaders{linkage, true, "use_asynchronous_shaders",
                                                       Category::render};
+        Setting<bool, false> use_dynamic_rendering{linkage, false, "use_dynamic_rendering",
+                                                   Category::render};
 
         Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
         Setting<bool, false> log_file{linkage, true, "file", Category::log};

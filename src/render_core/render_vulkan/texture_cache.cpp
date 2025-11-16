@@ -390,7 +390,7 @@ void TextureCacheRuntime::TransitionImageLayout(TextureImage& image) {
                                          .setLevelCount(VK_REMAINING_MIP_LEVELS)
                                          .setBaseArrayLayer(0)
                                          .setLayerCount(VK_REMAINING_ARRAY_LAYERS));
-        scheduler.requestOutsideRenderPassOperationContext();
+        scheduler.requestOutsideRenderOperationContext();
         scheduler.record([barrier](vk::CommandBuffer cmdbuf) {
             cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe,
                                    vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, barrier);
@@ -413,7 +413,7 @@ TextureImage::TextureImage() = default;
 TextureImage::~TextureImage() = default;
 void TextureImage::UploadMemory(vk::Buffer buffer, vk::DeviceSize offset,
                                 std::span<const render::texture::BufferImageCopy> copies) {
-    scheduler->requestOutsideRenderPassOperationContext();
+    scheduler->requestOutsideRenderOperationContext();
     auto vk_copies = TransformBufferImageCopies(copies, offset, aspect_mask);
     const vk::Buffer src_buffer = buffer;
     const vk::Image vk_image = *image;
@@ -657,6 +657,7 @@ void TextureFramebuffer::CreateFramebuffer(
             render_pass_key.color_formats.at(index) = surface::PixelFormat::Invalid;
             continue;
         }
+        color_views.at(index) = depth_buffer->RenderTarget();
         width = color_buffer->size.width;
         height = color_buffer->size.height;
         attachments.push_back(color_buffer->RenderTarget());
@@ -684,6 +685,7 @@ void TextureFramebuffer::CreateFramebuffer(
         has_depth = (subresource_range.aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT) != 0;
         // NOLINTNEXTLINE
         has_stencil = (subresource_range.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) != 0;
+        depth_view = depth_buffer->RenderTarget();
     } else {
         render_pass_key.depth_format = surface::PixelFormat::Invalid;
     }

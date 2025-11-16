@@ -200,7 +200,7 @@ void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
     SetAntiAliasPass();
 
     // Finish any pending render pass
-    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.requestOutsideRenderOperationContext();
     scheduler.wait(resource_ticks[image_index]);
     SCOPE_EXIT->void { resource_ticks[image_index] = scheduler.currentTick(); };
 

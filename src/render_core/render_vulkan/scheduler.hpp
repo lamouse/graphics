@@ -76,12 +76,12 @@ class Scheduler {
                 });
         }
 
-        void requestOutsideRenderPassOperationContext() { endRenderPass(); }
-
-        void requestRenderPass(const TextureFramebuffer* framebuffer);
         // Update the pipeline to the current execution context.
         auto updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool;
 
+        void requestRender(const TextureFramebuffer* framebuffer);
+
+        void requestOutsideRenderOperationContext();
     private:
         class Command {
             public:
@@ -130,7 +130,7 @@ class Scheduler {
                     }
                     Command* const current_last = last;
 
-                    //NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                     last = new (data.data() + command_offset) FuncType(std::move(command));
 
                     if (current_last) {
@@ -170,8 +170,18 @@ class Scheduler {
                 GraphicsPipeline* graphics_pipeline_ = nullptr;
         };
 
+        struct DynamicState {
+                std::array<vk::ImageView, 8> color_views;
+                vk::ImageView depth_view;
+                vk::Extent2D render_area_ = {0, 0};
+                GraphicsPipeline* graphics_pipeline_ = nullptr;
+                bool begin_rendering{false};
+                auto operator<=>(const DynamicState&) const = default;
+        };
+
         const Device& device_;
         State state_;
+        DynamicState dynamic_state;
         void workerThread(std::stop_token stop_token);
         void allocateWorkerCommandBuffer();
         void acquireNewChunk();
@@ -189,6 +199,12 @@ class Scheduler {
          */
         auto submitExecution(vk::Semaphore signal_semaphore, vk::Semaphore wait_semaphore) -> u64;
         void endRenderPass();
+        void endRendering();
+        void requestOutsideRenderPassOperationContext() { endRenderPass(); }
+        void requestOutsideRenderingOperationContext() { endRendering(); }
+
+        void requestRenderPass(const TextureFramebuffer* framebuffer);
+        void requestRendering(const TextureFramebuffer* framebuffer);
         std::unique_ptr<semaphore::MasterSemaphore> master_semaphore_;
         std::unique_ptr<resource::CommandPool> command_pool_;
 
@@ -207,5 +223,6 @@ class Scheduler {
         std::mutex queue_mutex_;
         std::condition_variable_any event_cv_;
         std::jthread worker_thread_;
+        bool use_dynamic_rendering;
 };
 }  // namespace render::vulkan::scheduler

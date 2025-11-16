@@ -7,6 +7,7 @@
 #include "texture_cache.hpp"
 #include <boost/container/small_vector.hpp>
 #include <tracy/Tracy.hpp>
+#include "common/settings.hpp"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
@@ -32,7 +33,8 @@ void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
 Scheduler::Scheduler(const Device& device)
     : device_{device},
       master_semaphore_{std::make_unique<semaphore::MasterSemaphore>(device)},
-      command_pool_{std::make_unique<resource::CommandPool>(master_semaphore_.get(), device)} {
+      command_pool_{std::make_unique<resource::CommandPool>(master_semaphore_.get(), device)},
+      use_dynamic_rendering(settings::values.use_dynamic_rendering.GetValue()) {
     acquireNewChunk();
     allocateWorkerCommandBuffer();
     worker_thread_ = std::jthread([this](std::stop_token token) { workerThread(token); });
@@ -138,13 +140,54 @@ void Scheduler::dispatchWork() {
     acquireNewChunk();
 }
 
-void Scheduler::endPendingOperations() { endRenderPass(); }
+void Scheduler::endPendingOperations() {
+    if (use_dynamic_rendering) {
+        endRendering();
+    } else {
+        endRenderPass();
+    }
+}
 auto Scheduler::updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool {
     if (state_.graphics_pipeline_ == pipeline) {
         return false;
     }
     state_.graphics_pipeline_ = pipeline;
     return true;
+}
+
+void Scheduler::endRendering() {
+    if (!dynamic_state.begin_rendering) {
+        return;
+    }
+    record([num_images = num_render_pass_images_, images = render_pass_images_,
+            ranges = render_pass_image_ranges_](vk::CommandBuffer cmdbuf) {
+        boost::container::small_vector<vk::ImageMemoryBarrier, 9> barriers;
+        for (size_t i = 0; i < num_images; ++i) {
+            barriers.push_back(
+                vk::ImageMemoryBarrier()
+                    .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite |
+                                      vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+                    .setDstAccessMask(vk::AccessFlagBits::eShaderRead |
+                                      vk::AccessFlagBits::eShaderWrite |
+                                      vk::AccessFlagBits::eColorAttachmentRead |
+                                      vk::AccessFlagBits::eColorAttachmentWrite |
+                                      vk::AccessFlagBits::eDepthStencilAttachmentRead |
+                                      vk::AccessFlagBits::eDepthStencilAttachmentWrite)
+                    .setOldLayout(vk::ImageLayout::eGeneral)
+                    .setNewLayout(vk::ImageLayout::eGeneral)
+                    .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                    .setImage(images[i])
+                    .setSubresourceRange(ranges[i]));
+        }
+        cmdbuf.endRendering();
+        cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eEarlyFragmentTests |
+                                   vk::PipelineStageFlagBits::eLateFragmentTests |
+                                   vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                               vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, barriers);
+    });
+    state_.render_pass_ = nullptr;
+    num_render_pass_images_ = 0;
 }
 
 void Scheduler::endRenderPass() {
@@ -260,6 +303,70 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
     num_render_pass_images_ = framebuffer->NumImages();
     render_pass_images_ = framebuffer->Images();
     render_pass_image_ranges_ = framebuffer->ImageRanges();
+}
+
+void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
+    if (framebuffer->DepthView() == dynamic_state.depth_view &&
+        framebuffer->RenderArea() == dynamic_state.render_area_ &&
+        dynamic_state.color_views == framebuffer->ImageViews()) {
+        return;
+    }
+    endRendering();
+    dynamic_state.color_views = framebuffer->ImageViews();
+    dynamic_state.depth_view = framebuffer->DepthView();
+    dynamic_state.render_area_ = framebuffer->RenderArea();
+    dynamic_state.begin_rendering = true;
+
+    record([this](vk::CommandBuffer cmdbuf) {
+        boost::container::small_vector<vk::RenderingAttachmentInfo, 8> colorAttachments;
+        for (const auto& view : dynamic_state.color_views) {
+            if (view) {
+                colorAttachments.push_back(
+                    vk::RenderingAttachmentInfo()
+                        .setImageView(view)
+                        .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                        .setLoadOp(vk::AttachmentLoadOp::eLoad)
+                        .setStoreOp(vk::AttachmentStoreOp::eStore)
+                        .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f})));
+            }
+        }
+
+        vk::RenderingInfo renderingInfo =
+            vk::RenderingInfo()
+                .setLayerCount(1)
+                .setRenderArea(vk::Rect2D().setExtent(dynamic_state.render_area_))
+                .setColorAttachments(colorAttachments);
+        if (dynamic_state.depth_view) {
+            auto depthAttachment = vk::RenderingAttachmentInfo()
+                                       .setImageView(dynamic_state.depth_view)
+                                       .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
+                                       .setLoadOp(vk::AttachmentLoadOp::eLoad)
+                                       .setStoreOp(vk::AttachmentStoreOp::eStore)
+                                       .setClearValue(vk::ClearValue().setDepthStencil(
+                                           vk::ClearDepthStencilValue().setDepth(1.f)));
+            renderingInfo.setPDepthAttachment(&depthAttachment);
+        }
+        cmdbuf.beginRendering(&renderingInfo);
+    });
+    num_render_pass_images_ = framebuffer->NumImages();
+    render_pass_images_ = framebuffer->Images();
+    render_pass_image_ranges_ = framebuffer->ImageRanges();
+}
+
+void Scheduler::requestRender(const TextureFramebuffer* framebuffer) {
+    if (use_dynamic_rendering) {
+        requestRendering(framebuffer);
+    } else {
+        requestRenderPass(framebuffer);
+    }
+}
+
+void Scheduler::requestOutsideRenderOperationContext() {
+    if (use_dynamic_rendering) {
+        endRendering();
+    } else {
+        endRenderPass();
+    }
 }
 
 }  // namespace render::vulkan::scheduler

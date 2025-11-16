@@ -189,7 +189,7 @@ void BufferCacheRuntime::CopyBuffer(vk::Buffer dst_buffer, vk::Buffer src_buffer
         return;
     }
 
-    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.requestOutsideRenderOperationContext();
     scheduler.record([src_buffer, dst_buffer, vk_copies, barrier](vk::CommandBuffer cmdbuf) {
         if (barrier) {
             cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
@@ -217,7 +217,7 @@ void BufferCacheRuntime::ClearBuffer(vk::Buffer dest_buffer, u32 offset, size_t 
         vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead,
     };
 
-    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.requestOutsideRenderOperationContext();
     scheduler.record([dest_buffer, offset, size, value](vk::CommandBuffer cmdbuf) -> void {
         cmdbuf.pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
                                vk::PipelineStageFlagBits::eTransfer, {}, READ_BARRIER, {}, {});
@@ -403,7 +403,7 @@ auto BufferCacheRuntime::CreateNullBuffer() -> Buffer {
         ret.SetObjectNameEXT("Null buffer");
     }
 
-    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.requestOutsideRenderOperationContext();
     scheduler.record([buffer = *ret](vk::CommandBuffer cmdbuf) {
         cmdbuf.fillBuffer(buffer, 0, VK_WHOLE_SIZE, 0);
     });

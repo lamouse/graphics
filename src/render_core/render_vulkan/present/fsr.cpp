@@ -178,7 +178,7 @@ auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image so
     UploadImages(scheduler);
     UpdateDescriptorSets(source_image_view, image_index);
 
-    scheduler.requestOutsideRenderPassOperationContext();
+    scheduler.requestOutsideRenderOperationContext();
     scheduler.record([=](vk::CommandBuffer cmdbuf) {
         present::utils::TransitionImageLayout(cmdbuf, source_image, vk::ImageLayout::eGeneral);
         present::utils::TransitionImageLayout(cmdbuf, easu_image, vk::ImageLayout::eGeneral);

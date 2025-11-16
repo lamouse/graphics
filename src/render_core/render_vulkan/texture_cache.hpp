@@ -175,6 +175,14 @@ class TextureFramebuffer {
             return images;
         }
 
+        [[nodiscard]] auto ImageViews() const noexcept -> const std::array<vk::ImageView, texture::NUM_RT>& {
+            return color_views;
+        }
+
+        [[nodiscard]] auto DepthView() const noexcept -> vk::ImageView{
+            return depth_view;
+        }
+
         [[nodiscard]] auto ImageRanges() const noexcept
             -> const std::array<vk::ImageSubresourceRange, 9>& {
             return image_ranges;
@@ -201,6 +209,8 @@ class TextureFramebuffer {
         std::array<vk::Image, 9> images{};
         std::array<vk::ImageSubresourceRange, 9> image_ranges{};
         std::array<size_t, texture::NUM_RT> rt_map{};
+        vk::ImageView depth_view;
+        std::array<vk::ImageView, texture::NUM_RT> color_views{};
         bool has_depth{};
         bool has_stencil{};
         bool is_rescaled{};
