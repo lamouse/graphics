@@ -8,6 +8,10 @@
 #include <boost/container/small_vector.hpp>
 #include <tracy/Tracy.hpp>
 
+#ifdef MemoryBarrier
+#undef MemoryBarrier
+#endif
+
 namespace render::vulkan::scheduler {
 
 void Scheduler::CommandChunk::executeAll(vk::CommandBuffer cmdbuf,
@@ -179,7 +183,6 @@ void Scheduler::endRenderPass() {
 }
 
 void Scheduler::invalidateState() { state_.graphics_pipeline_ = nullptr; }
-#undef MemoryBarrier
 
 /**
  * @brief 提交一个执行任务到调度器。
