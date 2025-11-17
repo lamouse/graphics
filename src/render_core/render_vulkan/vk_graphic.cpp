@@ -411,14 +411,7 @@ void VulkanGraphics::UpdateStencilFaces() {
     scheduler.record([](vk::CommandBuffer cmdbuf) {
         // Front face
         cmdbuf.setStencilReference(vk::StencilFaceFlagBits::eBack, 1);
-    });
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        // Front face
         cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, 1);
-    });
-
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        // Front face
         cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, 1);
     });
 }
