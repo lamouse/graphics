@@ -424,10 +424,8 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
                                      .setAlphaBlendOp(vk::BlendOp::eAdd)
                                      .setColorWriteMask(write_mask));
     }
-    const vk::PipelineColorBlendStateCreateInfo color_blend_ci =
+    const auto color_blend_ci =
         vk::PipelineColorBlendStateCreateInfo()
-            .setLogicOpEnable(pipeline_dynamic.logic_op_enable)
-            .setLogicOp(vk::LogicOp::eCopy)
             .setAttachments(cb_attachments);
     static_vector<vk::DynamicState, 36> dynamic_states{
         vk::DynamicState::eViewport,         vk::DynamicState::eScissor,
@@ -456,10 +454,6 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             dynamic_states.insert(dynamic_states.end(), extended2.begin(), extended2.end());
         }
 
-        if (dynamic.has_extended_dynamic_state_2_extra) {
-            dynamic_states.push_back(vk::DynamicState::eLogicOpEXT);
-        }
-
         if (dynamic.has_extended_dynamic_state_3_blend) {
             static constexpr std::array extended3{
                 vk::DynamicState::eColorBlendEnableEXT,
@@ -472,8 +466,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         if (dynamic.has_extended_dynamic_state_3_enables) {
             static constexpr std::array extended3{
                 vk::DynamicState::eDepthClampEnableEXT,
-
-                // vk::DynamicState::eLogicOpEnableEXT,
+                //vk::DynamicState::eLogicOpEnableEXT,
                 // vk::DynamicState::eLineRasterizationModeEXT,
                 // vk::DynamicState::eConservativeRasterizationModeEXT,
                 // vk::DynamicState::eLineStippleEnableEXT,
@@ -486,7 +479,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         }
     }
 
-    const vk::PipelineDynamicStateCreateInfo dynamic_state_ci =
+    const auto dynamic_state_ci =
         vk::PipelineDynamicStateCreateInfo().setDynamicStates(dynamic_states);
 
     static_vector<vk::PipelineShaderStageCreateInfo, 5> shader_stages;
