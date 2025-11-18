@@ -1,8 +1,3 @@
-// SPDX-FileCopyrightText: Copyright 2019 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
-
-#include <algorithm>
-#include <vector>
 
 #include <boost/container/small_vector.hpp>
 
