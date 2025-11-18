@@ -73,17 +73,18 @@ class GraphicsPipeline {
             scheduler::Scheduler& scheduler, VulkanPipelineCache& pipeline_cache,
             render::ShaderNotify* shader_notify, const Device& device,
             resource::DescriptorPool& descriptor_pool, GuestDescriptorQueue& guest_descriptor_queue,
-            common::ThreadWorker* worker_thread, pipeline::PipelineStatistics* pipeline_statistics,
-            RenderPassCache& render_pass_cache, const GraphicsPipelineCacheKey& key,
-            TextureCache& texture_cache, BufferCache& buffer_cache,
-            std::array<ShaderModule, NUM_STAGES> stages,
+            common::ThreadWorker* worker_thread, RenderPassCache& render_pass_cache,
+            const GraphicsPipelineCacheKey& key, TextureCache& texture_cache,
+            BufferCache& buffer_cache, std::array<ShaderModule, NUM_STAGES> stages,
             const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic);
 
         CLASS_NON_COPYABLE(GraphicsPipeline);
         CLASS_NON_MOVEABLE(GraphicsPipeline);
         void AddTransition(GraphicsPipeline* transition);
         void Configure();
-        auto HasDynamicVertexInput() const noexcept -> bool { return key_.state.dynamic_vertex_input; }
+        auto HasDynamicVertexInput() const noexcept -> bool {
+            return key_.state.dynamic_vertex_input;
+        }
         [[nodiscard]] auto Next(const GraphicsPipelineCacheKey& current_key) noexcept
             -> GraphicsPipeline* {
             if (key_ == current_key) {

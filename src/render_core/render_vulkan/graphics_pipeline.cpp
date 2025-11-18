@@ -6,7 +6,6 @@
 #include "common/assert.hpp"
 #include "common/settings.hpp"
 #include "shader_notify.hpp"
-#include "pipeline_statistics.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
 #include "render_pass.hpp"
@@ -156,8 +155,8 @@ GraphicsPipeline::GraphicsPipeline(
     scheduler::Scheduler& scheduler, VulkanPipelineCache& pipeline_cache_,
     ShaderNotify* shader_notify, const Device& device, resource::DescriptorPool& descriptor_pool,
     GuestDescriptorQueue& guest_descriptor_queue_, common::ThreadWorker* worker_thread,
-    pipeline::PipelineStatistics* pipeline_statistics, RenderPassCache& render_pass_cache,
-    const GraphicsPipelineCacheKey& key, TextureCache& texture_cache_, BufferCache& buffer_cache_,
+    RenderPassCache& render_pass_cache, const GraphicsPipelineCacheKey& key,
+    TextureCache& texture_cache_, BufferCache& buffer_cache_,
     std::array<ShaderModule, NUM_STAGES> stages,
     const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic_)
     : key_{key},
@@ -185,7 +184,7 @@ GraphicsPipeline::GraphicsPipeline(
             push_constant_size = info->push_constants.size;
         }
     }
-    auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool, pipeline_statistics,
+    auto func{[this, shader_notify, &render_pass_cache, &descriptor_pool,
                push_constant_size] -> void {
         pipeline::DescriptorLayoutBuilder builder{MakeBuilder(device_, stage_infos)};
         uses_push_descriptor = builder.CanUsePushDescriptor();
@@ -203,9 +202,6 @@ GraphicsPipeline::GraphicsPipeline(
                                : render_pass_cache.get(MakeRenderPassKey(key_.state));
         validate();
         makePipeline(render_pass);
-        if (pipeline_statistics) {
-            pipeline_statistics->Collect(*pipeline);
-        }
 
         std::scoped_lock lock{build_mutex};
         is_built = true;
@@ -425,8 +421,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
                                      .setColorWriteMask(write_mask));
     }
     const auto color_blend_ci =
-        vk::PipelineColorBlendStateCreateInfo()
-            .setAttachments(cb_attachments);
+        vk::PipelineColorBlendStateCreateInfo().setAttachments(cb_attachments);
     static_vector<vk::DynamicState, 36> dynamic_states{
         vk::DynamicState::eViewport,         vk::DynamicState::eScissor,
         vk::DynamicState::eDepthBias,        vk::DynamicState::eBlendConstants,
@@ -466,14 +461,14 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         if (dynamic.has_extended_dynamic_state_3_enables) {
             static constexpr std::array extended3{
                 vk::DynamicState::eDepthClampEnableEXT,
-                //vk::DynamicState::eLogicOpEnableEXT,
-                // vk::DynamicState::eLineRasterizationModeEXT,
-                // vk::DynamicState::eConservativeRasterizationModeEXT,
-                // vk::DynamicState::eLineStippleEnableEXT,
-                // vk::DynamicState::eAlphaToCoverageEnableEXT,
-                // vk::DynamicState::eAlphaToOneEnableEXT,
-                // vk::DynamicState::eDepthClipEnableEXT,
-                // vk::DynamicState::eProvokingVertexModeEXT,
+                // vk::DynamicState::eLogicOpEnableEXT,
+                //  vk::DynamicState::eLineRasterizationModeEXT,
+                //  vk::DynamicState::eConservativeRasterizationModeEXT,
+                //  vk::DynamicState::eLineStippleEnableEXT,
+                //  vk::DynamicState::eAlphaToCoverageEnableEXT,
+                //  vk::DynamicState::eAlphaToOneEnableEXT,
+                //  vk::DynamicState::eDepthClipEnableEXT,
+                //  vk::DynamicState::eProvokingVertexModeEXT,
             };
             dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
         }

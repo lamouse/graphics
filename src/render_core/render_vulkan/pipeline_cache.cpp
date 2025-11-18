@@ -1,6 +1,5 @@
 #include "pipeline_cache.hpp"
 #include "descriptor_pool.hpp"
-#include "render_vulkan/pipeline_statistics.hpp"
 #include "scheduler.hpp"
 #include "render_pass.hpp"
 #include "common/file.hpp"
@@ -164,8 +163,7 @@ void PipelineCache::updatePipelineKeyState(const FixedPipelineState& state) {
     graphics_key.state.Refresh(dynamic_features);
     graphics_key.state.topology.Assign(state.topology);
     graphics_key.state.msaa_mode.Assign(MsaaMode::Msaa1x1);
-    graphics_key.state.dynamicState.front = state.dynamicState.front;
-    graphics_key.state.dynamicState.back = state.dynamicState.back;
+    graphics_key.state.dynamicState = state.dynamicState;
 }
 auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> GraphicsPipeline* {
     updateShaderHash();
@@ -245,7 +243,7 @@ auto PipelineCache::builtPipeline(GraphicsPipeline* pipeline) const noexcept -> 
 }
 
 auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
-                                           pipeline::PipelineStatistics* statistics,
+
                                            bool build_in_parallel)
     -> std::unique_ptr<GraphicsPipeline> try {
     SPDLOG_INFO("create pipeline 0x{:016x}", key.Hash());
@@ -268,7 +266,7 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     auto pipeline = std::make_unique<GraphicsPipeline>(
         scheduler, vulkan_pipeline_cache, &shader_notify, device, descriptor_pool,
-        guest_descriptor_queue, thread_worker, statistics, render_pass_cache, key, texture_cache,
+        guest_descriptor_queue, thread_worker, render_pass_cache, key, texture_cache,
         buffer_cache, std::move(modules), infos, dynamic_features);
     current_pipeline = pipeline.get();
     if (pipeline) {
@@ -291,16 +289,15 @@ auto PipelineCache::createGraphicsPipeline() -> std::unique_ptr<GraphicsPipeline
     graphics_key.state.depth_format = surface::PixelFormat::D32_FLOAT;
 
     graphics_key.state.depth_enabled.Assign(1);
-    return createGraphicsPipeline(graphics_key, nullptr, false);
+    return createGraphicsPipeline(graphics_key, false);
 }
 
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key)
     -> std::unique_ptr<ComputePipeline> {
-    return CreateComputePipeline(key, nullptr, false);
+    return CreateComputePipeline(key, false);
 }
 
 auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,
-                                          pipeline::PipelineStatistics* statistics,
                                           bool build_in_parallel)
     -> std::unique_ptr<ComputePipeline> try {
     auto hash = key.Hash();
@@ -321,7 +318,7 @@ auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     mark_loaded(shader_infos);
     return std::make_unique<ComputePipeline>(device, vulkan_pipeline_cache, descriptor_pool,
-                                             guest_descriptor_queue, thread_worker, statistics,
+                                             guest_descriptor_queue, thread_worker,
                                              &shader_notify, info, std::move(spv_module));
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("{}", exception.what());

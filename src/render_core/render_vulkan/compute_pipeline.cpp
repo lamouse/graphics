@@ -9,7 +9,6 @@
 #include "render_core/render_vulkan/compute_pipeline.hpp"
 #include "render_core/vulkan_common/device.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
-#include "render_core/render_vulkan/pipeline_statistics.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/render_vulkan/pipeline_helper.hpp"
 
@@ -18,10 +17,8 @@ namespace render::vulkan {
 ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pipeline_cache_,
                                  resource::DescriptorPool& descriptor_pool,
                                  GuestDescriptorQueue& guest_descriptor_queue_,
-                                 common::ThreadWorker* thread_worker,
-                                 pipeline::PipelineStatistics* pipeline_statistics,
-                                 ShaderNotify* shader_notify, const shader::Info& info_,
-                                 ShaderModule spv_module_)
+                                 common::ThreadWorker* thread_worker, ShaderNotify* shader_notify,
+                                 const shader::Info& info_, ShaderModule spv_module_)
     : device{device_},
       pipeline_cache(pipeline_cache_),
       guest_descriptor_queue(guest_descriptor_queue_),
@@ -31,11 +28,11 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
         shader_notify->MarkShaderBuilding();
     }
     uint32_t push_const_size{0};
-    if(info_.push_constants.size > 0){
+    if (info_.push_constants.size > 0) {
         push_const_size = info_.push_constants.size;
     }
 
-    auto func{[this, &descriptor_pool, shader_notify, pipeline_statistics, push_const_size] {
+    auto func{[this, &descriptor_pool, shader_notify, push_const_size] {
         pipeline::DescriptorLayoutBuilder builder{device};
         builder.Add(info, vk::ShaderStageFlagBits::eCompute);
 
@@ -63,10 +60,6 @@ ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pip
                                             : nullptr))
                 .setLayout(*pipeline_layout),
             *pipeline_cache);
-
-        if (pipeline_statistics) {
-            pipeline_statistics->Collect(*pipeline);
-        }
         std::scoped_lock lock{build_mutex};
         is_built = true;
         build_condvar.notify_one();

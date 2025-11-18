@@ -42,8 +42,6 @@ set(sources
     render_vulkan/pipeline_cache.cpp
     render_vulkan/pipeline_cache.hpp
     render_vulkan/pipeline_helper.hpp
-    render_vulkan/pipeline_statistics.cpp
-    render_vulkan/pipeline_statistics.hpp
     render_vulkan/present_manager.cpp
     render_vulkan/present_manager.hpp
     render_vulkan/render_pass.cpp

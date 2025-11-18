@@ -27,17 +27,12 @@ class Scheduler;
 
 }
 
-namespace pipeline {
-class PipelineStatistics;
-}
-
 class ComputePipeline {
     public:
         explicit ComputePipeline(const Device& device, VulkanPipelineCache& pipeline_cache,
                                  resource::DescriptorPool& descriptor_pool,
                                  GuestDescriptorQueue& guest_descriptor_queue,
                                  common::ThreadWorker* thread_worker,
-                                 pipeline::PipelineStatistics* pipeline_statistics,
                                  ShaderNotify* shader_notify, const shader::Info& info,
                                  ShaderModule spv_module);
 

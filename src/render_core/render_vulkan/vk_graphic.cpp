@@ -238,7 +238,7 @@ void VulkanGraphics::UpdateRasterizerDiscardEnable() {
 }
 
 void VulkanGraphics::UpdateDepthBiasEnable() {
-    const bool enable = pipeline_state.depthBiasEnable;
+    const bool enable = fixedPipelineState.dynamicState.depth_bias_enable;
     scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnableEXT(enable); });
 }
 
@@ -534,6 +534,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     fixedPipelineState.dynamicState.front = pipeline_state.frontStencilOp;
     fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
     fixedPipelineState.dynamicState.depth_test_func.Assign(static_cast<u32>(pipeline_state.depthComparison));
+    fixedPipelineState.dynamicState.depth_bias_enable.Assign(pipeline_state.depthBiasEnable);
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();

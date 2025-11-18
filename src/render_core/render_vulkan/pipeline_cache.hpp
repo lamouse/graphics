@@ -51,11 +51,6 @@ class Device;
 class ComputePipeline;
 
 class RenderPassCache;
-
-namespace pipeline {
-class PipelineStatistics;
-}
-
 namespace scheduler {
 class Scheduler;
 }
@@ -85,14 +80,12 @@ class PipelineCache : public ShaderCache {
             -> GraphicsPipeline*;
 
         auto createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
-                                    pipeline::PipelineStatistics* statistics,
                                     bool build_in_parallel) -> std::unique_ptr<GraphicsPipeline>;
 
         auto CreateComputePipeline(const ComputePipelineCacheKey& key)
             -> std::unique_ptr<ComputePipeline>;
 
-        auto CreateComputePipeline(const ComputePipelineCacheKey& key,
-                                   pipeline::PipelineStatistics* statistics, bool build_in_parallel)
+        auto CreateComputePipeline(const ComputePipelineCacheKey& key, bool build_in_parallel)
             -> std::unique_ptr<ComputePipeline>;
 
         [[nodiscard]] auto CurrentGraphicsPipelineSlowPath() -> GraphicsPipeline*;
