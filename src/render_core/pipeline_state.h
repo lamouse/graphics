@@ -203,6 +203,7 @@ struct DynamicPipelineState {
         StencilOp backStencilOp = DEFAULT_STENCIL_OP;
         StencilProperties stencilFrontProperties{};
         StencilProperties stencilBackProperties{};
+        ComparisonOp depthComparison{ComparisonOp::LessEqual};
 
         // 构造函数：设置默认标志位
         DynamicPipelineState()

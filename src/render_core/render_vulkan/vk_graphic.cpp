@@ -214,9 +214,8 @@ void VulkanGraphics::UpdateDynamicStates() {
         }
     }
 
-    if (device.IsExtVertexInputDynamicStateSupported()) {
+    if (features.has_dynamic_vertex_input) {
         auto* pipeline = pipeline_cache.currentGraphicsPipeline(fixedPipelineState);
-
         if (pipeline && pipeline->HasDynamicVertexInput()) {
             UpdateVertexInput();
         }
@@ -266,7 +265,9 @@ void VulkanGraphics::UpdateCullMode() {
 
 void VulkanGraphics::UpdateDepthCompareOp() {
     scheduler.record(
-        [](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthCompareOpEXT(vk::CompareOp::eLessOrEqual); });
+        [op = fixedPipelineState.dynamicState.depth_test_func.Value()](vk::CommandBuffer cmdbuf) {
+            cmdbuf.setDepthCompareOpEXT(ComparisonOp(static_cast<render::ComparisonOp>(op)));
+        });
 }
 
 void VulkanGraphics::UpdateFrontFace() {
@@ -532,6 +533,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     fixedPipelineState.topology.Assign(instance.getPrimitiveTopology());
     fixedPipelineState.dynamicState.front = pipeline_state.frontStencilOp;
     fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
+    fixedPipelineState.dynamicState.depth_test_func.Assign(static_cast<u32>(pipeline_state.depthComparison));
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();
