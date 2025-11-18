@@ -333,8 +333,9 @@ void VulkanGraphics::UpdateStencilTestEnable() {
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    scheduler.record([is_enabled = pipeline_state.depthClampEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthClampEnableEXT(is_enabled);
+    const auto enable = !fixedPipelineState.dynamicState.depth_clamp_disabled;
+    scheduler.record([enable](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthClampEnableEXT(enable);
     });
 }
 
@@ -535,6 +536,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
     fixedPipelineState.dynamicState.depth_test_func.Assign(static_cast<u32>(pipeline_state.depthComparison));
     fixedPipelineState.dynamicState.depth_bias_enable.Assign(pipeline_state.depthBiasEnable);
+    fixedPipelineState.dynamicState.depth_clamp_disabled.Assign(!pipeline_state.depthClampEnable);
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();

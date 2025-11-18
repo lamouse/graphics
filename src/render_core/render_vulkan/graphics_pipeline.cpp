@@ -354,7 +354,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             .setStippledLineEnable(pipeline_dynamic.line_stipple_enable ? VK_TRUE : VK_FALSE)
             .setLineStippleFactor(key_.state.line_stipple_factor)
             .setLineStipplePattern(static_cast<uint16_t>(key_.state.line_stipple_pattern));
-    vk::PipelineRasterizationConservativeStateCreateInfoEXT conservative_raster =
+    auto conservative_raster =
         vk::PipelineRasterizationConservativeStateCreateInfoEXT().setConservativeRasterizationMode(
             key_.state.conservative_raster_enable
                 ? vk::ConservativeRasterizationModeEXT::eOverestimate
@@ -382,16 +382,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
             .setMinSampleShading(0.0f)
             .setAlphaToCoverageEnable(key_.state.alpha_to_coverage_enabled)
             .setAlphaToOneEnable(key_.state.alpha_to_one_enabled);
-    const vk::PipelineDepthStencilStateCreateInfo depth_stencil_ci =
-        vk::PipelineDepthStencilStateCreateInfo()
-            .setDepthTestEnable(pipeline_dynamic.depth_test_enable)
-            .setDepthWriteEnable(pipeline_dynamic.depth_write_enable)
-            .setDepthCompareOp(pipeline_dynamic.depth_test_enable ? vk::CompareOp::eLess
-                                                                  : vk::CompareOp::eAlways)
-            .setFront(GetStencilFaceState(pipeline_dynamic.front))
-            .setBack(GetStencilFaceState(pipeline_dynamic.back))
-            .setMinDepthBounds(static_cast<f32>(key_.state.depth_bounds_min))
-            .setMaxDepthBounds(static_cast<f32>(key_.state.depth_bounds_max));
+    const vk::PipelineDepthStencilStateCreateInfo depth_stencil_ci{};
 
     if (pipeline_dynamic.depth_bounds_enable && !device_.IsDepthBoundsSupported()) {
         SPDLOG_WARN("Depth bounds is enabled but not supported");
@@ -461,14 +452,6 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         if (dynamic.has_extended_dynamic_state_3_enables) {
             static constexpr std::array extended3{
                 vk::DynamicState::eDepthClampEnableEXT,
-                // vk::DynamicState::eLogicOpEnableEXT,
-                //  vk::DynamicState::eLineRasterizationModeEXT,
-                //  vk::DynamicState::eConservativeRasterizationModeEXT,
-                //  vk::DynamicState::eLineStippleEnableEXT,
-                //  vk::DynamicState::eAlphaToCoverageEnableEXT,
-                //  vk::DynamicState::eAlphaToOneEnableEXT,
-                //  vk::DynamicState::eDepthClipEnableEXT,
-                //  vk::DynamicState::eProvokingVertexModeEXT,
             };
             dynamic_states.insert(dynamic_states.end(), extended3.begin(), extended3.end());
         }

@@ -163,7 +163,7 @@ void PipelineCache::updatePipelineKeyState(const FixedPipelineState& state) {
     graphics_key.state.Refresh(dynamic_features);
     graphics_key.state.topology.Assign(state.topology);
     graphics_key.state.msaa_mode.Assign(MsaaMode::Msaa1x1);
-    graphics_key.state.dynamicState = state.dynamicState;
+    //graphics_key.state.dynamicState = state.dynamicState;
 }
 auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> GraphicsPipeline* {
     updateShaderHash();
