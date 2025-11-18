@@ -266,7 +266,7 @@ void VulkanGraphics::UpdateCullMode() {
 void VulkanGraphics::UpdateDepthCompareOp() {
     scheduler.record(
         [op = fixedPipelineState.dynamicState.depth_test_func.Value()](vk::CommandBuffer cmdbuf) {
-            cmdbuf.setDepthCompareOpEXT(ComparisonOp(static_cast<render::ComparisonOp>(op)));
+            cmdbuf.setDepthCompareOp(ComparisonOp(static_cast<render::ComparisonOp>(op)));
         });
 }
 
