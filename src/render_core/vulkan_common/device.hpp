@@ -366,10 +366,6 @@ class Device {
             return extensions_.vertex_input_dynamic_state;
         }
 
-        [[nodiscard]] auto SupportsD24DepthBuffer() const -> bool {
-            return misc_features_.supports_d24_depth;
-        }
-
         [[nodiscard]] auto IsExtConditionalRendering() const -> bool {
             return extensions_.conditional_rendering;
         }

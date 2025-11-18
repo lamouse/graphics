@@ -164,7 +164,6 @@ struct MiscFeatures {
         bool has_renderdoc{};                  ///< Has RenderDoc attached
         bool has_nsight_graphics{};            ///< Has Nsight Graphics attached
         bool has_radeon_gpu_profiler{};        ///< Has Radeon GPU Profiler attached.
-        bool supports_d24_depth{};             ///< Supports D24 depth buffers.
         bool cant_blit_msaa{};                 ///< Does not support MSAA<->MSAA blitting.
         bool must_emulate_scaled_formats{};    ///< Requires scaled vertex format emulation
         bool must_emulate_bgr565{};            ///< Emulates BGR565 by swizzling RGB565 format.

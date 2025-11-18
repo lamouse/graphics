@@ -304,11 +304,6 @@ Device::Device(vk::Instance instance, vk::PhysicalDevice physical, vk::SurfaceKH
         properties.deviceType == vk::PhysicalDeviceType::eOther ||
         properties.deviceType == vk::PhysicalDeviceType::eCpu;  // VK_PHYSICAL_DEVICE_TYPE_CPU;
 
-    misc_features_.supports_d24_depth =
-        isFormatSupported(vk::Format::eD24UnormS8Uint,  // VK_FORMAT_D24_UNORM_S8_UINT,
-                          vk::FormatFeatureFlagBits::eDepthStencilAttachment,
-                          FormatType::Optimal);  // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-
     misc_features_.supports_conditional_barriers = !(is_intel_anv || is_intel_windows);
     collectPhysicalMemoryInfo();
     collectToolingInfo();
