@@ -203,7 +203,6 @@ struct DynamicPipelineState {
         StencilOp backStencilOp = DEFAULT_STENCIL_OP;
         StencilProperties stencilFrontProperties{};
         StencilProperties stencilBackProperties{};
-        LogicOp logicOp{};
 
         // 构造函数：设置默认标志位
         DynamicPipelineState()
@@ -220,8 +219,6 @@ struct DynamicPipelineState {
               stencil_two_side_enable(0),
               reserved(0)
         // viewport, scissors, blendColor 使用 {} 初始化，已为 0
-        {
-            logicOp.op = LogicOp::Op::NoOp;
-        }
+        {}
 };
 }  // namespace render

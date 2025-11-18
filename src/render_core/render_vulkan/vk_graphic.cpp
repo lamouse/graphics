@@ -532,7 +532,6 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     fixedPipelineState.topology.Assign(instance.getPrimitiveTopology());
     fixedPipelineState.dynamicState.front = pipeline_state.frontStencilOp;
     fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
-    fixedPipelineState.dynamicState.logic_op.Assign(static_cast<u32>(pipeline_state.logicOp.op));
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();
