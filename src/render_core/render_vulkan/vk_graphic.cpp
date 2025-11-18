@@ -232,13 +232,13 @@ void VulkanGraphics::UpdatePrimitiveRestartEnable() {
 // 用于启用或禁用 光栅化丢弃
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
     scheduler.record([enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setRasterizerDiscardEnableEXT(enable);
+        cmdbuf.setRasterizerDiscardEnable(enable);
     });
 }
 
 void VulkanGraphics::UpdateDepthBiasEnable() {
     const bool enable = fixedPipelineState.dynamicState.depth_bias_enable;
-    scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnableEXT(enable); });
+    scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnable(enable); });
 }
 
 void VulkanGraphics::UpdateVertexInput() {

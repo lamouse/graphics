@@ -68,11 +68,7 @@
     EXTENSION(KHR, SPIRV_1_4, spirv_1_4)                                       \
     EXTENSION(KHR, SWAPCHAIN, swapchain)                                       \
     EXTENSION(KHR, SWAPCHAIN_MUTABLE_FORMAT, swapchain_mutable_format)         \
-    EXTENSION(KHR, IMAGE_FORMAT_LIST, image_format_list)                       \
-    EXTENSION(NV, DEVICE_DIAGNOSTICS_CONFIG, device_diagnostics_config)        \
-    EXTENSION(NV, GEOMETRY_SHADER_PASSTHROUGH, geometry_shader_passthrough)    \
-    EXTENSION(NV, VIEWPORT_ARRAY2, viewport_array2)                            \
-    EXTENSION(NV, VIEWPORT_SWIZZLE, viewport_swizzle)
+    EXTENSION(KHR, IMAGE_FORMAT_LIST, image_format_list)
 
 // Define extensions which must be supported.
 #define FOR_EACH_VK_MANDATORY_EXTENSION(EXTENSION_NAME)                \
@@ -93,10 +89,7 @@
     EXTENSION_NAME(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME)       \
     EXTENSION_NAME(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME)         \
     EXTENSION_NAME(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME)               \
-    EXTENSION_NAME(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME) \
-    EXTENSION_NAME(VK_NV_GEOMETRY_SHADER_PASSTHROUGH_EXTENSION_NAME) \
-    EXTENSION_NAME(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME)             \
-    EXTENSION_NAME(VK_NV_VIEWPORT_SWIZZLE_EXTENSION_NAME)
+    EXTENSION_NAME(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME)
 
 // Define features which must be supported.
 #define FOR_EACH_VK_MANDATORY_FEATURE(FEATURE_NAME)                 \

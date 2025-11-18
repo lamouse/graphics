@@ -313,8 +313,6 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     const vk::PipelineTessellationStateCreateInfo tessellation_ci =
         vk::PipelineTessellationStateCreateInfo().setPatchControlPoints(3);
 
-    vk::PipelineViewportSwizzleStateCreateInfoNV swizzle_ci;
-
     vk::PipelineViewportDepthClipControlCreateInfoEXT ndc_info =
         vk::PipelineViewportDepthClipControlCreateInfoEXT().setNegativeOneToOne(
             key_.state.ndc_minus_one_to_one.Value() != 0 ? VK_TRUE : VK_FALSE);
@@ -325,27 +323,13 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
                                                           .setViewportCount(num_viewports)
                                                           .setScissorCount(num_viewports);
 
-    if (device_.IsNvViewportSwizzleSupported()) {
-        swizzle_ci.pNext = std::exchange(viewport_ci.pNext, &swizzle_ci);
-    }
     if (device_.IsExtDepthClipControlSupported()) {
         ndc_info.pNext = std::exchange(viewport_ci.pNext, &ndc_info);
     }
     vk::PipelineRasterizationStateCreateInfo rasterization_ci =
         vk::PipelineRasterizationStateCreateInfo()
-            .setDepthClampEnable(pipeline_dynamic.depth_clamp_disabled.Value() == 0 ? VK_TRUE
-                                                                                    : VK_FALSE)
-            .setRasterizerDiscardEnable(pipeline_dynamic.rasterize_enable == 0 ? VK_TRUE : VK_FALSE)
-            .setPolygonMode(vk::PolygonMode::eFill)
-            .setCullMode(pipeline_dynamic.cull_enable ? vk::CullModeFlagBits::eBack
-                                                      : vk::CullModeFlagBits::eNone)
-            .setFrontFace(vk::FrontFace::eCounterClockwise)
-            .setDepthBiasEnable(pipeline_dynamic.depth_bias_enable.Value() != 0 ? VK_TRUE
-                                                                                : VK_FALSE)
-            .setDepthBiasConstantFactor(.0f)
-            .setDepthBiasClamp(0.f)
-            .setDepthBiasSlopeFactor(.0f)
-            .setLineWidth(1.0f);
+            .setRasterizerDiscardEnable(VK_TRUE)
+            .setPolygonMode(vk::PolygonMode::eFill);
     vk::PipelineRasterizationLineStateCreateInfoEXT line_state =
         vk::PipelineRasterizationLineStateCreateInfoEXT()
             .setLineRasterizationMode(key_.state.smooth_lines.Value() != 0
@@ -375,13 +359,12 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
         provoking_vertex.pNext = std::exchange(rasterization_ci.pNext, &provoking_vertex);
     }
 
-    const vk::PipelineMultisampleStateCreateInfo multisample_ci =
-        vk::PipelineMultisampleStateCreateInfo()
-            .setRasterizationSamples(MsaaMode(key_.state.msaa_mode))
-            .setSampleShadingEnable(VK_FALSE)
-            .setMinSampleShading(0.0f)
-            .setAlphaToCoverageEnable(key_.state.alpha_to_coverage_enabled)
-            .setAlphaToOneEnable(key_.state.alpha_to_one_enabled);
+    const auto multisample_ci = vk::PipelineMultisampleStateCreateInfo()
+                                    .setRasterizationSamples(MsaaMode(key_.state.msaa_mode))
+                                    .setSampleShadingEnable(VK_FALSE)
+                                    .setMinSampleShading(0.0f)
+                                    .setAlphaToCoverageEnable(key_.state.alpha_to_coverage_enabled)
+                                    .setAlphaToOneEnable(key_.state.alpha_to_one_enabled);
     const vk::PipelineDepthStencilStateCreateInfo depth_stencil_ci{};
 
     if (pipeline_dynamic.depth_bounds_enable && !device_.IsDepthBoundsSupported()) {

@@ -182,10 +182,7 @@ class Device {
         [[nodiscard]] auto IsDepthBoundsSupported() const -> bool {
             return features_.features.depthBounds;
         }
-        /// Returns true if the device supports VK_NV_viewport_swizzle.
-        [[nodiscard]] auto IsNvViewportSwizzleSupported() const -> bool {
-            return extensions_.viewport_swizzle;
-        }
+
         /// Returns the minimum supported version of SPIR-V.
         [[nodiscard]] auto SupportedSpirvVersion() const -> u32 {
             if (instance_version_ >= VK_API_VERSION_1_3) {
@@ -283,10 +280,6 @@ class Device {
         [[nodiscard]] auto IsExtShaderViewportIndexLayerSupported() const -> bool {
             return extensions_.shader_viewport_index_layer;
         }
-        /// Returns true if the device supports VK_NV_viewport_array2.
-        [[nodiscard]] auto IsNvViewportArray2Supported() const -> bool {
-            return extensions_.viewport_array2;
-        }
         /// Returns true if formatless image load is supported.
         [[nodiscard]] auto IsFormatlessImageLoadSupported() const -> bool {
             return features_.features.shaderStorageImageReadWithoutFormat;
@@ -301,10 +294,7 @@ class Device {
         [[nodiscard]] auto IsExtShaderAtomicInt64Supported() const -> bool {
             return extensions_.shader_atomic_int64;
         }
-        /// Returns true if the device supports VK_NV_geometry_shader_passthrough.
-        [[nodiscard]] auto IsNvGeometryShaderPassthroughSupported() const -> bool {
-            return extensions_.geometry_shader_passthrough;
-        }
+
         /// Returns true if the device supports VK_EXT_depth_clip_control.
         [[nodiscard]] auto IsExtDepthClipControlSupported() const -> bool {
             return extensions_.depth_clip_control;

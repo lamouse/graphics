@@ -67,9 +67,9 @@ class VulkanGraphics : public render::Graphic {
         void UpdatePrimitiveRestartEnable();
         void UpdateRasterizerDiscardEnable();
         void UpdateDepthBiasEnable();
+        void UpdateCullMode();
 
         void UpdateVertexInput();
-        void UpdateCullMode();
         void UpdateDepthCompareOp();
         void UpdateFrontFace();
         void UpdateStencilOp();
