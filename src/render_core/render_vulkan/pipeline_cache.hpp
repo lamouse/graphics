@@ -100,6 +100,9 @@ class PipelineCache : public ShaderCache {
         void loadPipelineCacheFromDisk();
         void savePipelineCache();
 
+        void updateShaderHash();
+        void updatePipelineKeyState(const FixedPipelineState& state);
+
         const Device& device;
         scheduler::Scheduler& scheduler;
         resource::DescriptorPool& descriptor_pool;

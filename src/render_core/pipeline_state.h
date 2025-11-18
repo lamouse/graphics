@@ -199,9 +199,10 @@ struct DynamicPipelineState {
                 u32 compare_mask = 255;
         };
 
-        StencilOp stencilOp;
-        StencilProperties front{};
-        StencilProperties back{};
+        StencilOp frontStencilOp = DEFAULT_STENCIL_OP;
+        StencilOp backStencilOp = DEFAULT_STENCIL_OP;
+        StencilProperties stencilFrontProperties{};
+        StencilProperties stencilBackProperties{};
 
         // 构造函数：设置默认标志位
         DynamicPipelineState()

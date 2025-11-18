@@ -2,16 +2,16 @@
 #include "common/common_types.hpp"
 namespace render {
 
-    enum class ComparisonOp : u32 {
-        Never = 1,
-        Less = 2,
-        Equal = 3,
-        LessEqual = 4,
-        Greater = 5,
-        NotEqual = 6,
-        GreaterEqual = 7,
-        Always = 8,
-    };
+enum class ComparisonOp : u32 {
+    Never = 1,
+    Less = 2,
+    Equal = 3,
+    LessEqual = 4,
+    Greater = 5,
+    NotEqual = 6,
+    GreaterEqual = 7,
+    Always = 8,
+};
 struct StencilOp {
         enum class Op : u32 {
             Keep = 0,
@@ -29,4 +29,8 @@ struct StencilOp {
         Op depthFail;
         ComparisonOp compare;
 };
+constexpr auto DEFAULT_STENCIL_OP = StencilOp{.fail = StencilOp::Op::Keep,
+                                              .pass = StencilOp::Op::Keep,
+                                              .depthFail = StencilOp::Op::Keep,
+                                              .compare = ComparisonOp::Always};
 }  // namespace render

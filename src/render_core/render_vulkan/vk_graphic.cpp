@@ -273,12 +273,31 @@ void VulkanGraphics::UpdateFrontFace() {
 }
 
 void VulkanGraphics::UpdateStencilOp() {
-    // Front face defines the stencil op of both faces
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setStencilOp(vk::StencilFaceFlagBits::eFront, vk::StencilOp::eReplace,
-                            vk::StencilOp::eReplace, vk::StencilOp::eReplace,
-                            vk::CompareOp::eAlways);
-    });
+    auto front_fail = StencilOp(pipeline_state.frontStencilOp.fail);
+    auto front_pass = StencilOp(pipeline_state.frontStencilOp.pass);
+    auto front_depth_fail = StencilOp(pipeline_state.frontStencilOp.depthFail);
+    auto front_compare = ComparisonOp(pipeline_state.frontStencilOp.compare);
+    if (pipeline_state.stencil_two_side_enable) {
+        auto back_fail = StencilOp(pipeline_state.frontStencilOp.fail);
+        auto back_pass = StencilOp(pipeline_state.frontStencilOp.pass);
+        auto back_depth_fail = StencilOp(pipeline_state.frontStencilOp.depthFail);
+        auto back_compare = ComparisonOp(pipeline_state.frontStencilOp.compare);
+        scheduler.record([front_fail, front_pass, front_depth_fail, front_compare, back_fail,
+                          back_pass, back_depth_fail, back_compare](vk::CommandBuffer cmdbuf) {
+            cmdbuf.setStencilOp(vk::StencilFaceFlagBits::eFront, front_fail, front_pass,
+                                front_depth_fail, front_compare);
+
+            cmdbuf.setStencilOp(vk::StencilFaceFlagBits::eBack, back_fail, back_pass,
+                                back_depth_fail, back_compare);
+        });
+
+    } else {
+        scheduler.record(
+            [front_fail, front_pass, front_depth_fail, front_compare](vk::CommandBuffer cmdbuf) {
+                cmdbuf.setStencilOp(vk::StencilFaceFlagBits::eFrontAndBack, front_fail, front_pass,
+                                    front_depth_fail, front_compare);
+            });
+    }
 }
 
 void VulkanGraphics::UpdateDepthBoundsTestEnable() {
@@ -407,47 +426,50 @@ void VulkanGraphics::UpdateDepthBounds() {
 }
 
 void VulkanGraphics::UpdateStencilFaces() {
-    scheduler.record([two_sided = pipeline_state.stencil_two_side_enable,
-                      front_ref = pipeline_state.front.ref,
-                      back_ref = pipeline_state.back.ref](vk::CommandBuffer cmdbuf) {
-        const bool set_back = two_sided && front_ref != back_ref;
+    scheduler.record(
+        [two_sided = pipeline_state.stencil_two_side_enable,
+         front_ref = pipeline_state.stencilFrontProperties.ref,
+         back_ref = pipeline_state.stencilBackProperties.ref](vk::CommandBuffer cmdbuf) {
+            const bool set_back = two_sided && front_ref != back_ref;
 
-        // Front face
-        cmdbuf.setStencilReference(
-            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
-            front_ref);
-        if (set_back) {
-            cmdbuf.setStencilReference(vk::StencilFaceFlagBits::eBack, back_ref);
-        }
-    });
+            // Front face
+            cmdbuf.setStencilReference(
+                set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+                front_ref);
+            if (set_back) {
+                cmdbuf.setStencilReference(vk::StencilFaceFlagBits::eBack, back_ref);
+            }
+        });
 
-    scheduler.record([two_sided = pipeline_state.stencil_two_side_enable,
-                      front_mask = pipeline_state.front.write_mask,
-                      back_mask = pipeline_state.back.write_mask](vk::CommandBuffer cmdbuf) {
-        const bool set_back = two_sided && front_mask != back_mask;
+    scheduler.record(
+        [two_sided = pipeline_state.stencil_two_side_enable,
+         front_mask = pipeline_state.stencilFrontProperties.write_mask,
+         back_mask = pipeline_state.stencilBackProperties.write_mask](vk::CommandBuffer cmdbuf) {
+            const bool set_back = two_sided && front_mask != back_mask;
 
-        // Front face
-        cmdbuf.setStencilWriteMask(
-            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
-            front_mask);
-        if (set_back) {
-            cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, back_mask);
-        }
-    });
+            // Front face
+            cmdbuf.setStencilWriteMask(
+                set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+                front_mask);
+            if (set_back) {
+                cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, back_mask);
+            }
+        });
 
-    scheduler.record([two_sided = pipeline_state.stencil_two_side_enable,
-                      front_mask = pipeline_state.front.compare_mask,
-                      back_mask = pipeline_state.back.compare_mask](vk::CommandBuffer cmdbuf) {
-        const bool set_back = two_sided && front_mask != back_mask;
+    scheduler.record(
+        [two_sided = pipeline_state.stencil_two_side_enable,
+         front_mask = pipeline_state.stencilFrontProperties.compare_mask,
+         back_mask = pipeline_state.stencilBackProperties.compare_mask](vk::CommandBuffer cmdbuf) {
+            const bool set_back = two_sided && front_mask != back_mask;
 
-        // Front face
-        cmdbuf.setStencilCompareMask(
-            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
-            front_mask);
-        if (set_back) {
-            cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, back_mask);
-        }
-    });
+            // Front face
+            cmdbuf.setStencilCompareMask(
+                set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+                front_mask);
+            if (set_back) {
+                cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, back_mask);
+            }
+        });
 }
 
 void VulkanGraphics::UpdateLineWidth() {
@@ -510,6 +532,8 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
     fixedPipelineState.topology.Assign(instance.getPrimitiveTopology());
+    fixedPipelineState.dynamicState.front = pipeline_state.frontStencilOp;
+    fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();
