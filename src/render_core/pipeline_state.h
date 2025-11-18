@@ -162,7 +162,8 @@ struct DynamicPipelineState {
                         uint32_t depthBiasEnable : 1;
                         uint32_t rasterizerDiscardEnable : 1;
                         uint32_t primitiveRestartEnable : 1;
-                        uint32_t reserved : 22;
+                        uint32_t stencil_two_side_enable : 1;
+                        uint32_t reserved : 21;
                 };
                 uint32_t flags{};
         };
@@ -192,6 +193,16 @@ struct DynamicPipelineState {
         };
         BlendColor blendColor;
 
+        struct StencilProperties {
+                u32 ref = 0;
+                u32 write_mask = 255;
+                u32 compare_mask = 255;
+        };
+
+        StencilOp stencilOp;
+        StencilProperties front{};
+        StencilProperties back{};
+
         // 构造函数：设置默认标志位
         DynamicPipelineState()
             : colorBlendEnable(1),
@@ -204,6 +215,7 @@ struct DynamicPipelineState {
               depthBiasEnable(1),
               rasterizerDiscardEnable(0),
               primitiveRestartEnable(0),
+              stencil_two_side_enable(0),
               reserved(0)
         // viewport, scissors, blendColor 使用 {} 初始化，已为 0
         {}

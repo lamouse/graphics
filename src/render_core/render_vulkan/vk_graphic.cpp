@@ -275,9 +275,9 @@ void VulkanGraphics::UpdateFrontFace() {
 void VulkanGraphics::UpdateStencilOp() {
     // Front face defines the stencil op of both faces
     scheduler.record([](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setStencilOpEXT(vk::StencilFaceFlagBits::eFront, vk::StencilOp::eReplace,
-                               vk::StencilOp::eReplace, vk::StencilOp::eReplace,
-                               vk::CompareOp::eAlways);
+        cmdbuf.setStencilOp(vk::StencilFaceFlagBits::eFront, vk::StencilOp::eReplace,
+                            vk::StencilOp::eReplace, vk::StencilOp::eReplace,
+                            vk::CompareOp::eAlways);
     });
 }
 
@@ -298,7 +298,6 @@ void VulkanGraphics::UpdateDepthTestEnable() {
     });
 }
 
-
 void VulkanGraphics::UpdateDepthWriteEnable() {
     scheduler.record([enable = pipeline_state.depthWriteEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthWriteEnableEXT(enable);
@@ -307,7 +306,7 @@ void VulkanGraphics::UpdateDepthWriteEnable() {
 
 void VulkanGraphics::UpdateStencilTestEnable() {
     scheduler.record([enable = pipeline_state.stencilTestEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setStencilTestEnableEXT(enable);
+        cmdbuf.setStencilTestEnable(enable);
     });
 }
 
@@ -408,11 +407,46 @@ void VulkanGraphics::UpdateDepthBounds() {
 }
 
 void VulkanGraphics::UpdateStencilFaces() {
-    scheduler.record([](vk::CommandBuffer cmdbuf) {
+    scheduler.record([two_sided = pipeline_state.stencil_two_side_enable,
+                      front_ref = pipeline_state.front.ref,
+                      back_ref = pipeline_state.back.ref](vk::CommandBuffer cmdbuf) {
+        const bool set_back = two_sided && front_ref != back_ref;
+
         // Front face
-        cmdbuf.setStencilReference(vk::StencilFaceFlagBits::eBack, 1);
-        cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, 1);
-        cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, 1);
+        cmdbuf.setStencilReference(
+            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+            front_ref);
+        if (set_back) {
+            cmdbuf.setStencilReference(vk::StencilFaceFlagBits::eBack, back_ref);
+        }
+    });
+
+    scheduler.record([two_sided = pipeline_state.stencil_two_side_enable,
+                      front_mask = pipeline_state.front.write_mask,
+                      back_mask = pipeline_state.back.write_mask](vk::CommandBuffer cmdbuf) {
+        const bool set_back = two_sided && front_mask != back_mask;
+
+        // Front face
+        cmdbuf.setStencilWriteMask(
+            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+            front_mask);
+        if (set_back) {
+            cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, back_mask);
+        }
+    });
+
+    scheduler.record([two_sided = pipeline_state.stencil_two_side_enable,
+                      front_mask = pipeline_state.front.compare_mask,
+                      back_mask = pipeline_state.back.compare_mask](vk::CommandBuffer cmdbuf) {
+        const bool set_back = two_sided && front_mask != back_mask;
+
+        // Front face
+        cmdbuf.setStencilCompareMask(
+            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+            front_mask);
+        if (set_back) {
+            cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, back_mask);
+        }
     });
 }
 
