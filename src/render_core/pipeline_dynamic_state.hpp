@@ -29,6 +29,11 @@ struct StencilOp {
         Op depthFail;
         ComparisonOp compare;
 };
+enum class CullFace : u32 {
+    Front = 1,
+    Back = 2,
+    FrontAndBack = 3,
+};
 constexpr auto DEFAULT_STENCIL_OP = StencilOp{.fail = StencilOp::Op::Keep,
                                               .pass = StencilOp::Op::Keep,
                                               .depthFail = StencilOp::Op::Keep,

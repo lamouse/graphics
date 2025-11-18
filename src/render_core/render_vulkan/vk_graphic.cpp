@@ -174,7 +174,6 @@ auto VulkanGraphics::getDrawImage() -> ImTextureID {
         *sampler, image_view.first->Handle(shader::TextureType::Color2D), VK_IMAGE_LAYOUT_GENERAL);
     pair->second = imguiTextureID_;
     return imguiTextureID_;
-    return 0;
 }
 
 void VulkanGraphics::UpdateDynamicStates() {
@@ -258,8 +257,9 @@ void VulkanGraphics::UpdateVertexInput() {
 }
 
 void VulkanGraphics::UpdateCullMode() {
-    scheduler.record([enabled = pipeline_state.cullMode](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setCullModeEXT(enabled ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone);
+    scheduler.record([enabled = pipeline_state.cullMode,
+                      mode = pipeline_state.cullFace](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setCullMode(enabled ? CullFace(mode) : vk::CullModeFlagBits::eNone);
     });
 }
 
@@ -272,7 +272,7 @@ void VulkanGraphics::UpdateDepthCompareOp() {
 
 void VulkanGraphics::UpdateFrontFace() {
     scheduler.record(
-        [](vk::CommandBuffer cmdbuf) { cmdbuf.setFrontFaceEXT(vk::FrontFace::eCounterClockwise); });
+        [](vk::CommandBuffer cmdbuf) { cmdbuf.setFrontFace(vk::FrontFace::eCounterClockwise); });
 }
 
 void VulkanGraphics::UpdateStencilOp() {
@@ -334,9 +334,7 @@ void VulkanGraphics::UpdateStencilTestEnable() {
 
 void VulkanGraphics::UpdateDepthClampEnable() {
     const auto enable = !fixedPipelineState.dynamicState.depth_clamp_disabled;
-    scheduler.record([enable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setDepthClampEnableEXT(enable);
-    });
+    scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthClampEnableEXT(enable); });
 }
 
 void VulkanGraphics::UpdateBlending() {
@@ -534,7 +532,8 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     fixedPipelineState.topology.Assign(instance.getPrimitiveTopology());
     fixedPipelineState.dynamicState.front = pipeline_state.frontStencilOp;
     fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
-    fixedPipelineState.dynamicState.depth_test_func.Assign(static_cast<u32>(pipeline_state.depthComparison));
+    fixedPipelineState.dynamicState.depth_test_func.Assign(
+        static_cast<u32>(pipeline_state.depthComparison));
     fixedPipelineState.dynamicState.depth_bias_enable.Assign(pipeline_state.depthBiasEnable);
     fixedPipelineState.dynamicState.depth_clamp_disabled.Assign(!pipeline_state.depthClampEnable);
     int instance_vertex_count = 0;

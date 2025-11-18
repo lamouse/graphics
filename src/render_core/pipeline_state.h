@@ -204,6 +204,7 @@ struct DynamicPipelineState {
         StencilProperties stencilFrontProperties{};
         StencilProperties stencilBackProperties{};
         ComparisonOp depthComparison{ComparisonOp::LessEqual};
+        CullFace cullFace{CullFace::Back};
 
         // 构造函数：设置默认标志位
         DynamicPipelineState()

@@ -20,5 +20,7 @@ auto StencilOp(render::StencilOp::Op stencilOp) -> vk::StencilOp;
 
 auto ComparisonOp(render::ComparisonOp compreOp)-> vk::CompareOp;
 
+auto CullFace(render::CullFace cull_face) -> vk::CullModeFlagBits;
+
 }  // namespace render::vulkan
 #endif  // GRAPHICS_FORMAT_TO_VK_HPP

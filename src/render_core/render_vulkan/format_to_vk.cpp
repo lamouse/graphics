@@ -313,4 +313,17 @@ auto ComparisonOp(render::ComparisonOp compreOp) -> vk::CompareOp {
     return {};
 }
 
+auto CullFace(render::CullFace cull_face) -> vk::CullModeFlagBits {
+    switch (cull_face) {
+        case render::CullFace::Front:
+            return vk::CullModeFlagBits::eFront;
+        case render::CullFace::Back:
+            return vk::CullModeFlagBits::eBack;
+        case render::CullFace::FrontAndBack:
+            return vk::CullModeFlagBits::eFrontAndBack;
+    }
+    spdlog::warn("Unimplemented cull face={}", static_cast<int>(cull_face));
+    return {};
+}
+
 }  // namespace render::vulkan
