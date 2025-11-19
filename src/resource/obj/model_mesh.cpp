@@ -3,8 +3,6 @@
 #include "common/file.hpp"
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <math.h>
-#include <math.h>
 
 #include <assimp/Importer.hpp>
 #include <cassert>
@@ -128,7 +126,6 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
     model.only_vertex = std::move(only_vertices);
     model.subMeshes = std::move(subMeshes);
 
-    // 返回 vector（兼容你现有接口）
     return std::move(model);
 }
 
@@ -151,7 +148,7 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
             // Position
             const aiVector3D& pos = mesh->mVertices[j];
             v.position = {pos.x, pos.y, pos.z};
-            model.only_vertex.push_back(v.position);  // 你额外需要的
+            model.only_vertex.push_back(v.position);
 
             // TexCoord
             if (mesh->HasTextureCoords(0)) {
@@ -166,7 +163,7 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
                 const aiVector3D& n = mesh->mNormals[j];
                 v.normal = {n.x, n.y, n.z};
             } else {
-                v.normal = {0.0f, 1.0f, 0.0f};  // 更合理的默认法线（朝上）
+                v.normal = {0.0f, 1.0f, 0.0f};
             }
 
             // Vertex Color
@@ -189,7 +186,7 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 
             for (unsigned int idx = 0; idx < 3; ++idx) {
                 uint32_t localVertexIndex = face.mIndices[idx];
-                uint32_t globalVertexIndex = localVertexIndex + vertexOffset;  // ✅ 修复点！
+                uint32_t globalVertexIndex = localVertexIndex + vertexOffset;
                 model.indices_.push_back(globalVertexIndex);
             }
         }
