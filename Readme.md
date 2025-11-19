@@ -89,6 +89,27 @@ pip install sphinx
 pip install sphinx-rtd-theme
 ```
 
+## vs code lldb启动配置
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "LLDB",
+            "args": [],
+            "cwd": "${command:cmake.launchTargetDirectory}",
+            "program": "${command:cmake.launchTargetPath}",
+            "env": {
+                "PATH": "${env:PATH}:${command:cmake.launchTargetDirectory}"
+            }
+        }
+    ]
+}
+```
+
 ## 学习vulkan的一些记录
 
  1. 有些教学还在设置逻辑设备的验证层，其实不需要了[说明](https://www.lunarg.com/wp-content/uploads/2019/04/UberLayer_V3.pdf)
