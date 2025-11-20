@@ -3,11 +3,6 @@
 #include <stdexcept>
 #include "SDL_common.hpp"
 #include "imgui_impl_sdl3.h"
-namespace {
-
-static inline float lastMouseX_ = 0.0f;
-static inline float lastMouseY_ = 0.0f;
-}  // namespace
 namespace graphics {
 SDLWindow::SDLWindow(int width, int height, std::string_view title) {
     core::frontend::BaseWindow::WindowConfig conf;
@@ -111,6 +106,8 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
 
     float mx{}, my{};
     Uint32 mouseState = SDL_GetMouseState(&mx, &my);
+    float lastMouseX_ = 0.0f;
+    float lastMouseY_ = 0.0f;
     SDL_GetRelativeMouseState(&lastMouseX_, &lastMouseY_);
     bool leftButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_LEFT);
     bool rightButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT);
