@@ -184,15 +184,8 @@ void VulkanGraphics::UpdateDynamicStates() {
     UpdateDepthBounds();
     UpdateStencilFaces();
     UpdateLineWidth();
-    auto features = DynamicFeatures{
-        .has_extended_dynamic_state = device.IsExtExtendedDynamicStateSupported(),
-        .has_extended_dynamic_state_2 = device.IsExtExtendedDynamicState2Supported(),
-        .has_extended_dynamic_state_2_extra = device.IsExtExtendedDynamicState2ExtrasSupported(),
-        .has_extended_dynamic_state_3_blend = device.IsExtExtendedDynamicState3BlendingSupported(),
-        .has_extended_dynamic_state_3_enables = device.IsExtExtendedDynamicState3EnablesSupported(),
-        .has_dynamic_vertex_input = device.IsExtVertexInputDynamicStateSupported(),
-    };
-    if (features.has_extended_dynamic_state) {
+
+    if (device.IsExtExtendedDynamicStateSupported()) {
         UpdateCullMode();
         UpdateDepthCompareOp();
         UpdateFrontFace();
@@ -202,18 +195,18 @@ void VulkanGraphics::UpdateDynamicStates() {
         UpdateDepthTestEnable();
         UpdateDepthWriteEnable();
         UpdateStencilTestEnable();
-        if (features.has_extended_dynamic_state_2) {
+        if (device.IsExtExtendedDynamicState2Supported()) {
             UpdatePrimitiveRestartEnable();
             UpdateRasterizerDiscardEnable();
             UpdateDepthBiasEnable();
         }
-        if (features.has_extended_dynamic_state_3_enables) {
+        if (device.IsExtExtendedDynamicState3EnablesSupported()) {
             UpdateDepthClampEnable();
             UpdateBlending();
         }
     }
 
-    if (features.has_dynamic_vertex_input) {
+    if (device.IsExtVertexInputDynamicStateSupported()) {
         auto* pipeline = pipeline_cache.currentGraphicsPipeline(fixedPipelineState);
         if (pipeline && pipeline->HasDynamicVertexInput()) {
             UpdateVertexInput();
