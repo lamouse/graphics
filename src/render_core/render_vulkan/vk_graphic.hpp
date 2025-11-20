@@ -55,11 +55,6 @@ class VulkanGraphics : public render::Graphic {
         void TickFrame();
 
     private:
-        static constexpr size_t MAX_TEXTURES = 192;
-        static constexpr size_t MAX_IMAGES = 48;
-        static constexpr size_t MAX_IMAGE_VIEWS = MAX_TEXTURES + MAX_IMAGES;
-
-        static constexpr vk::DeviceSize DEFAULT_BUFFER_SIZE = 4 * sizeof(float);
         template <typename Func>
         void PrepareDraw(Func&&);
         void FlushWork();

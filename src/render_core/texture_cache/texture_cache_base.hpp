@@ -58,20 +58,8 @@ struct ImageViewInOut {
         ImageViewId id{};
 };
 
-class TextureCacheInfo {
-    public:
-        std::vector<SamplerId> graphics_sampler_ids;
-        std::vector<ImageViewId> graphics_image_view_ids;
-
-        std::vector<SamplerId> compute_sampler_ids;
-        std::vector<ImageViewId> compute_image_view_ids;
-};
-
 template <class P>
-class TextureCache : public TextureCacheInfo {
-        /// Address shift for caching images into a hash table
-        static constexpr u64 ENGINE_PAGEBITS = 20;
-
+class TextureCache {
         /// Enables debugging features to the texture cache
         static constexpr bool ENABLE_VALIDATION = P::ENABLE_VALIDATION;
         /// Implement blits as copies between framebuffers
@@ -122,25 +110,14 @@ class TextureCache : public TextureCacheInfo {
     private:
         auto createImageAndView(const ImageInfo& info) -> ImageViewId;
         Runtime& runtime;
-        std::vector<FramebufferId> frame_buffer_ids;
-        int current_framebuffer_index{-1};
         common::SlotVector<Image> slot_images;
         common::SlotVector<ImageView> slot_image_views;
         common::SlotVector<Sampler> slot_samplers;
         common::SlotVector<Framebuffer> slot_framebuffers;
-        // Join caching
-        boost::container::small_vector<ImageId, 4> join_overlap_ids;
-        std::unordered_set<ImageId> join_overlaps_found;
-        boost::container::small_vector<ImageId, 4> join_left_aliased_ids;
-        boost::container::small_vector<ImageId, 4> join_right_aliased_ids;
-        std::unordered_set<ImageId> join_ignore_textures;
-        boost::container::small_vector<ImageId, 4> join_bad_overlap_ids;
-        std::unordered_map<ImageId, size_t> join_alias_indices;
         std::unordered_map<SamplerPreset, SamplerId> presetSamplers;
         ImageViewId currentTextureId;
         SamplerPreset currentSamplerPreset{};
         RenderTargets render_targets;
-        std::pair<ImageViewId, SamplerId> current_image_view;
         std::unordered_map<RenderTargets, FramebufferId> framebuffers;
         std::unordered_map<FramebufferKey, RenderTargets> frameRenderTarget;
         u64 frame_tick = 0;
