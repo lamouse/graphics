@@ -1,18 +1,12 @@
 #pragma once
 #include "common/common_types.hpp"
-#include "common/scope_exit.h"
 #include "common/common_funcs.hpp"
 #include "common/slot_vector.hpp"
-#include "common/div_ceil.hpp"
-#include "common/lru_cache.h"
 #include "common/literals.hpp"
-#include "render_core/texture/types.hpp"
 #include "render_core/surface.hpp"
-#include "render_core/delayed_destruction_ring.h"
 #include "render_core/types.hpp"
 #include "render_core/pipeline_state.h"
 #include <boost/container/small_vector.hpp>
-#include <deque>
 #include <mutex>
 #include <span>
 
@@ -97,13 +91,6 @@ class BufferCache : public BufferCacheInfo {
 
         using Runtime = typename P::Runtime;
         using Buffer = typename P::Buffer;
-        using Async_Buffer = typename P::Async_Buffer;
-
-        struct OverlapResult {
-                boost::container::small_vector<BufferId, 16> ids;
-                bool has_stream_leap = false;
-        };
-
     public:
         explicit BufferCache(Runtime& runtime_);
         void TickFrame();
@@ -132,15 +119,10 @@ class BufferCache : public BufferCacheInfo {
     private:
         Runtime& runtime;
         common::SlotVector<Buffer> slot_buffers;
-        DelayedDestructionRing<Buffer, 8> delayed_destruction_ring;
 
         IndirectParams* current_draw_indirect{};
         u32 last_index_count = 0;
 
-        // Async Buffers
-        std::deque<boost::container::small_vector<texture::BufferCopy, 4>> pending_downloads;
-
-        std::deque<Async_Buffer> async_buffers_death_ring;
 
         // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
         std::vector<std::span<const std::byte>> graphic_uniform_buffers;
@@ -152,16 +134,10 @@ class BufferCache : public BufferCacheInfo {
         std::span<const std::byte> push_constants;
 
         size_t immediate_buffer_capacity = 0;
-        struct LRUItemParams {
-                using ObjectType = BufferId;
-                using TickType = u64;
-        };
-        common::LeastRecentlyUsedCache<LRUItemParams> lru_cache;
-        u64 frame_tick = 0;
+
         u64 total_used_memory = 0;
         u64 minimum_memory = 0;
         u64 critical_memory = 0;
-        BufferId inline_buffer_id;
 };
 
 }  // namespace render::buffer

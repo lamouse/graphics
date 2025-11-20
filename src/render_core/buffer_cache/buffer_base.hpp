@@ -7,9 +7,6 @@ struct NullBufferParams {};
 
 class BufferBase {
     public:
-        static constexpr u64 BASE_PAGE_BITS = 16;
-        static constexpr u64 BASE_PAGE_SIZE = 1ULL << BASE_PAGE_BITS;
-
         explicit BufferBase(u64 size_bytes_) : size_bytes{size_bytes_} {}
 
         explicit BufferBase(NullBufferParams /*unused*/) {}

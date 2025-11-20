@@ -14,7 +14,6 @@ set(sources
     file.cpp
     file.hpp
     literals.hpp
-    lru_cache.h
     make_unique_for_overwrite.h
     math_util.h
     polyfill_thread.hpp

@@ -85,16 +85,6 @@ void BufferCache<P>::TickFrame() {
     if (runtime.CanReportMemoryUsage()) {
         total_used_memory = runtime.GetDeviceMemoryUsage();
     }
-    // if (total_used_memory >= minimum_memory) {
-    //     RunGarbageCollector();
-    // }
-    ++frame_tick;
-    delayed_destruction_ring.Tick();
-
-    for (auto& buffer : async_buffers_death_ring) {
-        runtime.FreeDeferredStagingBuffer(buffer);
-    }
-    async_buffers_death_ring.clear();
 }
 
 template <class P>

@@ -157,7 +157,6 @@ class BufferCacheRuntime {
 struct BufferCacheParams {
         using Runtime = render::vulkan::BufferCacheRuntime;
         using Buffer = render::vulkan::BaseBufferCache;
-        using Async_Buffer = render::vulkan::StagingBufferRef;
 };
 
 using BufferCache = render::buffer::BufferCache<BufferCacheParams>;
