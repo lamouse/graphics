@@ -67,20 +67,6 @@ auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
 template <class P>
 void BufferCache<P>::TickFrame() {
     runtime.TickFrame();
-
-    // Calculate hits and shots and move hit bits to the right
-    const u32 hits = std::reduce(uniform_cache_hits.begin(), uniform_cache_hits.end());
-    const u32 shots = std::reduce(uniform_cache_shots.begin(), uniform_cache_shots.end());
-    std::copy_n(uniform_cache_hits.begin(), uniform_cache_hits.size() - 1,
-                uniform_cache_hits.begin() + 1);
-    std::copy_n(uniform_cache_shots.begin(), uniform_cache_shots.size() - 1,
-                uniform_cache_shots.begin() + 1);
-    uniform_cache_hits[0] = 0;
-    uniform_cache_shots[0] = 0;
-
-    const bool skip_preferred = hits * 256 < shots * 251;
-    uniform_buffer_skip_cache_size = skip_preferred ? DEFAULT_SKIP_CACHE_SIZE : 0;
-
     // If we can obtain the memory info, use it instead of the estimate.
     if (runtime.CanReportMemoryUsage()) {
         total_used_memory = runtime.GetDeviceMemoryUsage();

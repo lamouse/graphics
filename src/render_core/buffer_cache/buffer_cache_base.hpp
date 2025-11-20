@@ -23,8 +23,6 @@ constexpr u32 NUM_TRANSFORM_FEEDBACK_BUFFERS = 4;
 constexpr u32 NUM_STORAGE_BUFFERS = 16;
 constexpr u32 NUM_TEXTURE_BUFFERS = 32;
 
-static constexpr u32 DEFAULT_SKIP_CACHE_SIZE = static_cast<u32>(4_KiB);
-
 struct Binding {
         u32 size{};
         BufferId buffer_id;
@@ -68,21 +66,6 @@ class BufferCacheInfo {
         std::array<Binding, 32> compute_uniform_buffers;
         std::array<Binding, NUM_STORAGE_BUFFERS> compute_storage_buffers;
         std::array<TextureBufferBinding, NUM_TEXTURE_BUFFERS> compute_texture_buffers;
-
-        u32 enabled_compute_uniform_buffer_mask = 0;
-
-        u32 compute_storage_buffers_size = 0;
-
-        u32 enabled_compute_texture_buffers = 0;
-        u32 written_compute_texture_buffers = 0;
-        u32 image_compute_texture_buffers = 0;
-
-        std::array<u32, 16> uniform_cache_hits{};
-        std::array<u32, 16> uniform_cache_shots{};
-
-        u32 uniform_buffer_skip_cache_size = DEFAULT_SKIP_CACHE_SIZE;
-
-        bool has_deleted_buffers = false;
 };
 
 template <class P>
@@ -133,6 +116,7 @@ class BufferCache : public BufferCacheInfo {
         // 当前需要bind的graphic的push constants，如果没有.empty()应该返回true
         std::span<const std::byte> push_constants;
 
+        u32 compute_storage_buffers_size = 0;
         size_t immediate_buffer_capacity = 0;
 
         u64 total_used_memory = 0;
