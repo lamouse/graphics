@@ -55,7 +55,7 @@ class BufferCacheRuntime {
                                     GuestDescriptorQueue& guest_descriptor_queue,
                                     ComputePassDescriptorQueue& compute_pass_descriptor_queue);
 
-        void TickFrame(common::SlotVector<BaseBufferCache>& slot_buffers) noexcept;
+        void TickFrame() noexcept;
 
         void Finish();
 

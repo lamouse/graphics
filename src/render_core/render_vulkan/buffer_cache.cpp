@@ -156,9 +156,7 @@ auto BufferCacheRuntime::GetStorageBufferAlignment() const -> u32 {
     return static_cast<u32>(device.GetStorageBufferAlignment());
 }
 
-void BufferCacheRuntime::TickFrame(common::SlotVector<BaseBufferCache>& slot_buffers) noexcept {
-    for (auto it = slot_buffers.begin(); it != slot_buffers.end(); it++) {
-    }
+void BufferCacheRuntime::TickFrame() noexcept {
     uniform_ring.BeginFrame();
 }
 

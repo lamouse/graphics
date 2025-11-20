@@ -66,7 +66,7 @@ auto BufferCache<P>::addVertexBuffer(const void* data, u32 size) -> BufferId {
 
 template <class P>
 void BufferCache<P>::TickFrame() {
-    runtime.TickFrame(slot_buffers);
+    runtime.TickFrame();
 
     // Calculate hits and shots and move hit bits to the right
     const u32 hits = std::reduce(uniform_cache_hits.begin(), uniform_cache_hits.end());
