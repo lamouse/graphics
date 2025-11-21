@@ -10,10 +10,6 @@
 #include <unordered_set>
 #include <unordered_map>
 namespace render::vulkan::pipeline {
-constexpr u32 NUM_TEXTURE_SCALING_WORDS = 4;
-constexpr u32 NUM_IMAGE_SCALING_WORDS = 2;
-constexpr u32 NUM_TEXTURE_AND_IMAGE_SCALING_WORDS =
-    NUM_TEXTURE_SCALING_WORDS + NUM_IMAGE_SCALING_WORDS;
 class DescriptorLayoutBuilder {
     public:
         DescriptorLayoutBuilder(const Device& device_) : device{&device_} {}
@@ -30,7 +26,7 @@ class DescriptorLayoutBuilder {
             }
 
             const vk::DescriptorSetLayoutCreateFlags flags =
-                use_push_descriptor ? vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptorKHR
+                use_push_descriptor ? vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptor
                                     : vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool;
             return DescriptorSetLayout{device->getLogical().createDescriptorSetLayout(
                                            vk::DescriptorSetLayoutCreateInfo{flags, bindings}),
