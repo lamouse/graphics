@@ -350,34 +350,8 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
     float cursor_x = ImGui::GetCursorPosX() + depth * indent_spacing;
     ImGui::SetCursorPosX(cursor_x);
 
-    // ===== 折叠箭头（如果有子项）=====
-    // if (hasChildren) {
-    //     ImVec2 p_min = ImGui::GetCursorScreenPos();
-    //     ImVec2 btn_size(indent_spacing, line_height);
-
-    //     // 创建不可见按钮
-    //     if (ImGui::InvisibleButton("toggle", btn_size)) {
-    //         model.expanded = !model.expanded;
-    //     }
-
-    //     // 绘制箭头 ▶ / ▼
-    //     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    //     ImU32 text_col = ImGui::GetColorU32(ImGuiCol_Text);
-    //     float arrow_size = (line_height - 4.0f) * 0.5f;
-    //     ImVec2 center_offset(btn_size.x * 0.5f - arrow_size,
-    //                          (line_height - arrow_size * 2.0f) * 0.5f);
-
-    //     ImGuiDir dir = model.expanded ? ImGuiDir_Down : ImGuiDir_Right;
-    //     RenderArrow(draw_list,
-    //                 ImVec2(p_min.x + center_offset.x, p_min.y + center_offset.y + arrow_size),
-    //                 text_col, dir, arrow_size);
-
-    //     ImGui::SameLine();
-    // } else {
-    // 无子项，占位
     ImGui::Dummy(ImVec2(indent_spacing, 1));
     ImGui::SameLine();
-    //}
 
     // ===== 可见性复选框 =====
     ImGui::PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoTabStop, true);
@@ -403,21 +377,8 @@ void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
 
     ImGui::PopStyleVar();  // ItemInnerSpacing
 
-    // // ===== 子项数量（可选）=====
-    // if (hasChildren && model.expanded) {
-    //     ImGui::SameLine();
-    //     ImGui::TextDisabled("(%d)", (int)model.children.size());
-    // }
-
     ImGui::EndGroup();
     ImGui::PopStyleVar();  // ItemSpacing
-
-    // ===== 递归绘制子项 =====
-    // if (hasChildren && model.expanded) {
-    //     for (auto& child : model.children) {
-    //         DrawModelTreeNode(child, depth + 1);
-    //     }
-    // }
 
     ImGui::PopID();
 }
