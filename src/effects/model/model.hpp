@@ -90,15 +90,16 @@ class LightModel {
             // }
             PointLight light{};
             light.color = {1.f, 1.f, 1.f, 1.f};
-            light.position = {1.0f, 1.0f, 1.f, .4};
+            light.position = {2.0f, 1.0f, 1.f, .4};
 
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
-                mesh.getUBO<PointLightUbo>().numLights = 0;
+                mesh.getUBO<PointLightUbo>().numLights = 1;
                 mesh.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
                 mesh.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
                 mesh.getUBO<PointLightUbo>().ambientLightColor.w = 1.f;
+                mesh.getUBO<PointLightUbo>().pointLights[0] = light;
             }
         }
 

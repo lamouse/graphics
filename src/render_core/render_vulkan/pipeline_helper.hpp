@@ -91,12 +91,15 @@ class DescriptorLayoutBuilder {
             for (size_t i = 0; i < num; ++i) {
                 int shader_set = descriptors[i].set;
                 int shader_binding = descriptors[i].binding;
-                if (already_binding.contains(shader_set)) {
-                    auto sets = already_binding.find(shader_set);
-                    if (sets->second.contains(shader_binding)) {
-                        spdlog::debug("重复的声明 type={} stage={} descriptors={} binding:{}",
-                                      vk::to_string(type), vk::to_string(stage), descriptors.size(),
-                                      descriptors[i].binding);
+                const auto& [shader_sets, is_new] = already_binding.try_emplace(shader_set);
+                if (is_new) {
+                    shader_sets->second = std::unordered_set<int>{shader_binding};
+                } else {
+                    auto& sets = shader_sets->second;
+                    if (sets.contains(shader_binding)) {
+                        spdlog::debug("binding:{} add other stage={}, type={} descriptors={} ",
+                                      descriptors[i].binding, vk::to_string(stage),
+                                      vk::to_string(type), descriptors.size());
                         for (auto& bind : bindings) {
                             if (bind.binding == static_cast<u32>(shader_binding)) {
                                 bind.stageFlags |= stage;
@@ -105,9 +108,7 @@ class DescriptorLayoutBuilder {
                         }
                         continue;
                     }
-                    sets->second.insert(shader_binding);
-                } else {
-                    already_binding[shader_set] = std::unordered_set<int>{shader_binding};
+                    sets.insert(shader_binding);
                 }
                 spdlog::debug(
                     "Adding descriptor type={} stage={} \ndescriptors={} binding:{} descriptors "
