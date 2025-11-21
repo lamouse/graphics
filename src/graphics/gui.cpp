@@ -215,26 +215,6 @@ void pipeline_state(render::DynamicPipelineState& state) {
         ImGui::TreePop();
     }
 }
-
-void fps() {
-    ImGuiIO const& io = ImGui::GetIO();
-    (void)io;
-    ImVec2 main_pos = ImGui::GetMainViewport()->Pos;
-    auto main_size = ImGui::GetMainViewport()->Size;
-    bool fps_open = false;
-    ImGui::SetNextWindowBgAlpha(.0f);
-    ImGui::SetNextWindowPos({main_pos.x + main_size.x, main_pos.y}, ImGuiCond_Always,
-                            ImVec2(1.01F, 0.0F));
-    ImGui::Begin("Window 1", &fps_open,
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBackground |
-                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings |
-                     ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
-    ImGui::End();
-}
-
 }  // namespace
 namespace graphics::ui {
 
@@ -389,9 +369,7 @@ void DrawModelTreeNode(MenuData& data, ecs::Entity entity) {
     ImGui::PushID(&entity);
     auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
     auto& tag = entity.getComponent<ecs::TagComponent>();
-    // const bool hasChildren = model.hasChildren();
     const float indent_spacing = ImGui::GetStyle().IndentSpacing;
-    const float line_height = ImGui::GetFrameHeight();
 
     // ===== 设置样式 =====
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 2));
@@ -440,39 +418,7 @@ void DrawModelTreeNode(MenuData& data, ecs::Entity entity) {
     ImGui::PopID();
 }
 
-// ======================================
-// 主函数：显示 Outliner 窗口
-// ======================================
-void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
-    if (data.show_out_liner) {
-        // 设置窗口标志
-        ImGuiWindowFlags window_flags =
-            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        auto window_size = viewport->Size;
-        window_size.y -= ImGui::GetFrameHeight();
-        if (data.show_status) {
-            window_size.y -= RENDER_STATUS_BAR_HEIGHT;
-        }
-        window_size.x *= OUTLINER_WIDTH;
-
-        ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x),
-                        viewport->WorkPos.y);
-        ImGui::SetNextWindowSize(window_size);
-        ImGui::SetNextWindowPos(panelPos);
-        ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
-
-        for (auto& instance : instances) {
-            DrawModelTreeNode(data, instance);
-        }
-
-        ImGui::End();
-    }
-}
-
-void ShowOutliner(std::span<OutLiner> outlineres, MenuData& data) {
+void ShowOutliner(std::span<Outliner> outlineres, MenuData& data) {
     if (data.show_out_liner) {
         // 设置窗口标志
         ImGuiWindowFlags window_flags =
@@ -494,7 +440,25 @@ void ShowOutliner(std::span<OutLiner> outlineres, MenuData& data) {
         ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
 
         for (auto& outliner : outlineres) {
-            DrawModelTreeNode(data, outliner.entity);
+            auto& tag = outliner.entity.getComponent<ecs::TagComponent>();
+            ImGuiTreeNodeFlags flags =
+                ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+            bool open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
+            // 只有展开时才绘制子节点
+            if (open) {
+                DrawModelTreeNode(data, outliner.entity);
+
+                if (!outliner.children.empty()) {
+                    // children with indent
+                    ImGui::Indent();
+                    for (auto& childEntity : outliner.children) {
+                        DrawModelTreeNode(data, childEntity);
+                    }
+                    ImGui::Unindent();
+                }
+                ImGui::TreePop();
+            }
         }
 
         ImGui::End();
@@ -502,10 +466,6 @@ void ShowOutliner(std::span<OutLiner> outlineres, MenuData& data) {
 }
 
 void show_menu(MenuData& data) {
-    static bool show_fps = false;
-    if (show_fps) {
-        fps();
-    }
     static bool show_imgui_debug_window = false;
     if (show_imgui_debug_window) {
         ImGui::ShowMetricsWindow(&show_imgui_debug_window);
@@ -534,7 +494,6 @@ void show_menu(MenuData& data) {
             ImGui::MenuItem("\uf1b3 outliner", nullptr, &data.show_out_liner);
             ImGui::MenuItem("\ueb51 系统设置", "", &data.show_system_setting);
             ImGui::MenuItem("\uF15C 日志", "", &data.show_log);
-            ImGui::MenuItem("\uf9c4 fps", "", &show_fps);
             ImGui::MenuItem("\uead8 Imgui Metrics", "", &show_imgui_debug_window);
             ImGui::MenuItem("\uf6c5 Detail", "", &data.show_detail);
             ImGui::MenuItem("\uebf5 状态", "", &data.show_status);

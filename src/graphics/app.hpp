@@ -23,7 +23,7 @@ class App {
         std::unique_ptr<render::RenderBase> render_base;
         ResourceManager resourceManager;
         RenderRegistry registry;
-        std::vector<ecs::Entity> model_entt;
+        std::vector<ui::Outliner> outliner_entities_;
         core::InputEvent input_event;
         void load_resource();
 };

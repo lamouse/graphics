@@ -56,11 +56,11 @@ void App::run() {
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
     bool show_debug_ui = true;
     world::World world;
-    model_entt.push_back(world.getEntity(world::WorldEntityType::CAMERA));
+
     auto& cameraComponent =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
     auto camera = cameraComponent.getCamera();
-    model_entt.insert(model_entt.end(), registry.getEntt().begin(), registry.getEntt().end());
+
     float current_mouse_X = 0, current_mouse_Y = 0;
     while (!window->shouldClose()) {
         if (window->IsMinimized()) {
@@ -68,6 +68,9 @@ void App::run() {
             continue;
         }
 
+        outliner_entities_ = registry.getOutliner();
+        outliner_entities_.push_back(
+            {.entity = world.getEntity(world::WorldEntityType::CAMERA), .children = {}});
         window->pullEvents(input_event);
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
@@ -116,7 +119,7 @@ void App::run() {
             auto ui_fun = [&]() -> void {
                 ui::show_menu(menu_data);
                 draw_setting(menu_data.show_system_setting);
-                ui::ShowOutliner(model_entt, menu_data);
+                ui::ShowOutliner(outliner_entities_, menu_data);
                 render_status_bar(menu_data, statusData);
                 ui::draw_texture(menu_data, imageId, window->getAspectRatio());
                 logger.drawUi(menu_data.show_log);

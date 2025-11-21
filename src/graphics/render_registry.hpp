@@ -4,6 +4,7 @@
 #include <functional>
 #include <utility>
 #include "ecs/scene/entity.hpp"
+#include "gui.hpp"
 
 // 前向声明
 namespace core {
@@ -58,7 +59,7 @@ class RenderRegistry {
         };
 
         std::vector<Drawable> objects_;
-        std::vector<ecs::Entity> model_entt;
+        std::vector<ui::Outliner> outliner_entities_;
 
     public:
         RenderRegistry() = default;
@@ -67,24 +68,24 @@ class RenderRegistry {
             requires DrawableLike<T>
         void add(T obj) {
             objects_.push_back(Drawable{obj});
-
+            ui::Outliner outliner;
             // 处理 shared_ptr 和 值类型
             if constexpr (std::is_same_v<std::decay_t<T>,
                                          std::shared_ptr<typename std::decay_t<T>::element_type>>) {
                 // T 是 shared_ptr<U>
                 using U = typename std::decay_t<T>::element_type;
                 if constexpr (HasPointECSInterface<std::decay_t<U>>) {
-                    model_entt.push_back(obj->entity_);
-                    auto child = obj->getChildEntitys();
-                    model_entt.insert(model_entt.end(), child.begin(), child.end());
+                    outliner.entity = obj->entity_;
+                    outliner.children = obj->getChildEntitys();
+                    outliner_entities_.push_back(outliner);
                 }
             } else {
                 // T 是普通类型（值）
                 objects_.push_back(Drawable{obj});
                 if constexpr (HasValueECSInterface<std::decay_t<T>>) {
-                    model_entt.push_back(obj.entity_);
-                    auto child = obj.getChildEntitys();
-                    model_entt.insert(model_entt.end(), child.begin(), child.end());
+                    outliner.entity = obj->entity_;
+                    outliner.children = obj->getChildEntitys();
+                    outliner_entities_.push_back(outliner);
                 }
             }
         }
@@ -113,7 +114,7 @@ class RenderRegistry {
         // 控制
         void clear() { objects_.clear(); }
         void reserve(size_t n) { objects_.reserve(n); }
-        auto getEntt() -> std::span<ecs::Entity> { return model_entt; };
+        auto getOutliner(this auto && self) -> decltype(auto) { return (self.outliner_entities_); };
         [[nodiscard]] auto size() const -> size_t { return objects_.size(); }
         [[nodiscard]] auto empty() const -> bool { return objects_.empty(); }
 };
