@@ -5,8 +5,10 @@
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/components/camera_component.hpp"
 #include "ecs/components/dynamic_pipeline_state_component.hpp"
+#include "ecs/component.hpp"
 #include "ecs/ui/transformUI.hpp"
 #include "ecs/ui/cameraUI.hpp"
+#include "ecs/ui/lightUI.hpp"
 
 #include <glm/gtc/quaternion.hpp>
 
@@ -456,6 +458,14 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
         if (ImGui::TreeNode("PipelineDynamicState")) {
             auto& state_component = entity.getComponent<ecs::DynamicPipeStateComponenet>();
             pipeline_state(state_component.state);
+            ImGui::TreePop();
+        }
+    }
+
+    if (entity.hasComponent<ecs::LightComponent>()) {
+        if (ImGui::TreeNode("light")) {
+            auto& light = entity.getComponent<ecs::LightComponent>();
+            ecs::DrawLightUi(light);
             ImGui::TreePop();
         }
     }

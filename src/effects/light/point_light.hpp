@@ -5,6 +5,7 @@
 #include "core/frame_info.hpp"
 #include "effects/effect.hpp"
 #include "ecs/components/transform_component.hpp"
+#include "ecs/components/light_component.hpp"
 #define MAX_LIGHTS 10
 namespace graphics::effects {
 struct PointLight {
@@ -18,14 +19,14 @@ struct PointLightUbo {
         glm::mat4 inverseView{1.f};
         glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .02f};  // w is intensity
         PointLight pointLights[MAX_LIGHTS];
-        int numLights;
+        int numLights{};
         AS_BYTE_SPAN
 };
 
 struct PointLightPushConstants {
         glm::vec4 position{};
         glm::vec4 color{};
-        float radius;
+        float radius{};
         AS_BYTE_SPAN
 };
 
@@ -34,20 +35,23 @@ class PointLightEffect {
         PointLightEffect(graphics::ResourceManager& manager,
                          const layout::FrameBufferLayout& layout, float intensity = 10.f,
                          float radius = .4f, glm::vec3 color_ = glm::vec3(.2f, .3f, .4f))
-            : color(color_), pointLight(), id(getCurrentId()) {
+            : id(getCurrentId()) {
             auto hash = manager.getShaderHash<ShaderHash>("point_light");
-            point_light = PointLightInstance{{}, hash, layout, "PointLightInstance"},
-            pointLight.lightIntensity = intensity;
+            point_light = PointLightInstance{{}, hash, layout, "PointLightInstance"};
             auto rotateLight =
                 glm::rotate(glm::mat4(1.f), (1 * glm::two_pi<float>()) / 7, {0.f, -1.f, 0.f});
             point_light.setVertexCount(6);
             entity_ = getEffectsScene().createEntity("PointLight" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
-            entity_.addComponent<ecs::TransformComponent>();
-            entity_.getComponent<ecs::TransformComponent>().scale.x = radius;
-            entity_.getComponent<ecs::TransformComponent>().translation =
-                glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+            ecs::TransformComponent transformComponent{};
+            transformComponent.translation  = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+            entity_.addComponent<ecs::TransformComponent>(transformComponent);
 
+            ecs::LightComponent lightComponent{};
+            lightComponent.color = color_;
+            lightComponent.intensity = intensity;
+            lightComponent.range = radius;
+            entity_.addComponent<ecs::LightComponent>(lightComponent);
         }
 
         CLASS_NON_COPYABLE(PointLightEffect);
@@ -69,17 +73,17 @@ class PointLightEffect {
             glm::vec3 newPosition = glm::vec3(rotation * localOffset);
 
             transform.translation = newPosition;
-            point_light.getUBO<PointLightUbo>().numLights = 6;
             point_light.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
             point_light.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
-            point_light.getUBO<PointLightUbo>().pointLights[0].position = glm::vec4(transform.translation, 1.f);
-            point_light.getUBO<PointLightUbo>().pointLights[0].color = glm::vec4(color, pointLight.lightIntensity);
+            point_light.getUBO<PointLightUbo>().pointLights[0].position =
+                glm::vec4(transform.translation, 1.f);
         }
         void draw(render::Graphic* graphic) {
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
+            auto lightComponent = entity_.getComponent<ecs::LightComponent>();
             point_light.PushConstant().position = glm::vec4(transform.translation, 1.f);
-            point_light.PushConstant().color = glm::vec4(color, pointLight.lightIntensity);
-            point_light.PushConstant().radius = transform.scale.x;
+            point_light.PushConstant().color = glm::vec4(lightComponent.color, lightComponent.intensity);
+            point_light.PushConstant().radius = lightComponent.range;
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 graphic->draw(point_light);
             }
@@ -90,15 +94,11 @@ class PointLightEffect {
         }
 
     private:
-        struct PointLightComponent {
-                float lightIntensity = .3f;
-        };
-        using PointLightInstance = MeshInstance<PointLightPushConstants,
-                                                render::PrimitiveTopology::Triangles, PointLightUbo>;
-        PointLightInstance point_light;
-        glm::vec3 color{};
-        PointLightComponent pointLight;
 
+        using PointLightInstance =
+            MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles,
+                         PointLightUbo>;
+        PointLightInstance point_light;
         id_t id;
 };
 }  // namespace graphics::effects
