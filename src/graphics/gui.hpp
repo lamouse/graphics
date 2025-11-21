@@ -22,10 +22,16 @@ struct StatusBarData {
         std::string_view device_name;
 };
 
+struct OutLiner {
+        ecs::Entity entity;
+        std::vector<ecs::Entity> children;
+};
+
 void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 void init_imgui(float scale);
 // 递归绘制树节点
 void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data);
+void ShowOutliner(std::span<OutLiner> outlineres, MenuData& data);
 void show_menu(MenuData& data);
 void render_status_bar(MenuData& menuData, StatusBarData& barData);
 auto IsMouseControlledByImGui() -> bool;

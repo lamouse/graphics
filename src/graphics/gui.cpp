@@ -331,58 +331,6 @@ void init_imgui(float scale) {
     io.Fonts->AddFontFromFileTTF("fronts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
 }
 
-// ======================================
-// 递归绘制树节点（专业级 Outliner 风格）
-// ======================================
-void DrawModelTreeNode(ecs::Entity entity, int depth = 0) {
-    ImGui::PushID(&entity);
-    auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
-    auto& tag = entity.getComponent<ecs::TagComponent>();
-    // const bool hasChildren = model.hasChildren();
-    const float indent_spacing = ImGui::GetStyle().IndentSpacing;
-    const float line_height = ImGui::GetFrameHeight();
-
-    // ===== 设置样式 =====
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 2));
-    ImGui::BeginGroup();  // 整行布局
-
-    // 缩进
-    float cursor_x = ImGui::GetCursorPosX() + depth * indent_spacing;
-    ImGui::SetCursorPosX(cursor_x);
-
-    ImGui::Dummy(ImVec2(indent_spacing, 1));
-    ImGui::SameLine();
-
-    // ===== 可见性复选框 =====
-    ImGui::PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoTabStop, true);
-    ImGui::Checkbox(("##vis" + tag.tag).c_str(), &render_state.visible);
-    ImGui::PopItemFlag();
-    ImGui::SameLine();
-
-    // ===== 模型名称（可选择区域）=====
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
-
-    // 使用 Selectable 占满整行，允许重叠
-    ImGui::Selectable(tag.tag.c_str(), false,
-                      ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
-    static unsigned int select_id = std::numeric_limits<unsigned int>::max();
-    if (render_state.is_select() && render_state.mouse_select) {
-        select_id = render_state.select_id;
-    }
-    // 仅当点击了名称区域（非箭头/复选框）时才选中
-    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        select_id = render_state.id;
-    }
-    render_state.select_id = select_id;
-
-    ImGui::PopStyleVar();  // ItemInnerSpacing
-
-    ImGui::EndGroup();
-    ImGui::PopStyleVar();  // ItemSpacing
-
-    ImGui::PopID();
-}
-
 void draw_detail(MenuData& data, ecs::Entity entity) {
     ImGui::Begin("Detail", &data.show_detail);
     if (entity.hasComponent<ecs::TagComponent>()) {
@@ -435,6 +383,64 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
 }
 
 // ======================================
+// 递归绘制树节点（专业级 Outliner 风格）
+// ======================================
+void DrawModelTreeNode(MenuData& data, ecs::Entity entity) {
+    ImGui::PushID(&entity);
+    auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
+    auto& tag = entity.getComponent<ecs::TagComponent>();
+    // const bool hasChildren = model.hasChildren();
+    const float indent_spacing = ImGui::GetStyle().IndentSpacing;
+    const float line_height = ImGui::GetFrameHeight();
+
+    // ===== 设置样式 =====
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 2));
+    ImGui::BeginGroup();  // 整行布局
+
+    // 缩进
+    float cursor_x = ImGui::GetCursorPosX() + indent_spacing;
+    ImGui::SetCursorPosX(cursor_x);
+
+    ImGui::Dummy(ImVec2(indent_spacing, 1));
+    ImGui::SameLine();
+
+    // ===== 可见性复选框 =====
+    ImGui::PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoTabStop, true);
+    ImGui::Checkbox(("##vis" + tag.tag).c_str(), &render_state.visible);
+    ImGui::PopItemFlag();
+    ImGui::SameLine();
+
+    // ===== 模型名称（可选择区域）=====
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+
+    // 使用 Selectable 占满整行，允许重叠
+    ImGui::Selectable(tag.tag.c_str(), render_state.is_select(),
+                      ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
+    static unsigned int select_id = std::numeric_limits<unsigned int>::max();
+    if (render_state.is_select() && render_state.mouse_select) {
+        select_id = render_state.select_id;
+    }
+    // 仅当点击了名称区域（非箭头/复选框）时才选中
+    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+        select_id = render_state.id;
+    }
+    render_state.select_id = select_id;
+
+    if (render_state.is_select()) {
+        if (data.show_detail) {
+            draw_detail(data, entity);
+        }
+    }
+
+    ImGui::PopStyleVar();  // ItemInnerSpacing
+
+    ImGui::EndGroup();
+    ImGui::PopStyleVar();  // ItemSpacing
+
+    ImGui::PopID();
+}
+
+// ======================================
 // 主函数：显示 Outliner 窗口
 // ======================================
 void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
@@ -459,20 +465,39 @@ void ShowOutliner(std::span<ecs::Entity> instances, MenuData& data) {
         ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
 
         for (auto& instance : instances) {
-            DrawModelTreeNode(instance, 0);
+            DrawModelTreeNode(data, instance);
         }
 
         ImGui::End();
     }
-    if (!data.show_detail) {
-        return;
-    }
-    for (auto& instance : instances) {
-        if (instance.hasComponent<ecs::RenderStateComponent>()) {
-            if (instance.getComponent<ecs::RenderStateComponent>().is_select()) {
-                draw_detail(data, instance);
-            }
+}
+
+void ShowOutliner(std::span<OutLiner> outlineres, MenuData& data) {
+    if (data.show_out_liner) {
+        // 设置窗口标志
+        ImGuiWindowFlags window_flags =
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        auto window_size = viewport->Size;
+        window_size.y -= ImGui::GetFrameHeight();
+        if (data.show_status) {
+            window_size.y -= RENDER_STATUS_BAR_HEIGHT;
         }
+        window_size.x *= OUTLINER_WIDTH;
+
+        ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x),
+                        viewport->WorkPos.y);
+        ImGui::SetNextWindowSize(window_size);
+        ImGui::SetNextWindowPos(panelPos);
+        ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
+
+        for (auto& outliner : outlineres) {
+            DrawModelTreeNode(data, outliner.entity);
+        }
+
+        ImGui::End();
     }
 }
 
