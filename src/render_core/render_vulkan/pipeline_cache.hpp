@@ -68,7 +68,7 @@ class PipelineCache : public ShaderCache {
         ~PipelineCache();
         CLASS_NON_COPYABLE(PipelineCache);
         CLASS_NON_MOVEABLE(PipelineCache);
-        [[nodiscard]] auto currentGraphicsPipeline(const FixedPipelineState& state)
+        [[nodiscard]] auto currentGraphicsPipeline(PrimitiveTopology topology)
             -> GraphicsPipeline*;
         [[nodiscard]] auto currentComputePipeline(const std::array<u32, 3>& workgroupSize)
             -> ComputePipeline*;
@@ -94,7 +94,7 @@ class PipelineCache : public ShaderCache {
         void savePipelineCache();
 
         void updateShaderHash();
-        void updatePipelineKeyState(const FixedPipelineState& state);
+        void updatePipelineKeyState(PrimitiveTopology topology);
 
         const Device& device;
         scheduler::Scheduler& scheduler;

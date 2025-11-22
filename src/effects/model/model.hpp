@@ -76,18 +76,18 @@ class LightModel {
             auto modelMatrix = transform.mat4();
             auto normalMatrix = transform.normalMatrix();
 
-            // if (first) {
-            //     pending_pick_ = true;
-            // } else {
-            //     if (!render_state.mouse_select && down && pending_pick_ &&
-            //         entity_.getComponent<ecs::RenderStateComponent>().visible) {
-            //         check_pick(id, meshes[0].getMeshId(), frameInfo, render_state, transform);
-            //     }
-            //     if (render_state.mouse_select) {
-            //         move_model(frameInfo, transform, true, out_initialWorldZ, out_dragStartWorldPos);
-            //     }
-            //     pending_pick_ = false;
-            // }
+            if (first) {
+                pending_pick_ = true;
+            } else {
+                if (!render_state.mouse_select && down && pending_pick_ &&
+                    entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                    check_pick(id, meshes[0].getMeshId(), frameInfo, render_state, transform);
+                }
+                if (render_state.mouse_select) {
+                    move_model(frameInfo, transform, true, out_initialWorldZ, out_dragStartWorldPos);
+                }
+                pending_pick_ = false;
+            }
             PointLight light{};
             light.color = {1.f, 1.f, 1.f, 1.f};
             light.position = {2.0f, 1.0f, 1.f, .4};

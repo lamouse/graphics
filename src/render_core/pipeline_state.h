@@ -174,12 +174,15 @@ struct DynamicPipelineState {
                 f32 height{};
                 f32 minDepth{};
                 f32 maxDepth{1};
+
+                auto operator<=>(const ViewPort& rhs) const noexcept = default;
         };
         struct Scissors {
                 int32_t x = 0;
                 int32_t y = 0;
                 int32_t width = 0;
                 int32_t height = 0;
+                auto operator<=>(const Scissors& rhs) const noexcept = default;
         };
         ViewPort viewport;
         Scissors scissors;
@@ -190,6 +193,7 @@ struct DynamicPipelineState {
                 float g{};
                 float b{};
                 float a{};
+                auto operator<=>(const BlendColor& rhs) const noexcept = default;
         };
         BlendColor blendColor;
 
@@ -197,6 +201,7 @@ struct DynamicPipelineState {
                 u32 ref = 0;
                 u32 write_mask = 255;
                 u32 compare_mask = 255;
+                auto operator<=>(const StencilProperties& rhs) const noexcept = default;
         };
 
         StencilOp frontStencilOp = DEFAULT_STENCIL_OP;

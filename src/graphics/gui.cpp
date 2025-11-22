@@ -148,72 +148,68 @@ static void ShowExampleMenuFile() {
 }
 
 void pipeline_state(render::DynamicPipelineState& state) {
-    if (ImGui::TreeNode("set pipeline state")) {
-        bool color_blend_able = state.colorBlendEnable;
-        ImGui::Checkbox("colorBlendEnable", &color_blend_able);
-        state.colorBlendEnable = color_blend_able;
+    bool color_blend_able = state.colorBlendEnable;
+    ImGui::Checkbox("colorBlendEnable", &color_blend_able);
+    state.colorBlendEnable = color_blend_able;
 
-        bool stencilTestEnable = state.stencilTestEnable;
-        ImGui::Checkbox("stencilTestEnable", &stencilTestEnable);
-        state.stencilTestEnable = stencilTestEnable;
+    bool stencilTestEnable = state.stencilTestEnable;
+    ImGui::Checkbox("stencilTestEnable", &stencilTestEnable);
+    state.stencilTestEnable = stencilTestEnable;
 
-        bool depthClampEnable = state.depthClampEnable;
-        ImGui::Checkbox("depthClampEnable", &depthClampEnable);
-        state.depthClampEnable = depthClampEnable;
+    bool depthClampEnable = state.depthClampEnable;
+    ImGui::Checkbox("depthClampEnable", &depthClampEnable);
+    state.depthClampEnable = depthClampEnable;
 
-        bool depthWriteEnable = state.depthWriteEnable;
-        ImGui::Checkbox("depthWriteEnable", &depthWriteEnable);
-        state.depthWriteEnable = depthWriteEnable;
+    bool depthWriteEnable = state.depthWriteEnable;
+    ImGui::Checkbox("depthWriteEnable", &depthWriteEnable);
+    state.depthWriteEnable = depthWriteEnable;
 
-        bool depthTestEnable = state.depthTestEnable;
-        ImGui::Checkbox("depthTestEnable", &depthTestEnable);
-        state.depthTestEnable = depthTestEnable;
+    bool depthTestEnable = state.depthTestEnable;
+    ImGui::Checkbox("depthTestEnable", &depthTestEnable);
+    state.depthTestEnable = depthTestEnable;
 
-        bool depthBoundsTestEnable = state.depthBoundsTestEnable;
-        ImGui::Checkbox("depthBoundsTestEnable", &depthBoundsTestEnable);
-        state.depthBoundsTestEnable = depthBoundsTestEnable;
+    bool depthBoundsTestEnable = state.depthBoundsTestEnable;
+    ImGui::Checkbox("depthBoundsTestEnable", &depthBoundsTestEnable);
+    state.depthBoundsTestEnable = depthBoundsTestEnable;
 
-        bool cullMode = state.cullMode;
-        ImGui::Checkbox("cullMode", &cullMode);
-        state.cullMode = cullMode;
+    bool cullMode = state.cullMode;
+    ImGui::Checkbox("cullMode", &cullMode);
+    state.cullMode = cullMode;
 
-        bool depthBiasEnable = state.depthBiasEnable;
-        ImGui::Checkbox("depthBiasEnable", &depthBiasEnable);
-        state.depthBiasEnable = depthBiasEnable;
+    bool depthBiasEnable = state.depthBiasEnable;
+    ImGui::Checkbox("depthBiasEnable", &depthBiasEnable);
+    state.depthBiasEnable = depthBiasEnable;
 
-        bool rasterizerDiscardEnable = state.rasterizerDiscardEnable;
-        ImGui::Checkbox("rasterizerDiscardEnable", &rasterizerDiscardEnable);
-        state.rasterizerDiscardEnable = rasterizerDiscardEnable;
+    bool rasterizerDiscardEnable = state.rasterizerDiscardEnable;
+    ImGui::Checkbox("rasterizerDiscardEnable", &rasterizerDiscardEnable);
+    state.rasterizerDiscardEnable = rasterizerDiscardEnable;
 
-        bool primitiveRestartEnable = state.primitiveRestartEnable;
-        ImGui::Checkbox("primitiveRestartEnable", &primitiveRestartEnable);
-        state.primitiveRestartEnable = primitiveRestartEnable;
+    bool primitiveRestartEnable = state.primitiveRestartEnable;
+    ImGui::Checkbox("primitiveRestartEnable", &primitiveRestartEnable);
+    state.primitiveRestartEnable = primitiveRestartEnable;
 
-        ImGui::TreePop();
-    }
-    if (ImGui::TreeNode("set viewport")) {
-        ImGui::SliderFloat("x", &state.viewport.x, .0f, 2048.f);
-        ImGui::SliderFloat("y", &state.viewport.y, .0f, 2048.f);
-        ImGui::SliderFloat("width", &state.viewport.width, 1.0f, 12048.f);
-        ImGui::SliderFloat("height", &state.viewport.height, 1.0f, 12048.f);
-        ImGui::SliderFloat("minDepth", &state.viewport.minDepth, .0f, 1.f);
-        ImGui::SliderFloat("maxDepth", &state.viewport.maxDepth, .0, 1.f);
-        ImGui::TreePop();
-    }
-    if (ImGui::TreeNode("set scissors")) {
-        ImGui::SliderInt("x", &state.scissors.x, 0, 2048);
-        ImGui::SliderInt("y", &state.scissors.y, 0, 2048);
-        ImGui::SliderInt("width", &state.scissors.width, 1, 12048);
-        ImGui::SliderInt("height", &state.scissors.height, 1, 12048);
-        ImGui::TreePop();
-    }
-    if (ImGui::TreeNode("set blend color")) {
-        ImGui::SliderFloat("r", &state.blendColor.r, .0f, 255.f);
-        ImGui::SliderFloat("g", &state.blendColor.g, .0f, 255.f);
-        ImGui::SliderFloat("b", &state.blendColor.b, .0f, 1.f);
-        ImGui::SliderFloat("a", &state.blendColor.a, .0f, 1.f);
-        ImGui::TreePop();
-    }
+    ImGui::NewLine();
+    ImGui::Separator();
+    ImGui::NewLine();
+    ImGui::Text("viewport");
+    ImGui::Text("Position & Size");
+    ImGui::DragFloat2("Pos (x,y)", &state.viewport.x, 1.0f, 0.0f, 2048.0f);
+    ImGui::DragFloat2("Size (w,h)", &state.viewport.width, 1.0f, 1.0f, 12048.0f);
+    ImGui::Separator();
+    ImGui::Text("Depth Range");
+    ImGui::SliderFloat2("Depth (min,max)", &state.viewport.minDepth, 0.0f, 1.0f);
+
+    ImGui::NewLine();
+    ImGui::Separator();
+    ImGui::NewLine();
+    ImGui::Text("scissors");
+    ImGui::DragInt2("Pos (x,y)", &state.scissors.x, 1, 1);
+    ImGui::DragInt2("Size (w,h)", &state.scissors.width, 1, 1);
+    ImGui::NewLine();
+    ImGui::Separator();
+    ImGui::NewLine();
+    ImGui::Text("blend color");
+    ImGui::ColorEdit4("color", &state.blendColor.r);  // NOLINT
 }
 }  // namespace
 namespace graphics::ui {
@@ -344,11 +340,8 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
     }
 
     if (entity.hasComponent<ecs::DynamicPipeStateComponenet>()) {
-        if (ImGui::TreeNode("PipelineDynamicState")) {
-            auto& state_component = entity.getComponent<ecs::DynamicPipeStateComponenet>();
-            pipeline_state(state_component.state);
-            ImGui::TreePop();
-        }
+        auto& state_component = entity.getComponent<ecs::DynamicPipeStateComponenet>();
+        pipeline_state(state_component.state);
     }
 
     if (entity.hasComponent<ecs::LightComponent>()) {

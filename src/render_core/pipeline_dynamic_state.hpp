@@ -28,6 +28,7 @@ struct StencilOp {
         Op pass;
         Op depthFail;
         ComparisonOp compare;
+        auto operator<=>(const StencilOp& rhs) const noexcept = default;
 };
 enum class CullFace : u32 {
     Front = 1,

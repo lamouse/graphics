@@ -99,7 +99,7 @@ class VulkanGraphics : public render::Graphic {
         BufferCache buffer_cache;
         PipelineCache pipeline_cache;
         Event wfi_event;
-        DynamicPipelineState pipeline_state;
+
         u32 draw_counter = 0;
         ModelId current_modelId;
         common::SlotVector<ModelResource> modelResource;
@@ -111,7 +111,11 @@ class VulkanGraphics : public render::Graphic {
             vertex_bindings;
 
         std::unordered_map<VkImageView, ImTextureID> imgui_textures;
-        FixedPipelineState fixedPipelineState;
+        DynamicPipelineState last_pipeline_state;
+        DynamicPipelineState current_pipeline_state;
+        PrimitiveTopology current_primitive_topology;
+
+        bool is_begin_frame{true};
 };
 
 }  // namespace render::vulkan

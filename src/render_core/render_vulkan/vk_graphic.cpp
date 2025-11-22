@@ -205,7 +205,7 @@ void VulkanGraphics::UpdateDynamicStates() {
     }
 
     if (device.IsExtVertexInputDynamicStateSupported()) {
-        auto* pipeline = pipeline_cache.currentGraphicsPipeline(fixedPipelineState);
+        auto* pipeline = pipeline_cache.currentGraphicsPipeline(current_primitive_topology);
         if (pipeline && pipeline->HasDynamicVertexInput()) {
             UpdateVertexInput();
         }
@@ -215,20 +215,44 @@ void VulkanGraphics::UpdateDynamicStates() {
 // Restart）功能。图元重启功能主要用于在绘制图元（如三角形、线条等）时，
 // 允许在索引缓冲区中插入一个特殊值（称为“重启索引”），以分隔不同的图元序列。
 void VulkanGraphics::UpdatePrimitiveRestartEnable() {
-    scheduler.record([enable = pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setPrimitiveRestartEnableEXT(enable);
-    });
+    if (!is_begin_frame && last_pipeline_state.primitiveRestartEnable ==
+                               current_pipeline_state.primitiveRestartEnable) {
+        return;
+    }
+
+    if (!is_begin_frame) {
+        last_pipeline_state.primitiveRestartEnable = current_pipeline_state.primitiveRestartEnable;
+    }
+
+    scheduler.record(
+        [enable = last_pipeline_state.primitiveRestartEnable](vk::CommandBuffer cmdbuf) {
+            cmdbuf.setPrimitiveRestartEnableEXT(enable);
+        });
 }
 
 // 用于启用或禁用 光栅化丢弃
 void VulkanGraphics::UpdateRasterizerDiscardEnable() {
-    scheduler.record([enable = pipeline_state.rasterizerDiscardEnable](vk::CommandBuffer cmdbuf) {
-        cmdbuf.setRasterizerDiscardEnable(enable);
-    });
+    if (!is_begin_frame && last_pipeline_state.rasterizerDiscardEnable ==
+                               current_pipeline_state.rasterizerDiscardEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.rasterizerDiscardEnable =
+            current_pipeline_state.rasterizerDiscardEnable;
+    }
+    scheduler.record([enable = last_pipeline_state.rasterizerDiscardEnable](
+                         vk::CommandBuffer cmdbuf) { cmdbuf.setRasterizerDiscardEnable(enable); });
 }
 
 void VulkanGraphics::UpdateDepthBiasEnable() {
-    const bool enable = fixedPipelineState.dynamicState.depth_bias_enable;
+    if (!is_begin_frame &&
+        last_pipeline_state.depthBiasEnable == current_pipeline_state.depthBiasEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.depthBiasEnable = current_pipeline_state.depthBiasEnable;
+    }
+    const bool enable = last_pipeline_state.depthBiasEnable;
     scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBiasEnable(enable); });
 }
 
@@ -248,34 +272,66 @@ void VulkanGraphics::UpdateVertexInput() {
 }
 
 void VulkanGraphics::UpdateCullMode() {
-    scheduler.record([enabled = pipeline_state.cullMode,
-                      mode = pipeline_state.cullFace](vk::CommandBuffer cmdbuf) {
+    if (!is_begin_frame && last_pipeline_state.cullMode == current_pipeline_state.cullMode &&
+        last_pipeline_state.cullFace == current_pipeline_state.cullFace) {
+        return;
+    }
+
+    if (!is_begin_frame) {
+        last_pipeline_state.cullMode = current_pipeline_state.cullMode;
+        last_pipeline_state.cullFace = current_pipeline_state.cullFace;
+    }
+    scheduler.record([enabled = last_pipeline_state.cullMode,
+                      mode = last_pipeline_state.cullFace](vk::CommandBuffer cmdbuf) {
         cmdbuf.setCullMode(enabled ? CullFace(mode) : vk::CullModeFlagBits::eNone);
     });
 }
 
 void VulkanGraphics::UpdateDepthCompareOp() {
-    scheduler.record(
-        [op = fixedPipelineState.dynamicState.depth_test_func.Value()](vk::CommandBuffer cmdbuf) {
-            cmdbuf.setDepthCompareOp(ComparisonOp(static_cast<render::ComparisonOp>(op)));
-        });
+    if (!is_begin_frame &&
+        last_pipeline_state.depthComparison == current_pipeline_state.depthComparison) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.depthComparison = current_pipeline_state.depthComparison;
+    }
+    scheduler.record([op = last_pipeline_state.depthComparison](vk::CommandBuffer cmdbuf) {
+        cmdbuf.setDepthCompareOp(ComparisonOp(static_cast<render::ComparisonOp>(op)));
+    });
 }
 
 void VulkanGraphics::UpdateFrontFace() {
+    if (!is_begin_frame) {
+        return;
+    }
     scheduler.record(
         [](vk::CommandBuffer cmdbuf) { cmdbuf.setFrontFace(vk::FrontFace::eCounterClockwise); });
 }
 
 void VulkanGraphics::UpdateStencilOp() {
-    auto front_fail = StencilOp(pipeline_state.frontStencilOp.fail);
-    auto front_pass = StencilOp(pipeline_state.frontStencilOp.pass);
-    auto front_depth_fail = StencilOp(pipeline_state.frontStencilOp.depthFail);
-    auto front_compare = ComparisonOp(pipeline_state.frontStencilOp.compare);
-    if (pipeline_state.stencil_two_side_enable) {
-        auto back_fail = StencilOp(pipeline_state.frontStencilOp.fail);
-        auto back_pass = StencilOp(pipeline_state.frontStencilOp.pass);
-        auto back_depth_fail = StencilOp(pipeline_state.frontStencilOp.depthFail);
-        auto back_compare = ComparisonOp(pipeline_state.frontStencilOp.compare);
+    if (!is_begin_frame &&
+        last_pipeline_state.stencil_two_side_enable ==
+            current_pipeline_state.stencil_two_side_enable &&
+        last_pipeline_state.frontStencilOp == current_pipeline_state.frontStencilOp &&
+        last_pipeline_state.backStencilOp == current_pipeline_state.backStencilOp) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.stencil_two_side_enable =
+            current_pipeline_state.stencil_two_side_enable;
+        last_pipeline_state.frontStencilOp = current_pipeline_state.frontStencilOp;
+        last_pipeline_state.backStencilOp = current_pipeline_state.backStencilOp;
+    }
+
+    auto front_fail = StencilOp(last_pipeline_state.frontStencilOp.fail);
+    auto front_pass = StencilOp(last_pipeline_state.frontStencilOp.pass);
+    auto front_depth_fail = StencilOp(last_pipeline_state.frontStencilOp.depthFail);
+    auto front_compare = ComparisonOp(last_pipeline_state.frontStencilOp.compare);
+    if (last_pipeline_state.stencil_two_side_enable) {
+        auto back_fail = StencilOp(last_pipeline_state.backStencilOp.fail);
+        auto back_pass = StencilOp(last_pipeline_state.backStencilOp.pass);
+        auto back_depth_fail = StencilOp(last_pipeline_state.backStencilOp.depthFail);
+        auto back_compare = ComparisonOp(last_pipeline_state.backStencilOp.compare);
         scheduler.record([front_fail, front_pass, front_depth_fail, front_compare, back_fail,
                           back_pass, back_depth_fail, back_compare](vk::CommandBuffer cmdbuf) {
             cmdbuf.setStencilOp(vk::StencilFaceFlagBits::eFront, front_fail, front_pass,
@@ -295,7 +351,14 @@ void VulkanGraphics::UpdateStencilOp() {
 }
 
 void VulkanGraphics::UpdateDepthBoundsTestEnable() {
-    bool enabled = pipeline_state.depthBoundsTestEnable;
+    if (!is_begin_frame &&
+        last_pipeline_state.depthBoundsTestEnable == current_pipeline_state.depthBoundsTestEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.depthBoundsTestEnable = current_pipeline_state.depthBoundsTestEnable;
+    }
+    bool enabled = last_pipeline_state.depthBoundsTestEnable;
     if (enabled && !device.IsDepthBoundsSupported()) {
         SPDLOG_WARN("Depth bounds is enabled but not supported");
         enabled = false;
@@ -306,29 +369,64 @@ void VulkanGraphics::UpdateDepthBoundsTestEnable() {
 }
 
 void VulkanGraphics::UpdateDepthTestEnable() {
-    scheduler.record([enable = pipeline_state.depthTestEnable](vk::CommandBuffer cmdbuf) {
+    if (!is_begin_frame &&
+        last_pipeline_state.depthTestEnable == current_pipeline_state.depthTestEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.depthTestEnable = current_pipeline_state.depthTestEnable;
+    }
+    scheduler.record([enable = last_pipeline_state.depthTestEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthTestEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateDepthWriteEnable() {
-    scheduler.record([enable = pipeline_state.depthWriteEnable](vk::CommandBuffer cmdbuf) {
+    if (!is_begin_frame &&
+        last_pipeline_state.depthWriteEnable == current_pipeline_state.depthWriteEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.depthWriteEnable = current_pipeline_state.depthWriteEnable;
+    }
+    scheduler.record([enable = last_pipeline_state.depthWriteEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setDepthWriteEnableEXT(enable);
     });
 }
 
 void VulkanGraphics::UpdateStencilTestEnable() {
-    scheduler.record([enable = pipeline_state.stencilTestEnable](vk::CommandBuffer cmdbuf) {
+    if (!is_begin_frame &&
+        last_pipeline_state.stencilTestEnable == current_pipeline_state.stencilTestEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.stencilTestEnable = current_pipeline_state.stencilTestEnable;
+    }
+    scheduler.record([enable = last_pipeline_state.stencilTestEnable](vk::CommandBuffer cmdbuf) {
         cmdbuf.setStencilTestEnable(enable);
     });
 }
 
 void VulkanGraphics::UpdateDepthClampEnable() {
-    const auto enable = !fixedPipelineState.dynamicState.depth_clamp_disabled;
+    if (!is_begin_frame &&
+        last_pipeline_state.depthClampEnable == current_pipeline_state.depthClampEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.depthClampEnable = current_pipeline_state.depthClampEnable;
+    }
+    const auto enable = last_pipeline_state.depthClampEnable;
     scheduler.record([enable](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthClampEnableEXT(enable); });
 }
 
 void VulkanGraphics::UpdateBlending() {
+    if (!is_begin_frame &&
+        last_pipeline_state.colorBlendEnable == current_pipeline_state.colorBlendEnable) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.colorBlendEnable = current_pipeline_state.colorBlendEnable;
+    }
     std::array<vk::ColorComponentFlags, 1> setup_masks{};
     for (auto& current : setup_masks) {
         current |= vk::ColorComponentFlagBits::eR;
@@ -339,7 +437,7 @@ void VulkanGraphics::UpdateBlending() {
     scheduler.record(
         [setup_masks](vk::CommandBuffer cmdbuf) { cmdbuf.setColorWriteMaskEXT(0, setup_masks); });
     std::array<VkBool32, 1> setup_enables{VK_FALSE};
-    if (pipeline_state.colorBlendEnable) {
+    if (last_pipeline_state.colorBlendEnable) {
         setup_enables[0] = VK_TRUE;
     }
     scheduler.record([setup_enables](vk::CommandBuffer cmdbuf) {
@@ -361,26 +459,41 @@ void VulkanGraphics::UpdateBlending() {
 }
 
 void VulkanGraphics::UpdateViewportsState() {
-    auto view =
-        vk::Viewport()
-            .setX(pipeline_state.viewport.x)
-            .setY(pipeline_state.viewport.y)
-            .setWidth(pipeline_state.viewport.width == 0.f ? 1.f : pipeline_state.viewport.width)
-            .setHeight(pipeline_state.viewport.height == 0.f ? 1.f : pipeline_state.viewport.height)
-            .setMinDepth(pipeline_state.viewport.minDepth)
-            .setMaxDepth(pipeline_state.viewport.maxDepth);
+    if (!is_begin_frame && last_pipeline_state.viewport == current_pipeline_state.viewport) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.viewport = current_pipeline_state.viewport;
+    }
+    auto view = vk::Viewport()
+                    .setX(last_pipeline_state.viewport.x)
+                    .setY(last_pipeline_state.viewport.y)
+                    .setWidth(last_pipeline_state.viewport.width == 0.f
+                                  ? 1.f
+                                  : last_pipeline_state.viewport.width)
+                    .setHeight(last_pipeline_state.viewport.height == 0.f
+                                   ? 1.f
+                                   : last_pipeline_state.viewport.height)
+                    .setMinDepth(last_pipeline_state.viewport.minDepth)
+                    .setMaxDepth(last_pipeline_state.viewport.maxDepth);
     scheduler.record([view](vk::CommandBuffer cmdbuf) { cmdbuf.setViewport(0, view); });
     return;
 }
 
 void VulkanGraphics::UpdateScissorsState() {
+    if (!is_begin_frame && last_pipeline_state.scissors == current_pipeline_state.scissors) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.scissors = current_pipeline_state.scissors;
+    }
     vk::Rect2D scissor;
-    scissor.offset.x = pipeline_state.scissors.x;
-    scissor.offset.y = pipeline_state.scissors.y;
-    scissor.extent.width =
-        static_cast<u32>(pipeline_state.scissors.width != 0 ? pipeline_state.scissors.width : 1);
-    scissor.extent.height =
-        static_cast<u32>(pipeline_state.scissors.height != 0 ? pipeline_state.scissors.height : 1);
+    scissor.offset.x = last_pipeline_state.scissors.x;
+    scissor.offset.y = last_pipeline_state.scissors.y;
+    scissor.extent.width = static_cast<u32>(
+        last_pipeline_state.scissors.width != 0 ? last_pipeline_state.scissors.width : 1);
+    scissor.extent.height = static_cast<u32>(
+        last_pipeline_state.scissors.height != 0 ? last_pipeline_state.scissors.height : 1);
     scheduler.record([scissor](vk::CommandBuffer cmdbuf) { cmdbuf.setScissor(0, scissor); });
 }
 
@@ -400,25 +513,52 @@ auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config, u
 }
 
 void VulkanGraphics::UpdateDepthBias() {
+    if (!is_begin_frame) {
+        return;
+    }
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBias(0.0f, .0f, .0f); });
 }
 
 void VulkanGraphics::UpdateBlendConstants() {
-    const std::array blend_color = {pipeline_state.blendColor.r, pipeline_state.blendColor.g,
-                                    pipeline_state.blendColor.b, pipeline_state.blendColor.a};
+    if (!is_begin_frame && last_pipeline_state.blendColor == current_pipeline_state.blendColor) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.blendColor = current_pipeline_state.blendColor;
+    }
+    const std::array blend_color = {
+        last_pipeline_state.blendColor.r, last_pipeline_state.blendColor.g,
+        last_pipeline_state.blendColor.b, last_pipeline_state.blendColor.a};
     scheduler.record(
         [blend_color](vk::CommandBuffer cmdbuf) { cmdbuf.setBlendConstants(blend_color.data()); });
 }
 
 void VulkanGraphics::UpdateDepthBounds() {
+    if (!is_begin_frame) {
+        return;
+    }
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setDepthBounds(0, 1); });
 }
 
 void VulkanGraphics::UpdateStencilFaces() {
+    if (!is_begin_frame &&
+        last_pipeline_state.stencil_two_side_enable ==
+            current_pipeline_state.stencil_two_side_enable &&
+        last_pipeline_state.stencilFrontProperties ==
+            current_pipeline_state.stencilFrontProperties &&
+        last_pipeline_state.stencilBackProperties == current_pipeline_state.stencilBackProperties) {
+        return;
+    }
+    if (!is_begin_frame) {
+        last_pipeline_state.stencil_two_side_enable =
+            current_pipeline_state.stencil_two_side_enable;
+        last_pipeline_state.stencilFrontProperties = current_pipeline_state.stencilFrontProperties;
+        last_pipeline_state.stencilBackProperties = current_pipeline_state.stencilBackProperties;
+    }
     scheduler.record(
-        [two_sided = pipeline_state.stencil_two_side_enable,
-         front_ref = pipeline_state.stencilFrontProperties.ref,
-         back_ref = pipeline_state.stencilBackProperties.ref](vk::CommandBuffer cmdbuf) {
+        [two_sided = last_pipeline_state.stencil_two_side_enable,
+         front_ref = last_pipeline_state.stencilFrontProperties.ref,
+         back_ref = last_pipeline_state.stencilBackProperties.ref](vk::CommandBuffer cmdbuf) {
             const bool set_back = two_sided && front_ref != back_ref;
 
             // Front face
@@ -430,38 +570,41 @@ void VulkanGraphics::UpdateStencilFaces() {
             }
         });
 
-    scheduler.record(
-        [two_sided = pipeline_state.stencil_two_side_enable,
-         front_mask = pipeline_state.stencilFrontProperties.write_mask,
-         back_mask = pipeline_state.stencilBackProperties.write_mask](vk::CommandBuffer cmdbuf) {
-            const bool set_back = two_sided && front_mask != back_mask;
+    scheduler.record([two_sided = last_pipeline_state.stencil_two_side_enable,
+                      front_mask = last_pipeline_state.stencilFrontProperties.write_mask,
+                      back_mask = last_pipeline_state.stencilBackProperties.write_mask](
+                         vk::CommandBuffer cmdbuf) {
+        const bool set_back = two_sided && front_mask != back_mask;
 
-            // Front face
-            cmdbuf.setStencilWriteMask(
-                set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
-                front_mask);
-            if (set_back) {
-                cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, back_mask);
-            }
-        });
+        // Front face
+        cmdbuf.setStencilWriteMask(
+            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+            front_mask);
+        if (set_back) {
+            cmdbuf.setStencilWriteMask(vk::StencilFaceFlagBits::eBack, back_mask);
+        }
+    });
 
-    scheduler.record(
-        [two_sided = pipeline_state.stencil_two_side_enable,
-         front_mask = pipeline_state.stencilFrontProperties.compare_mask,
-         back_mask = pipeline_state.stencilBackProperties.compare_mask](vk::CommandBuffer cmdbuf) {
-            const bool set_back = two_sided && front_mask != back_mask;
+    scheduler.record([two_sided = last_pipeline_state.stencil_two_side_enable,
+                      front_mask = last_pipeline_state.stencilFrontProperties.compare_mask,
+                      back_mask = last_pipeline_state.stencilBackProperties.compare_mask](
+                         vk::CommandBuffer cmdbuf) {
+        const bool set_back = two_sided && front_mask != back_mask;
 
-            // Front face
-            cmdbuf.setStencilCompareMask(
-                set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
-                front_mask);
-            if (set_back) {
-                cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, back_mask);
-            }
-        });
+        // Front face
+        cmdbuf.setStencilCompareMask(
+            set_back ? vk::StencilFaceFlagBits::eFront : vk::StencilFaceFlagBits::eFrontAndBack,
+            front_mask);
+        if (set_back) {
+            cmdbuf.setStencilCompareMask(vk::StencilFaceFlagBits::eBack, back_mask);
+        }
+    });
 }
 
 void VulkanGraphics::UpdateLineWidth() {
+    if (!is_begin_frame) {
+        return;
+    }
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
@@ -499,7 +642,12 @@ auto VulkanGraphics::uploadTexture(ktxTexture* ktxTexture) -> TextureId {
 }
 
 void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
-    pipeline_state = instance.getPipelineState();
+    if (is_begin_frame) {
+        last_pipeline_state = instance.getPipelineState();
+    } else {
+        current_pipeline_state = instance.getPipelineState();
+    }
+
     pipeline_cache.setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
     current_modelId = instance.getMeshId();
     if (instance.getTextureId()) {
@@ -520,13 +668,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
     key.depth_format = surface::PixelFormat::D32_FLOAT;
     texture_cache.setCurrentFrameBuffer(key);
-    fixedPipelineState.topology.Assign(instance.getPrimitiveTopology());
-    fixedPipelineState.dynamicState.front = pipeline_state.frontStencilOp;
-    fixedPipelineState.dynamicState.back = pipeline_state.backStencilOp;
-    fixedPipelineState.dynamicState.depth_test_func.Assign(
-        static_cast<u32>(pipeline_state.depthComparison));
-    fixedPipelineState.dynamicState.depth_bias_enable.Assign(pipeline_state.depthBiasEnable);
-    fixedPipelineState.dynamicState.depth_clamp_disabled.Assign(!pipeline_state.depthClampEnable);
+    current_primitive_topology = instance.getPrimitiveTopology();
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
         instance_vertex_count = instance.getVertexCount();
@@ -568,18 +710,23 @@ void VulkanGraphics::TickFrame() {
         std::scoped_lock lock{buffer_cache.mutex};
         buffer_cache.TickFrame();
     }
+    is_begin_frame = true;
 }
 
 template <typename Func>
 void VulkanGraphics::PrepareDraw(Func&& draw_func) {
     ZoneScopedN("VulkanGraphics::PrepareDraw()");
-    GraphicsPipeline* const pipeline{pipeline_cache.currentGraphicsPipeline(fixedPipelineState)};
+    GraphicsPipeline* const pipeline{
+        pipeline_cache.currentGraphicsPipeline(current_primitive_topology)};
     if (!pipeline) {
         return;
     }
     std::scoped_lock lock{buffer_cache.mutex, texture_cache.mutex};
     pipeline->Configure();
     UpdateDynamicStates();
+    if (is_begin_frame) {
+        is_begin_frame = false;
+    }
     draw_func();
     FlushWork();
 }
@@ -601,6 +748,7 @@ void VulkanGraphics::FlushWork() {
     // This submits commands to the Vulkan driver.
     scheduler.flush();
     draw_counter = 0;
+    is_begin_frame = true;
 }
 
 }  // namespace render::vulkan

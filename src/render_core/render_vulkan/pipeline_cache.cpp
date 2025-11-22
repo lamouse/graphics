@@ -159,15 +159,14 @@ void PipelineCache::updateShaderHash() {
     graphics_key.unique_hashes.at(static_cast<u8>(ShaderType::Fragment)) =
         shader_infos.at(static_cast<u8>(ShaderType::Fragment))->unique_hash;
 }
-void PipelineCache::updatePipelineKeyState(const FixedPipelineState& state) {
+void PipelineCache::updatePipelineKeyState(PrimitiveTopology topology) {
     graphics_key.state.Refresh(dynamic_features);
-    graphics_key.state.topology.Assign(state.topology);
+    graphics_key.state.topology.Assign(topology);
     graphics_key.state.msaa_mode.Assign(MsaaMode::Msaa1x1);
-    //graphics_key.state.dynamicState = state.dynamicState;
 }
-auto PipelineCache::currentGraphicsPipeline(const FixedPipelineState& state) -> GraphicsPipeline* {
+auto PipelineCache::currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline* {
     updateShaderHash();
-    updatePipelineKeyState(state);
+    updatePipelineKeyState(topology);
     if (current_pipeline) {
         GraphicsPipeline* const next{current_pipeline->Next(graphics_key)};
         if (next) {
