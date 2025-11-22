@@ -11,23 +11,9 @@
 #include "filters.hpp"
 #include "common/settings.hpp"
 #include "vulkan_utils.hpp"
-#include "render_core/surface.hpp"
-#include "common/alignment.h"
 #include "render_core/render_vulkan/vk_graphic.hpp"
 
 namespace render::vulkan {
-namespace {
-
-auto GetBytesPerPixel() -> u32 {
-    using namespace surface;
-    return BytesPerBlock(PixelFormat::A8B8G8R8_UNORM);
-}
-auto GetSizeInBytes(const frame::FramebufferConfig& framebuffer) -> std::size_t {
-    return static_cast<std::size_t>(common::AlignUpLog2(framebuffer.width, framebuffer.stride)) *
-           static_cast<std::size_t>(framebuffer.height) * GetBytesPerPixel();
-}
-
-}  // namespace
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
              scheduler::Scheduler& scheduler_, size_t image_count_, vk::Extent2D output_size,
              vk::DescriptorSetLayout layout)
@@ -53,28 +39,8 @@ void Layer::CreateDescriptorSets(vk::DescriptorSetLayout layout) {
     descriptor_sets = present::utils::CreateWrappedDescriptorSets(descriptor_pool, layouts);
 }
 
-void Layer::CreateStagingBuffer(const frame::FramebufferConfig& framebuffer) {
-    const VkBufferCreateInfo ci{
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .size = CalculateBufferSize(framebuffer),
-        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .queueFamilyIndexCount = 0,
-        .pQueueFamilyIndices = nullptr,
-    };
-
-    buffer = memory_allocator.createBuffer(ci, MemoryUsage::Upload);
-}
-
-auto Layer::CalculateBufferSize(const frame::FramebufferConfig& framebuffer) const -> u64 {
-    return GetSizeInBytes(framebuffer) * image_count;
-}
-
 void Layer::CreateRawImages(const frame::FramebufferConfig& framebuffer) {
-    const auto format = vk::Format::eA8B8G8R8UnormPack32;  // TODO 有时间处理
+    const auto format = vk::Format::eB8G8R8A8Unorm;  // TODO 有时间处理
     resource_ticks.resize(image_count);
     raw_images.resize(image_count);
     raw_image_views.resize(image_count);
@@ -104,7 +70,6 @@ void Layer::RefreshResources(const frame::FramebufferConfig& framebuffer) {
     anti_alias.reset();
 
     ReleaseRawImages();
-    CreateStagingBuffer(framebuffer);
     CreateRawImages(framebuffer);
 }
 
@@ -140,12 +105,6 @@ void Layer::ReleaseRawImages() {
         scheduler.wait(tick);
     }
     raw_images.clear();
-    buffer.reset();
-}
-
-auto Layer::GetRawImageOffset(const frame::FramebufferConfig& framebuffer, size_t image_index) const
-    -> u64 {
-    return GetSizeInBytes(framebuffer) * image_index;
 }
 
 void Layer::SetMatrixData(PresentPushConstants& data,

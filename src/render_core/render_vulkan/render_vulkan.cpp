@@ -74,6 +74,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     if (!window_->IsShown()) {
         return;
     }
+
     Frame* frame = present_manager.getRenderFrame();
 
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
@@ -85,6 +86,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);
     vulkan_graphics.TickFrame();
+    vulkan_graphics.clean();
 }
 
 }  // namespace render::vulkan

@@ -33,7 +33,6 @@ class Layer final {
     private:
         void CreateDescriptorPool();
         void CreateDescriptorSets(vk::DescriptorSetLayout layout);
-        void CreateStagingBuffer(const frame::FramebufferConfig& framebuffer);
         void CreateRawImages(const frame::FramebufferConfig& framebuffer);
         void CreateFSR(vk::Extent2D output_size);
 
@@ -41,18 +40,12 @@ class Layer final {
         void SetAntiAliasPass();
         void ReleaseRawImages();
 
-        [[nodiscard]] auto CalculateBufferSize(const frame::FramebufferConfig& framebuffer) const
-            -> u64;
-        [[nodiscard]] auto GetRawImageOffset(const frame::FramebufferConfig& framebuffer,
-                                             size_t image_index) const -> u64;
-
         void SetMatrixData(PresentPushConstants& data,
                            const layout::FrameBufferLayout& layout) const;
         void SetVertexData(PresentPushConstants& data, const layout::FrameBufferLayout& layout,
                            const common::Rectangle<f32>& crop) const;
         void UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, size_t image_index);
 
-    private:
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;
@@ -60,7 +53,6 @@ class Layer final {
         VulkanDescriptorPool descriptor_pool;
         DescriptorSets descriptor_sets;
 
-        Buffer buffer;
         std::vector<Image> raw_images;
         std::vector<ImageView> raw_image_views;
         u32 raw_width;

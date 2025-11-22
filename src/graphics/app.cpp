@@ -130,7 +130,6 @@ void App::run() {
         }
 
         // TODO 添加clear value
-        graphics->clean();
         frameInfo.clean();
     }
 }
