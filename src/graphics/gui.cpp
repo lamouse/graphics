@@ -203,8 +203,8 @@ void pipeline_state(render::DynamicPipelineState& state) {
     ImGui::Separator();
     ImGui::NewLine();
     ImGui::Text("scissors");
-    ImGui::DragInt2("Pos (x,y)", &state.scissors.x, 1, 1);
-    ImGui::DragInt2("Size (w,h)", &state.scissors.width, 1, 1);
+    ImGui::DragInt2("Pos(x,y)", &state.scissors.x, 1, 0, std::numeric_limits<int>::max());
+    ImGui::DragInt2("Size(w,h)", &state.scissors.width, 1, 1, std::numeric_limits<int>::max());
     ImGui::NewLine();
     ImGui::Separator();
     ImGui::NewLine();
