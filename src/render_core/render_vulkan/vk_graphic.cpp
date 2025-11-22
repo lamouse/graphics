@@ -515,8 +515,8 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
     }
 
     texture::FramebufferKey key;
-    key.size.width = emu_window->getActiveConfig().extent.width;
-    key.size.height = emu_window->getActiveConfig().extent.height;
+    key.size.width = 1920;
+    key.size.height = 1080;
     key.size.depth = 1;
     std::ranges::fill(key.color_formats, render::surface::PixelFormat::Invalid);
     key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
