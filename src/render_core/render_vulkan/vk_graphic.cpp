@@ -81,9 +81,7 @@ void VulkanGraphics::clean() {
 }
 
 void VulkanGraphics::clear() {
-    auto config = emu_window->getActiveConfig();
-    const vk::Extent2D render_area{static_cast<std::uint32_t>(config.extent.width),
-                                   static_cast<std::uint32_t>(config.extent.height)};
+    const vk::Extent2D render_area{1920, 1080};
 
     auto clear_value =
         vk::ClearValue().setColor(vk::ClearColorValue().setFloat32({1.f, 1.f, 1.f, 1.0F}));
