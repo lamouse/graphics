@@ -3,6 +3,7 @@
 #include "common/common_funcs.hpp"
 #include "core/frame_info.hpp"
 #include "effects/effect.hpp"
+#include "world/world.hpp"
 namespace graphics::effects {
 struct SkyUBO {
         glm::mat4 modelMatrix{1.f};
@@ -19,16 +20,6 @@ class SkyBox {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
 
-            std::vector<std::string> cube_map_images = {
-                "images/cube/sky/posx.jpg", "images/cube/sky/negx.jpg", "images/cube/sky/posy.jpg",
-                "images/cube/sky/negy.jpg", "images/cube/sky/posz.jpg", "images/cube/sky/negz.jpg"};
-
-            std::vector<std::string> cube_map_images2 = {
-                "images/cube/sky2/right.jpg", "images/cube/sky2/left.jpg",
-                "images/cube/sky2/top.jpg",   "images/cube/sky2/bottom.jpg",
-                "images/cube/sky2/front.jpg", "images/cube/sky2/back.jpg"};
-
-            // auto texture_id = manager.addCubeMapTexture(cube_map_images2, "skybox2");
             auto ret_id = manager.addKtxTexture("images/cube/sky2.ktx2");
             std::string mesh_path = "cube.obj";
             auto mesh_id = manager.addModel(mesh_path);
@@ -51,7 +42,7 @@ class SkyBox {
 
         }
 
-        void update(const core::FrameInfo& frameInfo) {
+        void update(const core::FrameInfo& frameInfo, world::World& /*world*/) {
             glm::mat4 view = frameInfo.camera->getView();
             glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(view));  // 去除平移
             sky_box.getUBO<SkyUBO>().modelMatrix = viewNoTranslate;

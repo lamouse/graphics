@@ -42,7 +42,6 @@ auto getRuntime() -> FrameTime {
 
 void App::run() {
     load_resource();
-    std::vector<effects::LightModel> models;
     const auto frame_layout = window->getFramebufferLayout();
     core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
@@ -76,12 +75,13 @@ void App::run() {
         camera = cameraComponent.getCamera();
         frameInfo.camera = &camera;
         auto [duration, frame] = getRuntime();
-        frameInfo.frameTime = duration;
+        frameInfo.frameTime = frame;
+        frameInfo.durationTime = duration;
         frameInfo.resource_manager = &resourceManager;
         frameInfo.window_width = window->getActiveConfig().extent.width;
         frameInfo.window_hight = window->getActiveConfig().extent.height;
         if (input_event.empty()) {
-            registry.updateAll(frameInfo);
+            registry.updateAll(frameInfo, world);
         }
         while (auto e = input_event.pop_event()) {
             if (e->key == core::InputKey::Insert) {
@@ -96,15 +96,13 @@ void App::run() {
             }
             CameraSystem::update(cameraComponent, e.value(), frame);
             frameInfo.input_state = e.value();
-            registry.updateAll(frameInfo);
+            registry.updateAll(frameInfo, world);
         }
 
         registry.drawAll(graphics);
 
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
-
-        auto imageId = graphics->getDrawImage();
 
         if (show_debug_ui) {
             if (shaders_building > 0) {
@@ -115,7 +113,7 @@ void App::run() {
             statusData.registry_count = static_cast<int>(registry.size());
             statusData.mouseX_ = current_mouse_X;
             statusData.mouseY_ = current_mouse_Y;
-
+            auto imageId = graphics->getDrawImage();
             auto ui_fun = [&]() -> void {
                 ui::show_menu(menu_data);
                 draw_setting(menu_data.show_system_setting);
@@ -129,8 +127,8 @@ void App::run() {
             render_base->composite(std::span{&frames, 1});
         }
 
-        // TODO 添加clear value
         frameInfo.clean();
+        world.cleanLight();
     }
 }
 
@@ -161,16 +159,22 @@ void App::load_resource() {
                             .mesh_name = viking_obj_path,
                             .texture_name = viking_room_path};
 
-    auto light_model =
-        std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
-    registry.add(light_model);
-
-    auto point_light = std::make_shared<effects::PointLightEffect>(resourceManager, frame_layout);
-    registry.add(point_light);
+    std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
+                                 glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
+                                 glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
+                                 glm::vec3{1.f, 1.f, 1.f}};
+    for (size_t i = 0; i < light_colors.size(); ++i) {
+        auto point_light = std::make_shared<effects::PointLightEffect>(
+            resourceManager, frame_layout, 2, .04f, light_colors[i]);
+        registry.add(point_light);
+    }
 
     // auto delta_particle =
     //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
     // registry.add(delta_particle);
+    auto light_model =
+        std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
+    registry.add(light_model);
     auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
     registry.add(sky_box);
 }

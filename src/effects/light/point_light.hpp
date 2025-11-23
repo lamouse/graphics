@@ -6,6 +6,7 @@
 #include "effects/effect.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/light_component.hpp"
+#include "world/world.hpp"
 #define MAX_LIGHTS 10
 namespace graphics::effects {
 struct PointLight {
@@ -34,17 +35,18 @@ class PointLightEffect {
     public:
         PointLightEffect(graphics::ResourceManager& manager,
                          const layout::FrameBufferLayout& layout, float intensity = 10.f,
-                         float radius = .4f, glm::vec3 color_ = glm::vec3(.2f, .3f, .4f))
+                         float radius = .02f, glm::vec3 color_ = glm::vec3(1.f, 1.f, 1.f))
             : id(getCurrentId()) {
             auto hash = manager.getShaderHash<ShaderHash>("point_light");
             point_light = PointLightInstance{{}, hash, layout, "PointLightInstance"};
             auto rotateLight =
-                glm::rotate(glm::mat4(1.f), (1 * glm::two_pi<float>()) / 7, {0.f, -1.f, 0.f});
+                glm::rotate(glm::mat4(1.f), (static_cast<float>(id) * glm::two_pi<float>()) / 7,
+                            {0.f, -1.f, 0.f});
             point_light.setVertexCount(6);
-            entity_ = getEffectsScene().createEntity("PointLight" + std::to_string(id));
+            entity_ = getEffectsScene().createEntity("PointLight: " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             ecs::TransformComponent transformComponent{};
-            transformComponent.translation  = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+            transformComponent.translation = glm::vec3(rotateLight * glm::vec4(-2.f, .0f, -1.f, 1.f));
             entity_.addComponent<ecs::TransformComponent>(transformComponent);
 
             ecs::LightComponent lightComponent{};
@@ -57,32 +59,27 @@ class PointLightEffect {
         CLASS_NON_COPYABLE(PointLightEffect);
         CLASS_DEFAULT_MOVEABLE(PointLightEffect);
 
-        void update(const core::FrameInfo& frameInfo) {
-            // 2. 定义旋转参数
-            constexpr float angularSpeed = 1.4f;  // 弧度/秒
-            constexpr float radius = 2.0f;        // 旋转半径
-                                                  // 3. 计算当前角度（绝对角度，不是增量！）
-            float angle = angularSpeed * frameInfo.frameTime;
+        void update(const core::FrameInfo& frameInfo, world::World& world) {
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
+            constexpr float angularSpeed = .5f;  // 弧度/秒
+            float angle = angularSpeed * frameInfo.frameTime;
             // 4. 构造旋转矩阵（绕 Y 轴）
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
             // 5. 初始偏移向量（在 XZ 平面）
-            glm::vec4 localOffset(radius, 0.0f, 0.0f, 1.0f);
+            glm::vec4 localOffset(transform.translation, 1.f);
 
-            // 6. 计算世界位置：center + 旋转后的偏移
-            glm::vec3 newPosition = glm::vec3(rotation * localOffset);
-
-            transform.translation = newPosition;
+            transform.translation =  glm::vec3(rotation * localOffset);
             point_light.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
             point_light.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
-            point_light.getUBO<PointLightUbo>().pointLights[0].position =
-                glm::vec4(transform.translation, 1.f);
+
+            world.addLightEntity(entity_);
         }
         void draw(render::Graphic* graphic) {
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
             auto lightComponent = entity_.getComponent<ecs::LightComponent>();
             point_light.PushConstant().position = glm::vec4(transform.translation, 1.f);
-            point_light.PushConstant().color = glm::vec4(lightComponent.color, lightComponent.intensity);
+            point_light.PushConstant().color =
+                glm::vec4(lightComponent.color, lightComponent.intensity);
             point_light.PushConstant().radius = lightComponent.range;
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 graphic->draw(point_light);
@@ -94,7 +91,6 @@ class PointLightEffect {
         }
 
     private:
-
         using PointLightInstance =
             MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles,
                          PointLightUbo>;

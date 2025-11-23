@@ -5,6 +5,7 @@
 #include <utility>
 #include "ecs/scene/entity.hpp"
 #include "gui.hpp"
+#include "world/world.hpp"
 
 // 前向声明
 namespace core {
@@ -18,8 +19,8 @@ class Graphic;
 namespace graphics {
 // 概念约束
 template <typename T>
-concept DrawableLike = requires(T t, const core::FrameInfo& info, render::Graphic* gfx) {
-    { t->update(info) } -> std::same_as<void>;
+concept DrawableLike = requires(T t, const core::FrameInfo& info, world::World& world, render::Graphic* gfx) {
+    { t->update(info, world) } -> std::same_as<void>;
     { t->draw(gfx) } -> std::same_as<void>;
 };
 
@@ -38,14 +39,14 @@ concept HasValueECSInterface = requires(T t) {
 class RenderRegistry {
     private:
         struct Drawable {
-                std::function<void(const core::FrameInfo&)> update;
+                std::function<void(const core::FrameInfo&, world::World&)> update;
                 std::function<void(render::Graphic*)> draw;
 
                 // 构造函数：接受任何满足 DrawableLike 的类型
                 template <DrawableLike T>
                 explicit Drawable(T&& obj)
                     : update([o = std::forward<T>(obj)](
-                                 const core::FrameInfo& info) mutable -> auto { o->update(info); }),
+                                 const core::FrameInfo& info, world::World& world) mutable -> auto { o->update(info, world); }),
                       draw([o = std::forward<T>(obj)](render::Graphic* gfx) mutable -> auto {
                           o->draw(gfx);
                       }) {}
@@ -99,9 +100,9 @@ class RenderRegistry {
         }
 
         // 统一更新和绘制
-        void updateAll(const core::FrameInfo& info) {
+        void updateAll(const core::FrameInfo& info, world::World& world) {
             for (auto& obj : objects_) {
-                obj.update(info);
+                obj.update(info, world);
             }
         }
 

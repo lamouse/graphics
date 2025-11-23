@@ -1,6 +1,7 @@
 #pragma once
 #include "effects/light/point_light.hpp"
 #include "ecs/components/transform_component.hpp"
+#include "world/world.hpp"
 namespace graphics::effects {
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform);
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform,
@@ -42,13 +43,13 @@ class LightModel {
             entity_.addComponent<ecs::TransformComponent>();
         }
 
-        void update(const core::FrameInfo& frameInfo) {
+        void update(const core::FrameInfo& frameInfo, world::World& world) {
             const auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
             auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
 
-            //transform.rotation.x = 4.8f;
+            // transform.rotation.x = 4.8f;
 
             if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
                 render_state.mouse_select = false;
@@ -84,22 +85,29 @@ class LightModel {
                     check_pick(id, meshes[0].getMeshId(), frameInfo, render_state, transform);
                 }
                 if (render_state.mouse_select) {
-                    move_model(frameInfo, transform, true, out_initialWorldZ, out_dragStartWorldPos);
+                    move_model(frameInfo, transform, true, out_initialWorldZ,
+                               out_dragStartWorldPos);
                 }
                 pending_pick_ = false;
             }
-            PointLight light{};
-            light.color = {1.f, 1.f, 1.f, 1.f};
-            light.position = {2.0f, 1.0f, 1.f, .4};
 
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
-                mesh.getUBO<PointLightUbo>().numLights = 1;
                 mesh.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
                 mesh.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
-                mesh.getUBO<PointLightUbo>().ambientLightColor.w = 1.f;
-                mesh.getUBO<PointLightUbo>().pointLights[0] = light;
+
+                auto light_entity = world.getLightEntities();
+                for (int index = 0; const auto& entity : light_entity) {
+                    PointLight light{};
+                    auto& lightComponent = entity.getComponent<ecs::LightComponent>();
+                    auto& light_transform = entity.getComponent<ecs::TransformComponent>();
+                    light.color = {lightComponent.color, lightComponent.intensity};
+                    light.position = {light_transform.translation, 1.0f};
+                    mesh.getUBO<PointLightUbo>().numLights = index + 1;
+                    mesh.getUBO<PointLightUbo>().pointLights[index] = light;
+                    index++;
+                }
             }
         }
 

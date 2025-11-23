@@ -20,6 +20,10 @@ World::World() {
     }
 }
 
+void World::addLightEntity(const ecs::Entity& entity) { lightEntity_.emplace_back(entity); }
+
+[[nodiscard]] auto World::getScene() -> ecs::Scene& { return scene_; }
+
 World::~World() = default;
 
 }  // namespace world
