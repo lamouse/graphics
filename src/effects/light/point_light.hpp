@@ -67,9 +67,7 @@ class PointLightEffect {
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
             constexpr float angularSpeed = .5f;  // 弧度/秒
             float angle = angularSpeed * frameInfo.frameTime;
-            // 4. 构造旋转矩阵（绕 Y 轴）
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-            // 5. 初始偏移向量（在 XZ 平面）
             glm::vec4 localOffset(transform.translation, 1.f);
 
             transform.translation =  glm::vec3(rotation * localOffset);
