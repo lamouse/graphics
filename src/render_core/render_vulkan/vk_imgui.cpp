@@ -8,7 +8,6 @@
 
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
-#include "present/vulkan_utils.hpp"
 #include "present_manager.hpp"
 #include "scheduler.hpp"
 #include "common/settings.hpp"
@@ -111,7 +110,7 @@ void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
             vk::RenderingAttachmentInfo()
                 .setImageView(view)
                 .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-                .setLoadOp(vk::AttachmentLoadOp::eClear)
+                .setLoadOp(vk::AttachmentLoadOp::eLoad)
                 .setStoreOp(vk::AttachmentStoreOp::eStore)
                 .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f}));
         vk::RenderingInfo renderingInfo{};
