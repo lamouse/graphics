@@ -12,6 +12,10 @@ namespace graphics::effects {
 struct PointLight {
         glm::vec4 position{};  // ignore w
         glm::vec4 color{};     // w is intensity
+        CLASS_DEFAULT_COPYABLE(PointLight);
+        CLASS_DEFAULT_MOVEABLE(PointLight);
+        PointLight() = default;
+        ~PointLight() = default;
 };
 
 struct PointLightUbo {

@@ -30,10 +30,11 @@ class IMeshInstance {
         virtual ~IMeshInstance() = default;
         CLASS_DEFAULT_COPYABLE(IMeshInstance);
         CLASS_DEFAULT_MOVEABLE(IMeshInstance);
-        IMeshInstance(render::RenderCommand render_command_, render::MeshId meshId_,
-                      render::TextureId textureId_, std::uint64_t vertex_shader_hash_,
-                      std::uint64_t fragment_shader_hash_)
-            : render_command(render_command_),
+        IMeshInstance(render::PrimitiveTopology topology_, render::RenderCommand render_command_,
+                      render::MeshId meshId_, render::TextureId textureId_,
+                      std::uint64_t vertex_shader_hash_, std::uint64_t fragment_shader_hash_)
+            : topology(topology_),
+            render_command(render_command_),
               textureId(textureId_),
               meshId(meshId_),
               vertex_shader_hash(vertex_shader_hash_),
@@ -52,7 +53,9 @@ class IMeshInstance {
         [[nodiscard]] auto getVertexCount() const -> std::int32_t { return vertex_count; }
         [[nodiscard]] void setVertexCount(std::int32_t count) { vertex_count = count; }
         [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
-        [[nodiscard]] virtual auto getPrimitiveTopology() const -> render::PrimitiveTopology = 0;
+        [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology {
+            return topology;
+        }
         [[nodiscard]] virtual auto getPipelineState() const -> render::DynamicPipelineState = 0;
         [[nodiscard]] virtual auto getUBOs() const -> std::vector<std::span<const std::byte>> = 0;
         void setTextureId(render::TextureId id_) { textureId = id_; }
@@ -74,6 +77,7 @@ class IMeshInstance {
         }
 
     protected:
+        render::PrimitiveTopology topology;
         render::RenderCommand render_command;
         render::TextureId textureId;
         render::MeshId meshId;

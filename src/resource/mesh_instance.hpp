@@ -48,9 +48,6 @@ class MeshInstance : public IMeshInstance {
         [[nodiscard]] auto getPushConstants() const -> std::span<const std::byte> override {
             return push_constants.as_byte_span();
         };
-        [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology override {
-            return topology;
-        }
         [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
             return entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;
         }
@@ -106,20 +103,20 @@ class MeshInstance : public IMeshInstance {
         MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
                      const layout::FrameBufferLayout& layout, const std::string& meshName = "",
                      render::MeshId meshId_ = {}, render::TextureId textureId_ = {})
-            : IMeshInstance(render_command_, meshId_, textureId_, shaderHash_.vertex,
+            : IMeshInstance(primitiveTopology, render_command_, meshId_, textureId_, shaderHash_.vertex,
                             shaderHash_.fragment) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
+
         }
         MeshInstance() = default;
 
     private:
         UBOs ubos{};
         PushConstants push_constants;
-        render::PrimitiveTopology topology = primitiveTopology;
 };
 
 }  // namespace graphics

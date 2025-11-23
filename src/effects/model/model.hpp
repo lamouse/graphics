@@ -91,23 +91,33 @@ class LightModel {
                 pending_pick_ = false;
             }
 
+            auto light_entity = world.getLightEntities();
+            PointLightUbo pointLightUbo{};
+            pointLightUbo.projection = frameInfo.camera->getProjection();
+            pointLightUbo.view = frameInfo.camera->getView();
+            for (int index = 0; const auto& entity : light_entity) {
+                PointLight light{};
+                auto& lightComponent = entity.getComponent<ecs::LightComponent>();
+                auto& light_transform = entity.getComponent<ecs::TransformComponent>();
+                light.color = {lightComponent.color, lightComponent.intensity};
+                light.position = {light_transform.translation, 1.0f};
+                pointLightUbo.numLights = index + 1;
+                pointLightUbo.pointLights[index] = light;
+                index++;
+                if (index >= MAX_LIGHTS) {
+                    break;
+                }
+            }
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
-                mesh.getUBO<PointLightUbo>().projection = frameInfo.camera->getProjection();
-                mesh.getUBO<PointLightUbo>().view = frameInfo.camera->getView();
-
-                auto light_entity = world.getLightEntities();
-                for (int index = 0; const auto& entity : light_entity) {
-                    PointLight light{};
-                    auto& lightComponent = entity.getComponent<ecs::LightComponent>();
-                    auto& light_transform = entity.getComponent<ecs::TransformComponent>();
-                    light.color = {lightComponent.color, lightComponent.intensity};
-                    light.position = {light_transform.translation, 1.0f};
-                    mesh.getUBO<PointLightUbo>().numLights = index + 1;
-                    mesh.getUBO<PointLightUbo>().pointLights[index] = light;
-                    index++;
+                mesh.getUBO<PointLightUbo>().projection = pointLightUbo.projection;
+                mesh.getUBO<PointLightUbo>().view = pointLightUbo.view;
+                for (int i = 0; const auto& light : pointLightUbo.pointLights) {
+                    mesh.getUBO<PointLightUbo>().pointLights[i] = light;
+                    i++;
                 }
+                mesh.getUBO<PointLightUbo>().numLights = pointLightUbo.numLights;
             }
         }
 
