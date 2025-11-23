@@ -95,19 +95,20 @@ class LightModel {
             PointLightUbo pointLightUbo{};
             pointLightUbo.projection = frameInfo.camera->getProjection();
             pointLightUbo.view = frameInfo.camera->getView();
-            for (int index = 0; const auto& entity : light_entity) {
+            int index = 0;
+            for (const auto& entity : light_entity) {
                 PointLight light{};
                 auto& lightComponent = entity.getComponent<ecs::LightComponent>();
                 auto& light_transform = entity.getComponent<ecs::TransformComponent>();
                 light.color = {lightComponent.color, lightComponent.intensity};
                 light.position = {light_transform.translation, 1.0f};
-                pointLightUbo.numLights = index + 1;
                 pointLightUbo.pointLights[index] = light;
                 index++;
                 if (index >= MAX_LIGHTS) {
                     break;
                 }
             }
+            pointLightUbo.numLights = index + 1;
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
