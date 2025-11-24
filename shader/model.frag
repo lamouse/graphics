@@ -10,7 +10,7 @@ layout (location = 3) in vec2 fragTexCoord;  // 新增：纹理坐标
 layout (location = 0) out vec4 outColor;
 
 // 纹理采样器
-layout(binding = 1) uniform sampler2D texSampler;
+layout(binding = 2) uniform sampler2D texSampler;
 
 // 光照相关的 Uniform Buffer
 struct PointLight {
@@ -27,11 +27,20 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     int numLights;
 } ubo;
 
+layout(set = 0, binding = 1) uniform Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+}material;
+
+
 // 模型变换矩阵（来自 Push Constant）
 layout(push_constant) uniform Push {
     mat4 modelMatrix;
     mat4 normalMatrix;
 } push;
+
 
 void main() {
     // 步骤 1: 计算基础颜色（来自顶点颜色 or 纹理 or 混合）
@@ -71,13 +80,13 @@ void main() {
         vec3 intensity = light.color.xyz * light.color.w * attenuation;
 
         // 漫反射
-        diffuseLight += intensity * cosAngIncidence;
+        diffuseLight += intensity * cosAngIncidence * material.diffuse;
 
         // 高光（Blinn-Phong）
         vec3 halfAngle = normalize(directionToLight + viewDirection);
         float blinnTerm = max(dot(surfaceNormal, halfAngle), 0.0);
-        blinnTerm = pow(blinnTerm, 512.0); // 可提取为 uniform 控制 shininess
-        specularLight += intensity * blinnTerm;
+        blinnTerm = pow(blinnTerm, material.shininess); // 可提取为 uniform 控制 shininess
+        specularLight += intensity * blinnTerm * material.specular;
     }
 
     // 步骤 3: 最终颜色 = (漫反射 + 高光) * baseColor

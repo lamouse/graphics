@@ -209,26 +209,44 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 
             // 颜色
             aiColor3D ka(1.f, 1.f, 1.f), kd(1.f, 1.f, 1.f), ks(1.f, 1.f, 1.f), ke(0.f, 0.f, 0.f);
-            material->Get(AI_MATKEY_COLOR_AMBIENT, ka);
-            mat.ambientColor = {ka.r, ka.g, ka.b};
-            material->Get(AI_MATKEY_COLOR_DIFFUSE, kd);
-            mat.diffuseColor = {kd.r, kd.g, kd.b};
-            material->Get(AI_MATKEY_COLOR_SPECULAR, ks);
-            mat.specularColor = {ks.r, ks.g, ks.b};
-            material->Get(AI_MATKEY_COLOR_EMISSIVE, ke);
-            mat.emissiveColor = {ke.r, ke.g, ke.b};
+            if (material->Get(AI_MATKEY_COLOR_AMBIENT, ka) == AI_SUCCESS && !ka.IsBlack()) {
+                mat.ambientColor = {ka.r, ka.g, ka.b};
+            };
 
+            if (material->Get(AI_MATKEY_COLOR_DIFFUSE, kd) == AI_SUCCESS && !kd.IsBlack()) {
+                mat.diffuseColor = {kd.r, kd.g, kd.b};
+            }
+            if (material->Get(AI_MATKEY_COLOR_SPECULAR, ks) == AI_SUCCESS && !ks.IsBlack()) {
+                mat.specularColor = {ks.r, ks.g, ks.b};
+            }
+
+            if (material->Get(AI_MATKEY_COLOR_EMISSIVE, ke) == AI_SUCCESS && !ke.IsBlack()) {
+                mat.emissiveColor = {ke.r, ke.g, ke.b};
+            }
             // 标量
-            material->Get(AI_MATKEY_SHININESS, mat.shininess);
-            material->Get(AI_MATKEY_OPACITY, mat.opacity);
-            material->Get(AI_MATKEY_REFRACTI, mat.ior);
+            ai_real shininess = NAN;
+            if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS && !std::isnan(shininess)) {
+                if(shininess > .0f){
+                    mat.shininess = shininess;
+                }
+            }
+
+            ai_real opacity = NAN;
+            if (material->Get(AI_MATKEY_OPACITY, opacity) == AI_SUCCESS  && !std::isnan(opacity)) {
+                mat.opacity = opacity;
+            }
+            ai_real ior = NAN;
+            if (material->Get(AI_MATKEY_REFRACTI, ior) == AI_SUCCESS && !std::isnan(ior)) {
+                mat.ior = ior;
+            }
+
             ai_real value = NAN;
-            if (material->Get(AI_MATKEY_METALLIC_FACTOR, value) == AI_SUCCESS) {
+            if (material->Get(AI_MATKEY_METALLIC_FACTOR, value) == AI_SUCCESS && !std::isnan(value)) {
                 mat.metallic = static_cast<float>(value);
             }
 
             ai_real roughness_value = NAN;
-            if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness_value) == AI_SUCCESS) {
+            if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness_value) == AI_SUCCESS && !std::isnan(roughness_value)) {
                 mat.roughness = static_cast<float>(roughness_value);
             }
 
@@ -291,8 +309,8 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) ->
 
     Assimp::Importer importer;
     constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs |
-                                       aiProcess_JoinIdenticalVertices |
-                                       aiProcess_GenNormals | aiProcess_EmbedTextures;
+                                       aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
+                                       aiProcess_EmbedTextures;
     // NOLINTNEXTLINE
     const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||

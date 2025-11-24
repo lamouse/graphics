@@ -17,6 +17,14 @@ struct ModelPushConstantData {
         AS_BYTE_SPAN
 };
 
+struct MaterialUBO {
+        glm::vec4 ambient{};
+        glm::vec4 diffuse{};
+        glm::vec3 specular{};
+        float shininess{32.f};
+        AS_BYTE_SPAN
+};
+
 class LightModel {
     public:
         LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
@@ -37,6 +45,10 @@ class LightModel {
                         .indexCount = mesh.indexCount,
                     },
                     shader_hash, layout, name + "mesh", mesh_id, texture_id);
+                meshes.back().getUBO<MaterialUBO>().ambient = {mesh.material.ambientColor, 1.f};
+                meshes.back().getUBO<MaterialUBO>().diffuse = {mesh.material.diffuseColor, 1.f};
+                meshes.back().getUBO<MaterialUBO>().specular = mesh.material.specularColor;
+                meshes.back().getUBO<MaterialUBO>().shininess = mesh.material.shininess;
             }
             entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
@@ -74,9 +86,6 @@ class LightModel {
                 }
             }
 
-            auto modelMatrix = transform.mat4();
-            auto normalMatrix = transform.normalMatrix();
-
             if (first) {
                 pending_pick_ = true;
             } else {
@@ -95,6 +104,8 @@ class LightModel {
             PointLightUbo pointLightUbo{};
             pointLightUbo.projection = frameInfo.camera->getProjection();
             pointLightUbo.view = frameInfo.camera->getView();
+            pointLightUbo.inverseView = frameInfo.camera->getView();
+            pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .02f};
             int index = 0;
             for (const auto& entity : light_entity) {
                 PointLight light{};
@@ -108,12 +119,16 @@ class LightModel {
                     break;
                 }
             }
-            pointLightUbo.numLights = index + 1;
+            auto modelMatrix = transform.mat4();
+            auto normalMatrix = transform.normalMatrix();
+            pointLightUbo.numLights = index;
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
                 mesh.getUBO<PointLightUbo>().projection = pointLightUbo.projection;
                 mesh.getUBO<PointLightUbo>().view = pointLightUbo.view;
+                mesh.getUBO<PointLightUbo>().inverseView = pointLightUbo.inverseView;
+                mesh.getUBO<PointLightUbo>().ambientLightColor = pointLightUbo.ambientLightColor;
                 for (int i = 0; const auto& light : pointLightUbo.pointLights) {
                     mesh.getUBO<PointLightUbo>().pointLights[i] = light;
                     i++;
@@ -144,8 +159,9 @@ class LightModel {
         ecs::Entity entity_;
 
     private:
-        using LightMeshInstance = MeshInstance<ModelPushConstantData,
-                                               render::PrimitiveTopology::Triangles, PointLightUbo>;
+        using LightMeshInstance =
+            MeshInstance<ModelPushConstantData, render::PrimitiveTopology::Triangles, PointLightUbo,
+                         MaterialUBO>;
         std::vector<LightMeshInstance> meshes;
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;

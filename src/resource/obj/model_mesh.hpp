@@ -60,17 +60,17 @@ struct MeshMaterial {
         // 颜色属性（来自 .mtl）
         glm::vec3 ambientColor = {1.0f, 1.0f, 1.0f};   // Ka
         glm::vec3 diffuseColor = {1.0f, 1.0f, 1.0f};   // Kd
-        glm::vec3 specularColor = {1.0f, 1.0f, 1.0f};  // Ks
+        glm::vec3 specularColor = {.04f, .04f, .04f};  // Ks
         glm::vec3 emissiveColor = {0.0f, 0.0f, 0.0f};  // Ke
 
         // 标量属性
-        float shininess = 64.0f;  // Ns
+        float shininess = 32.0f;  // Ns
         float opacity = 1.0f;     // d
         float ior = 1.0f;         // Ni
 
         // PBR
         float metallic = 0.0f;
-        float roughness = 1.0f;
+        float roughness = .5f;
         float ao = 1.0f;
 
         // 纹理路径 —— 改为 vector 支持多贴图
