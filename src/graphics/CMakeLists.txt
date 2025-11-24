@@ -6,6 +6,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
 add_executable(${PROGRAM_NAME} ${sources})
 target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_SDL)
 
+add_dependencies(${PROGRAM_NAME} copy_fonts)
 # target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_GLFW)
 target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core resource)
 target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog Microsoft.GSL::GSL assimp::assimp)

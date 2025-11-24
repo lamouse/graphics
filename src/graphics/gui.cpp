@@ -299,12 +299,12 @@ void init_imgui(float scale) {
     ImFontConfig fontConfig;
     fontConfig.OversampleH = 2;  // 水平方向抗锯齿
     fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
-    io.Fonts->AddFontFromFileTTF("fronts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
+    io.Fonts->AddFontFromFileTTF("fonts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
                                  io.Fonts->GetGlyphRangesChineseFull());
     ImFontConfig iconConfig;
     iconConfig.MergeMode = true;
     iconConfig.PixelSnapH = true;
-    io.Fonts->AddFontFromFileTTF("fronts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
+    io.Fonts->AddFontFromFileTTF("fonts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
 }
 
 void draw_detail(MenuData& data, ecs::Entity entity) {

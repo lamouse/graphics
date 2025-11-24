@@ -134,6 +134,6 @@ include(ClangFormat)
 add_subdirectory(shader)
 add_subdirectory(models)
 add_subdirectory(images)
-
+add_subdirectory(fonts)
 add_subdirectory(src)
 add_subdirectory(doc)

@@ -1,0 +1,29 @@
+set(FONT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/fonts)
+set(FONT_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/fonts)
+
+set(FRONT_EXTENSIONS ttf otf)
+set(FONT_FILES "")
+
+foreach(ext IN LISTS FRONT_EXTENSIONS)
+    file(GLOB_RECURSE tmp
+        LIST_DIRECTORIES false
+        RELATIVE "${FONT_SOURCE_DIR}"
+        CONFIGURE_DEPENDS
+        "${FONT_SOURCE_DIR}/*.${ext}"
+    )
+    list(APPEND FONT_FILES ${tmp})
+endforeach()
+
+add_custom_target(copy_fonts ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${FONT_OUTPUT_DIR}"
+)
+set(FONT_OUT "")
+
+foreach(FONT_FILE IN LISTS FONT_FILES)
+    set(FONT_OUT_PATH ${FONT_OUTPUT_DIR}/${FONT_FILE})
+    add_custom_command(
+        TARGET copy_fonts POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${FONT_SOURCE_DIR}/${FONT_FILE}" "${FONT_OUT_PATH}"
+    )
+    list(APPEND SHADERFONT_OUT_OUTPUTS ${FONT_OUT_PATH})
+endforeach()
