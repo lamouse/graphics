@@ -1,0 +1,6 @@
+#pragma once
+
+namespace texture {
+    constexpr const char* TEXTURE_ROOT_PATH = "@TEXTURE_ROOT_PATH@";
+    constexpr const char* CUBE_MAP_PATH = "@CUBE_MAP_PATH@";
+}// namespace shader

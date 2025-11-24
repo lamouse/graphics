@@ -20,7 +20,7 @@ class SkyBox {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
 
-            auto ret_id = manager.addKtxTexture("images/cube/sky2.ktx2");
+            auto ret_id = manager.addKtxCubeMap("sky.ktx2");
             std::string mesh_path = "cube.obj";
             auto mesh_id = manager.addModel(mesh_path);
             auto sub_mesh = manager.getModelSubMesh(mesh_id);

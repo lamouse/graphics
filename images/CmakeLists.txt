@@ -72,6 +72,7 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
 
     # === 第二步：构建输入文件列表 ===
     set(INPUT_FILES "")
+
     foreach(FACE ${USED_FACE_SET})
         list(APPEND INPUT_FILES "${SRC_DIR}/${FACE}${EXT}")
     endforeach()
@@ -80,10 +81,10 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
     add_custom_command(
         OUTPUT ${DST_FILE}
         COMMAND ${TOKTX_EXECUTABLE}
-            --cubemap
-            --target_type RGBA
-            ${DST_FILE}
-            ${INPUT_FILES}
+        --cubemap
+        --target_type RGBA
+        ${DST_FILE}
+        ${INPUT_FILES}
         DEPENDS ${INPUT_FILES}
         COMMENT "Generating KTX2 cubemap: ${SKYBOX_NAME} (faces: ${USED_FACE_SET}, ext: ${EXT})"
     )
@@ -92,5 +93,54 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
     list(APPEND KTX2_TARGETS ktx2_${SKYBOX_NAME})
 endforeach()
 
+set(IMAGES_SOURCE_DIR ${CMAKE_SOURCE_DIR}/images/textures)
+set(IMAGES_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/images/textures)
+
+set(TEXTURE_EXTENSIONS png jpg)
+set(IMAGE_FILES "")
+
+foreach(ext IN LISTS TEXTURE_EXTENSIONS)
+    file(GLOB_RECURSE tmp
+        LIST_DIRECTORIES false
+        RELATIVE "${IMAGES_SOURCE_DIR}"
+        CONFIGURE_DEPENDS
+        "${IMAGES_SOURCE_DIR}/*.${ext}"
+    )
+    list(APPEND IMAGE_FILES ${tmp})
+endforeach()
+
+set(KTX_OUTPUTS "")
+
+foreach(TEXTURE_FILE IN LISTS IMAGE_FILES)
+    get_filename_component(TEXTURE_DIR "${TEXTURE_FILE}" DIRECTORY)
+    get_filename_component(TEXTURE_NAME_WE "${TEXTURE_FILE}" NAME_WE)
+
+    # 拼接相对目录 + 新扩展名
+    set(TEXTURE_OUT_PATH "${IMAGES_OUTPUT_DIR}/${TEXTURE_DIR}/${TEXTURE_NAME_WE}.ktx")
+    set(INPUT_FILE ${IMAGES_SOURCE_DIR}/${TEXTURE_FILE})
+    add_custom_command(
+        OUTPUT "${TEXTURE_OUT_PATH}"
+        COMMAND ${TOKTX_EXECUTABLE}
+        --assign_oetf srgb
+        --target_type RGBA
+        ${TEXTURE_OUT_PATH}
+        ${INPUT_FILE}
+        COMMENT "Generating KTX2 texture: ${TEXTURE_OUT_PATH}"
+    )
+    list(APPEND KTX_OUTPUTS "${TEXTURE_OUT_PATH}")
+endforeach()
+
 # 创建总目标
-add_custom_target(skyboxes_ktx2 DEPENDS ${KTX2_TARGETS})
+add_custom_target(skyboxes_ktx2 DEPENDS ${KTX2_TARGETS} ${KTX_OUTPUTS})
+
+set(TEXTURE_PATH_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include PARENT_SCOPE)
+set(TEXTURE_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set(TEXTURE_ROOT_PATH "images/textures/")
+set(CUBE_MAP_PATH "images/cube/")
+
+# 配置模板
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/image_config.hpp.in"
+    "${TEXTURE_INCLUDE}/image_config.hpp"
+    @ONLY
+)

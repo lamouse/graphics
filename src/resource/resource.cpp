@@ -5,6 +5,7 @@
 #include "resource/texture/ktx_image.hpp"
 #include "render_core/types.hpp"
 #include "model_config.hpp"
+#include "image_config.hpp"
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
@@ -30,10 +31,10 @@ auto ResourceManager::addTexture(std::string_view textureName, const add_texture
     return id;
 }
 
-auto ResourceManager::addKtxTexture(std::string name) -> render::TextureId {
+auto ResourceManager::addKtxCubeMap(std::string name) -> render::TextureId {
     ASSERT_MSG(!name.empty(), "textureName is null");
     ASSERT_MSG(!textures.contains(name), name + " texture in catch");
-    resource::image::KtxImage image(name);
+    resource::image::KtxImage image(texture::CUBE_MAP_PATH + name);
     auto* texture = image.getKtxTexture();
     return graphic->uploadTexture(texture);
 }
