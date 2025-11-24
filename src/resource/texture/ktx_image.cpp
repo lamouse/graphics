@@ -8,11 +8,6 @@ KtxImage::KtxImage(const std::string& path) {
     if (result != KTX_SUCCESS) {
         throw std::runtime_error("Failed to load KTX2 file");
     }
-    if (ktxTexture->numDimensions != 2 || !ktxTexture->isCubemap) {
-        ktxTexture_Destroy(ktxTexture);
-        ktxTexture = nullptr;
-        throw std::runtime_error("Not a cubemap");
-    }
 }
 KtxImage::~KtxImage() {
     if (ktxTexture) {

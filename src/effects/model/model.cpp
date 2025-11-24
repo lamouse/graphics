@@ -113,7 +113,7 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
     materialUBO.shininess = subMesh.material.shininess;
     if (!subMesh.material.ambientTextures.empty()) {
         materialResource.ambientTextures =
-            manager.addTexture("./images/" + subMesh.material.ambientTextures[0]);
+            manager.addKtxTexture(subMesh.material.ambientTextures[0]);
     }else {
         materialResource.ambientTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
@@ -121,7 +121,7 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
 
     if (!subMesh.material.diffuseTextures.empty()) {
         materialResource.diffuseTextures =
-            manager.addTexture("./images/" + subMesh.material.diffuseTextures[0]);
+            manager.addKtxTexture(subMesh.material.diffuseTextures[0]);
     }else {
         materialResource.diffuseTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
@@ -129,14 +129,14 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
 
     if (!subMesh.material.specularTextures.empty()) {
         materialResource.specularTextures =
-            manager.addTexture("./images/" + subMesh.material.specularTextures[0]);
+            manager.addKtxTexture(subMesh.material.specularTextures[0]);
     } else {
         materialResource.specularTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
     }
     if (!subMesh.material.normalTextures.empty()) {
         materialResource.normalTextures =
-            manager.addTexture("./images/" + subMesh.material.normalTextures[0]);
+            manager.addKtxTexture(subMesh.material.normalTextures[0]);
     } else {
         materialResource.normalTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));

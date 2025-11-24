@@ -80,9 +80,7 @@ void App::run() {
         frameInfo.resource_manager = &resourceManager;
         frameInfo.window_width = window->getActiveConfig().extent.width;
         frameInfo.window_hight = window->getActiveConfig().extent.height;
-        if (input_event.empty()) {
-            registry.updateAll(frameInfo, world);
-        }
+        bool is_no_input = true;
         while (auto e = input_event.pop_event()) {
             if (e->key == core::InputKey::Insert) {
                 show_debug_ui = !show_debug_ui;
@@ -94,11 +92,16 @@ void App::run() {
                 current_mouse_X = e->mouseX_;
                 current_mouse_Y = e->mouseY_;
             }
-            CameraSystem::update(cameraComponent, e.value(), frame);
-            frameInfo.input_state = e.value();
+            if (!e->onlyMouseMove()) {
+                CameraSystem::update(cameraComponent, e.value(), frame);
+                frameInfo.input_state = e.value();
+                registry.updateAll(frameInfo, world);
+                is_no_input = false;
+            }
+        }
+        if(is_no_input){
             registry.updateAll(frameInfo, world);
         }
-
         registry.drawAll(graphics);
 
         auto& shader_notify = render_base->getShaderNotify();
@@ -143,7 +146,7 @@ void App::load_resource() {
     std::string viking_room_path = image_path + "viking_room.png";
     resourceManager.addTexture(viking_room_path);
 
-    std::string viking_obj_path = "viking_room.obj";
+    std::string viking_obj_path = "backpack.obj";
     resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
@@ -160,12 +163,12 @@ void App::load_resource() {
                             .texture_name = viking_room_path};
 
     std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
-                                 glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
-                                 glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
-                                 glm::vec3{1.f, 1.f, 1.f}};
-    for (auto & light_color : light_colors) {
+                               glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
+                               glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
+                               glm::vec3{1.f, 1.f, 1.f}};
+    for (auto& light_color : light_colors) {
         auto point_light = std::make_shared<effects::PointLightEffect>(
-            resourceManager, frame_layout, 2, .04f, light_color);
+            resourceManager, frame_layout, 1, .04f, light_color);
         registry.add(point_light);
     }
 

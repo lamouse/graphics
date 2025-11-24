@@ -57,7 +57,11 @@ struct InputState {
             return std::make_pair(down, first);
         }
 
-        [[nodiscard]] auto mouseLeftButtonUp() const -> bool { return mouse_button_left && key_up; } 
+        [[nodiscard]] auto onlyMouseMove() const -> bool {
+            return mouse_move && !mouse_button_left && !mouse_button_right && !mouse_button_center && key == InputKey::UN_SUPER;
+        }
+
+        [[nodiscard]] auto mouseLeftButtonUp() const -> bool { return mouse_button_left && key_up; }
 
         [[nodiscard]] auto keyDown(InputKey key_) const -> bool {
             if (key_ == key) {

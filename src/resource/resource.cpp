@@ -9,6 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <filesystem>
 #include <utility>
 
 namespace graphics {
@@ -33,10 +34,30 @@ auto ResourceManager::addTexture(std::string_view textureName, const add_texture
 
 auto ResourceManager::addKtxCubeMap(std::string name) -> render::TextureId {
     ASSERT_MSG(!name.empty(), "textureName is null");
-    ASSERT_MSG(!textures.contains(name), name + " texture in catch");
+    const auto [pair, is_new]{textures.try_emplace(name)};
+    if (!is_new) {
+        return pair->second;
+    }
     resource::image::KtxImage image(texture::CUBE_MAP_PATH + name);
     auto* texture = image.getKtxTexture();
-    return graphic->uploadTexture(texture);
+    auto id = graphic->uploadTexture(texture);
+    pair->second = id;
+    return id;
+}
+
+auto ResourceManager::addKtxTexture(std::string name) -> render::TextureId {
+    ASSERT_MSG(!name.empty(), "textureName is null");
+    const auto [pair, is_new]{textures.try_emplace(name)};
+    if (!is_new) {
+        return pair->second;
+    }
+    std::filesystem::path file{name};
+    file.replace_extension("ktx");
+    resource::image::KtxImage image(texture::TEXTURE_ROOT_PATH + file.string());
+    auto* texture = image.getKtxTexture();
+    auto id = graphic->uploadTexture(texture);
+    pair->second = id;
+    return id;
 }
 
 auto ResourceManager::addCubeMapTexture(std::span<std::string> textureNames,
@@ -234,7 +255,7 @@ ResourceManager::ResourceManager(render::Graphic* graphic_) : graphic(graphic_) 
 void ResourceManager::initializeDefaultTextures() {
     std::array<unsigned char, 4> withe{255, 255, 255, 255};
     resource::image::Image white_texture(1, 1, withe, 1);
-    if(graphic) {
+    if (graphic) {
         auto white_texture_id = graphic->uploadTexture(white_texture);
         textures[std::string(DEFAULT_1X1_WRITE_TEXTURE)] = white_texture_id;
     }
