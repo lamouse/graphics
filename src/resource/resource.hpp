@@ -12,6 +12,8 @@
 #include <vector>
 
 namespace graphics {
+
+constexpr std::string_view DEFAULT_1X1_WRITE_TEXTURE{"__default_1x1_white_texture__"};
 struct ShaderHash {
         std::uint64_t vertex;
         std::uint64_t fragment;
@@ -31,7 +33,7 @@ class ResourceManager {
         ~ResourceManager() = default;
         CLASS_NON_COPYABLE(ResourceManager);
         CLASS_DEFAULT_MOVEABLE(ResourceManager);
-        auto addTexture(std::string textureName, const add_texture_func& func = nullptr)
+        auto addTexture(std::string_view textureName, const add_texture_func& func = nullptr)
             -> render::TextureId;
         /**
          * @brief 暂时针对cube map的6张图片
@@ -46,15 +48,13 @@ class ResourceManager {
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         explicit ResourceManager(render::Graphic* graphic_);
 
-        auto addModel(std::string modelName, add_mesh_func func = nullptr)
-            -> render::MeshId;
+        auto addModel(std::string modelName, add_mesh_func func = nullptr) -> render::MeshId;
         auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
         [[nodiscard]] auto getModelSubMesh(render::MeshId id) const -> std::span<const SubMesh>;
 
-        [[nodiscard]] auto getMesh(const std::string& name) const
-            -> render::MeshId;
+        [[nodiscard]] auto getMesh(const std::string& name) const -> render::MeshId;
         auto addGraphShader(
             const std::string& name,
             const std::function<std::uint64_t(std::span<const std::uint32_t>, render::ShaderType)>&
@@ -82,6 +82,7 @@ class ResourceManager {
     private:
         auto getShaderCode(render::ShaderType type, const std::string& name)
             -> std::vector<std::uint32_t>;
+        void initializeDefaultTextures();
         std::unordered_map<std::string, render::TextureId> textures;
         std::unordered_map<std::string, render::MeshId> model_mesh_id_;
         std::unordered_map<render::MeshId, std::unique_ptr<std::vector<glm::vec3>>> mesh_vertex;

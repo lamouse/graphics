@@ -11,12 +11,12 @@
 #include <utility>
 
 namespace graphics {
-auto ResourceManager::addTexture(std::string textureName, const add_texture_func& func)
+auto ResourceManager::addTexture(std::string_view textureName, const add_texture_func& func)
     -> render::TextureId {
     ASSERT_MSG(!textureName.empty(), "textureName is null");
 
-    const auto [pair, is_new]{ textures.try_emplace(textureName)};
-    if(!is_new){
+    const auto [pair, is_new]{textures.try_emplace(std::string(textureName))};
+    if (!is_new) {
         return pair->second;
     }
     resource::image::Image texture(textureName);
@@ -81,7 +81,8 @@ auto ResourceManager::addModel(std::string modelName, add_mesh_func func) -> ren
     auto mesh_id = addMesh(modelName, model_, std::move(func));
     mesh_vertex[mesh_id] = std::make_unique<std::vector<::glm::vec3>>(model_.only_vertex);
     mesh_indics[mesh_id] = std::make_unique<std::vector<uint32_t>>(model_.indices_);
-    model_sub_mesh[mesh_id] = std::make_unique<std::vector<SubMesh>>(model_.subMeshes);;
+    model_sub_mesh[mesh_id] = std::make_unique<std::vector<SubMesh>>(model_.subMeshes);
+    ;
     return mesh_id;
 }
 auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func)
@@ -97,7 +98,7 @@ auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, a
     model_mesh_id_[meshName] = meshId;
     return meshId;
 }
-auto ResourceManager::getMesh(const std::string& name) const ->  render::MeshId {
+auto ResourceManager::getMesh(const std::string& name) const -> render::MeshId {
     if (name.empty()) {
         return {};
     }
@@ -105,11 +106,12 @@ auto ResourceManager::getMesh(const std::string& name) const ->  render::MeshId 
     return model_mesh_id_.find(name)->second;
 }
 
-[[nodiscard]] auto ResourceManager::getModelSubMesh(render::MeshId id) const -> std::span<const SubMesh>{
-    if(!model_sub_mesh.contains(id)){
+[[nodiscard]] auto ResourceManager::getModelSubMesh(render::MeshId id) const
+    -> std::span<const SubMesh> {
+    if (!model_sub_mesh.contains(id)) {
         return {};
     }
-    const auto &sub_mesh = model_sub_mesh.find(id)->second;
+    const auto& sub_mesh = model_sub_mesh.find(id)->second;
     return std::span<const SubMesh>(sub_mesh->data(), sub_mesh->size());
 }
 
@@ -223,6 +225,17 @@ ResourceManager::ResourceManager(render::Graphic* graphic_) : graphic(graphic_) 
     f >> j;
     for (const auto& m : j["assets"]) {
         model_file_hash[m["path"]] = m["hash"];
+    }
+
+    initializeDefaultTextures();
+}
+
+void ResourceManager::initializeDefaultTextures() {
+    std::array<unsigned char, 4> withe{255, 255, 255, 255};
+    resource::image::Image white_texture(1, 1, withe, 1);
+    if(graphic) {
+        auto white_texture_id = graphic->uploadTexture(white_texture);
+        textures[std::string(DEFAULT_1X1_WRITE_TEXTURE)] = white_texture_id;
     }
 }
 

@@ -6,15 +6,14 @@
 #include <stb_image.h>
 namespace resource::image {
 
-void Image::readImage(const ::std::string& path) {
-    data_ = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-
+void Image::readImage(::std::string_view path) {
+    data_ = stbi_load(std::string(path).c_str(), &width, &height, &channels, STBI_rgb_alpha);
     if (!data_) {
         throw ::std::runtime_error("failed to load texture image!");
     }
     map_data = std::span<unsigned char>(data_, size());
 }
-Image::Image(const ::std::string& path) { readImage(path); }
+Image::Image(::std::string_view path) { readImage(path); }
 auto Image::getData() -> unsigned char* { return data_; }
 
 Image::~Image() {

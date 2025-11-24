@@ -9,6 +9,7 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
                 float& out_initialWorldZ,         // 👈 只需记录一个 Z 值（更轻量）
                 glm::vec3& out_dragStartWorldPos  // 仍需要完整位置用于 delta 计算
 );
+
 void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
                 ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform);
 struct ModelPushConstantData {

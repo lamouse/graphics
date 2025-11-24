@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include <string>
+#include <string_view>
 #include <span>
 
 namespace resource::image {
@@ -29,8 +29,8 @@ class Image : public ITexture {
         int channels = 0;
 
     public:
-        void readImage(const ::std::string& path);
-        explicit Image(const ::std::string& path);
+        void readImage(::std::string_view path);
+        explicit Image(::std::string_view path);
         Image(int width_, int height_, std::span<unsigned char> data, std::uint8_t image_count_)
             : map_data(data), width(width_), height(height_) {
             image_count = image_count_;
@@ -40,7 +40,7 @@ class Image : public ITexture {
         [[nodiscard]] auto getHeight() const -> int override { return height; }
         [[nodiscard]] auto getMipLevels() const -> uint32_t override;
         [[nodiscard]] auto size() const -> unsigned long long override;
-        auto data() const -> std::span<unsigned char> override { return map_data; }
+        [[nodiscard]] auto data() const -> std::span<unsigned char> override { return map_data; }
         ~Image();
 };
 
