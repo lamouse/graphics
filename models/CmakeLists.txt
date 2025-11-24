@@ -1,25 +1,59 @@
+# 支持的模型格式
+set(MODEL_SOURCE_DIR ${CMAKE_SOURCE_DIR}/models)
+set(MODEL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/models)
+message(${MODEL_SOURCE_DIR})
+
+
+# 查找所有模型文件
+set(MODEL_EXTENSIONS glb gltf obj fbx dae stl ply mtl)
+set(MODEL_FILES "")
+foreach(ext IN LISTS MODEL_EXTENSIONS)
+    file(GLOB_RECURSE tmp
+        LIST_DIRECTORIES false
+        RELATIVE "${MODEL_SOURCE_DIR}"
+        CONFIGURE_DEPENDS
+        "${MODEL_SOURCE_DIR}/*.${ext}"
+    )
+    list(APPEND MODEL_FILES ${tmp})
+endforeach()
+
+message(${MODEL_FILES})
+
+set(COPY_MODEL_COMMANDS "")
+
+
 
 find_program(PYTHON python)
 
 set(OUT_PATH "${CMAKE_BINARY_DIR}/bin/models/assets.json")
 add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${MODEL_OUTPUT_DIR}"
+
     OUTPUT ${OUT_PATH}
     COMMAND ${PYTHON} "${CMAKE_SOURCE_DIR}/models/gen_asset_hashes.py"
-            "${OUT_PATH}"
-            "${CMAKE_SOURCE_DIR}/models/assets.txt"
+    "${OUT_PATH}"
+    "${CMAKE_SOURCE_DIR}/models/assets.txt"
     DEPENDS
-        "${CMAKE_SOURCE_DIR}/models/assets.txt"
-        "${CMAKE_SOURCE_DIR}/models/gen_asset_hashes.py"
-        # 你可能需要手动列出所有 asset 文件作为依赖，或用 configure_file 触发
+    "${CMAKE_SOURCE_DIR}/models/assets.txt"
+    "${CMAKE_SOURCE_DIR}/models/gen_asset_hashes.py"
+
+    # 你可能需要手动列出所有 asset 文件作为依赖，或用 configure_file 触发
 )
 add_custom_target(AssetHashManifest
     DEPENDS "${OUT_PATH}"
 )
+foreach(MODEL_FILE IN LISTS MODEL_FILES)
+    add_custom_command(
+        TARGET AssetHashManifest PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${MODEL_SOURCE_DIR}/${MODEL_FILE}" "${MODEL_OUTPUT_DIR}/${MODEL_FILE}"
+    )
+endforeach()
 
 set(MOUDLE_PATH_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include PARENT_SCOPE)
 set(MOUDLE_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set(MODEL_HASH_PATH "models/assets.json")
 set(MODEL_ROOT_PATH "models/")
+
 # 配置模板
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/model_config.hpp.in"

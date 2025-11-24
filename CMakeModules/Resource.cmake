@@ -1,4 +1,3 @@
 file(COPY images DESTINATION ${CMAKE_BINARY_DIR}/bin)
-file(COPY models DESTINATION ${CMAKE_BINARY_DIR}/bin)
 file(COPY fronts DESTINATION ${CMAKE_BINARY_DIR}/bin)
 

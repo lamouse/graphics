@@ -24,6 +24,13 @@ struct EmptyPushConstants {
         [[nodiscard]] auto as_byte_span() const -> std::span<const std::byte> { return {}; }
 };
 
+struct MeshMaterialResource {
+        render::TextureId ambientTextures{};
+        render::TextureId diffuseTextures{};
+        render::TextureId specularTextures{};
+        render::TextureId normalTextures{};
+};
+
 class IMeshInstance {
     public:
         IMeshInstance() = default;
@@ -31,16 +38,14 @@ class IMeshInstance {
         CLASS_DEFAULT_COPYABLE(IMeshInstance);
         CLASS_DEFAULT_MOVEABLE(IMeshInstance);
         IMeshInstance(render::PrimitiveTopology topology_, render::RenderCommand render_command_,
-                      render::MeshId meshId_, render::TextureId textureId_,
+                      render::MeshId meshId_,
                       std::uint64_t vertex_shader_hash_, std::uint64_t fragment_shader_hash_)
             : topology(topology_),
             render_command(render_command_),
-              textureId(textureId_),
               meshId(meshId_),
               vertex_shader_hash(vertex_shader_hash_),
               fragment_shader_hash(fragment_shader_hash_),
               id(getCurrentId()) {}
-        [[nodiscard]] auto getTextureId() const -> render::TextureId { return textureId; };
         [[nodiscard]] auto getMeshId() const -> render::MeshId { return meshId; };
         [[nodiscard]] auto vertexShaderHash() const -> std::uint64_t {
             ASSERT_MSG(vertex_shader_hash, "vertex_shader_hash can't be 0");
@@ -53,12 +58,12 @@ class IMeshInstance {
         [[nodiscard]] auto getVertexCount() const -> std::int32_t { return vertex_count; }
         [[nodiscard]] void setVertexCount(std::int32_t count) { vertex_count = count; }
         [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
+        [[nodiscard]] virtual auto getMaterialIds() const -> std::vector<render::TextureId> = 0;
         [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology {
             return topology;
         }
         [[nodiscard]] virtual auto getPipelineState() const -> render::DynamicPipelineState = 0;
         [[nodiscard]] virtual auto getUBOs() const -> std::vector<std::span<const std::byte>> = 0;
-        void setTextureId(render::TextureId id_) { textureId = id_; }
         [[nodiscard]] auto getRenderCommand() const -> render::RenderCommand {
             return render_command;
         }
@@ -79,12 +84,12 @@ class IMeshInstance {
     protected:
         render::PrimitiveTopology topology;
         render::RenderCommand render_command;
-        render::TextureId textureId;
         render::MeshId meshId;
         std::uint64_t vertex_shader_hash{0};
         std::uint64_t fragment_shader_hash{0};
         std::int32_t vertex_count{-1};
         std::vector<std::vector<std::byte>> ubo_buffers_;
+        MeshMaterialResource material_resource_;
         id_t id{};
 };
 }  // namespace graphics

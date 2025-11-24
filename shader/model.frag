@@ -10,7 +10,9 @@ layout (location = 3) in vec2 fragTexCoord;  // 新增：纹理坐标
 layout (location = 0) out vec4 outColor;
 
 // 纹理采样器
-layout(binding = 2) uniform sampler2D texSampler;
+layout(binding = 2) uniform sampler2D ambientSampler;
+layout(binding = 3) uniform sampler2D texSampler;
+layout(binding = 4) uniform sampler2D specularSampler;
 
 // 光照相关的 Uniform Buffer
 struct PointLight {
@@ -43,26 +45,9 @@ layout(push_constant) uniform Push {
 
 
 void main() {
-    // 步骤 1: 计算基础颜色（来自顶点颜色 or 纹理 or 混合）
-    vec3 baseColor = vec3(1.0);
-    bool hasColor = length(fragColor) > 0.001;     // 避免除零或极小值
-    bool hasTexCoord = any(notEqual(fragTexCoord, vec2(0.0))); // 更安全地检测纹理坐标
 
-    if (hasColor && hasTexCoord) {
-        vec4 texSample = texture(texSampler, fragTexCoord);
-        baseColor = fragColor * texSample.rgb;
-        // 注意：这里你可以选择是乘法混合还是直接替换，此处为“颜色调制纹理”
-    } else if (hasColor) {
-        baseColor = fragColor;
-    } else if (hasTexCoord) {
-        vec4 texSample = texture(texSampler, fragTexCoord);
-        baseColor = texSample.rgb;
-    } else {
-        baseColor = vec3(1.0, 0.0, 1.0); // 洋红色，表示错误
-    }
-
-    // 步骤 2: 正常光照计算（使用 baseColor 作为材质反照率）
-    vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+    vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+    vec3 diffuseLight = vec3(0.0);
     vec3 specularLight = vec3(0.0);
     vec3 surfaceNormal = normalize(fragNormalWorld);
 
@@ -89,8 +74,13 @@ void main() {
         specularLight += intensity * blinnTerm * material.specular;
     }
 
-    // 步骤 3: 最终颜色 = (漫反射 + 高光) * baseColor
-    vec3 finalColor = (diffuseLight + specularLight) * baseColor;
+    vec3 ambientColor = texture(ambientSampler, fragTexCoord).rgb;
+    vec3 texColor = texture(texSampler, fragTexCoord).rgb;
+    vec3 specTex = vec3(texture(specularSampler, fragTexCoord).rgb);
+    //最终颜色 = (环境 + 漫反射 + 高光) * 贴图
+    vec3 finalColor = ambientLight * texColor * ambientColor +
+                    diffuseLight * texColor +
+                    specularLight * specTex;
 
     outColor = vec4(finalColor, 1.0);
 }

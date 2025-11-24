@@ -28,14 +28,15 @@ class SkyBox {
             ASSERT_MSG(!sub_mesh.empty() || sub_mesh.size() > 1, "cube mesh count error");
 
             auto shader_hash = manager.addGraphShader("skycube");
-
+            MeshMaterialResource material_resource{};
+            material_resource.diffuseTextures = ret_id;
             sky_box = SkyBoxInstance{render::RenderCommand{.indexOffset = sub_mesh[0].indexOffset,
                                                            .indexCount = sub_mesh[0].indexCount},
                                      shader_hash,
                                      layout,
                                      "sky box instance",
                                      mesh_id,
-                                     ret_id};
+                                     material_resource};
             auto& pipeline_state = sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>();
             pipeline_state.state.depthTestEnable = 1;
             pipeline_state.state.depthWriteEnable = 0;

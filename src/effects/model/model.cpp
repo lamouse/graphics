@@ -1,6 +1,5 @@
 #include "model.hpp"
 
-#include <print>
 #include "system/pick_system.hpp"
 namespace graphics::effects {
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform) {
@@ -103,4 +102,46 @@ void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo
         render_state.mouse_select = false;
     }
 };
+
+auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMesh& subMesh)
+    -> std::tuple<MeshMaterialResource, MaterialUBO> {
+    MeshMaterialResource materialResource{};
+    MaterialUBO materialUBO{};
+    materialUBO.ambient = {subMesh.material.ambientColor, 1.f};
+    materialUBO.diffuse = {subMesh.material.diffuseColor, 1.f};
+    materialUBO.specular = subMesh.material.specularColor;
+    materialUBO.shininess = subMesh.material.shininess;
+    if (!subMesh.material.ambientTextures.empty()) {
+        materialResource.ambientTextures =
+            manager.addTexture("./images/" + subMesh.material.ambientTextures[0]);
+    }else {
+        materialResource.ambientTextures =
+            manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
+    }
+
+    if (!subMesh.material.diffuseTextures.empty()) {
+        materialResource.diffuseTextures =
+            manager.addTexture("./images/" + subMesh.material.diffuseTextures[0]);
+    }else {
+        materialResource.diffuseTextures =
+            manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
+    }
+
+    if (!subMesh.material.specularTextures.empty()) {
+        materialResource.specularTextures =
+            manager.addTexture("./images/" + subMesh.material.specularTextures[0]);
+    } else {
+        materialResource.specularTextures =
+            manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
+    }
+    if (!subMesh.material.normalTextures.empty()) {
+        materialResource.normalTextures =
+            manager.addTexture("./images/" + subMesh.material.normalTextures[0]);
+    } else {
+        materialResource.normalTextures =
+            manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
+    }
+    return {materialResource, materialUBO};
+}
+
 }  // namespace graphics::effects

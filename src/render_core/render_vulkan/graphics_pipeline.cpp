@@ -225,9 +225,11 @@ void GraphicsPipeline::AddTransition(GraphicsPipeline* transition) {
 void GraphicsPipeline::Configure() {
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindGraphicUniformBuffer();
-    auto [view, sample] = texture_cache.getCurrentTexture();
-    if (view) {
-        guest_descriptor_queue_.AddSampledImage(view->RenderTarget(), sample->Handle());
+    auto textures = texture_cache.getCurrentTextures();
+    for (const auto& [view, sample] : textures) {
+        if (view) {
+            guest_descriptor_queue_.AddSampledImage(view->RenderTarget(), sample->Handle());
+        }
     }
     ConfigureDraw();
 }
@@ -258,8 +260,8 @@ void GraphicsPipeline::ConfigureDraw() {
             return;
         }
         if (uses_push_descriptor) {
-            cmdbuf.pushDescriptorSetWithTemplate(*descriptor_update_template, *pipeline_layout,
-                                                    0, descriptor_data);
+            cmdbuf.pushDescriptorSetWithTemplate(*descriptor_update_template, *pipeline_layout, 0,
+                                                 descriptor_data);
         } else {
             const vk::DescriptorSet descriptor_set{descriptor_allocator.commit()};
             device_.getLogical().updateDescriptorSetWithTemplate(

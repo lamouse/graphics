@@ -2,7 +2,16 @@
 #include "effects/light/point_light.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "world/world.hpp"
+#include <tuple>
 namespace graphics::effects {
+
+struct MaterialUBO {
+        glm::vec4 ambient{};
+        glm::vec4 diffuse{};
+        glm::vec3 specular{};
+        float shininess{32.f};
+        AS_BYTE_SPAN
+};
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform);
 void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform,
                 bool startDragThisFrame,
@@ -10,19 +19,14 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
                 glm::vec3& out_dragStartWorldPos  // 仍需要完整位置用于 delta 计算
 );
 
+auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMesh& subMesh)
+    -> std::tuple<MeshMaterialResource, MaterialUBO>;
+
 void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
                 ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform);
 struct ModelPushConstantData {
         glm::mat4 modelMatrix{1.f};
         glm::mat4 normalMatrix{1.f};
-        AS_BYTE_SPAN
-};
-
-struct MaterialUBO {
-        glm::vec4 ambient{};
-        glm::vec4 diffuse{};
-        glm::vec3 specular{};
-        float shininess{32.f};
         AS_BYTE_SPAN
 };
 
@@ -34,22 +38,16 @@ class LightModel {
             auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
             auto mesh_id = manager.getMesh(names.mesh_name);
             auto sub_mesh = manager.getModelSubMesh(mesh_id);
-            auto texture_id = manager.getTexture(names.texture_name);
             meshes.reserve(sub_mesh.size());
             for (const auto& mesh : sub_mesh) {
-                if (!mesh.material.diffuseTextures.empty()) {
-                    texture_id = manager.addTexture("./images/" + mesh.material.diffuseTextures[0]);
-                }
+                auto [materialResource, materialUBO] = uploadMeshMaterialResource(manager, mesh);
                 meshes.emplace_back(
                     render::RenderCommand{
                         .indexOffset = mesh.indexOffset,
                         .indexCount = mesh.indexCount,
                     },
-                    shader_hash, layout, name + "mesh", mesh_id, texture_id);
-                meshes.back().getUBO<MaterialUBO>().ambient = {mesh.material.ambientColor, 1.f};
-                meshes.back().getUBO<MaterialUBO>().diffuse = {mesh.material.diffuseColor, 1.f};
-                meshes.back().getUBO<MaterialUBO>().specular = mesh.material.specularColor;
-                meshes.back().getUBO<MaterialUBO>().shininess = mesh.material.shininess;
+                    shader_hash, layout, name + "mesh", mesh_id, materialResource);
+                meshes.back().getUBO<MaterialUBO>() = materialUBO;
             }
             entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);

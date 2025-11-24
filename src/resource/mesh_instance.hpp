@@ -51,6 +51,10 @@ class MeshInstance : public IMeshInstance {
         [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
             return entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;
         }
+        [[nodiscard]] auto getMaterialIds() const -> std::vector<render::TextureId> override {
+            return {material_resource.ambientTextures, material_resource.diffuseTextures,
+                    material_resource.specularTextures, material_resource.normalTextures};
+        }
         auto getUBO() -> UBOs& { return ubos; }
 
         template <std::size_t N>
@@ -93,7 +97,7 @@ class MeshInstance : public IMeshInstance {
         [[nodiscard]] auto getUBOs() const -> std::vector<std::span<const std::byte>> override {
             return std::apply(
                 [](const auto&... ubo) -> auto {
-                    return std::vector<std::span<const std::byte>>{(ubo).as_byte_span() ...};
+                    return std::vector<std::span<const std::byte>>{(ubo).as_byte_span()...};
                 },
                 ubos);
         }
@@ -102,21 +106,22 @@ class MeshInstance : public IMeshInstance {
 
         MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
                      const layout::FrameBufferLayout& layout, const std::string& meshName = "",
-                     render::MeshId meshId_ = {}, render::TextureId textureId_ = {})
-            : IMeshInstance(primitiveTopology, render_command_, meshId_, textureId_, shaderHash_.vertex,
-                            shaderHash_.fragment) {
+                     render::MeshId meshId_ = {}, MeshMaterialResource material_resource_ = {})
+            : IMeshInstance(primitiveTopology, render_command_, meshId_, shaderHash_.vertex,
+                            shaderHash_.fragment),
+              material_resource(material_resource_) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
-
         }
         MeshInstance() = default;
 
     private:
         UBOs ubos{};
         PushConstants push_constants;
+        MeshMaterialResource material_resource;
 };
 
 }  // namespace graphics
