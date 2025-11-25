@@ -106,7 +106,7 @@ class LightModel {
             pointLightUbo.projection = frameInfo.camera->getProjection();
             pointLightUbo.view = frameInfo.camera->getView();
             pointLightUbo.inverseView = frameInfo.camera->getView();
-            pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .02f};
+            pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
             int index = 0;
             for (const auto& entity : light_entity) {
                 PointLight light{};

@@ -18,6 +18,16 @@ layout(binding = 4) uniform sampler2D specularSampler;
 struct PointLight {
     vec4 position; // w 忽略
     vec4 color;    // w 是强度
+    float constant;
+    float linear;
+    float quadratic;
+    float padding;  // 没有实际用途
+};
+
+// 光照相关的 Uniform Buffer
+struct DirLight  {
+    vec4 direction; // w 忽略
+    vec4 color;    // w 是强度
 };
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
@@ -25,6 +35,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 view;
     mat4 invView;
     vec4 ambientLightColor; // w 是强度
+    DirLight dirLight;
     PointLight pointLights[10];
     int numLights;
 } ubo;
@@ -42,45 +53,84 @@ layout(push_constant) uniform Push {
     mat4 modelMatrix;
     mat4 normalMatrix;
 } push;
+// 统一 Blinn-Phong 光照计算
+vec3 CalcBlinnPhongLight(vec3 lightColor, float intensity,
+                         vec3 lightDir, vec3 normal,
+                         vec3 viewDir,
+                         vec3 texDiffuse, vec3 texSpecular);
+// function prototypes
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex);
 
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffTex, vec3 specTex);
 
 void main() {
 
     vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
     vec3 diffuseLight = vec3(0.0);
     vec3 specularLight = vec3(0.0);
+
+        vec3 ambientColor = texture(ambientSampler, fragTexCoord).rgb;
+    vec3 texColor = texture(texSampler, fragTexCoord).rgb;
+    vec3 specTex = vec3(texture(specularSampler, fragTexCoord).rgb);
+
     vec3 surfaceNormal = normalize(fragNormalWorld);
 
     vec3 cameraPosWorld = ubo.invView[3].xyz;
     vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
 
     for (int i = 0; i < ubo.numLights; i++) {
-        PointLight light = ubo.pointLights[i];
-        vec3 lightToPos = light.position.xyz - fragPosWorld;
-        float distance = length(lightToPos);
-        vec3 directionToLight = lightToPos / distance;
-        float attenuation = 1.0 / (distance * distance); // 衰减 = 1/r²
-
-        float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0.0);
-        vec3 intensity = light.color.xyz * light.color.w * attenuation;
-
-        // 漫反射
-        diffuseLight += intensity * cosAngIncidence * material.diffuse;
-
-        // 高光（Blinn-Phong）
-        vec3 halfAngle = normalize(directionToLight + viewDirection);
-        float blinnTerm = max(dot(surfaceNormal, halfAngle), 0.0);
-        blinnTerm = pow(blinnTerm, material.shininess); // 可提取为 uniform 控制 shininess
-        specularLight += intensity * blinnTerm * material.specular;
+         specularLight += CalcPointLight(ubo.pointLights[i], surfaceNormal,
+                            fragPosWorld, viewDirection, texColor, specTex);
     }
 
-    vec3 ambientColor = texture(ambientSampler, fragTexCoord).rgb;
-    vec3 texColor = texture(texSampler, fragTexCoord).rgb;
-    vec3 specTex = vec3(texture(specularSampler, fragTexCoord).rgb);
+    vec3 dirLight = CalcDirLight(ubo.dirLight, surfaceNormal, viewDirection, texColor, specTex);
+    vec3 ambient = ambientLight * material.ambient * texColor;
+
     //最终颜色 = (环境 + 漫反射 + 高光) * 贴图
-    vec3 finalColor = ambientLight * texColor * ambientColor +
-                    diffuseLight * texColor +
-                    specularLight * specTex;
+    vec3 finalColor = dirLight + ambient + specularLight;
 
     outColor = vec4(finalColor, 1.0);
+}
+
+// calculates the color when using a directional light.
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 diffTex, vec3 specTex)
+{
+    vec3 lightColor = light.color.xyz * light.color.w;
+    vec3 lightDir = normalize(-light.direction.xyz);
+
+    vec3 blinnLight = CalcBlinnPhongLight(light.color.xyz, light.color.w, lightDir,
+        normal, viewDir, diffTex, specTex);
+    // combine results
+    vec3 dirLight = lightColor * material.ambient * diffTex;
+       return dirLight + blinnLight;
+}
+
+// calculates the color when using a point light.
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffTex, vec3 specTex)
+{
+    vec3 lightToPos = light.position.xyz - fragPos;
+    float distance = length(lightToPos);
+    vec3 directionToLight = lightToPos / distance;
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance)); // 衰减
+
+    return CalcBlinnPhongLight(light.color.xyz, light.color.w * attenuation, directionToLight,
+        normal, viewDir, diffTex, specTex);
+}
+
+// 统一 Blinn-Phong 光照计算
+vec3 CalcBlinnPhongLight(vec3 lightColor, float intensity,
+                         vec3 lightDir, vec3 normal,
+                         vec3 viewDir,
+                         vec3 texDiffuse, vec3 texSpecular)
+{
+    // 漫反射
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = lightColor * intensity * material.diffuse * diff * texDiffuse;
+
+    // 高光 (Blinn-Phong)
+    vec3 halfAngle = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfAngle), 0.0), material.shininess);
+    vec3 specular = lightColor * intensity * material.specular * spec * texSpecular;
+
+    return diffuse + specular;
 }

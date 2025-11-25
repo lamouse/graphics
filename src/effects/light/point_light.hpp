@@ -12,10 +12,19 @@ namespace graphics::effects {
 struct PointLight {
         glm::vec4 position{};  // ignore w
         glm::vec4 color{};     // w is intensity
+        float constant{1.f};
+        float linear{0.09f};
+        float quadratic{0.032f};
+        float padding{};  // 没有实际用途
         CLASS_DEFAULT_COPYABLE(PointLight);
         CLASS_DEFAULT_MOVEABLE(PointLight);
         PointLight() = default;
         ~PointLight() = default;
+};
+
+struct DirLight {
+        glm::vec4 direction{-0.2f, -1.0f, -0.3f, 0.f};  // ignore w
+        glm::vec4 color{1.f, 1.0f, 1.f, 0.2f};                           // w is intensity
 };
 
 struct LightUBO {
@@ -23,6 +32,7 @@ struct LightUBO {
         glm::mat4 view{1.f};
         glm::mat4 inverseView{1.f};
         glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .02f};  // w is intensity
+        DirLight dirLight{};
         PointLight pointLights[MAX_LIGHTS];
         int numLights{};
         AS_BYTE_SPAN
@@ -50,7 +60,8 @@ class PointLightEffect {
             entity_ = getEffectsScene().createEntity("PointLight: " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             ecs::TransformComponent transformComponent{};
-            transformComponent.translation = glm::vec3(rotateLight * glm::vec4(-2.f, .0f, -1.f, 1.f));
+            transformComponent.translation =
+                glm::vec3(rotateLight * glm::vec4(-2.f, .0f, -1.f, 1.f));
             entity_.addComponent<ecs::TransformComponent>(transformComponent);
 
             ecs::LightComponent lightComponent{};
@@ -70,7 +81,7 @@ class PointLightEffect {
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
             glm::vec4 localOffset(transform.translation, 1.f);
 
-            transform.translation =  glm::vec3(rotation * localOffset);
+            transform.translation = glm::vec3(rotation * localOffset);
             point_light.getUBO<LightUBO>().projection = frameInfo.camera->getProjection();
             point_light.getUBO<LightUBO>().view = frameInfo.camera->getView();
 
@@ -94,8 +105,7 @@ class PointLightEffect {
 
     private:
         using PointLightInstance =
-            MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles,
-                         LightUBO>;
+            MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles, LightUBO>;
         PointLightInstance point_light;
         id_t id;
 };
