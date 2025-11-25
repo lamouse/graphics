@@ -125,16 +125,14 @@ class LightModel {
                     DirLight dirLight{};
                     dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
                     dirLight.color =
-                        glm::vec4(lightComponent.color, lightComponent.intensity);
+                        glm::vec4(lightComponent.color, 0.f) * lightComponent.intensity;
                     pointLightUbo.dirLight = dirLight;
 
                     // TODO 临时测试
-                    pointLightUbo.spotLight.position = glm::vec4(frameInfo.camera->getPosition(), 1.f);
-                    pointLightUbo.spotLight.direction = glm::vec4(frameInfo.camera->front(), 1.f);
-                    pointLightUbo.spotLight.cutOff = lightComponent.innerCone;
-                    pointLightUbo.spotLight.outerCutOff = lightComponent.outerCone;
+                    pointLightUbo.spotLight.position = glm::vec4(frameInfo.camera->getPosition(), lightComponent.outerCone);
+                    pointLightUbo.spotLight.direction = glm::vec4(frameInfo.camera->front(), lightComponent.innerCone);
                     pointLightUbo.spotLight.color =
-                        glm::vec4(lightComponent.color, lightComponent.intensity);
+                        glm::vec4(lightComponent.color, 10);
                     // TODO 临时测试
                 }
             }

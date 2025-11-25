@@ -18,20 +18,12 @@ layout(binding = 4) uniform sampler2D specularSampler;
 struct PointLight {
     vec4 position; // w 忽略
     vec4 color;    // w 是强度
-    float constant;
-    float linear;
-    float quadratic;
-    float range;  // 没有实际用途
 };
 
 struct SpotLight {
-    vec4 position;
+    vec4 position; //w outerCutOff
     vec4 color; // w 是强度
-    vec4 direction; //w constant
-    float cutOff;
-    float outerCutOff;
-    float linear;
-    float quadratic;
+    vec4 direction; //w cutOff
 };
 
 // 光照相关的 Uniform Buffer
@@ -125,7 +117,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
     vec3 lightToPos = light.position.xyz - fragPos;
     float distance = length(lightToPos);
     vec3 directionToLight = lightToPos / distance;
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance)); // 衰减
+    float attenuation = 1.0 / (distance * distance + 1e-6); // 衰减
 
     return CalcBlinnPhongLight(light.color.xyz, light.color.w * attenuation, directionToLight,
         normal, viewDir, diffTex, specTex);
@@ -164,17 +156,17 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
     float distance = length(light.position.xyz - fragPos);
-    float attenuation = 1.0 / (light.direction.w + light.linear * distance + light.quadratic * (distance * distance));
+    float attenuation = 1.0 / (distance * distance + 1e-6);
     // spotlight intensity
     float theta = dot(lightDir, normalize(-light.direction.xyz));
-    float epsilon = light.cutOff - light.outerCutOff;
-    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    float epsilon = light.direction.w - light.position.w;
+    float intensity = clamp((theta -light.position.w) / epsilon, 0.0, 1.0);
     // combine results
     vec3 ambient = material.ambient * diffuseTex;
     vec3 diffuse = lightColor * material.diffuse * diff * diffuseTex;
     vec3 specular = lightColor * material.specular * spec * specularTex;
-    ambient *= attenuation * intensity;
-    diffuse *= attenuation * intensity;
-    specular *= attenuation * intensity;
+    ambient *= light.color.w * attenuation * intensity;
+    diffuse *= light.color.w * attenuation * intensity;
+    specular *= light.color.w * attenuation * intensity;
     return (ambient + diffuse + specular);
 }

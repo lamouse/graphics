@@ -12,10 +12,6 @@ namespace graphics::effects {
 struct PointLight {
         glm::vec4 position{};  // ignore w
         glm::vec4 color{};     // w is intensity
-        float constant{1.f};
-        float linear{0.09f};
-        float quadratic{0.032f};
-        float range{};
         CLASS_DEFAULT_COPYABLE(PointLight);
         CLASS_DEFAULT_MOVEABLE(PointLight);
         PointLight() = default;
@@ -30,10 +26,6 @@ struct SpotLight {
     glm::vec4 position{}; // w used as type
     glm::vec4 color{};    // w is intensity
     glm::vec4 direction{}; //w constant
-    float cutOff{};
-    float outerCutOff{};
-    float linear{0.09f};
-    float quadratic{0.032f};
 };
 
 struct LightUBO {
