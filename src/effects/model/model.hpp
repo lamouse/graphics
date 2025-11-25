@@ -109,15 +109,24 @@ class LightModel {
             pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
             int index = 0;
             for (const auto& entity : light_entity) {
-                PointLight light{};
                 auto& lightComponent = entity.getComponent<ecs::LightComponent>();
-                auto& light_transform = entity.getComponent<ecs::TransformComponent>();
-                light.color = {lightComponent.color, lightComponent.intensity};
-                light.position = {light_transform.translation, 1.0f};
-                pointLightUbo.pointLights[index] = light;
-                index++;
-                if (index >= MAX_LIGHTS) {
-                    break;
+                if (lightComponent.type == ecs::LightType::Point) {
+                    auto& light_transform = entity.getComponent<ecs::TransformComponent>();
+                    PointLight light{};
+
+                    light.color = {lightComponent.color, lightComponent.intensity};
+                    light.position = {light_transform.translation, 1.0f};
+                    pointLightUbo.pointLights[index] = light;
+                    index++;
+                    if (index >= MAX_LIGHTS) {
+                        break;
+                    }
+                } else if (lightComponent.type == ecs::LightType::Directional) {
+                    DirLight dirLight{};
+                    dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
+                    dirLight.color =
+                        glm::vec4(lightComponent.color, lightComponent.intensity);
+                    pointLightUbo.dirLight = dirLight;
                 }
             }
             auto modelMatrix = transform.mat4();

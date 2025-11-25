@@ -15,7 +15,7 @@ struct PointLight {
         float constant{1.f};
         float linear{0.09f};
         float quadratic{0.032f};
-        float padding{};  // 没有实际用途
+        float range{};
         CLASS_DEFAULT_COPYABLE(PointLight);
         CLASS_DEFAULT_MOVEABLE(PointLight);
         PointLight() = default;

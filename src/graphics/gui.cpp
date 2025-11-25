@@ -313,43 +313,37 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
         auto& tag = entity.getComponent<ecs::TagComponent>();
         ImGui::TextUnformatted(tag.tag.c_str());
     }
-
     if (entity.hasComponent<ecs::TransformComponent>()) {
-        if (ImGui::TreeNode("TransformComponent")) {
-            auto& tc = entity.getComponent<ecs::TransformComponent>();
-            ecs::DrawTransformUI(tc);
-            ImGui::TreePop();
-            auto qRot = glm::quat(tc.rotation);
-            static quat qRot1 = quat(qRot.w, qRot.x, qRot.y, qRot.z);
-            qRot1.w = qRot.w;
-            qRot1.x = qRot.x;
-            qRot1.y = qRot.y;
-            qRot1.z = qRot.z;
-            ImGui::gizmo3D("##gizmo1", qRot1, 200.f);
-
-            // tc.rotation = glm::eulerAngles(qRot);
-        }
+        ImGui::Separator();
+        ImGui::Text("TransformComponent");
+        auto& tc = entity.getComponent<ecs::TransformComponent>();
+        ecs::DrawTransformUI(tc);
+        auto qRot = glm::quat(tc.rotation);
+        static quat qRot1 = quat(qRot.w, qRot.x, qRot.y, qRot.z);
+        qRot1.w = qRot.w;
+        qRot1.x = qRot.x;
+        qRot1.y = qRot.y;
+        qRot1.z = qRot.z;
+        ImGui::gizmo3D("##gizmo1", qRot1, 200.f);
     }
 
     if (entity.hasComponent<ecs::CameraComponent>()) {
-        if (ImGui::TreeNode("Camera")) {
-            auto& cam = entity.getComponent<ecs::CameraComponent>();
-            ecs::DrawCameraUI(cam);
-            ImGui::TreePop();
-        }
+        ImGui::Separator();
+        auto& cam = entity.getComponent<ecs::CameraComponent>();
+        ecs::DrawCameraUI(cam);
     }
 
     if (entity.hasComponent<ecs::DynamicPipeStateComponenet>()) {
+        ImGui::Separator();
+        ImGui::Text("DynamicPipeState");
         auto& state_component = entity.getComponent<ecs::DynamicPipeStateComponenet>();
         pipeline_state(state_component.state);
     }
 
     if (entity.hasComponent<ecs::LightComponent>()) {
-        if (ImGui::TreeNode("light")) {
-            auto& light = entity.getComponent<ecs::LightComponent>();
-            ecs::DrawLightUi(light);
-            ImGui::TreePop();
-        }
+        ImGui::Separator();
+        auto& light = entity.getComponent<ecs::LightComponent>();
+        ecs::DrawLightUi(light);
     }
 
     ImGui::End();

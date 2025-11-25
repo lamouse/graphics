@@ -21,7 +21,7 @@ struct PointLight {
     float constant;
     float linear;
     float quadratic;
-    float padding;  // 没有实际用途
+    float range;  // 没有实际用途
 };
 
 // 光照相关的 Uniform Buffer

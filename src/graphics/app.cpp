@@ -71,7 +71,7 @@ void App::run() {
 
         outliner_entities_ = registry.getOutliner();
         outliner_entities_.push_back(
-            {.entity = world.getEntity(world::WorldEntityType::CAMERA), .children = {}});
+            {.entity = world.entity_, .children = world.getEntities()});
         window->pullEvents(input_event);
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
@@ -170,7 +170,7 @@ void App::load_resource() {
                                glm::vec3{1.f, 1.f, 1.f}};
     for (auto& light_color : light_colors) {
         auto point_light = std::make_shared<effects::PointLightEffect>(
-            resourceManager, frame_layout, 2, .04f, light_color);
+            resourceManager, frame_layout, 1, .04f, light_color);
         registry.add(point_light);
     }
 
