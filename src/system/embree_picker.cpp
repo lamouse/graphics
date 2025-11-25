@@ -110,7 +110,7 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
     instances_[id] = instance;
 
     // 6. 映射拾取 ID
-    embree_to_user[instance_id] = id;  // 假设你保留了这个 map
+    embree_to_user[instance_id] = id;
 }
 
 // 在每帧更新所有移动物体的 transform

@@ -2,7 +2,6 @@
 
 #include "common/file.hpp"
 #include <assimp/postprocess.h>
-#include <assimp/scene.h>
 
 #include <assimp/Importer.hpp>
 #include <cassert>
@@ -340,6 +339,83 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) ->
 
 auto Model::getIndices() const -> std::span<const std::byte> {
     return as_bytes(std::span(indices_));
+}
+
+MultiMeshModel::MultiMeshModel(std::string_view path) {
+    Assimp::Importer importer;
+    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs |
+                                       aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
+                                       aiProcess_EmbedTextures;
+    // NOLINTNEXTLINE
+    const aiScene* scene = importer.ReadFile(std::string(path), ASSIMP_LOAD_FLAGS);
+    if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
+        scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
+        throw std::runtime_error("load empty model");
+    }
+    processNode(scene->mRootNode, scene);
+}
+
+void MultiMeshModel::processNode(aiNode* node, const aiScene* scene) {
+    // 处理该节点的所有网格（如果有的话）
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        processMesh(mesh, scene);
+    }
+    // 然后递归处理子节点
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        processNode(node->mChildren[i], scene);
+    }
+}
+void MultiMeshModel::processMesh(aiMesh* mesh, const aiScene* scene) {
+    Mesh m;
+
+    // 处理顶点
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        Model::Vertex vertex{};
+
+        // 位置
+        const aiVector3D& pos = mesh->mVertices[i];
+        vertex.position = {pos.x, pos.y, pos.z};
+
+        // Vertex Color
+        if (mesh->HasVertexColors(0)) {
+            const aiColor4D& c = mesh->mColors[0][i];
+            vertex.color = {c.r, c.g, c.b};
+        } else {
+            vertex.color = {1.0f, 1.0f, 1.0f};
+        }
+
+        // 纹理坐标
+        if (mesh->HasTextureCoords(0)) {
+            const aiVector3D& tex = mesh->mTextureCoords[0][i];
+            vertex.texCoord = {tex.x, tex.y};
+        } else {
+            vertex.texCoord = {0.0f, 0.0f};
+        }
+
+        // 法线
+        if (mesh->HasNormals()) {
+            const aiVector3D& n = mesh->mNormals[i];
+            vertex.normal = {n.x, n.y, n.z};
+        } else {
+            vertex.normal = {0.0f, 1.0f, 0.0f};
+        }
+
+        m.vertices_.push_back(vertex);
+    }
+
+    // 处理索引
+    for (unsigned int f = 0; f < mesh->mNumFaces; f++) {
+        const aiFace& face = mesh->mFaces[f];
+        for (unsigned int idx = 0; idx < face.mNumIndices; idx++) {
+            m.indices_.push_back(face.mIndices[idx]);
+        }
+    }
+
+    // 处理材质
+    m.material = loadMaterial(scene, mesh);
+
+    meshes_.push_back(std::move(m));
 }
 
 }  // namespace graphics

@@ -5,6 +5,7 @@
 #include <glm/gtx/hash.hpp>
 #include "mesh.hpp"
 #include "render_core/pipeline_state.h"
+#include <assimp/scene.h>
 namespace graphics {
 
 // 辅助 lambda：写入 vector<string>
@@ -271,6 +272,48 @@ class Model : public IMeshData {
         std::vector<Model::Vertex> vertices_;
         std::vector<SubMesh> subMeshes;
         Model() = default;
+};
+
+class MultiMeshModel {
+    public:
+        struct Mesh : public IMeshData {
+                std::vector<Model::Vertex> vertices_;
+                std::vector<uint32_t> indices_;
+                MeshMaterial material;
+                [[nodiscard]] auto getMesh() const -> std::span<const float> override {
+                    return std::span<const float>(
+                        reinterpret_cast<const float*>(vertices_.data()),
+                        vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+                }
+                [[nodiscard]] auto getVertexCount() const -> std::size_t override {
+                    return vertices_.size();
+                };
+                [[nodiscard]] auto getIndices() const -> std::span<const std::byte> override {
+                    return as_bytes(std::span(indices_));
+                }
+                [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override {
+                    return indices_.size();
+                }
+                [[nodiscard]] auto getVertexAttribute() const
+                    -> std::vector<render::VertexAttribute> override {
+                    return Model::Vertex::getVertexAttribute();
+                }
+                [[nodiscard]] auto getVertexBinding() const
+                    -> std::vector<render::VertexBinding> override {
+                    return Model::Vertex::getVertexBinding();
+                }
+        };
+
+        [[nodiscard]] auto getMeshes() const -> std::span<const Mesh> { return meshes_; }
+        MultiMeshModel(std::string_view path);
+        CLASS_NON_COPYABLE(MultiMeshModel);
+        CLASS_DEFAULT_MOVEABLE(MultiMeshModel);
+        ~MultiMeshModel() = default;
+
+    private:
+        void processNode(aiNode* node, const aiScene* scene);
+        void processMesh(aiMesh* mesh, const aiScene* scene);
+        std::vector<Mesh> meshes_;
 };
 
 }  // namespace graphics
