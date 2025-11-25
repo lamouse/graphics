@@ -25,7 +25,17 @@ else()
     endif()
 endif()
 
+if(TRACY_ENABLE)
+    message(STATUS "Tracy support is enabled")
+    # 添加 Tracy 相关的编译选项或源文件
+    target_compile_definitions(${LIB_COMMON_NAME} INTERFACE -DTRACY_ENABLE)
 
+    if(TRACY_ON_DEMAND)
+        target_compile_definitions(${LIB_COMMON_NAME} INTERFACE -DTRACY_ON_DEMAND)
+    endif()
+
+    target_link_libraries(${LIB_COMMON_NAME} INTERFACE Tracy::TracyClient)
+endif()
 
 target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog xxHash::xxhash)
 

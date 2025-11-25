@@ -3,6 +3,7 @@
 #include "ecs/components/transform_component.hpp"
 #include "world/world.hpp"
 #include <tuple>
+#include <tracy/Tracy.hpp>
 namespace graphics::effects {
 
 struct MaterialUBO {
@@ -55,6 +56,7 @@ class LightModel {
         }
 
         void update(const core::FrameInfo& frameInfo, world::World& world) {
+            ZoneScopedNC("model::update", 110);
             const auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
@@ -137,6 +139,7 @@ class LightModel {
         }
 
         void draw(render::Graphic* graphic) {
+            ZoneScopedNC("model::draw", 210);
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 for (auto& mesh : meshes) {
                     if (mesh.entity_.getComponent<ecs::RenderStateComponent>().visible) {

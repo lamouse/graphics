@@ -60,16 +60,8 @@ else()
     )
 endif()
 
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog Imgui::Imgui ui utils absl::strings embree)
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog Imgui::Imgui ui utils absl::strings embree common)
 
-if(TRACY_ENABLE)
-    # 添加 Tracy 相关的编译选项或源文件
-    add_definitions(-DTRACY_ENABLE)
-    if(TRACY_ON_DEMAND)
-        add_definitions(-DTRACY_ON_DEMAND)
-    endif()
-    target_link_libraries(${LIB_NAME} PRIVATE Tracy::TracyClient)
-endif()
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_NAME}/lib)

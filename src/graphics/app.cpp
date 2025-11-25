@@ -15,6 +15,7 @@
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
 #include "system/camera_system.hpp"
+#include <tracy/Tracy.hpp>
 #define image_path ::std::string{"./images/"}
 #define models_path ::std::string{"./models/"}
 
@@ -62,6 +63,7 @@ void App::run() {
 
     float current_mouse_X = 0, current_mouse_Y = 0;
     while (!window->shouldClose()) {
+        ZoneScopedNC("app::while", 010);
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
@@ -168,7 +170,7 @@ void App::load_resource() {
                                glm::vec3{1.f, 1.f, 1.f}};
     for (auto& light_color : light_colors) {
         auto point_light = std::make_shared<effects::PointLightEffect>(
-            resourceManager, frame_layout, 1, .04f, light_color);
+            resourceManager, frame_layout, 10, .04f, light_color);
         registry.add(point_light);
     }
 
