@@ -266,9 +266,11 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
             model.vertices_.push_back(v);
         }
         render::PrimitiveTopology topology = render::PrimitiveTopology::Triangles;
+        uint32_t mNumIndices = 0;
         // === 2. 加载索引（关键：使用 vertexOffset）===
         for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
             const aiFace& face = mesh->mFaces[f];
+            mNumIndices = face.mNumIndices;
             if (face.mNumIndices == 3) {
                 topology = render::PrimitiveTopology::Triangles;  // 跳过非三角面（或报错）
             } else if (face.mNumIndices == 2) {
@@ -284,7 +286,7 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 
         // === 3. 创建 SubMesh ===
         graphics::SubMesh sub{.indexOffset = indexOffset,
-                              .indexCount = mesh->mNumFaces * 3,
+                              .indexCount = mesh->mNumFaces * mNumIndices,
                               .primitiveTopology = topology,
                               .material = loadMaterial(scene, mesh)};
         model.subMeshes.push_back(sub);

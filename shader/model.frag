@@ -74,7 +74,7 @@ void main() {
     vec3 diffuseLight = vec3(0.0);
     vec3 specularLight = vec3(0.0);
 
-        vec3 ambientColor = texture(ambientSampler, fragTexCoord).rgb;
+    vec3 ambientColor = texture(ambientSampler, fragTexCoord).rgb;
     vec3 texColor = texture(texSampler, fragTexCoord).rgb;
     vec3 specTex = vec3(texture(specularSampler, fragTexCoord).rgb);
 
