@@ -4,6 +4,7 @@
 #include <string>
 #include <glm/gtx/hash.hpp>
 #include "mesh.hpp"
+#include "render_core/pipeline_state.h"
 namespace graphics {
 
 // 辅助 lambda：写入 vector<string>
@@ -178,6 +179,7 @@ struct MeshMaterial {
 struct SubMesh {
         uint32_t indexOffset = 0;
         uint32_t indexCount = 0;
+        render::PrimitiveTopology primitiveTopology{render::PrimitiveTopology::Triangles};
         MeshMaterial material;  // 每个子网格有自己的材质
 };
 

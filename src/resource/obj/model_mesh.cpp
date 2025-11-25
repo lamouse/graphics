@@ -61,6 +61,8 @@ void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
     for (const auto& sub : model.subMeshes) {
         file.write(reinterpret_cast<const char*>(&sub.indexOffset), sizeof(sub.indexOffset));
         file.write(reinterpret_cast<const char*>(&sub.indexCount), sizeof(sub.indexCount));
+        file.write(reinterpret_cast<const char*>(&sub.primitiveTopology),
+                   sizeof(sub.primitiveTopology));
         sub.material.serialize(file);
     }
 }
@@ -113,6 +115,7 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
         graphics::SubMesh sub;
         file.read(reinterpret_cast<char*>(&sub.indexOffset), sizeof(sub.indexOffset));
         file.read(reinterpret_cast<char*>(&sub.indexCount), sizeof(sub.indexCount));
+        file.read(reinterpret_cast<char*>(&sub.primitiveTopology), sizeof(sub.primitiveTopology));
         if (!sub.material.deserialize(file)) {
             return std::nullopt;
         }
@@ -262,15 +265,17 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 
             model.vertices_.push_back(v);
         }
-
+        render::PrimitiveTopology topology = render::PrimitiveTopology::Triangles;
         // === 2. 加载索引（关键：使用 vertexOffset）===
         for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
             const aiFace& face = mesh->mFaces[f];
-            if (face.mNumIndices != 3) {
-                continue;  // 跳过非三角面（或报错）
+            if (face.mNumIndices == 3) {
+                topology = render::PrimitiveTopology::Triangles;  // 跳过非三角面（或报错）
+            } else if (face.mNumIndices == 2) {
+                topology = render::PrimitiveTopology::Lines;
             }
 
-            for (unsigned int idx = 0; idx < 3; ++idx) {
+            for (unsigned int idx = 0; idx < face.mNumIndices; ++idx) {
                 uint32_t localVertexIndex = face.mIndices[idx];
                 uint32_t globalVertexIndex = localVertexIndex + vertexOffset;
                 model.indices_.push_back(globalVertexIndex);
@@ -278,12 +283,9 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
         }
 
         // === 3. 创建 SubMesh ===
-        graphics::SubMesh sub;
-        sub.indexOffset = indexOffset;
-        sub.indexCount = mesh->mNumFaces * 3;
-
-        // === 4. 加载材质 ===
-        sub.material = loadMaterial(scene, mesh);
+        graphics::SubMesh sub{.indexOffset = indexOffset,
+                              .indexCount = mesh->mNumFaces * 3,
+                              .primitiveTopology = topology, .material = loadMaterial(scene, mesh)};
         model.subMeshes.push_back(sub);
 
         // === 5. 更新偏移 ===
