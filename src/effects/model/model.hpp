@@ -102,7 +102,7 @@ class LightModel {
             }
 
             auto light_entity = world.getLightEntities();
-            PointLightUbo pointLightUbo{};
+            LightUBO pointLightUbo{};
             pointLightUbo.projection = frameInfo.camera->getProjection();
             pointLightUbo.view = frameInfo.camera->getView();
             pointLightUbo.inverseView = frameInfo.camera->getView();
@@ -126,15 +126,7 @@ class LightModel {
             for (auto& mesh : meshes) {
                 mesh.PushConstant().modelMatrix = modelMatrix;
                 mesh.PushConstant().normalMatrix = normalMatrix;
-                mesh.getUBO<PointLightUbo>().projection = pointLightUbo.projection;
-                mesh.getUBO<PointLightUbo>().view = pointLightUbo.view;
-                mesh.getUBO<PointLightUbo>().inverseView = pointLightUbo.inverseView;
-                mesh.getUBO<PointLightUbo>().ambientLightColor = pointLightUbo.ambientLightColor;
-                for (int i = 0; const auto& light : pointLightUbo.pointLights) {
-                    mesh.getUBO<PointLightUbo>().pointLights[i] = light;
-                    i++;
-                }
-                mesh.getUBO<PointLightUbo>().numLights = pointLightUbo.numLights;
+                mesh.getUBO<LightUBO>() = pointLightUbo;
             }
         }
 
@@ -162,7 +154,7 @@ class LightModel {
 
     private:
         using LightMeshInstance =
-            MeshInstance<ModelPushConstantData, render::PrimitiveTopology::Triangles, PointLightUbo,
+            MeshInstance<ModelPushConstantData, render::PrimitiveTopology::Triangles, LightUBO,
                          MaterialUBO>;
         std::vector<LightMeshInstance> meshes;
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
