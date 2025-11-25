@@ -285,7 +285,8 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
         // === 3. 创建 SubMesh ===
         graphics::SubMesh sub{.indexOffset = indexOffset,
                               .indexCount = mesh->mNumFaces * 3,
-                              .primitiveTopology = topology, .material = loadMaterial(scene, mesh)};
+                              .primitiveTopology = topology,
+                              .material = loadMaterial(scene, mesh)};
         model.subMeshes.push_back(sub);
 
         // === 5. 更新偏移 ===
