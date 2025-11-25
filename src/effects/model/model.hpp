@@ -127,6 +127,15 @@ class LightModel {
                     dirLight.color =
                         glm::vec4(lightComponent.color, lightComponent.intensity);
                     pointLightUbo.dirLight = dirLight;
+
+                    // TODO 临时测试
+                    pointLightUbo.spotLight.position = glm::vec4(frameInfo.camera->getPosition(), 1.f);
+                    pointLightUbo.spotLight.direction = glm::vec4(frameInfo.camera->front(), 1.f);
+                    pointLightUbo.spotLight.cutOff = lightComponent.innerCone;
+                    pointLightUbo.spotLight.outerCutOff = lightComponent.outerCone;
+                    pointLightUbo.spotLight.color =
+                        glm::vec4(lightComponent.color, lightComponent.intensity);
+                    // TODO 临时测试
                 }
             }
             auto modelMatrix = transform.mat4();

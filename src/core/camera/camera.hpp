@@ -21,7 +21,9 @@ class Camera {
         [[nodiscard]] auto getInverseView() const -> const glm::mat4& { return inverseViewMatrix; }
         auto getPosition() -> glm::vec3 { return {inverseViewMatrix[3]}; }
         auto right() { return glm::vec3(inverseViewMatrix[0]); }
+        auto left() -> glm::vec3 { return -glm::vec3(inverseViewMatrix[0]); }
         auto up() { return glm::vec3(inverseViewMatrix[1]); }
+        auto front() -> glm::vec3 { return glm::vec3(inverseViewMatrix[2]); }
 
     private:
         glm::mat4 projectionMatrix{1.F};

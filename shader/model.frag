@@ -24,6 +24,16 @@ struct PointLight {
     float range;  // 没有实际用途
 };
 
+struct SpotLight {
+    vec4 position;
+    vec4 color; // w 是强度
+    vec4 direction; //w constant
+    float cutOff;
+    float outerCutOff;
+    float linear;
+    float quadratic;
+};
+
 // 光照相关的 Uniform Buffer
 struct DirLight  {
     vec4 direction; // w 忽略
@@ -36,6 +46,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 invView;
     vec4 ambientLightColor; // w 是强度
     DirLight dirLight;
+    SpotLight spotLight;
     PointLight pointLights[10];
     int numLights;
 } ubo;
@@ -63,6 +74,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 diffTex, vec3 
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffTex, vec3 specTex);
 
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseTex, vec3 specularTex);
+
 void main() {
 
     vec3 ambientLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
@@ -86,8 +99,9 @@ void main() {
     vec3 dirLight = CalcDirLight(ubo.dirLight, surfaceNormal, viewDirection, texColor, specTex);
     vec3 ambient = ambientLight * material.ambient * texColor;
 
+    vec3 calcLight = CalcSpotLight(ubo.spotLight, surfaceNormal, fragPosWorld, viewDirection, texColor, specTex);
     //最终颜色 = (环境 + 漫反射 + 高光) * 贴图
-    vec3 finalColor = dirLight + ambient + specularLight;
+    vec3 finalColor = dirLight + ambient + specularLight + calcLight;
 
     outColor = vec4(finalColor, 1.0);
 }
@@ -133,4 +147,34 @@ vec3 CalcBlinnPhongLight(vec3 lightColor, float intensity,
     vec3 specular = lightColor * intensity * material.specular * spec * texSpecular;
 
     return diffuse + specular;
+}
+
+// calculates the color when using a spot light.
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 diffuseTex, vec3 specularTex)
+{
+    if(light.position.w == 0){
+        return vec3(0.0);
+    }
+    vec3 lightColor = light.color.xyz * light.color.w;
+    vec3 lightDir = normalize(light.position.xyz - fragPos);
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // specular shading
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // attenuation
+    float distance = length(light.position.xyz - fragPos);
+    float attenuation = 1.0 / (light.direction.w + light.linear * distance + light.quadratic * (distance * distance));
+    // spotlight intensity
+    float theta = dot(lightDir, normalize(-light.direction.xyz));
+    float epsilon = light.cutOff - light.outerCutOff;
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    // combine results
+    vec3 ambient = material.ambient * diffuseTex;
+    vec3 diffuse = lightColor * material.diffuse * diff * diffuseTex;
+    vec3 specular = lightColor * material.specular * spec * specularTex;
+    ambient *= attenuation * intensity;
+    diffuse *= attenuation * intensity;
+    specular *= attenuation * intensity;
+    return (ambient + diffuse + specular);
 }

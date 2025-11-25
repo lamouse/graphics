@@ -26,6 +26,15 @@ struct DirLight {
         glm::vec4 direction{-0.2f, -1.0f, -0.3f, 0.f};  // ignore w
         glm::vec4 color{1.f, 1.0f, 1.f, 0.2f};                           // w is intensity
 };
+struct SpotLight {
+    glm::vec4 position{}; // w used as type
+    glm::vec4 color{};    // w is intensity
+    glm::vec4 direction{}; //w constant
+    float cutOff{};
+    float outerCutOff{};
+    float linear{0.09f};
+    float quadratic{0.032f};
+};
 
 struct LightUBO {
         glm::mat4 projection{1.f};
@@ -33,6 +42,7 @@ struct LightUBO {
         glm::mat4 inverseView{1.f};
         glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .02f};  // w is intensity
         DirLight dirLight{};
+        SpotLight spotLight{};
         PointLight pointLights[MAX_LIGHTS];
         int numLights{};
         AS_BYTE_SPAN
