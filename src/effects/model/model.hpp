@@ -125,7 +125,7 @@ class LightModel {
                     DirLight dirLight{};
                     dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
                     dirLight.color =
-                        glm::vec4(lightComponent.color, 0.f) * lightComponent.intensity;
+                        glm::vec4(lightComponent.color, lightComponent.intensity);
                     pointLightUbo.dirLight = dirLight;
 
                     // TODO 临时测试

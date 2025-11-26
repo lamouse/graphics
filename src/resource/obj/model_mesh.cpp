@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <cassert>
 #include <fstream>
+#include <stack>
 
 namespace {
 constexpr const char* model_cache_path = "data/cache/mesh/";
@@ -315,7 +316,7 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) ->
     }
 
     Assimp::Importer importer;
-    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs |
+    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate |
                                        aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
                                        aiProcess_EmbedTextures;
     // NOLINTNEXTLINE
@@ -343,7 +344,7 @@ auto Model::getIndices() const -> std::span<const std::byte> {
 
 MultiMeshModel::MultiMeshModel(std::string_view path) {
     Assimp::Importer importer;
-    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs |
+    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate  |
                                        aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
                                        aiProcess_EmbedTextures;
     // NOLINTNEXTLINE
@@ -355,15 +356,29 @@ MultiMeshModel::MultiMeshModel(std::string_view path) {
     processNode(scene->mRootNode, scene);
 }
 
-void MultiMeshModel::processNode(aiNode* node, const aiScene* scene) {
-    // 处理该节点的所有网格（如果有的话）
-    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        processMesh(mesh, scene);
+void MultiMeshModel::processNode(aiNode* root, const aiScene* scene) {
+    if (!root) {
+        return;
     }
-    // 然后递归处理子节点
-    for (unsigned int i = 0; i < node->mNumChildren; i++) {
-        processNode(node->mChildren[i], scene);
+
+    // 显式栈
+    std::stack<aiNode*> stack;
+    stack.push(root);
+
+    while (!stack.empty()) {
+        auto* node = stack.top();
+        stack.pop();
+
+        // 处理该节点的所有网格
+        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            processMesh(mesh, scene);
+        }
+
+        // 将子节点压栈
+        for (unsigned int i = 0; i < node->mNumChildren; i++) {
+            stack.push(node->mChildren[i]);
+        }
     }
 }
 void MultiMeshModel::processMesh(aiMesh* mesh, const aiScene* scene) {

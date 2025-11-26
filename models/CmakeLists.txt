@@ -16,6 +16,16 @@ foreach(ext IN LISTS MODEL_EXTENSIONS)
     list(APPEND MODEL_FILES ${tmp})
 endforeach()
 
+set(MODEL_COPY_OUT_PUT "")
+foreach(MODEL_FILE IN LISTS MODEL_FILES)
+    set(COPY_OUTPUT_PATH "${MODEL_OUTPUT_DIR}/${MODEL_FILE}")
+    add_custom_command(
+        OUTPUT ${COPY_OUTPUT_PATH}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${MODEL_SOURCE_DIR}/${MODEL_FILE}" "${COPY_OUTPUT_PATH}"
+    )
+    list(APPEND MODEL_COPY_OUT_PUT ${COPY_OUTPUT_PATH})
+endforeach()
+
 find_program(PYTHON python)
 
 set(OUT_PATH "${CMAKE_BINARY_DIR}/bin/models/assets.json")
@@ -32,15 +42,13 @@ add_custom_command(
 
     # 你可能需要手动列出所有 asset 文件作为依赖，或用 configure_file 触发
 )
+
+
+
 add_custom_target(AssetHashManifest
-    DEPENDS "${OUT_PATH}"
+    DEPENDS "${OUT_PATH}" "${MODEL_COPY_OUT_PUT}"
 )
-foreach(MODEL_FILE IN LISTS MODEL_FILES)
-    add_custom_command(
-        TARGET AssetHashManifest PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${MODEL_SOURCE_DIR}/${MODEL_FILE}" "${MODEL_OUTPUT_DIR}/${MODEL_FILE}"
-    )
-endforeach()
+
 
 set(MOUDLE_PATH_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include PARENT_SCOPE)
 set(MOUDLE_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include)
