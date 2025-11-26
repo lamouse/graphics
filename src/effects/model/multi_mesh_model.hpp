@@ -9,7 +9,7 @@ class ModelForMultiMesh {
         ecs::Entity entity_;
         void draw(render::Graphic* graphic) {
             ZoneScopedNC("model::draw", 210);
-            if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
+            if (render_state->visible) {
                 for (auto& mesh : meshes) {
                     if (mesh.entity_.getComponent<ecs::RenderStateComponent>().visible) {
                         graphic->draw(mesh);
@@ -42,5 +42,6 @@ class ModelForMultiMesh {
         glm::vec3 out_dragStartWorldPos{};
         float out_initialWorldZ{};
         std::unordered_set<id_t> mesh_ids;
+        ecs::RenderStateComponent* render_state{nullptr};
 };
 }  // namespace graphics::effects

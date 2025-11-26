@@ -65,7 +65,7 @@ void App::run() {
 
     float current_mouse_X = 0, current_mouse_Y = 0;
     while (!window->shouldClose()) {
-        ZoneScopedNC("app::while", 010);
+         ZoneScopedNC("app::LoopIter", __LINE__); // 每次迭代耗时
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;

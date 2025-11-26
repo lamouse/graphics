@@ -642,6 +642,7 @@ auto VulkanGraphics::uploadTexture(ktxTexture* ktxTexture) -> TextureId {
 }
 
 void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
+    ZoneScopedN("VulkanGraphics::draw()");
     if (is_begin_frame) {
         last_pipeline_state = instance.getPipelineState();
     } else {

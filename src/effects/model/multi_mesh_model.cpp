@@ -28,6 +28,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
     }
     entity_ = getEffectsScene().createEntity(name + ": " + std::to_string(id));
     entity_.addComponent<ecs::RenderStateComponent>(id);
+    render_state = &entity_.getComponent<ecs::RenderStateComponent>();
     entity_.addComponent<ecs::TransformComponent>();
 }
 

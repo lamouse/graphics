@@ -115,7 +115,6 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
 
 // 在每帧更新所有移动物体的 transform
 void EmbreePicker::updateTransform(id_t id, const ecs::TransformComponent& transform) {
-    ZoneScopedN("EmbreePicker::updateTransform");
     if (!geometries_.contains(id)) {
         return;
     }
