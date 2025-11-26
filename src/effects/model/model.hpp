@@ -132,7 +132,7 @@ class LightModel {
                     pointLightUbo.spotLight.position = glm::vec4(frameInfo.camera->getPosition(), lightComponent.outerCone);
                     pointLightUbo.spotLight.direction = glm::vec4(frameInfo.camera->front(), lightComponent.innerCone);
                     pointLightUbo.spotLight.color =
-                        glm::vec4(lightComponent.color, 10);
+                        glm::vec4(lightComponent.color, 1);
                     // TODO 临时测试
                 }
             }

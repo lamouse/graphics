@@ -304,7 +304,7 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
                        .setWidth(info.size.width)
                        .setHeight(info.size.height)
                        .setDepth(info.size.depth))
-        .setMipLevels(1)
+        .setMipLevels(info.resources.levels)
         .setArrayLayers(static_cast<u32>(info.resources.layers))
         .setSamples(ConvertSampleCount(info.num_samples))
         .setTiling(vk::ImageTiling::eOptimal)

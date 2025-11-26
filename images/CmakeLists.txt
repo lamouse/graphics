@@ -123,6 +123,7 @@ foreach(TEXTURE_FILE IN LISTS IMAGE_FILES)
         COMMAND ${TOKTX_EXECUTABLE}
         --assign_oetf srgb
         --target_type RGBA
+        --genmipmap
         ${TEXTURE_OUT_PATH}
         ${INPUT_FILE}
         COMMENT "Generating KTX2 texture: ${TEXTURE_OUT_PATH}"

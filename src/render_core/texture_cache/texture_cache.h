@@ -69,7 +69,7 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
     info.type = render::texture::ImageType::e2D;
     info.num_samples = 1;
     info.resources.layers = static_cast<s32>(ktxTexture->numFaces);
-    info.resources.levels = 1;
+    info.resources.levels = static_cast<s32>(ktxTexture->numLevels);
     info.format = PixelFormat::A8B8G8R8_UNORM;
     const ImageId new_image_id = slot_images.insert(runtime, info);
     Image& new_image = slot_images[new_image_id];
@@ -81,15 +81,18 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
         for (uint32_t level = 0; level < ktxTexture->numLevels; ++level) {
             ktx_size_t offset{};
             KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, 0, face, &offset);
+            // 计算当前 mip 层的尺寸
+            uint32_t mipWidth = std::max(1u, ktxTexture->baseWidth >> level);
+            uint32_t mipHeight = std::max(1u, ktxTexture->baseHeight >> level);
             BufferImageCopy copy{.buffer_offset = offset,
                                  .buffer_size = 0,
                                  .buffer_row_length = 0,
                                  .buffer_image_height = 0,
-                                 .image_subresource = {.base_level = 0,
+                                 .image_subresource = {.base_level = static_cast<s32>(level),
                                                        .base_layer = static_cast<int>(face),
                                                        .num_layers = 1},
                                  .image_offset = {.x = 0, .y = 0, .z = 0},
-                                 .image_extent = info.size};
+                                 .image_extent = {.width = mipWidth, .height = mipHeight, .depth = 1}};
             copys.push_back(copy);
         }
     }
@@ -121,7 +124,7 @@ auto TextureCache<P>::getCurrentTexture() -> std::pair<ImageView*, Sampler*> {
     return std::make_pair(&slot_image_views[tmp_textureId], getSampler(currentSamplerPreset));
 }
 template <class P>
-auto TextureCache<P>::getCurrentTextures() -> std::vector<std::pair<ImageView*, Sampler*>>{
+auto TextureCache<P>::getCurrentTextures() -> std::vector<std::pair<ImageView*, Sampler*>> {
     std::vector<std::pair<ImageView*, Sampler*>> result;
     for (const auto& textureId : used_textures) {
         result.emplace_back(&slot_image_views[textureId], getSampler(currentSamplerPreset));
@@ -136,9 +139,10 @@ void TextureCache<P>::setCurrentTexture(ImageViewId viewId, SamplerPreset preset
     currentSamplerPreset = preset;
 }
 template <class P>
-void TextureCache<P>::setCurrentTextures(const std::vector<ImageViewId>& textures, SamplerPreset preset) {
+void TextureCache<P>::setCurrentTextures(const std::vector<ImageViewId>& textures,
+                                         SamplerPreset preset) {
     for (const auto& texture : textures) {
-        if(texture) {
+        if (texture) {
             used_textures.push_back(texture);
         }
     }
