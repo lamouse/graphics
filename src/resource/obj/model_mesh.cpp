@@ -7,8 +7,6 @@
 #include <cassert>
 #include <fstream>
 #include <stack>
-#include <nlohmann/json.hpp>
-#include <filesystem>
 
 namespace {
 constexpr const char* model_cache_path = "data/cache/mesh/";
@@ -311,21 +309,11 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 
 namespace graphics {
 
-auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) -> Model {
-    std::string model_path = path;
-    auto importer_flag = DEFAULT_ULT_ASSIMP_LOAD_FLAGS;
+auto Model::createFromFile(const ::std::string& model_path, std::uint64_t obj_hash, bool flip_uv) -> Model {
 
-    namespace fs = std::filesystem;
-    fs::path file_path(path);
-    if (fs::is_directory(file_path)) {
-        using json = nlohmann::json;
-        std::ifstream f(path + "/config.json");
-        json j;
-        f >> j;
-        model_path = model_path + "/" + j["name"].get<std::string>();
-        if (j.contains("need_flip_uv") && j["need_flip_uv"].get<bool>()) {
-            importer_flag = FLIP_UV_ULT_ASSIMP_LOAD_FLAGS;
-        }
+    auto importer_flag = DEFAULT_ULT_ASSIMP_LOAD_FLAGS;
+    if(flip_uv){
+        importer_flag = FLIP_UV_ULT_ASSIMP_LOAD_FLAGS;
     }
 
     if (obj_hash == 0) {

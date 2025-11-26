@@ -96,11 +96,24 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
     return textures.find(textureName)->second;
 }
 
-auto ResourceManager::addModel(std::string modelName, add_mesh_func func) -> render::MeshId {
-    ASSERT_MSG(!modelName.empty(), "meshName is null");
+auto ResourceManager::addModel(std::string_view model_path, add_mesh_func func) -> render::MeshId {
+    ASSERT_MSG(!model_path.empty(), "meshName is null");
+    namespace fs = std::filesystem;
+    fs::path file_path(std::string(model::MODEL_ROOT_PATH) + std::string(model_path));
+    std::string model_filt_path{model_path};
+    bool flip_uv{false};
+    if (fs::is_directory(file_path)) {
+        using json = nlohmann::json;
+        std::ifstream f(file_path.string() + "/config.json");
+        json j;
+        f >> j;
+        model_filt_path = model_filt_path + "/" + j["name"].get<std::string>();
+
+        flip_uv = j.contains("need_flip_uv") && j["need_flip_uv"].get<bool>();
+    }
     auto model_ =
-        Model::createFromFile(model::MODEL_ROOT_PATH + modelName, model_file_hash[modelName]);
-    auto mesh_id = addMesh(modelName, model_, std::move(func));
+        Model::createFromFile(model::MODEL_ROOT_PATH + model_filt_path, model_file_hash[model_filt_path], flip_uv);
+    auto mesh_id = addMesh(std::string(model_path), model_, std::move(func));
     mesh_vertex[mesh_id] = std::make_unique<std::vector<::glm::vec3>>(model_.only_vertex);
     mesh_indics[mesh_id] = std::make_unique<std::vector<uint32_t>>(model_.indices_);
     model_sub_mesh[mesh_id] = std::make_unique<std::vector<SubMesh>>(model_.subMeshes);

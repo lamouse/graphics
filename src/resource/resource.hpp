@@ -49,7 +49,7 @@ class ResourceManager {
         [[nodiscard]] auto getTexture(std::string textureName) const -> render::TextureId;
         explicit ResourceManager(render::Graphic* graphic_);
 
-        auto addModel(std::string modelName, add_mesh_func func = nullptr) -> render::MeshId;
+        auto addModel(std::string_view path, add_mesh_func func = nullptr) -> render::MeshId;
         auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
