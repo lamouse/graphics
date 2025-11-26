@@ -8,6 +8,8 @@ set(sources
     pick_system.cpp
     embree_picker.hpp
     embree_picker.cpp
+    transform_system.hpp
+    transform_system.cpp
 )
 
 set(HEADER_FILES

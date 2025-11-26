@@ -131,48 +131,6 @@ void EmbreePicker::commit() {
     rtcCommitScene(main_scene_);
 }
 
-auto EmbreePicker::pick(id_t id, const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
-    -> std::optional<PickResult> {
-    ZoneScopedN("EmbreePicker::pick");
-    if (!geometries_.contains(id)) {
-        return std::nullopt;
-    }
-    RTCIntersectContext context{};
-    rtcInitIntersectContext(&context);
-
-    RTCRayHit ray_hit{};
-    ray_hit.ray.org_x = rayOrigin.x;
-    ray_hit.ray.org_y = rayOrigin.y;
-    ray_hit.ray.org_z = rayOrigin.z;
-
-    ray_hit.ray.dir_x = rayDirection.x;
-    ray_hit.ray.dir_y = rayDirection.y;
-    ray_hit.ray.dir_z = rayDirection.z;
-
-    ray_hit.ray.tnear = 1e-4f;  // 避免自相交
-    ray_hit.ray.tfar = std::numeric_limits<float>::max();
-    ray_hit.ray.mask = 0;
-    ray_hit.ray.time = 0.f;
-
-    ray_hit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
-    ray_hit.hit.primID = RTC_INVALID_GEOMETRY_ID;
-    ray_hit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
-
-    // 执行单条射线相交
-    rtcIntersect1(main_scene_, &context, &ray_hit);
-
-    if (ray_hit.hit.primID != RTC_INVALID_GEOMETRY_ID) {
-        if (embree_to_user.at(ray_hit.hit.geomID) != id) {
-            return std::nullopt;
-        }
-        return PickResult{.position = rayOrigin + rayDirection * ray_hit.ray.tfar,
-                          .distance = ray_hit.ray.tfar,
-                          .primitiveId = ray_hit.hit.primID};
-    }
-
-    return std::nullopt;
-}
-
 auto EmbreePicker::pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
     -> std::optional<PickResult> {
     ZoneScopedN("EmbreePicker::pick");

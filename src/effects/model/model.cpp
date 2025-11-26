@@ -1,107 +1,8 @@
 #include "model.hpp"
 
 #include "system/pick_system.hpp"
+#include "system/transform_system.hpp"
 namespace graphics::effects {
-void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform) {
-    auto width = static_cast<float>(frameInfo.window_width);
-    auto height = static_cast<float>(frameInfo.window_hight);
-
-    // 📌 获取相对鼠标移动（像素）
-    float dx = frameInfo.input_state.mouseRelativeX_;
-    float dy = frameInfo.input_state.mouseRelativeY_;
-
-    if (std::abs(dx) > 1e-6f || std::abs(dy) > 1e-6f) {
-        // 🌐 转换：屏幕像素移动 → NDC 移动
-        float ndc_dx = 2.0f * dx / width;
-        float ndc_dy = 2.0f * dy / height;
-
-        auto right = glm::vec3(frameInfo.camera->right());  // X 轴
-        auto up = glm::vec3(frameInfo.camera->up());        // Y 轴
-
-        // 📏 计算当前距离下的“NDC 单位长度”对应的世界距离
-        float distance = glm::distance(transform.translation, frameInfo.camera->getPosition());
-        float world_scale = distance * 0.55f;  // 经验值，可调
-
-        // 🚚 计算世界空间位移
-        glm::vec3 world_delta = (right * ndc_dx + up * ndc_dy) * world_scale;
-
-        // 🔄 更新位置
-        transform.translate(world_delta);
-    }
-};
-
-void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& transform,
-                bool startDragThisFrame,
-                float& out_initialWorldZ,         // 👈 只需记录一个 Z 值（更轻量）
-                glm::vec3& out_dragStartWorldPos  // 仍需要完整位置用于 delta 计算
-) {
-    auto width = static_cast<float>(frameInfo.window_width);
-    auto height = static_cast<float>(frameInfo.window_hight);
-
-    float mouseX = frameInfo.input_state.mouseX_;
-    float mouseY = frameInfo.input_state.mouseY_;
-
-    // === 构建射线（同前）===
-    float ndcX = (2.0f * mouseX / width) - 1.0f;
-    float ndcY = (2.0f * mouseY / height);
-
-    glm::vec4 rayStartNDC(ndcX, ndcY, -1.0f, 1.0f);
-    glm::vec4 rayEndNDC(ndcX, ndcY, 1.0f, 1.0f);
-
-    glm::mat4 view = frameInfo.camera->getView();
-    glm::mat4 proj = frameInfo.camera->getProjection();
-    glm::mat4 invVP = glm::inverse(proj * view);
-
-    glm::vec4 rayStartWorld = invVP * rayStartNDC;
-    glm::vec4 rayEndWorld = invVP * rayEndNDC;
-    rayStartWorld /= rayStartWorld.w;
-    rayEndWorld /= rayEndWorld.w;
-
-    auto rayOrigin = glm::vec3(rayStartWorld);
-    glm::vec3 rayDir = glm::normalize(glm::vec3(rayEndWorld - rayStartWorld));
-
-    // === 关键：使用固定 Z 平面（世界空间）===
-    float planeZ = startDragThisFrame ? transform.translation.z : out_initialWorldZ;
-
-    // 射线与 Z = planeZ 平面相交
-    // 射线: P(t) = rayOrigin + t * rayDir
-    // 求 t 使得 P.z = planeZ
-    if (std::abs(rayDir.z) < 1e-6f) {
-        return;  // 射线平行于 XY 平面，无法相交
-    }
-
-    float t = (planeZ - rayOrigin.z) / rayDir.z;
-    glm::vec3 intersection = rayOrigin + t * rayDir;
-
-    // === 更新位置 ===
-    if (startDragThisFrame) {
-        out_initialWorldZ = transform.translation.z;
-        out_dragStartWorldPos = intersection;
-        // 注意：此时 intersection.z ≈ planeZ，但可能有浮点误差
-        // 我们强制保持原始 Z
-    } else {
-        glm::vec3 delta = intersection - out_dragStartWorldPos;
-        // 只应用 X 和 Y 的变化，Z 锁定为初始值
-        transform.translation.x = transform.translation.x + delta.x;
-        transform.translation.y = transform.translation.y + delta.y;
-        transform.translation.z = out_initialWorldZ;  // 确保 Z 不变
-    }
-}
-
-void check_pick(const std::unordered_set<id_t>& ids, const core::FrameInfo& frameInfo,
-                ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform) {
-
-    //PickingSystem::update_transform(id, transform);
-    auto pick = PickingSystem::pick(*frameInfo.camera, frameInfo.input_state.mouseX_,
-                        frameInfo.input_state.mouseY_,
-                        static_cast<float>(frameInfo.window_width), static_cast<float>(frameInfo.window_hight));
-    if (pick && ids.contains(pick->id)) {
-        render_state.mouse_select = true;
-        render_state.select_id = render_state.id;
-    } else {
-        render_state.mouse_select = false;
-    }
-};
 
 auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMesh& subMesh)
     -> std::tuple<MeshMaterialResource, MaterialUBO> {
@@ -148,6 +49,7 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
     : id(getCurrentId()) {
     auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
     auto mesh_id = manager.getMesh(names.mesh_name);
+
     auto sub_mesh = manager.getModelSubMesh(mesh_id);
     meshes.reserve(sub_mesh.size());
     for (const auto& mesh : sub_mesh) {
@@ -160,12 +62,82 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
             shader_hash, layout, name + "mesh", mesh_id, materialResource);
         meshes.back().getUBO<MaterialUBO>() = materialUBO;
     }
+    mesh_ids.insert(meshes.back().getId());
     auto vertex = manager.getMeshVertex(mesh_id);
     auto indics = manager.getMeshIndics(mesh_id);
     PickingSystem::upload_vertex(id, vertex, indics);
     entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
     entity_.addComponent<ecs::RenderStateComponent>(id);
     entity_.addComponent<ecs::TransformComponent>();
+}
+
+void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
+    ZoneScopedNC("model::update", 110);
+    auto& transform = entity_.getComponent<ecs::TransformComponent>();
+    auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
+
+    if (render_state.is_select()) {
+        if (frameInfo.input_state.key == core::InputKey::LCtrl) {
+            if (frameInfo.input_state.scrollOffset_ != 0.0f) {
+                scale(transform, frameInfo.input_state.scrollOffset_);
+            }
+        }
+    }
+
+    auto [pick_id, pick] = world.pick();
+
+    if (pick && mesh_ids.contains(pick_id)) {
+        render_state.mouse_select = true;
+    } else {
+        render_state.mouse_select = false;
+    }
+    if (render_state.mouse_select) {
+        move_model(frameInfo, transform);
+    }
+
+    auto light_entity = world.getLightEntities();
+    LightUBO pointLightUbo{};
+    pointLightUbo.projection = frameInfo.camera->getProjection();
+    pointLightUbo.view = frameInfo.camera->getView();
+    pointLightUbo.inverseView = frameInfo.camera->getView();
+    pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
+    int index = 0;
+    for (const auto& entity : light_entity) {
+        auto& lightComponent = entity.getComponent<ecs::LightComponent>();
+        if (lightComponent.type == ecs::LightType::Point) {
+            auto& light_transform = entity.getComponent<ecs::TransformComponent>();
+            PointLight light{};
+
+            light.color = {lightComponent.color, lightComponent.intensity};
+            light.position = {light_transform.translation, 1.0f};
+            pointLightUbo.pointLights[index] = light;
+            index++;
+            if (index >= MAX_LIGHTS) {
+                break;
+            }
+        } else if (lightComponent.type == ecs::LightType::Directional) {
+            DirLight dirLight{};
+            dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
+            dirLight.color = glm::vec4(lightComponent.color, lightComponent.intensity);
+            pointLightUbo.dirLight = dirLight;
+
+            // TODO 临时测试
+            pointLightUbo.spotLight.position =
+                glm::vec4(frameInfo.camera->getPosition(), lightComponent.outerCone);
+            pointLightUbo.spotLight.direction =
+                glm::vec4(frameInfo.camera->front(), lightComponent.innerCone);
+            pointLightUbo.spotLight.color = glm::vec4(lightComponent.color, 1);
+            // TODO 临时测试
+        }
+    }
+    auto modelMatrix = transform.mat4();
+    auto normalMatrix = transform.normalMatrix();
+    pointLightUbo.numLights = index;
+    for (auto& mesh : meshes) {
+        mesh.PushConstant().modelMatrix = modelMatrix;
+        mesh.PushConstant().normalMatrix = normalMatrix;
+        mesh.getUBO<LightUBO>() = pointLightUbo;
+    }
 }
 
 }  // namespace graphics::effects

@@ -46,10 +46,9 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
             if (event->type == SDL_EVENT_WINDOW_RESIZED) {
                 auto* base_window = reinterpret_cast<SDLWindow*>(userdata);
                 if (event->window.windowID == SDL_GetWindowID(base_window->getWindow())) {
-                    base_window->setWindowConfig(WindowConfig{.extent = {
-                        .width = static_cast<int>(event->window.data1),
-                        .height = static_cast<int>(event->window.data2)
-                    }});
+                    base_window->setWindowConfig(
+                        WindowConfig{.extent = {.width = static_cast<int>(event->window.data1),
+                                                .height = static_cast<int>(event->window.data2)}});
                     // base_window->UpdateCurrentFramebufferLayout(
                     //     static_cast<uint32_t>(event->window.data1),
                     //     static_cast<uint32_t>(event->window.data2));
@@ -207,6 +206,8 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
                     if (e.button.button == SDL_BUTTON_RIGHT) {
                         input_state.mouse_button_right.Assign(1);
                     }
+                    input_state.mouseX_ = e.motion.x;
+                    input_state.mouseY_ = e.motion.y;
                     event.push_event(input_state);
                 }
                 break;

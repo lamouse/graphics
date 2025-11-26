@@ -11,7 +11,7 @@ class Camera {
         void setPerspectiveProjection(float fovy, float aspect, float near, float far);
 
         void setViewDirection(glm::vec3 position, glm::vec3 direction,
-                              glm::vec3 up = glm::vec3{0.F, -1.F, 0.F});
+                              glm::vec3 up = glm::vec3{0.F, 1.F, 0.F});
         void setViewTarget(glm::vec3 position, glm::vec3 target,
                            glm::vec3 up = glm::vec3{0.F, -1.F, 0.F});
         void setViewYXZ(glm::vec3 position, glm::vec3 rotation);

@@ -1,5 +1,6 @@
 #include "effects/model/multi_mesh_model.hpp"
 #include "system/pick_system.hpp"
+#include "system/transform_system.hpp"
 namespace graphics::effects {
 ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
                                      const layout::FrameBufferLayout& layout,
@@ -32,47 +33,26 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
 
 void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
-    const auto [down, first] = frameInfo.input_state.mouseLeftButtonDown();
 
     auto& transform = entity_.getComponent<ecs::TransformComponent>();
     auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
+    auto [pick_id, pick] = world.pick();
 
-    // transform.rotation.x = 4.8f;
-
-    if (render_state.mouse_select && frameInfo.input_state.mouseLeftButtonUp()) {
+    if (pick && mesh_ids.contains(pick_id)) {
+        render_state.mouse_select = true;
+    } else {
         render_state.mouse_select = false;
     }
-    if (render_state.mouse_select) {
-        // move_model(frameInfo, transform);
-        move_model(frameInfo, transform, false, out_initialWorldZ, out_dragStartWorldPos);
+    if(render_state.mouse_select){
+        move_model(frameInfo, transform);
     }
+
     if (render_state.is_select()) {
         if (frameInfo.input_state.key == core::InputKey::LCtrl) {
             if (frameInfo.input_state.scrollOffset_ != 0.0f) {
-                auto scale = transform.scale.x;
-                scale += frameInfo.input_state.scrollOffset_ * 0.02f;
-                if (scale <= 0.01) {
-                    scale = 0.01f;
-                }
-                if (scale > 2.0) {
-                    scale = 2.0f;
-                }
-                transform.scale = glm::vec3(scale);
+                scale(transform, frameInfo.input_state.scrollOffset_);
             }
         }
-    }
-
-    if (first) {
-        pending_pick_ = true;
-    } else {
-        if (!render_state.mouse_select && down && pending_pick_ &&
-            entity_.getComponent<ecs::RenderStateComponent>().visible) {
-            check_pick(mesh_ids, frameInfo, render_state, transform);
-        }
-        if (render_state.mouse_select) {
-            move_model(frameInfo, transform, true, out_initialWorldZ, out_dragStartWorldPos);
-        }
-        pending_pick_ = false;
     }
 
     auto light_entity = world.getLightEntities();

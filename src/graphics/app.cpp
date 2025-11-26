@@ -16,6 +16,7 @@
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
 #include "system/camera_system.hpp"
+#include "system/pick_system.hpp"
 #include <tracy/Tracy.hpp>
 #define image_path ::std::string{"./images/"}
 #define models_path ::std::string{"./models/"}
@@ -71,8 +72,7 @@ void App::run() {
         }
 
         outliner_entities_ = registry.getOutliner();
-        outliner_entities_.push_back(
-            {.entity = world.entity_, .children = world.getEntities()});
+        outliner_entities_.push_back({.entity = world.entity_, .children = world.getEntities()});
         window->pullEvents(input_event);
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
@@ -85,6 +85,10 @@ void App::run() {
         frameInfo.window_hight = window->getActiveConfig().extent.height;
         bool is_no_input = true;
         while (auto e = input_event.pop_event()) {
+            if (!e) {
+                continue;
+            }
+
             if (e->key == core::InputKey::Insert) {
                 show_debug_ui = !show_debug_ui;
             }
@@ -96,13 +100,25 @@ void App::run() {
                 current_mouse_Y = e->mouseY_;
             }
             if (!e->onlyMouseMove()) {
+                const auto [down, first] = e->mouseLeftButtonDown();
+                if (down && first) {
+                    auto pick = PickingSystem::pick(camera, e->mouseX_, e->mouseY_,
+                                                    frameInfo.window_width, frameInfo.window_hight);
+                    if (pick) {
+                        spdlog::debug("pick id{}", pick->id);
+                        world.pick(pick->id);
+                    }
+                }
+                if(e->mouseLeftButtonUp()){
+                    world.cancelPick();
+                }
                 CameraSystem::update(cameraComponent, e.value(), frame);
                 frameInfo.input_state = e.value();
                 registry.updateAll(frameInfo, world);
                 is_no_input = false;
             }
         }
-        if(is_no_input){
+        if (is_no_input) {
             registry.updateAll(frameInfo, world);
         }
         registry.drawAll(graphics);
@@ -146,9 +162,8 @@ App::App()
 App::~App() = default;
 
 void App::load_resource() {
-
     std::string viking_obj_path = "backpack.obj";
-    //resourceManager.addModel(viking_obj_path);
+    // resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
     std::string point_light_shader_name = "point_light";
@@ -159,8 +174,7 @@ void App::load_resource() {
     resourceManager.addComputeShader(particle_shader_name);
     auto frame_layout = window->getFramebufferLayout();
 
-    ModelResourceName names{.shader_name = model_shader_name,
-                            .mesh_name = viking_obj_path};
+    ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};
 
     std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
                                glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
