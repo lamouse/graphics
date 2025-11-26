@@ -258,7 +258,8 @@ class Model : public IMeshData {
         [[nodiscard]] auto getVertexBinding() const -> std::vector<render::VertexBinding> override {
             return Vertex::getVertexBinding();
         }
-        static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash, bool flip_uv = false) -> Model;
+        static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash,
+                                   bool flip_uv = false) -> Model;
         CLASS_NON_COPYABLE(Model);
         CLASS_DEFAULT_MOVEABLE(Model);
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
@@ -278,6 +279,7 @@ class MultiMeshModel {
     public:
         struct Mesh : public IMeshData {
                 std::vector<Model::Vertex> vertices_;
+                std::vector<::glm::vec3> only_vertex;
                 std::vector<uint32_t> indices_;
                 MeshMaterial material;
                 [[nodiscard]] auto getMesh() const -> std::span<const float> override {
@@ -302,18 +304,72 @@ class MultiMeshModel {
                     -> std::vector<render::VertexBinding> override {
                     return Model::Vertex::getVertexBinding();
                 }
+
+                void serialize(std::ostream& os) const {
+                    // 写入顶点数量和数据
+                    uint64_t vcount = vertices_.size();
+                    uint64_t icount = indices_.size();
+                    uint64_t ocount = only_vertex.size();
+
+                    os.write(reinterpret_cast<const char*>(&vcount), sizeof(vcount));
+                    os.write(reinterpret_cast<const char*>(&icount), sizeof(icount));
+                    os.write(reinterpret_cast<const char*>(&ocount), sizeof(ocount));
+
+                    if (vcount > 0) {
+                        os.write(reinterpret_cast<const char*>(vertices_.data()),
+                                 sizeof(Model::Vertex) * vcount);
+                    }
+                    if (icount > 0) {
+                        os.write(reinterpret_cast<const char*>(indices_.data()),
+                                 sizeof(uint32_t) * icount);
+                    }
+                    if (ocount > 0) {
+                        os.write(reinterpret_cast<const char*>(only_vertex.data()),
+                                 sizeof(glm::vec3) * ocount);
+                    }
+
+                    // 序列化材质
+                    material.serialize(os);
+                }
+
+                [[nodiscard]] auto deserialize(std::istream& is) -> bool {
+                    uint64_t vcount = 0, icount = 0, ocount = 0;
+                    if (!is.read(reinterpret_cast<char*>(&vcount), sizeof(vcount))) return false;
+                    if (!is.read(reinterpret_cast<char*>(&icount), sizeof(icount))) return false;
+                    if (!is.read(reinterpret_cast<char*>(&ocount), sizeof(ocount))) return false;
+
+                    vertices_.resize(vcount);
+                    indices_.resize(icount);
+                    only_vertex.resize(ocount);
+
+                    if (vcount > 0 && !is.read(reinterpret_cast<char*>(vertices_.data()),
+                                               sizeof(Model::Vertex) * vcount)) {
+                        return false;
+                    }
+                    if (icount > 0 && !is.read(reinterpret_cast<char*>(indices_.data()),
+                                               sizeof(uint32_t) * icount)) {
+                        return false;
+                    }
+                    if (ocount > 0 && !is.read(reinterpret_cast<char*>(only_vertex.data()),
+                                               sizeof(glm::vec3) * ocount)) {
+                        return false;
+                    }
+
+                    return material.deserialize(is);
+                }
         };
 
         [[nodiscard]] auto getMeshes() const -> std::span<const Mesh> { return meshes_; }
-        MultiMeshModel(std::string_view path);
+        MultiMeshModel(std::string_view path, uint64_t file_hash = 0, bool flip_uv = false);
         CLASS_NON_COPYABLE(MultiMeshModel);
         CLASS_DEFAULT_MOVEABLE(MultiMeshModel);
-        ~MultiMeshModel() = default;
+        ~MultiMeshModel();
 
     private:
         void processNode(aiNode* node, const aiScene* scene);
         void processMesh(aiMesh* mesh, const aiScene* scene);
         std::vector<Mesh> meshes_;
+        uint64_t file_hash;
 };
 
 }  // namespace graphics

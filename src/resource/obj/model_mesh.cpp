@@ -11,12 +11,23 @@
 namespace {
 constexpr const char* model_cache_path = "data/cache/mesh/";
 constexpr const char* model_cache_extend = ".mesh";
+constexpr const char* model_multi_mesh_cache_extend = ".meshes";
 constexpr auto DEFAULT_ULT_ASSIMP_LOAD_FLAGS = aiProcess_Triangulate |
                                                aiProcess_JoinIdenticalVertices |
                                                aiProcess_GenNormals | aiProcess_EmbedTextures;
 constexpr auto FLIP_UV_ULT_ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs |
                                                aiProcess_JoinIdenticalVertices |
                                                aiProcess_GenNormals | aiProcess_EmbedTextures;
+
+constexpr uint32_t MULTIMESH_CACHE_MAGIC = 0x4D4D5348;  // 'MMSH'
+
+struct MultiMeshCacheHeader {
+        uint32_t magic = MULTIMESH_CACHE_MAGIC;
+        uint32_t version = graphics::MESH_CACHE_VERSION;
+        uint64_t fileHash = 0;
+        uint32_t meshCount = 0;
+        uint32_t padding = 0;
+};
 template <typename T>
 auto as_bytes(std::span<const T> s) -> std::span<const std::byte> {
     // 将 T* 指针 reinterpret_cast 为 const std::byte* 指针
@@ -305,14 +316,66 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
     return model;
 }
 
+void saveMultiMeshToCache(uint64_t file_hash, const graphics::MultiMeshModel& model) {
+    common::create_dir(model_cache_path);
+    auto cachePath =
+        std::string(model_cache_path) + std::to_string(file_hash) + model_multi_mesh_cache_extend;
+    std::ofstream file(cachePath, std::ios::binary);
+    if (!file) {
+        return;
+    }
+
+    MultiMeshCacheHeader header{};
+    header.magic = MULTIMESH_CACHE_MAGIC;
+    header.version = graphics::MESH_CACHE_VERSION;
+    header.fileHash = file_hash;
+    auto meshes = model.getMeshes();
+    header.meshCount = static_cast<uint32_t>(meshes.size());
+
+    file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+
+    for (const auto& mesh : meshes) {
+        mesh.serialize(file);
+    }
+}
+
+auto loadMultiMeshFromCache(uint64_t file_hash) -> std::vector<graphics::MultiMeshModel::Mesh> {
+    auto cachePath =
+        std::string(model_cache_path) + std::to_string(file_hash) + model_multi_mesh_cache_extend;
+    std::ifstream file(cachePath, std::ios::binary);
+    if (!file) {
+        return {};
+    }
+
+    MultiMeshCacheHeader header;
+    file.read(reinterpret_cast<char*>(&header), sizeof(header));
+    if (header.magic != MULTIMESH_CACHE_MAGIC || header.version != graphics::MESH_CACHE_VERSION ||
+        header.fileHash != file_hash) {
+        return {};
+    }
+
+    std::vector<graphics::MultiMeshModel::Mesh> meshes;
+    meshes.reserve(header.meshCount);
+
+    for (uint32_t i = 0; i < header.meshCount; ++i) {
+        graphics::MultiMeshModel::Mesh mesh;
+        if (!mesh.deserialize(file)) {
+            return {};
+        }
+        meshes.push_back(std::move(mesh));
+    }
+
+    return meshes;
+}
+
 }  // namespace
 
 namespace graphics {
 
-auto Model::createFromFile(const ::std::string& model_path, std::uint64_t obj_hash, bool flip_uv) -> Model {
-
+auto Model::createFromFile(const ::std::string& model_path, std::uint64_t obj_hash, bool flip_uv)
+    -> Model {
     auto importer_flag = DEFAULT_ULT_ASSIMP_LOAD_FLAGS;
-    if(flip_uv){
+    if (flip_uv) {
         importer_flag = FLIP_UV_ULT_ASSIMP_LOAD_FLAGS;
     }
 
@@ -352,10 +415,19 @@ auto Model::getIndices() const -> std::span<const std::byte> {
     return as_bytes(std::span(indices_));
 }
 
-MultiMeshModel::MultiMeshModel(std::string_view path) {
+MultiMeshModel::MultiMeshModel(std::string_view path, uint64_t file_hash_, bool flip_uv) : file_hash(file_hash_) {
+    if (file_hash_ == 0) {
+        auto model_file_hash = common::file_hash(std::string(path));
+        file_hash = model_file_hash ? model_file_hash.value() : 0;
+    }
+    auto meshes = loadMultiMeshFromCache(file_hash);
+    if (!meshes.empty()) {
+        meshes_ = std::move(meshes);
+        return;
+    }
     Assimp::Importer importer;
     // NOLINTNEXTLINE
-    const aiScene* scene = importer.ReadFile(std::string(path), DEFAULT_ULT_ASSIMP_LOAD_FLAGS);
+    const aiScene* scene = importer.ReadFile(std::string(path), flip_uv ? FLIP_UV_ULT_ASSIMP_LOAD_FLAGS : DEFAULT_ULT_ASSIMP_LOAD_FLAGS);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
         scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
         throw std::runtime_error("load empty model");
@@ -398,6 +470,7 @@ void MultiMeshModel::processMesh(aiMesh* mesh, const aiScene* scene) {
         // 位置
         const aiVector3D& pos = mesh->mVertices[i];
         vertex.position = {pos.x, pos.y, pos.z};
+        m.only_vertex.push_back(vertex.position);
 
         // Vertex Color
         if (mesh->HasVertexColors(0)) {
@@ -439,5 +512,7 @@ void MultiMeshModel::processMesh(aiMesh* mesh, const aiScene* scene) {
 
     meshes_.push_back(std::move(m));
 }
+
+MultiMeshModel::~MultiMeshModel() { saveMultiMeshToCache(file_hash, *this); }
 
 }  // namespace graphics
