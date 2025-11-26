@@ -10,19 +10,22 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
     auto model_config = manager.getModelConfig(names.mesh_name);
     MultiMeshModel model(model_config.path, model_config.hash, model_config.flip_uv);
     auto sub_meshes = model.getMeshes();
+    materials.reserve(sub_meshes.size());
     for (uint32_t i = 0; const auto& mesh : sub_meshes) {
         auto mesh_id = manager.addMesh(names.mesh_name + "mesh: " + std::to_string(i++), mesh);
         manager.addMeshVertex(mesh_id, mesh.only_vertex, mesh.indices_);
 
         SubMesh sub_mesh{.material = mesh.material};
         auto [materialResource, materialUBO] = uploadMeshMaterialResource(manager, sub_mesh);
+        materials.push_back(materialUBO);
         meshes.emplace_back(
             render::RenderCommand{
                 .indexOffset = 0,
                 .indexCount = static_cast<uint32_t>(mesh.indices_.size()),
             },
             shader_hash, layout, name + "mesh", mesh_id, materialResource);
-        meshes.back().getUBO<MaterialUBO>() = materialUBO;
+        meshes.back().setUBO(&materials.back());
+        meshes.back().setUBO(&light_ubo);
         PickingSystem::upload_vertex(meshes.back().getId(), mesh.only_vertex, mesh.indices_);
         mesh_ids.insert(meshes.back().getId());
     }
@@ -56,11 +59,10 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
     }
 
     auto light_entity = world.getLightEntities();
-    LightUBO pointLightUbo{};
-    pointLightUbo.projection = frameInfo.camera->getProjection();
-    pointLightUbo.view = frameInfo.camera->getView();
-    pointLightUbo.inverseView = frameInfo.camera->getInverseView();
-    pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
+    light_ubo.projection = frameInfo.camera->getProjection();
+    light_ubo.view = frameInfo.camera->getView();
+    light_ubo.inverseView = frameInfo.camera->getInverseView();
+    light_ubo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
     int index = 0;
     for (const auto& entity : light_entity) {
         auto& lightComponent = entity.getComponent<ecs::LightComponent>();
@@ -70,7 +72,7 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
 
             light.color = {lightComponent.color, lightComponent.intensity};
             light.position = {light_transform.translation, 1.0f};
-            pointLightUbo.pointLights[index] = light;
+            light_ubo.pointLights[index] = light;
             index++;
             if (index >= MAX_LIGHTS) {
                 break;
@@ -79,25 +81,24 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
             DirLight dirLight{};
             dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
             dirLight.color = glm::vec4(lightComponent.color, 0.f) * lightComponent.intensity;
-            pointLightUbo.dirLight = dirLight;
+            light_ubo.dirLight = dirLight;
 
             // TODO 临时测试
-            pointLightUbo.spotLight.position =
+            light_ubo.spotLight.position =
                 glm::vec4(frameInfo.camera->getPosition(), lightComponent.outerCone);
-            pointLightUbo.spotLight.direction =
+            light_ubo.spotLight.direction =
                 glm::vec4(frameInfo.camera->front(), lightComponent.innerCone);
-            pointLightUbo.spotLight.color = glm::vec4(lightComponent.color, 1);
+            light_ubo.spotLight.color = glm::vec4(lightComponent.color, 1);
             // TODO 临时测试
         }
     }
     auto modelMatrix = transform.mat4();
     auto normalMatrix = transform.normalMatrix();
-    pointLightUbo.numLights = index;
+    light_ubo.numLights = index;
     for (auto& mesh : meshes) {
         PickingSystem::update_transform(mesh.getId(), transform);
         mesh.PushConstant().modelMatrix = modelMatrix;
         mesh.PushConstant().normalMatrix = normalMatrix;
-        mesh.getUBO<LightUBO>() = pointLightUbo;
     }
 }
 

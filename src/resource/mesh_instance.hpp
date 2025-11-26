@@ -39,7 +39,7 @@ template <typename PushConstants, render::PrimitiveTopology primitiveTopology, t
              (ByteSpanConvertible<UBO> && ...) && (std::is_trivially_copyable_v<UBO> && ...)
 class MeshInstance : public IMeshInstance {
     public:
-        using UBOs = std::tuple<UBO...>;
+        using UBOs = std::tuple<UBO*...>;
 
         CLASS_DEFAULT_MOVEABLE(MeshInstance);
         CLASS_NON_COPYABLE(MeshInstance);
@@ -55,49 +55,25 @@ class MeshInstance : public IMeshInstance {
             return {material_resource.ambientTextures, material_resource.diffuseTextures,
                     material_resource.specularTextures, material_resource.normalTextures};
         }
-        auto getUBO() -> UBOs& { return ubos; }
-
-        template <std::size_t N>
-        auto getUBO() -> std::tuple_element_t<N, std::tuple<UBO...>>& {
-            return std::get<N>(ubos);
-        }
-
-        template <std::size_t N>
-        auto getUBO() const -> const std::tuple_element_t<N, std::tuple<UBO...>>& {
-            return std::get<N>(ubos);
-        }
 
         template <std::size_t N, typename T = std::tuple_element_t<N, std::tuple<UBO...>>>
         void setUBO(const T& value) {
             std::get<N>(ubos) = value;
         }
 
-        // ✅ 根据类型获取 UBO（可读写）
-        template <typename T>
-        auto getUBO() -> T& {
-            static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
-            return std::get<T>(ubos);
-        }
-
-        // ✅ const 版本
-        template <typename T>
-        auto getUBO() const -> const T& {
-            static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
-            return std::get<T>(ubos);
-        }
 
         // ✅ 设置 UBO（通过类型）
         template <typename T>
-        void setUBO(const T& value) {
+        void setUBO( T* value) {
             static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
-            std::get<T>(ubos) = value;
+            std::get<T*>(ubos) = value;
         }
 
         // === 获取所有 UBO 的 byte spans（用于渲染）===
         [[nodiscard]] auto getUBOs() const -> std::vector<std::span<const std::byte>> override {
             return std::apply(
                 [](const auto&... ubo) -> auto {
-                    return std::vector<std::span<const std::byte>>{(ubo).as_byte_span()...};
+                    return std::vector<std::span<const std::byte>>{(ubo)->as_byte_span()...};
                 },
                 ubos);
         }

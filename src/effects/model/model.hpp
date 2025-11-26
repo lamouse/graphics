@@ -59,7 +59,8 @@ class LightModel {
             MeshInstance<ModelPushConstantData, render::PrimitiveTopology::Triangles, LightUBO,
                          MaterialUBO>;
         std::vector<LightMeshInstance> meshes;
-
+        LightUBO light_ubo{};
+        MaterialUBO material_ubo{};
         id_t id;
         std::unordered_set<id_t> mesh_ids;
         // 用于鼠标移动

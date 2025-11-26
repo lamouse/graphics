@@ -71,6 +71,7 @@ class PointLightEffect {
             lightComponent.intensity = intensity;
             lightComponent.range = radius;
             entity_.addComponent<ecs::LightComponent>(lightComponent);
+            point_light.setUBO<LightUBO>(&light_ubo);
         }
 
         CLASS_NON_COPYABLE(PointLightEffect);
@@ -84,8 +85,8 @@ class PointLightEffect {
             glm::vec4 localOffset(transform.translation, 1.f);
 
             transform.translation = glm::vec3(rotation * localOffset);
-            point_light.getUBO<LightUBO>().projection = frameInfo.camera->getProjection();
-            point_light.getUBO<LightUBO>().view = frameInfo.camera->getView();
+            light_ubo.projection = frameInfo.camera->getProjection();
+            light_ubo.view = frameInfo.camera->getView();
 
             world.addLightEntity(entity_);
         }
@@ -108,6 +109,7 @@ class PointLightEffect {
     private:
         using PointLightInstance =
             MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles, LightUBO>;
+        LightUBO light_ubo;
         PointLightInstance point_light;
         id_t id;
 };

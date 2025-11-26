@@ -36,6 +36,10 @@ class ModelForMultiMesh {
         std::vector<MeshInstance> meshes;
         id_t id;
 
+
+        LightUBO light_ubo{};
+        MaterialUBO material_ubo{};
+        std::vector<MaterialUBO> materials;
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;
         // 用于鼠标移动

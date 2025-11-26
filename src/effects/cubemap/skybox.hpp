@@ -41,13 +41,15 @@ class SkyBox {
             pipeline_state.state.depthTestEnable = 1;
             pipeline_state.state.depthWriteEnable = 0;
 
+            sky_box.setUBO<SkyUBO>(&sky_ubo);
+
         }
 
         void update(const core::FrameInfo& frameInfo, world::World& /*world*/) {
             glm::mat4 view = frameInfo.camera->getView();
             glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(view));  // 去除平移
-            sky_box.getUBO<SkyUBO>().modelMatrix = viewNoTranslate;
-            sky_box.getUBO<SkyUBO>().projectionMatrix = frameInfo.camera->getProjection();
+            sky_ubo.modelMatrix = viewNoTranslate;
+            sky_ubo.projectionMatrix = frameInfo.camera->getProjection();
         }
         [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
             return std::vector{sky_box.entity_};
@@ -62,6 +64,7 @@ class SkyBox {
     private:
         using SkyBoxInstance =
             MeshInstance<EmptyPushConstants, render::PrimitiveTopology::Triangles, SkyUBO>;
+        SkyUBO sky_ubo;
         SkyBoxInstance sky_box;
         id_t id;
 };

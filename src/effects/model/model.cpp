@@ -60,7 +60,8 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
                 .indexCount = mesh.indexCount,
             },
             shader_hash, layout, name + "mesh", mesh_id, materialResource);
-        meshes.back().getUBO<MaterialUBO>() = materialUBO;
+        meshes.back().setUBO(&material_ubo);
+        meshes.back().setUBO(&light_ubo);
     }
     mesh_ids.insert(meshes.back().getId());
     auto vertex = manager.getMeshVertex(mesh_id);
@@ -96,11 +97,11 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     }
 
     auto light_entity = world.getLightEntities();
-    LightUBO pointLightUbo{};
-    pointLightUbo.projection = frameInfo.camera->getProjection();
-    pointLightUbo.view = frameInfo.camera->getView();
-    pointLightUbo.inverseView = frameInfo.camera->getView();
-    pointLightUbo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
+
+    light_ubo.projection = frameInfo.camera->getProjection();
+    light_ubo.view = frameInfo.camera->getView();
+    light_ubo.inverseView = frameInfo.camera->getView();
+    light_ubo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
     int index = 0;
     for (const auto& entity : light_entity) {
         auto& lightComponent = entity.getComponent<ecs::LightComponent>();
@@ -110,7 +111,7 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
 
             light.color = {lightComponent.color, lightComponent.intensity};
             light.position = {light_transform.translation, 1.0f};
-            pointLightUbo.pointLights[index] = light;
+            light_ubo.pointLights[index] = light;
             index++;
             if (index >= MAX_LIGHTS) {
                 break;
@@ -119,24 +120,23 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
             DirLight dirLight{};
             dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
             dirLight.color = glm::vec4(lightComponent.color, lightComponent.intensity);
-            pointLightUbo.dirLight = dirLight;
+            light_ubo.dirLight = dirLight;
 
             // TODO 临时测试
-            pointLightUbo.spotLight.position =
+            light_ubo.spotLight.position =
                 glm::vec4(frameInfo.camera->getPosition(), lightComponent.outerCone);
-            pointLightUbo.spotLight.direction =
+            light_ubo.spotLight.direction =
                 glm::vec4(frameInfo.camera->front(), lightComponent.innerCone);
-            pointLightUbo.spotLight.color = glm::vec4(lightComponent.color, 1);
+            light_ubo.spotLight.color = glm::vec4(lightComponent.color, 1);
             // TODO 临时测试
         }
     }
     auto modelMatrix = transform.mat4();
     auto normalMatrix = transform.normalMatrix();
-    pointLightUbo.numLights = index;
+    light_ubo.numLights = index;
     for (auto& mesh : meshes) {
         mesh.PushConstant().modelMatrix = modelMatrix;
         mesh.PushConstant().normalMatrix = normalMatrix;
-        mesh.getUBO<LightUBO>() = pointLightUbo;
     }
 }
 
