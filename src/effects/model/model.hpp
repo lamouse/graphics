@@ -4,6 +4,7 @@
 #include "world/world.hpp"
 #include <tuple>
 #include <tracy/Tracy.hpp>
+#include <unordered_set>
 namespace graphics::effects {
 
 struct MaterialUBO {
@@ -23,7 +24,7 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
 auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMesh& subMesh)
     -> std::tuple<MeshMaterialResource, MaterialUBO>;
 
-void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
+void check_pick(const std::unordered_set<id_t>& ids, const core::FrameInfo& frameInfo,
                 ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform);
 struct ModelPushConstantData {
         glm::mat4 modelMatrix{1.f};
@@ -34,26 +35,7 @@ struct ModelPushConstantData {
 class LightModel {
     public:
         LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
-                   const ModelResourceName& names, const std::string& name)
-            : id(getCurrentId()) {
-            auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
-            auto mesh_id = manager.getMesh(names.mesh_name);
-            auto sub_mesh = manager.getModelSubMesh(mesh_id);
-            meshes.reserve(sub_mesh.size());
-            for (const auto& mesh : sub_mesh) {
-                auto [materialResource, materialUBO] = uploadMeshMaterialResource(manager, mesh);
-                meshes.emplace_back(
-                    render::RenderCommand{
-                        .indexOffset = mesh.indexOffset,
-                        .indexCount = mesh.indexCount,
-                    },
-                    shader_hash, layout, name + "mesh", mesh_id, materialResource);
-                meshes.back().getUBO<MaterialUBO>() = materialUBO;
-            }
-            entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
-            entity_.addComponent<ecs::RenderStateComponent>(id);
-            entity_.addComponent<ecs::TransformComponent>();
-        }
+                   const ModelResourceName& names, const std::string& name);
 
         void update(const core::FrameInfo& frameInfo, world::World& world) {
             ZoneScopedNC("model::update", 110);
@@ -92,7 +74,8 @@ class LightModel {
             } else {
                 if (!render_state.mouse_select && down && pending_pick_ &&
                     entity_.getComponent<ecs::RenderStateComponent>().visible) {
-                    check_pick(id, meshes[0].getMeshId(), frameInfo, render_state, transform);
+
+                    //check_pick(id, frameInfo, render_state, transform);
                 }
                 if (render_state.mouse_select) {
                     move_model(frameInfo, transform, true, out_initialWorldZ,
@@ -178,8 +161,8 @@ class LightModel {
         id_t id;
 
         // 用于鼠标移动
-        glm::vec3 out_dragStartWorldPos;
-        float out_initialWorldZ;
+        glm::vec3 out_dragStartWorldPos{};
+        float out_initialWorldZ{};
 };
 
 }  // namespace graphics::effects

@@ -18,6 +18,12 @@ struct ShaderHash {
         std::uint64_t vertex;
         std::uint64_t fragment;
 };
+
+struct ModelConfig {
+        std::string path;
+        uint64_t hash;
+        bool flip_uv{false};
+};
 // Concept：匹配 ShaderHash 结构体
 template <typename T>
 concept IsShaderHashStruct = std::same_as<T, ShaderHash>;
@@ -50,10 +56,13 @@ class ResourceManager {
         explicit ResourceManager(render::Graphic* graphic_);
 
         auto addModel(std::string_view path, add_mesh_func func = nullptr) -> render::MeshId;
+
+        auto getModelConfig(std::string_view name) -> ModelConfig;
         auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
-        void addMeshVertex(render::MeshId meshId, const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indics);
+        void addMeshVertex(render::MeshId meshId, const std::vector<glm::vec3>& vertexes,
+                           const std::vector<uint32_t>& indics);
 
         [[nodiscard]] auto getModelSubMesh(render::MeshId id) const -> std::span<const SubMesh>;
 

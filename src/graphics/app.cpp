@@ -6,6 +6,7 @@
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
 #include "effects/model/model.hpp"
+#include "effects/model/multi_mesh_model.hpp"
 #include "effects/cubemap/skybox.hpp"
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
@@ -175,7 +176,7 @@ void App::load_resource() {
     //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
     // registry.add(delta_particle);
     auto light_model =
-        std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
+        std::make_shared<effects::ModelForMultiMesh>(resourceManager, frame_layout, names, "model");
     registry.add(light_model);
     auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
     registry.add(sky_box);

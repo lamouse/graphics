@@ -88,14 +88,14 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
     }
 }
 
-void check_pick(id_t id, render::MeshId meshId, const core::FrameInfo& frameInfo,
+void check_pick(const std::unordered_set<id_t>& ids, const core::FrameInfo& frameInfo,
                 ecs::RenderStateComponent& render_state, ecs::TransformComponent& transform) {
-    auto pick = PickingSystem::pick(id, (*frameInfo.camera), frameInfo.input_state,
-                                    static_cast<float>(frameInfo.window_width),
-                                    static_cast<float>(frameInfo.window_hight),
-                                    frameInfo.resource_manager->getMeshVertex(meshId),
-                                    frameInfo.resource_manager->getMeshIndics(meshId), transform);
-    if (pick) {
+
+    //PickingSystem::update_transform(id, transform);
+    auto pick = PickingSystem::pick(*frameInfo.camera, frameInfo.input_state.mouseX_,
+                        frameInfo.input_state.mouseY_,
+                        static_cast<float>(frameInfo.window_width), static_cast<float>(frameInfo.window_hight));
+    if (pick && ids.contains(pick->id)) {
         render_state.mouse_select = true;
         render_state.select_id = render_state.id;
     } else {
@@ -114,7 +114,7 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
     if (!subMesh.material.ambientTextures.empty()) {
         materialResource.ambientTextures =
             manager.addKtxTexture(subMesh.material.ambientTextures[0]);
-    }else {
+    } else {
         materialResource.ambientTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
     }
@@ -122,7 +122,7 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
     if (!subMesh.material.diffuseTextures.empty()) {
         materialResource.diffuseTextures =
             manager.addKtxTexture(subMesh.material.diffuseTextures[0]);
-    }else {
+    } else {
         materialResource.diffuseTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
     }
@@ -135,13 +135,37 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
     }
     if (!subMesh.material.normalTextures.empty()) {
-        materialResource.normalTextures =
-            manager.addKtxTexture(subMesh.material.normalTextures[0]);
+        materialResource.normalTextures = manager.addKtxTexture(subMesh.material.normalTextures[0]);
     } else {
         materialResource.normalTextures =
             manager.getTexture(std::string(DEFAULT_1X1_WRITE_TEXTURE));
     }
     return {materialResource, materialUBO};
+}
+
+LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
+                       const ModelResourceName& names, const std::string& name)
+    : id(getCurrentId()) {
+    auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
+    auto mesh_id = manager.getMesh(names.mesh_name);
+    auto sub_mesh = manager.getModelSubMesh(mesh_id);
+    meshes.reserve(sub_mesh.size());
+    for (const auto& mesh : sub_mesh) {
+        auto [materialResource, materialUBO] = uploadMeshMaterialResource(manager, mesh);
+        meshes.emplace_back(
+            render::RenderCommand{
+                .indexOffset = mesh.indexOffset,
+                .indexCount = mesh.indexCount,
+            },
+            shader_hash, layout, name + "mesh", mesh_id, materialResource);
+        meshes.back().getUBO<MaterialUBO>() = materialUBO;
+    }
+    auto vertex = manager.getMeshVertex(mesh_id);
+    auto indics = manager.getMeshIndics(mesh_id);
+    PickingSystem::upload_vertex(id, vertex, indics);
+    entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
+    entity_.addComponent<ecs::RenderStateComponent>(id);
+    entity_.addComponent<ecs::TransformComponent>();
 }
 
 }  // namespace graphics::effects

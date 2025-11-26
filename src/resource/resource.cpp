@@ -100,24 +100,43 @@ auto ResourceManager::addModel(std::string_view model_path, add_mesh_func func) 
     ASSERT_MSG(!model_path.empty(), "meshName is null");
     namespace fs = std::filesystem;
     fs::path file_path(std::string(model::MODEL_ROOT_PATH) + std::string(model_path));
-    std::string model_filt_path{model_path};
+    std::string model_file_path{model_path};
     bool flip_uv{false};
     if (fs::is_directory(file_path)) {
         using json = nlohmann::json;
         std::ifstream f(file_path.string() + "/config.json");
         json j;
         f >> j;
-        model_filt_path = model_filt_path + "/" + j["name"].get<std::string>();
+        model_file_path = model_file_path + "/" + j["name"].get<std::string>();
 
         flip_uv = j.contains("need_flip_uv") && j["need_flip_uv"].get<bool>();
     }
-    auto model_ = Model::createFromFile(model::MODEL_ROOT_PATH + model_filt_path,
-                                        model_file_hash[model_filt_path], flip_uv);
+    auto model_ = Model::createFromFile(model::MODEL_ROOT_PATH + model_file_path,
+                                        model_file_hash[model_file_path], flip_uv);
     auto mesh_id = addMesh(std::string(model_path), model_, std::move(func));
     mesh_vertex[mesh_id] = std::make_unique<std::vector<::glm::vec3>>(model_.only_vertex);
     mesh_indics[mesh_id] = std::make_unique<std::vector<uint32_t>>(model_.indices_);
     model_sub_mesh[mesh_id] = std::make_unique<std::vector<SubMesh>>(model_.subMeshes);
     return mesh_id;
+}
+
+auto ResourceManager::getModelConfig(std::string_view name) -> ModelConfig {
+    ModelConfig config;
+    config.hash = model_file_hash[std::string(name)];
+    config.path = std::string(model::MODEL_ROOT_PATH) + std::string(name);
+    namespace fs = std::filesystem;
+    fs::path file_path(std::string(model::MODEL_ROOT_PATH) + std::string(name));
+    if (fs::is_directory(file_path)) {
+        using json = nlohmann::json;
+        std::ifstream f(file_path.string() + "/config.json");
+        json j;
+        f >> j;
+        config.path = file_path.string() + "/" + j["name"].get<std::string>();
+        config.flip_uv = j.contains("need_flip_uv") && j["need_flip_uv"].get<bool>();
+        config.hash = model_file_hash[std::string(name) + "/" + j["name"].get<std::string>()];
+    }
+
+    return config;
 }
 
 void ResourceManager::addMeshVertex(render::MeshId meshId, const std::vector<glm::vec3>& vertexes,

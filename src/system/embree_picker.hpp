@@ -38,6 +38,9 @@ class EmbreePicker {
         // 执行拾取
         auto pick(id_t id, const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
             -> std::optional<PickResult>;
+
+        auto pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
+            -> std::optional<PickResult>;
 };
 
 }  // namespace graphics
