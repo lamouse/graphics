@@ -7,10 +7,18 @@
 #include <cassert>
 #include <fstream>
 #include <stack>
+#include <nlohmann/json.hpp>
+#include <filesystem>
 
 namespace {
 constexpr const char* model_cache_path = "data/cache/mesh/";
 constexpr const char* model_cache_extend = ".mesh";
+constexpr auto DEFAULT_ULT_ASSIMP_LOAD_FLAGS = aiProcess_Triangulate |
+                                               aiProcess_JoinIdenticalVertices |
+                                               aiProcess_GenNormals | aiProcess_EmbedTextures;
+constexpr auto FLIP_UV_ULT_ASSIMP_LOAD_FLAGS = aiProcess_Triangulate | aiProcess_FlipUVs |
+                                               aiProcess_JoinIdenticalVertices |
+                                               aiProcess_GenNormals | aiProcess_EmbedTextures;
 template <typename T>
 auto as_bytes(std::span<const T> s) -> std::span<const std::byte> {
     // 将 T* 指针 reinterpret_cast 为 const std::byte* 指针
@@ -304,8 +312,24 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 namespace graphics {
 
 auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) -> Model {
+    std::string model_path = path;
+    auto importer_flag = DEFAULT_ULT_ASSIMP_LOAD_FLAGS;
+
+    namespace fs = std::filesystem;
+    fs::path file_path(path);
+    if (fs::is_directory(file_path)) {
+        using json = nlohmann::json;
+        std::ifstream f(path + "/config.json");
+        json j;
+        f >> j;
+        model_path = model_path + "/" + j["name"].get<std::string>();
+        if (j.contains("need_flip_uv") && j["need_flip_uv"].get<bool>()) {
+            importer_flag = FLIP_UV_ULT_ASSIMP_LOAD_FLAGS;
+        }
+    }
+
     if (obj_hash == 0) {
-        auto file_hash = common::file_hash(path);
+        auto file_hash = common::file_hash(model_path);
         obj_hash = file_hash ? file_hash.value() : 0;
     }
     if (!obj_hash) {
@@ -316,11 +340,9 @@ auto Model::createFromFile(const ::std::string& path, std::uint64_t obj_hash) ->
     }
 
     Assimp::Importer importer;
-    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate |
-                                       aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
-                                       aiProcess_EmbedTextures;
+
     // NOLINTNEXTLINE
-    const aiScene* scene = importer.ReadFile(path, ASSIMP_LOAD_FLAGS);
+    const aiScene* scene = importer.ReadFile(model_path, importer_flag);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
         scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
         throw std::runtime_error("load empty model");
@@ -344,11 +366,8 @@ auto Model::getIndices() const -> std::span<const std::byte> {
 
 MultiMeshModel::MultiMeshModel(std::string_view path) {
     Assimp::Importer importer;
-    constexpr auto ASSIMP_LOAD_FLAGS = aiProcess_Triangulate  |
-                                       aiProcess_JoinIdenticalVertices | aiProcess_GenNormals |
-                                       aiProcess_EmbedTextures;
     // NOLINTNEXTLINE
-    const aiScene* scene = importer.ReadFile(std::string(path), ASSIMP_LOAD_FLAGS);
+    const aiScene* scene = importer.ReadFile(std::string(path), DEFAULT_ULT_ASSIMP_LOAD_FLAGS);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
         scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
         throw std::runtime_error("load empty model");

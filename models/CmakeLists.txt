@@ -4,7 +4,7 @@ set(MODEL_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/models)
 
 
 # 查找所有模型文件
-set(MODEL_EXTENSIONS glb gltf obj fbx dae stl ply mtl)
+set(MODEL_EXTENSIONS glb gltf obj fbx dae stl ply mtl json)
 set(MODEL_FILES "")
 foreach(ext IN LISTS MODEL_EXTENSIONS)
     file(GLOB_RECURSE tmp

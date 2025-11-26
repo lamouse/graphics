@@ -145,10 +145,8 @@ App::App()
 App::~App() = default;
 
 void App::load_resource() {
-    std::string viking_room_path = image_path + "viking_room.png";
-    resourceManager.addTexture(viking_room_path);
 
-    std::string viking_obj_path = "viking_room.obj";
+    std::string viking_obj_path = "viking_room";
     resourceManager.addModel(viking_obj_path);
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
@@ -161,8 +159,7 @@ void App::load_resource() {
     auto frame_layout = window->getFramebufferLayout();
 
     ModelResourceName names{.shader_name = model_shader_name,
-                            .mesh_name = viking_obj_path,
-                            .texture_name = viking_room_path};
+                            .mesh_name = viking_obj_path};
 
     std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
                                glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
