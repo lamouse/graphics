@@ -336,14 +336,16 @@ void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
                 .setLayerCount(1)
                 .setRenderArea(vk::Rect2D().setExtent(dynamic_state.render_area_))
                 .setColorAttachments(colorAttachments);
+        vk::RenderingAttachmentInfo depthAttachment;
         if (dynamic_state.depth_view) {
-            auto depthAttachment = vk::RenderingAttachmentInfo()
-                                       .setImageView(dynamic_state.depth_view)
-                                       .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
-                                       .setLoadOp(vk::AttachmentLoadOp::eLoad)
-                                       .setStoreOp(vk::AttachmentStoreOp::eStore)
-                                       .setClearValue(vk::ClearValue().setDepthStencil(
-                                           vk::ClearDepthStencilValue().setDepth(1.f)));
+            depthAttachment = vk::RenderingAttachmentInfo()
+                                  .setImageView(dynamic_state.depth_view)
+                                  .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
+                                  .setLoadOp(vk::AttachmentLoadOp::eLoad)
+                                  .setStoreOp(vk::AttachmentStoreOp::eStore)
+                                  .setClearValue(vk::ClearValue().setDepthStencil(
+                                      vk::ClearDepthStencilValue().setDepth(1.f)));
+            depthAttachment.sType = vk::StructureType::eRenderingAttachmentInfo;
             renderingInfo.setPDepthAttachment(&depthAttachment);
         }
         cmdbuf.beginRendering(&renderingInfo);
