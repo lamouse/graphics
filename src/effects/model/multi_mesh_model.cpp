@@ -36,19 +36,18 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
     ZoneScopedNC("model::update", 110);
 
     auto& transform = entity_.getComponent<ecs::TransformComponent>();
-    auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
     auto [pick_id, pick] = world.pick();
 
     if (pick && mesh_ids.contains(pick_id)) {
-        render_state.mouse_select = true;
+        render_state->mouse_select = true;
     } else {
-        render_state.mouse_select = false;
+        render_state->mouse_select = false;
     }
-    if(render_state.mouse_select){
+    if (render_state->mouse_select) {
         move_model(frameInfo, transform);
     }
 
-    if (render_state.is_select()) {
+    if (render_state->is_select()) {
         if (frameInfo.input_state.key == core::InputKey::LCtrl) {
             if (frameInfo.input_state.scrollOffset_ != 0.0f) {
                 scale(transform, frameInfo.input_state.scrollOffset_);
