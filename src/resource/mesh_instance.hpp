@@ -31,7 +31,6 @@ struct UniformBufferObject {
 struct ModelResourceName {
         std::string shader_name;
         std::string mesh_name;
-        std::string texture_name;
 };
 
 template <typename PushConstants, render::PrimitiveTopology primitiveTopology, typename... UBO>
@@ -46,7 +45,10 @@ class MeshInstance : public IMeshInstance {
         [[nodiscard]] auto getEntity() -> ecs::Entity& { return entity_; }
         ~MeshInstance() override = default;
         [[nodiscard]] auto getPushConstants() const -> std::span<const std::byte> override {
-            return push_constants.as_byte_span();
+            if (push_constants) {
+                return push_constants->as_byte_span();
+            }
+            return {};
         };
         [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
             return entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;
@@ -56,15 +58,9 @@ class MeshInstance : public IMeshInstance {
                     material_resource.specularTextures, material_resource.normalTextures};
         }
 
-        template <std::size_t N, typename T = std::tuple_element_t<N, std::tuple<UBO...>>>
-        void setUBO(const T& value) {
-            std::get<N>(ubos) = value;
-        }
-
-
         // ✅ 设置 UBO（通过类型）
         template <typename T>
-        void setUBO( T* value) {
+        void setUBO(T* value) {
             static_assert((std::is_same_v<T, UBO> || ...), "T is not one of the UBO types");
             std::get<T*>(ubos) = value;
         }
@@ -78,7 +74,7 @@ class MeshInstance : public IMeshInstance {
                 ubos);
         }
 
-        auto PushConstant() -> PushConstants& { return push_constants; }
+        void setPushConstant(PushConstants* push) { push_constants = push; }
 
         MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
                      const layout::FrameBufferLayout& layout, const std::string& meshName = "",
@@ -96,7 +92,7 @@ class MeshInstance : public IMeshInstance {
 
     private:
         UBOs ubos{};
-        PushConstants push_constants;
+        PushConstants* push_constants{nullptr};
         MeshMaterialResource material_resource;
 };
 

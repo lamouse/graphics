@@ -72,6 +72,7 @@ class PointLightEffect {
             lightComponent.range = radius;
             entity_.addComponent<ecs::LightComponent>(lightComponent);
             point_light.setUBO<LightUBO>(&light_ubo);
+            point_light.setPushConstant(&push_constants);
         }
 
         CLASS_NON_COPYABLE(PointLightEffect);
@@ -93,10 +94,10 @@ class PointLightEffect {
         void draw(render::Graphic* graphic) {
             auto& transform = entity_.getComponent<ecs::TransformComponent>();
             auto lightComponent = entity_.getComponent<ecs::LightComponent>();
-            point_light.PushConstant().position = glm::vec4(transform.translation, 1.f);
-            point_light.PushConstant().color =
+            push_constants.position = glm::vec4(transform.translation, 1.f);
+            push_constants.color =
                 glm::vec4(lightComponent.color, lightComponent.intensity);
-            point_light.PushConstant().radius = lightComponent.range;
+            push_constants.radius = lightComponent.range;
             if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
                 graphic->draw(point_light);
             }
@@ -110,6 +111,7 @@ class PointLightEffect {
         using PointLightInstance =
             MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles, LightUBO>;
         LightUBO light_ubo;
+        PointLightPushConstants push_constants;
         PointLightInstance point_light;
         id_t id;
 };

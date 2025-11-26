@@ -26,6 +26,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
             shader_hash, layout, name + "mesh", mesh_id, materialResource);
         meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
+        meshes.back().setPushConstant(&push_constant);
         PickingSystem::upload_vertex(meshes.back().getId(), mesh.only_vertex, mesh.indices_);
         mesh_ids.insert(meshes.back().getId());
     }
@@ -33,12 +34,12 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
     entity_.addComponent<ecs::RenderStateComponent>(id);
     render_state = &entity_.getComponent<ecs::RenderStateComponent>();
     entity_.addComponent<ecs::TransformComponent>();
+    transform = &entity_.getComponent<ecs::TransformComponent>();
 }
 
 void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
 
-    auto& transform = entity_.getComponent<ecs::TransformComponent>();
     auto [pick_id, pick] = world.pick();
 
     if (pick && mesh_ids.contains(pick_id)) {
@@ -47,13 +48,13 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
         render_state->mouse_select = false;
     }
     if (render_state->mouse_select) {
-        move_model(frameInfo, transform);
+        move_model(frameInfo, *transform);
     }
 
     if (render_state->is_select()) {
         if (frameInfo.input_state.key == core::InputKey::LCtrl) {
             if (frameInfo.input_state.scrollOffset_ != 0.0f) {
-                scale(transform, frameInfo.input_state.scrollOffset_);
+                scale(*transform, frameInfo.input_state.scrollOffset_);
             }
         }
     }
@@ -92,13 +93,11 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
             // TODO 临时测试
         }
     }
-    auto modelMatrix = transform.mat4();
-    auto normalMatrix = transform.normalMatrix();
+    push_constant.modelMatrix = transform->mat4();
+    push_constant.normalMatrix = glm::inverseTranspose(glm::mat3(push_constant.modelMatrix));
     light_ubo.numLights = index;
     for (auto& mesh : meshes) {
-        PickingSystem::update_transform(mesh.getId(), transform);
-        mesh.PushConstant().modelMatrix = modelMatrix;
-        mesh.PushConstant().normalMatrix = normalMatrix;
+        PickingSystem::update_transform(mesh.getId(), *transform);
     }
 }
 

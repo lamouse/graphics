@@ -48,20 +48,23 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
                        const ModelResourceName& names, const std::string& name)
     : id(getCurrentId()) {
     auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
-    auto mesh_id = manager.getMesh(names.mesh_name);
 
+    auto mesh_id = manager.addModel(names.mesh_name);
     auto sub_mesh = manager.getModelSubMesh(mesh_id);
+    materials.reserve(sub_mesh.size());
     meshes.reserve(sub_mesh.size());
     for (const auto& mesh : sub_mesh) {
         auto [materialResource, materialUBO] = uploadMeshMaterialResource(manager, mesh);
+        materials.push_back(materialUBO);
         meshes.emplace_back(
             render::RenderCommand{
                 .indexOffset = mesh.indexOffset,
                 .indexCount = mesh.indexCount,
             },
             shader_hash, layout, name + "mesh", mesh_id, materialResource);
-        meshes.back().setUBO(&material_ubo);
+        meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
+        meshes.back().setPushConstant(&push_constant);
     }
     mesh_ids.insert(meshes.back().getId());
     auto vertex = manager.getMeshVertex(mesh_id);
@@ -87,7 +90,7 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
 
     auto [pick_id, pick] = world.pick();
 
-    if (pick && mesh_ids.contains(pick_id)) {
+    if (pick && id == pick_id) {
         render_state.mouse_select = true;
     } else {
         render_state.mouse_select = false;
@@ -131,13 +134,10 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
             // TODO 临时测试
         }
     }
-    auto modelMatrix = transform.mat4();
-    auto normalMatrix = transform.normalMatrix();
+    push_constant.modelMatrix = transform.mat4();
+    push_constant.normalMatrix = transform.normalMatrix();
     light_ubo.numLights = index;
-    for (auto& mesh : meshes) {
-        mesh.PushConstant().modelMatrix = modelMatrix;
-        mesh.PushConstant().normalMatrix = normalMatrix;
-    }
+    PickingSystem::update_transform(id, transform);
 }
 
 }  // namespace graphics::effects

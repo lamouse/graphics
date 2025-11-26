@@ -60,7 +60,8 @@ class LightModel {
                          MaterialUBO>;
         std::vector<LightMeshInstance> meshes;
         LightUBO light_ubo{};
-        MaterialUBO material_ubo{};
+        std::vector<MaterialUBO> materials;
+        ModelPushConstantData push_constant;
         id_t id;
         std::unordered_set<id_t> mesh_ids;
         // 用于鼠标移动

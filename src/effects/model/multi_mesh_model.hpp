@@ -38,14 +38,15 @@ class ModelForMultiMesh {
 
 
         LightUBO light_ubo{};
-        MaterialUBO material_ubo{};
         std::vector<MaterialUBO> materials;
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;
         // 用于鼠标移动
         glm::vec3 out_dragStartWorldPos{};
         float out_initialWorldZ{};
+        ModelPushConstantData push_constant;
         std::unordered_set<id_t> mesh_ids;
         ecs::RenderStateComponent* render_state{nullptr};
+        ecs::TransformComponent* transform{nullptr};
 };
 }  // namespace graphics::effects
