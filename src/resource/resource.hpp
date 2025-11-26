@@ -53,6 +53,8 @@ class ResourceManager {
         auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
+        void addMeshVertex(render::MeshId meshId, const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indics);
+
         [[nodiscard]] auto getModelSubMesh(render::MeshId id) const -> std::span<const SubMesh>;
 
         [[nodiscard]] auto getMesh(const std::string& name) const -> render::MeshId;

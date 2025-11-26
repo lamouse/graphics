@@ -9,6 +9,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager, const layout::Fra
     auto sub_meshes = model.getMeshes();
     for (uint32_t i = 0; const auto& mesh : sub_meshes) {
         auto mesh_id = manager.addMesh(names.mesh_name + "mesh: " + std::to_string(i++), mesh);
+        manager.addMeshVertex(mesh_id, mesh.only_vertex, mesh.indices_);
         SubMesh sub_mesh{.material = mesh.material};
         auto [materialResource, materialUBO] = uploadMeshMaterialResource(manager, sub_mesh);
         meshes.emplace_back(

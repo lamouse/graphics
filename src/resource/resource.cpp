@@ -111,15 +111,24 @@ auto ResourceManager::addModel(std::string_view model_path, add_mesh_func func) 
 
         flip_uv = j.contains("need_flip_uv") && j["need_flip_uv"].get<bool>();
     }
-    auto model_ =
-        Model::createFromFile(model::MODEL_ROOT_PATH + model_filt_path, model_file_hash[model_filt_path], flip_uv);
+    auto model_ = Model::createFromFile(model::MODEL_ROOT_PATH + model_filt_path,
+                                        model_file_hash[model_filt_path], flip_uv);
     auto mesh_id = addMesh(std::string(model_path), model_, std::move(func));
     mesh_vertex[mesh_id] = std::make_unique<std::vector<::glm::vec3>>(model_.only_vertex);
     mesh_indics[mesh_id] = std::make_unique<std::vector<uint32_t>>(model_.indices_);
     model_sub_mesh[mesh_id] = std::make_unique<std::vector<SubMesh>>(model_.subMeshes);
-    ;
     return mesh_id;
 }
+
+void ResourceManager::addMeshVertex(render::MeshId meshId, const std::vector<glm::vec3>& vertexes,
+                                    const std::vector<uint32_t>& indics) {
+    if (vertexes.empty()) {
+        return;
+    }
+    mesh_vertex[meshId] = std::make_unique<std::vector<::glm::vec3>>(vertexes);
+    mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(indics);
+}
+
 auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func)
     -> render::MeshId {
     ASSERT_MSG(!meshName.empty(), "meshName is null");

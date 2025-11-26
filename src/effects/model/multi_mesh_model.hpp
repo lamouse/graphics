@@ -129,7 +129,7 @@ class ModelForMultiMesh {
         // TODO 主要修复第一次按下鼠标左键无法拾取的问题，等找到修复方案再修复
         bool pending_pick_ = false;
         // 用于鼠标移动
-        glm::vec3 out_dragStartWorldPos;
-        float out_initialWorldZ;
+        glm::vec3 out_dragStartWorldPos{};
+        float out_initialWorldZ{};
 };
 }  // namespace graphics::effects
