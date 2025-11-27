@@ -296,7 +296,7 @@ auto BufferCacheRuntime::UniformRing::Alloc(u32 bytes, u32& out_offset) -> std::
 }
 
 void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>& bindings) {
-    boost::container::small_vector<vk::Buffer, 32> buffer_handles;
+    auto buffer_handles = std::make_unique<boost::container::small_vector<vk::Buffer, 32>>();
     for (u32 i = 0; i < bindings.max_index; ++i) {
         auto handle = bindings.buffers[i]->Handle();
         if (handle == VK_NULL_HANDLE) {
@@ -307,8 +307,9 @@ void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>
                 handle = *null_buffer;
             }
         }
-        buffer_handles.push_back(handle);
+        buffer_handles->push_back(handle);
     }
+    auto binding_tr = std::make_unique<buffer::HostBindings<BaseBufferCache>>(std::move(bindings));
     const u32 device_max = device.getMaxVertexInputBindings();
     const u32 min_binding = std::min(bindings.min_index, device_max);
     const u32 max_binding = std::min(bindings.max_index, device_max);
@@ -317,19 +318,19 @@ void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>
         return;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
-        scheduler.record([bindings_ = std::move(bindings),
+        scheduler.record([bindings_ = std::move(binding_tr),
                           buffer_handles_ = std::move(buffer_handles),
                           binding_count](vk::CommandBuffer cmdbuf) {
-            cmdbuf.bindVertexBuffers2EXT(bindings_.min_index, binding_count, buffer_handles_.data(),
-                                         bindings_.offsets.data(), bindings_.sizes.data(),
-                                         bindings_.strides.data());
+            cmdbuf.bindVertexBuffers2EXT(bindings_->min_index, binding_count, buffer_handles_->data(),
+                                         bindings_->offsets.data(), bindings_->sizes.data(),
+                                         bindings_->strides.data());
         });
     } else {
-        scheduler.record([bindings_ = std::move(bindings),
+        scheduler.record([bindings_ = std::move(binding_tr),
                           buffer_handles_ = std::move(buffer_handles),
                           binding_count](vk::CommandBuffer cmdbuf) {
-            cmdbuf.bindVertexBuffers(bindings_.min_index, binding_count, buffer_handles_.data(),
-                                     bindings_.offsets.data());
+            cmdbuf.bindVertexBuffers(bindings_->min_index, binding_count, buffer_handles_->data(),
+                                     bindings_->offsets.data());
         });
     }
 }

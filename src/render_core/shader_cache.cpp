@@ -15,6 +15,12 @@ auto ShaderCache::addShader(std::span<const u32> data, ShaderType type) -> u64 {
 }
 
 void ShaderCache::setCurrentShader(u64 vertexHash, u64 fragmentHas) {
+    if (shader_infos[static_cast<u8>(ShaderType::Vertex)] &&
+            shader_infos[static_cast<u8>(ShaderType::Vertex)]->unique_hash == vertexHash &&
+            shader_infos[static_cast<u8>(ShaderType::Fragment)] &&
+            shader_infos[static_cast<u8>(ShaderType::Fragment)]->unique_hash == fragmentHas) {
+        return;
+    }
     ASSERT_MSG(storage.contains(vertexHash) && storage.contains(fragmentHas),
                "vertex or fragment shader not found");
 
