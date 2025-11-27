@@ -20,12 +20,12 @@ struct PointLight {
 
 struct DirLight {
         glm::vec4 direction{-0.2f, -1.0f, -0.3f, 0.f};  // ignore w
-        glm::vec4 color{1.f, 1.0f, 1.f, 0.2f};                           // w is intensity
+        glm::vec4 color{1.f, 1.0f, 1.f, 0.2f};          // w is intensity
 };
 struct SpotLight {
-    glm::vec4 position{}; // w used as type
-    glm::vec4 color{};    // w is intensity
-    glm::vec4 direction{}; //w constant
+        glm::vec4 position{};   // w used as type
+        glm::vec4 color{};      // w is intensity
+        glm::vec4 direction{};  // w constant
 };
 
 struct LightUBO {
@@ -61,16 +61,18 @@ class PointLightEffect {
             point_light.setVertexCount(6);
             entity_ = getEffectsScene().createEntity("PointLight: " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
+            render_state = &entity_.getComponent<ecs::RenderStateComponent>();  // NOLINT
             ecs::TransformComponent transformComponent{};
             transformComponent.translation =
                 glm::vec3(rotateLight * glm::vec4(-2.f, .0f, -1.f, 1.f));
             entity_.addComponent<ecs::TransformComponent>(transformComponent);
-
-            ecs::LightComponent lightComponent{};
-            lightComponent.color = color_;
-            lightComponent.intensity = intensity;
-            lightComponent.range = radius;
-            entity_.addComponent<ecs::LightComponent>(lightComponent);
+            transform = &entity_.getComponent<ecs::TransformComponent>();//NOLINT
+            ecs::LightComponent default_lightComponent{};
+            default_lightComponent.color = color_;
+            default_lightComponent.intensity = intensity;
+            default_lightComponent.range = radius;
+            entity_.addComponent<ecs::LightComponent>(default_lightComponent);
+            lightComponent = &entity_.getComponent<ecs::LightComponent>();//NOLINT
             point_light.setUBO<LightUBO>(&light_ubo);
             point_light.setPushConstant(&push_constants);
         }
@@ -79,26 +81,22 @@ class PointLightEffect {
         CLASS_DEFAULT_MOVEABLE(PointLightEffect);
 
         void update(const core::FrameInfo& frameInfo, world::World& world) {
-            auto& transform = entity_.getComponent<ecs::TransformComponent>();
             constexpr float angularSpeed = .5f;  // 弧度/秒
             float angle = angularSpeed * frameInfo.frameTime;
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-            glm::vec4 localOffset(transform.translation, 1.f);
+            glm::vec4 localOffset(transform->translation, 1.f);
 
-            transform.translation = glm::vec3(rotation * localOffset);
+            transform->translation = glm::vec3(rotation * localOffset);
             light_ubo.projection = frameInfo.camera->getProjection();
             light_ubo.view = frameInfo.camera->getView();
 
             world.addLightEntity(entity_);
         }
         void draw(render::Graphic* graphic) {
-            auto& transform = entity_.getComponent<ecs::TransformComponent>();
-            auto lightComponent = entity_.getComponent<ecs::LightComponent>();
-            push_constants.position = glm::vec4(transform.translation, 1.f);
-            push_constants.color =
-                glm::vec4(lightComponent.color, lightComponent.intensity);
-            push_constants.radius = lightComponent.range;
-            if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
+            push_constants.position = glm::vec4(transform->translation, 1.f);
+            push_constants.color = glm::vec4(lightComponent->color, lightComponent->intensity);
+            push_constants.radius = lightComponent->range;
+            if (render_state->visible) {
                 graphic->draw(point_light);
             }
         }
@@ -113,6 +111,9 @@ class PointLightEffect {
         LightUBO light_ubo;
         PointLightPushConstants push_constants;
         PointLightInstance point_light;
+        ecs::RenderStateComponent* render_state{};
+        ecs::TransformComponent* transform{};
+        ecs::LightComponent* lightComponent{};
         id_t id;
 };
 }  // namespace graphics::effects

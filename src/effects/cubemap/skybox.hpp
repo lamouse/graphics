@@ -19,7 +19,7 @@ class SkyBox {
             : id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
-
+            render_state = &entity_.getComponent<ecs::RenderStateComponent>();//NOLINT
             auto ret_id = manager.addKtxCubeMap("sky.ktx2");
             std::string mesh_path = "cube.obj";
             auto mesh_id = manager.addModel(mesh_path);
@@ -55,7 +55,7 @@ class SkyBox {
             return std::vector{sky_box.entity_};
         }
         void draw(render::Graphic* graphic) {
-            if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
+            if (render_state ->visible) {
                 graphic->draw(sky_box);
             }
         }
@@ -66,6 +66,7 @@ class SkyBox {
             MeshInstance<EmptyPushConstants, render::PrimitiveTopology::Triangles, SkyUBO>;
         SkyUBO sky_ubo;
         SkyBoxInstance sky_box;
+        ecs::RenderStateComponent * render_state{};
         id_t id;
 };
 
