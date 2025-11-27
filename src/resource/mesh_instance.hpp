@@ -65,12 +65,11 @@ class MeshInstance : public IMeshInstance {
         }
 
         // === 获取所有 UBO 的 byte spans（用于渲染）===
-        [[nodiscard]] auto getUBOs() const -> std::vector<std::span<const std::byte>> override {
-            return std::apply(
-                [](const auto&... ubo) -> auto {
-                    return std::vector<std::span<const std::byte>>{(ubo)->as_byte_span()...};
-                },
-                ubos);
+        [[nodiscard]] auto getUBOs() const -> std::span<std::span<const std::byte>> override {
+            std::size_t i = 0;
+            std::apply([&](const auto&... ubo) -> auto { ((ubosSpans[i++] = ubo->as_byte_span()), ...); },
+                       ubos);
+            return ubosSpans;
         }
 
         void updateMaterials(const MeshMaterialResource& material) {
@@ -108,6 +107,8 @@ class MeshInstance : public IMeshInstance {
         MeshMaterialResource material_resource;
         render::DynamicPipelineState* pipeline_state{nullptr};
         std::vector<render::TextureId> materials;
+        mutable std::vector<std::span<const std::byte>> ubosSpans{
+            std::tuple_size_v<decltype(ubos)>};
 };
 
 }  // namespace graphics

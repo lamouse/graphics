@@ -63,7 +63,7 @@ class IMeshInstance {
             return topology;
         }
         [[nodiscard]] virtual auto getPipelineState() const -> render::DynamicPipelineState = 0;
-        [[nodiscard]] virtual auto getUBOs() const -> std::vector<std::span<const std::byte>> = 0;
+        [[nodiscard]] virtual auto getUBOs() const -> std::span<std::span<const std::byte>> = 0;
         [[nodiscard]] auto getRenderCommand() const -> render::RenderCommand {
             return render_command;
         }

@@ -82,7 +82,7 @@ class BufferCache : public BufferCacheInfo {
         void BindIndexBuffer(IndexFormat format, BufferId id);
         void BindVertexBuffers(BufferId id, u32 size, u64 stride);
         void BindGraphicUniformBuffer();
-        void UploadGraphicUniformBuffer(std::vector<std::span<const std::byte>> data);
+        void UploadGraphicUniformBuffer(std::span<std::span<const std::byte>> data);
 
         void bindComputeStorageBuffers(BufferId id);
         void UploadComputeUniformBuffer(std::vector<std::span<const std::byte>> data);
@@ -108,7 +108,7 @@ class BufferCache : public BufferCacheInfo {
 
 
         // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
-        std::vector<std::span<const std::byte>> graphic_uniform_buffers;
+        std::span<std::span<const std::byte>> graphic_uniform_buffers;
 
         // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
         std::vector<std::span<const std::byte>> compute_uniform_buffers;

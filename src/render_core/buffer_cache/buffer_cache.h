@@ -86,8 +86,8 @@ void BufferCache<P>::BindGraphicUniformBuffer() {
     graphic_uniform_buffers = {};
 }
 template <class P>
-void BufferCache<P>::UploadGraphicUniformBuffer(std::vector<std::span<const std::byte>> data) {
-    graphic_uniform_buffers = std::move(data);
+void BufferCache<P>::UploadGraphicUniformBuffer(std::span<std::span<const std::byte>> data) {
+    graphic_uniform_buffers = data;
 }
 template <class P>
 void BufferCache<P>::UploadComputeUniformBuffer(std::vector<std::span<const std::byte>> data) {
