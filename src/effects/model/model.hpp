@@ -34,7 +34,7 @@ class LightModel {
 
         void draw(render::Graphic* graphic) {
             ZoneScopedNC("model::draw", 210);
-            if (entity_.getComponent<ecs::RenderStateComponent>().visible) {
+            if (render_state->visible) {
                 for (auto& mesh : meshes) {
                     if (mesh.render_state->visible) {
                         graphic->draw(mesh);
@@ -62,6 +62,8 @@ class LightModel {
         LightUBO light_ubo{};
         std::vector<MaterialUBO> materials;
         ModelPushConstantData push_constant;
+        ecs::RenderStateComponent *render_state;
+        ecs::TransformComponent *transform;
         id_t id;
         std::unordered_set<id_t> mesh_ids;
         // 用于鼠标移动

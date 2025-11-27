@@ -73,17 +73,17 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
     entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
     entity_.addComponent<ecs::RenderStateComponent>(id);
     entity_.addComponent<ecs::TransformComponent>();
+    render_state = &entity_.getComponent<ecs::RenderStateComponent>();//NOLINT
+    transform =  &entity_.getComponent<ecs::TransformComponent>();//NOLINT
 }
 
 void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
-    auto& transform = entity_.getComponent<ecs::TransformComponent>();
-    auto& render_state = entity_.getComponent<ecs::RenderStateComponent>();
 
-    if (render_state.is_select()) {
+    if (render_state->is_select()) {
         if (frameInfo.input_state.key == core::InputKey::LCtrl) {
             if (frameInfo.input_state.scrollOffset_ != 0.0f) {
-                scale(transform, frameInfo.input_state.scrollOffset_);
+                scale(*transform, frameInfo.input_state.scrollOffset_);
             }
         }
     }
@@ -91,12 +91,12 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     auto [pick_id, pick] = world.pick();
 
     if (pick && id == pick_id) {
-        render_state.mouse_select = true;
+        render_state->mouse_select = true;
     } else {
-        render_state.mouse_select = false;
+        render_state->mouse_select = false;
     }
-    if (render_state.mouse_select) {
-        move_model(frameInfo, transform);
+    if (render_state->mouse_select) {
+        move_model(frameInfo, *transform);
     }
 
     auto light_entity = world.getLightEntities();
@@ -134,10 +134,10 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
             // TODO 临时测试
         }
     }
-    push_constant.modelMatrix = transform.mat4();
-    push_constant.normalMatrix = transform.normalMatrix();
+    push_constant.modelMatrix = transform->mat4();
+    push_constant.normalMatrix = transform->normalMatrix();
     light_ubo.numLights = index;
-    PickingSystem::update_transform(id, transform);
+    PickingSystem::update_transform(id, *transform);
 }
 
 }  // namespace graphics::effects
