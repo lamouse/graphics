@@ -17,19 +17,14 @@ auto ShaderCache::addShader(std::span<const u32> data, ShaderType type) -> u64 {
 void ShaderCache::setCurrentShader(u64 vertexHash, u64 fragmentHas) {
     ASSERT_MSG(storage.contains(vertexHash) && storage.contains(fragmentHas),
                "vertex or fragment shader not found");
-    ASSERT_MSG(storage.find(vertexHash)->second->type == ShaderType::Vertex,
-               "vertex shader type error");
 
-    ASSERT_MSG(storage.find(fragmentHas)->second->type == ShaderType::Fragment,
-               "Fragment shader type error");
     shader_infos[static_cast<u8>(ShaderType::Vertex)] = storage.find(vertexHash)->second.get();
     shader_infos[static_cast<u8>(ShaderType::Fragment)] = storage.find(fragmentHas)->second.get();
     shader_infos[static_cast<u8>(ShaderType::Compute)] = nullptr;
 }
 void ShaderCache::setsetCurrentShader(u64 computeHash) {
     ASSERT_MSG(storage.contains(computeHash), "compute shader not found");
-    ASSERT_MSG(storage.find(computeHash)->second->type == ShaderType::Compute,
-               "Fragment shader type error");
+
     shader_infos[static_cast<u8>(ShaderType::Vertex)] = nullptr;
     shader_infos[static_cast<u8>(ShaderType::Fragment)] = nullptr;
     shader_infos[static_cast<u8>(ShaderType::Compute)] = storage.find(computeHash)->second.get();
