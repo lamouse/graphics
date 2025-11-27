@@ -162,7 +162,7 @@ App::App()
 App::~App() = default;
 
 void App::load_resource() {
-    std::string viking_obj_path = "viking_room";
+    std::string viking_obj_path = "backpack";
     std::string model_shader_name = "model";
     std::string particle_shader_name = "particle";
     std::string point_light_shader_name = "point_light";
