@@ -37,18 +37,23 @@ void BufferCache<P>::BindIndexBuffer(IndexFormat format, BufferId id) {
 template <class P>
 void BufferCache<P>::BindVertexBuffers(BufferId id, u32 size, u64 stride) {
     HostBindings<typename P::Buffer> host_bindings;
+    bool any_valid{false};
     for (u32 index = 0; index < 1; ++index) {
         // TouchBuffer(buffer, id);
         host_bindings.min_index = std::min(host_bindings.min_index, index);
-        host_bindings.max_index = std::max(host_bindings.max_index, static_cast<u32>(1));  // 待修复
+        host_bindings.max_index = std::max(host_bindings.max_index, index);  // 待修复
+        any_valid = true;
     }
-    for (u32 index = host_bindings.min_index; index < host_bindings.max_index; index++) {
-        auto& buffer = slot_buffers[id];
-        host_bindings.buffers.push_back(&buffer);
-        host_bindings.offsets.push_back(0);
-        host_bindings.sizes.push_back(size);
-        host_bindings.strides.push_back(stride);
-        runtime.BindVertexBuffers(host_bindings);
+    if (any_valid) {
+        host_bindings.max_index++;
+        for (u32 index = host_bindings.min_index; index < host_bindings.max_index; index++) {
+            auto& buffer = slot_buffers[id];
+            host_bindings.buffers.push_back(&buffer);
+            host_bindings.offsets.push_back(0);
+            host_bindings.sizes.push_back(size);
+            host_bindings.strides.push_back(stride);
+            runtime.BindVertexBuffers(host_bindings);
+        }
     }
 }
 

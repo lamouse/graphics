@@ -124,14 +124,14 @@ auto TextureCache<P>::getCurrentTexture() -> std::pair<ImageView*, Sampler*> {
     return std::make_pair(&slot_image_views[tmp_textureId], getSampler(currentSamplerPreset));
 }
 template <class P>
-auto TextureCache<P>::getCurrentTextures() -> std::vector<std::pair<ImageView*, Sampler*>> {
-    std::vector<std::pair<ImageView*, Sampler*>> result;
-    result.reserve(used_textures.size());
+auto TextureCache<P>::getCurrentTextures() -> std::span<std::pair<ImageView*, Sampler*>> {
+    sample_texture.clear();
+    auto sampler = getSampler(currentSamplerPreset);
     for (const auto& textureId : used_textures) {
-        result.emplace_back(&slot_image_views[textureId], getSampler(currentSamplerPreset));
+        sample_texture.emplace_back(&slot_image_views[textureId], sampler);
     }
     used_textures.clear();
-    return result;
+    return sample_texture;
 }
 
 template <class P>
