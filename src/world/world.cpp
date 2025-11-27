@@ -19,7 +19,8 @@ World::World() : id_(graphics::getCurrentId()) {
     dirLight.direction = glm::vec3{-0.2f, -1.0f, -0.3f};
     dirLightEntity_.addComponent<ecs::LightComponent>(dirLight);
     dirLightEntity_.addComponent<ecs::RenderStateComponent>(graphics::getCurrentId());
-    lightEntity_.push_back(dirLightEntity_);
+    dir_light = &dirLightEntity_.getComponent<ecs::LightComponent>();//NOLINT
+    lights_.push_back({.light=dir_light, .transform=nullptr});
 }
 
 [[nodiscard]] auto World::getEntity(WorldEntityType entityType) const -> ecs::Entity {
@@ -31,7 +32,14 @@ World::World() : id_(graphics::getCurrentId()) {
     }
 }
 
-void World::addLightEntity(const ecs::Entity& entity) { lightEntity_.emplace_back(entity); }
+void World::addLightEntity(const ecs::Entity& entity) {
+    auto light = &entity.getComponent<ecs::LightComponent>();//NOLINT
+    ecs::TransformComponent* light_transform{nullptr};
+    if(light->type == ecs::LightType::Point){
+       light_transform = &entity.getComponent<ecs::TransformComponent>();//NOLINT
+    }
+    lights_.push_back({.light=light, .transform=light_transform});
+}
 
 [[nodiscard]] auto World::getScene() -> ecs::Scene& { return scene_; }
 

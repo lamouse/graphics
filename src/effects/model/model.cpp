@@ -99,44 +99,10 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
         move_model(frameInfo, *transform);
     }
 
-    auto light_entity = world.getLightEntities();
+    updateLightUBO(frameInfo, light_ubo, world);
 
-    light_ubo.projection = frameInfo.camera->getProjection();
-    light_ubo.view = frameInfo.camera->getView();
-    light_ubo.inverseView = frameInfo.camera->getView();
-    light_ubo.ambientLightColor = glm::vec4{1.f, 1.f, 1.f, .04f};
-    int index = 0;
-    for (const auto& entity : light_entity) {
-        auto& lightComponent = entity.getComponent<ecs::LightComponent>();
-        if (lightComponent.type == ecs::LightType::Point) {
-            auto& light_transform = entity.getComponent<ecs::TransformComponent>();
-            PointLight light{};
-
-            light.color = {lightComponent.color, lightComponent.intensity};
-            light.position = {light_transform.translation, 1.0f};
-            light_ubo.pointLights[index] = light;
-            index++;
-            if (index >= MAX_LIGHTS) {
-                break;
-            }
-        } else if (lightComponent.type == ecs::LightType::Directional) {
-            DirLight dirLight{};
-            dirLight.direction = glm::vec4(glm::normalize(lightComponent.direction), 0.f);
-            dirLight.color = glm::vec4(lightComponent.color, lightComponent.intensity);
-            light_ubo.dirLight = dirLight;
-
-            // TODO 临时测试
-            light_ubo.spotLight.position =
-                glm::vec4(frameInfo.camera->getPosition(), lightComponent.outerCone);
-            light_ubo.spotLight.direction =
-                glm::vec4(frameInfo.camera->front(), lightComponent.innerCone);
-            light_ubo.spotLight.color = glm::vec4(lightComponent.color, 1);
-            // TODO 临时测试
-        }
-    }
     push_constant.modelMatrix = transform->mat4();
     push_constant.normalMatrix = transform->normalMatrix();
-    light_ubo.numLights = index;
     PickingSystem::update_transform(id, *transform);
 }
 

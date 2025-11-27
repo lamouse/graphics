@@ -1,5 +1,8 @@
 set(sources
+    light/light.hpp
+    light/light.cpp
     light/point_light.hpp
+
     model/model.hpp
     model/model.cpp
     model/multi_mesh_model.hpp

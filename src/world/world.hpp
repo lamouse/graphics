@@ -3,19 +3,24 @@
 #include "resource/id.hpp"
 #include "ecs/scene/scene.hpp"
 #include "ecs/scene/entity.hpp"
+#include "ecs/component.hpp"
 #include <vector>
 namespace world {
 
 enum class WorldEntityType : std::uint8_t { CAMERA };
 
 class World {
+    struct LightInfo{
+        ecs::LightComponent* light;
+        ecs::TransformComponent* transform;
+    };
     public:
         World();
         [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
         void addLightEntity(const ecs::Entity& entity);
         [[nodiscard]] auto getLightEntities(this auto&& self) -> decltype(auto) {
             {
-                return (std::span(self.lightEntity_));
+                return (std::span(self.lights_));
             }
         }
 
@@ -36,8 +41,8 @@ class World {
         CLASS_NON_COPYABLE(World);
 
         void cleanLight() {
-            lightEntity_.clear();
-            lightEntity_.push_back(dirLightEntity_);
+            lights_.clear();
+            lights_.push_back({.light=dir_light, .transform=nullptr});
         }
 
         [[nodiscard]] auto getEntities() const -> std::vector<ecs::Entity> {
@@ -53,6 +58,7 @@ class World {
         ecs::Scene scene_;
         ecs::Entity cameraEntity_;
         ecs::Entity dirLightEntity_;
-        std::vector<ecs::Entity> lightEntity_;
+        ecs::LightComponent *dir_light;
+        std::vector<LightInfo> lights_;
 };
 }  // namespace world
