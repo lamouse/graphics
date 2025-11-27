@@ -128,29 +128,25 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
 }
 
 auto Swapchain::acquireNextImage() -> bool {
-    try {
-        const ::vk::ResultValue<uint32_t> result = device_.getLogical().acquireNextImageKHR(
-            *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_]);
-        switch (result.result) {
-            case vk::Result::eSuccess:
-                image_index_ = result.value;
-                break;
-            case vk::Result::eSuboptimalKHR:
-                is_suboptimal_ = true;
-                break;
-            case vk::Result::eErrorOutOfDateKHR:
-                is_outdated_ = true;
-                break;
-            case vk::Result::eErrorSurfaceLostKHR:
-                throw utils::VulkanException(result.result);
-                break;
-            default:
-                SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
-                             string_VkResult(static_cast<VkResult>(result.result)));
-                break;
-        }
-    } catch (const ::vk::OutOfDateKHRError&) {
-        is_outdated_ = true;
+    const auto result = device_.getLogical().acquireNextImageKHR(
+        *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_],
+        nullptr, &image_index_);
+    switch (result) {
+        case vk::Result::eSuccess:
+            break;
+        case vk::Result::eSuboptimalKHR:
+            is_suboptimal_ = true;
+            break;
+        case vk::Result::eErrorOutOfDateKHR:
+            is_outdated_ = true;
+            break;
+        case vk::Result::eErrorSurfaceLostKHR:
+            utils::check(result);
+            break;
+        default:
+            SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
+                         string_VkResult(static_cast<VkResult>(result)));
+            break;
     }
     return is_suboptimal_ || is_outdated_;
 }

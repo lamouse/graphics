@@ -71,8 +71,8 @@ class Swapchain {
         std::vector<Semaphore> present_semaphores_;
         std::vector<Semaphore> render_semaphores_;
 
-        uint32_t width_;
-        uint32_t height_;
+        uint32_t width_{};
+        uint32_t height_{};
 
         uint32_t image_index_{};
         uint32_t frame_index_{};
