@@ -62,7 +62,7 @@ class PointLightEffect {
             light_ubo.projection = frameInfo.camera->getProjection();
             light_ubo.view = frameInfo.camera->getView();
 
-            world.addLightEntity(entity_);
+            world.addLight({.light = lightComponent, .transform = transform});
         }
         void draw(render::Graphic* graphic) {
             push_constants.position = glm::vec4(transform->translation, 1.f);

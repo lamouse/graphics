@@ -17,7 +17,7 @@ class World {
     public:
         World();
         [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
-        void addLightEntity(const ecs::Entity& entity);
+        void addLight(const LightInfo& info){lights_.push_back(info);}
         [[nodiscard]] auto getLightEntities(this auto&& self) -> decltype(auto) {
             {
                 return (std::span(self.lights_));
@@ -46,7 +46,7 @@ class World {
         }
 
         [[nodiscard]] auto getEntities() const -> std::vector<ecs::Entity> {
-            return std::vector{cameraEntity_, dirLightEntity_};
+            return child_entitys_;
         }
 
         ecs::Entity entity_;
@@ -60,5 +60,6 @@ class World {
         ecs::Entity dirLightEntity_;
         ecs::LightComponent *dir_light;
         std::vector<LightInfo> lights_;
+        std::vector<ecs::Entity> child_entitys_;
 };
 }  // namespace world

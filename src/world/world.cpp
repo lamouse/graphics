@@ -21,6 +21,7 @@ World::World() : id_(graphics::getCurrentId()) {
     dirLightEntity_.addComponent<ecs::RenderStateComponent>(graphics::getCurrentId());
     dir_light = &dirLightEntity_.getComponent<ecs::LightComponent>();//NOLINT
     lights_.push_back({.light=dir_light, .transform=nullptr});
+    child_entitys_ = {cameraEntity_, dirLightEntity_};
 }
 
 [[nodiscard]] auto World::getEntity(WorldEntityType entityType) const -> ecs::Entity {
@@ -30,15 +31,6 @@ World::World() : id_(graphics::getCurrentId()) {
         default:
             throw std::runtime_error("Unknown entity type");
     }
-}
-
-void World::addLightEntity(const ecs::Entity& entity) {
-    auto light = &entity.getComponent<ecs::LightComponent>();//NOLINT
-    ecs::TransformComponent* light_transform{nullptr};
-    if(light->type == ecs::LightType::Point){
-       light_transform = &entity.getComponent<ecs::TransformComponent>();//NOLINT
-    }
-    lights_.push_back({.light=light, .transform=light_transform});
 }
 
 [[nodiscard]] auto World::getScene() -> ecs::Scene& { return scene_; }
