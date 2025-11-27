@@ -58,7 +58,7 @@ class IMeshInstance {
         [[nodiscard]] auto getVertexCount() const -> std::int32_t { return vertex_count; }
         [[nodiscard]] void setVertexCount(std::int32_t count) { vertex_count = count; }
         [[nodiscard]] virtual auto getPushConstants() const -> std::span<const std::byte> = 0;
-        [[nodiscard]] virtual auto getMaterialIds() const -> std::vector<render::TextureId> = 0;
+        [[nodiscard]] virtual auto getMaterialIds() const -> std::span<const render::TextureId> = 0;
         [[nodiscard]] auto getPrimitiveTopology() const -> render::PrimitiveTopology {
             return topology;
         }

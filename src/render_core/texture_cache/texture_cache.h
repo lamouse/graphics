@@ -140,7 +140,7 @@ void TextureCache<P>::setCurrentTexture(ImageViewId viewId, SamplerPreset preset
     currentSamplerPreset = preset;
 }
 template <class P>
-void TextureCache<P>::setCurrentTextures(const std::vector<ImageViewId>& textures,
+void TextureCache<P>::setCurrentTextures(const std::span<const ImageViewId>& textures,
                                          SamplerPreset preset) {
     for (const auto& texture : textures) {
         if (texture) {

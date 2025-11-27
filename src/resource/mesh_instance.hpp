@@ -53,9 +53,8 @@ class MeshInstance : public IMeshInstance {
         [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
             return *pipeline_state;
         }
-        [[nodiscard]] auto getMaterialIds() const -> std::vector<render::TextureId> override {
-            return {material_resource.ambientTextures, material_resource.diffuseTextures,
-                    material_resource.specularTextures, material_resource.normalTextures};
+        [[nodiscard]] auto getMaterialIds() const -> std::span<const render::TextureId> override {
+            return materials;
         }
 
         // ✅ 设置 UBO（通过类型）
@@ -74,6 +73,12 @@ class MeshInstance : public IMeshInstance {
                 ubos);
         }
 
+        void updateMaterials(const MeshMaterialResource& material) {
+            material_resource = material;
+            materials = {material_resource.ambientTextures, material_resource.diffuseTextures,
+                         material_resource.specularTextures, material_resource.normalTextures};
+        }
+
         void setPushConstant(PushConstants* push) { push_constants = push; }
 
         MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
@@ -81,7 +86,9 @@ class MeshInstance : public IMeshInstance {
                      render::MeshId meshId_ = {}, MeshMaterialResource material_resource_ = {})
             : IMeshInstance(primitiveTopology, render_command_, meshId_, shaderHash_.vertex,
                             shaderHash_.fragment),
-              material_resource(material_resource_) {
+              material_resource(material_resource_),
+              materials({material_resource.ambientTextures, material_resource.diffuseTextures,
+                         material_resource.specularTextures, material_resource.normalTextures}) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));
@@ -100,6 +107,7 @@ class MeshInstance : public IMeshInstance {
         PushConstants* push_constants{nullptr};
         MeshMaterialResource material_resource;
         render::DynamicPipelineState* pipeline_state{nullptr};
+        std::vector<render::TextureId> materials;
 };
 
 }  // namespace graphics

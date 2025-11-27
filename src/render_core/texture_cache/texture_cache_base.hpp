@@ -103,7 +103,7 @@ class TextureCache {
         auto getCurrentTexture() -> std::pair<ImageView*, Sampler*>;
         void setCurrentTexture(ImageViewId viewId, SamplerPreset preset);
 
-        void setCurrentTextures(const std::vector<ImageViewId>& textures, SamplerPreset preset);
+        void setCurrentTextures(const std::span<const ImageViewId>& textures, SamplerPreset preset);
         auto getCurrentTextures() -> std::vector<std::pair<ImageView*, Sampler*>>;
         void setCurrentFrameBuffer(const FramebufferKey& key);
         auto TryFindFramebufferImageView() -> std::pair<typename P::ImageView*, bool>;
