@@ -29,6 +29,9 @@ void ShaderCache::setCurrentShader(u64 vertexHash, u64 fragmentHas) {
     shader_infos[static_cast<u8>(ShaderType::Compute)] = nullptr;
 }
 void ShaderCache::setsetCurrentShader(u64 computeHash) {
+    if(shader_infos[static_cast<u8>(ShaderType::Compute)] && shader_infos[static_cast<u8>(ShaderType::Compute)]->unique_hash == computeHash){
+        return;
+    }
     ASSERT_MSG(storage.contains(computeHash), "compute shader not found");
 
     shader_infos[static_cast<u8>(ShaderType::Vertex)] = nullptr;
