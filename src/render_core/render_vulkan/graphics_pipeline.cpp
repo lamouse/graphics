@@ -226,9 +226,10 @@ void GraphicsPipeline::Configure() {
     guest_descriptor_queue_.Acquire();
     buffer_cache.BindGraphicUniformBuffer();
     auto textures = texture_cache.getCurrentTextures();
-    for (const auto& [view, sample] : textures) {
-        if (view) {
-            guest_descriptor_queue_.AddSampledImage(view->RenderTarget(), sample->Handle());
+    auto* sample = texture_cache.getSampler(SamplerPreset::Linear);
+    for (const auto& texture : textures) {
+        if (texture) {
+            guest_descriptor_queue_.AddSampledImage(texture->RenderTarget(), sample->Handle());
         }
     }
     ConfigureDraw();

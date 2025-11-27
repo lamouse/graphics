@@ -117,39 +117,23 @@ auto TextureCache<P>::getSampler(SamplerPreset preset) -> typename P::Sampler* {
 }
 
 template <class P>
-auto TextureCache<P>::getCurrentTexture() -> std::pair<ImageView*, Sampler*> {
-    if (!currentTextureId) {
-        return std::make_pair(nullptr, nullptr);
-    }
-    auto tmp_textureId = currentTextureId;
-    currentTextureId = {};
-    return std::make_pair(&slot_image_views[tmp_textureId], getSampler(currentSamplerPreset));
-}
-template <class P>
-auto TextureCache<P>::getCurrentTextures() -> std::span<std::pair<ImageView*, Sampler*>> {
+auto TextureCache<P>::getCurrentTextures() -> std::span<ImageView*> {
     sample_texture.clear();
-    auto sampler = getSampler(currentSamplerPreset);
     for (const auto& textureId : used_textures) {
-        sample_texture.emplace_back(&slot_image_views[textureId], sampler);
+        sample_texture.push_back(&slot_image_views[textureId]);
     }
     used_textures.clear();
     return sample_texture;
 }
 
+
 template <class P>
-void TextureCache<P>::setCurrentTexture(ImageViewId viewId, SamplerPreset preset) {
-    currentTextureId = viewId;
-    currentSamplerPreset = preset;
-}
-template <class P>
-void TextureCache<P>::setCurrentTextures(const std::span<const ImageViewId>& textures,
-                                         SamplerPreset preset) {
+void TextureCache<P>::setCurrentTextures(const std::span<const ImageViewId>& textures) {
     for (const auto& texture : textures) {
         if (texture) {
             used_textures.push_back(texture);
         }
     }
-    currentSamplerPreset = preset;
 }
 
 template <class P>

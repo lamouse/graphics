@@ -100,11 +100,9 @@ class TextureCache {
 
         auto addTexture(ktxTexture* ktxTexture) -> ImageViewId;
         auto getSampler(SamplerPreset preset) -> typename P::Sampler*;
-        auto getCurrentTexture() -> std::pair<ImageView*, Sampler*>;
-        void setCurrentTexture(ImageViewId viewId, SamplerPreset preset);
 
-        void setCurrentTextures(const std::span<const ImageViewId>& textures, SamplerPreset preset);
-        auto getCurrentTextures() -> std::span<std::pair<ImageView*, Sampler*>>;
+        void setCurrentTextures(const std::span<const ImageViewId>& textures);
+        auto getCurrentTextures() -> std::span<ImageView*>;
         void UpdateRenderTarget(const FramebufferKey& key);
         auto TryFindFramebufferImageView() -> std::pair<typename P::ImageView*, bool>;
         auto getFramebuffer() -> Framebuffer*;
@@ -118,10 +116,9 @@ class TextureCache {
         common::SlotVector<Sampler> slot_samplers;
         common::SlotVector<Framebuffer> slot_framebuffers;
         ImageViewId currentTextureId;
-        std::vector<std::pair<ImageView*, Sampler*>> sample_texture;
+        std::vector<ImageView*> sample_texture;
         std::array<SamplerId, static_cast<uint8_t>( SamplerPreset::MAX_PRESET)> sampler_presets;
         std::vector<ImageViewId> used_textures;
-        SamplerPreset currentSamplerPreset{};
         RenderTargets render_targets;
         Framebuffer* current_frame_buffer{};
         std::unordered_map<RenderTargets, FramebufferId> framebuffers;

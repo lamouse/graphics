@@ -672,7 +672,7 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
 
     pipeline_cache.setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
     current_modelId = instance.getMeshId();
-    texture_cache.setCurrentTextures(instance.getMaterialIds(), SamplerPreset::Linear);
+    texture_cache.setCurrentTextures(instance.getMaterialIds());
     if (!instance.getUBOs().empty()) {
         buffer_cache.UploadGraphicUniformBuffer(instance.getUBOs());
     }
