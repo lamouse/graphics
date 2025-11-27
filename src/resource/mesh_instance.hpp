@@ -51,7 +51,7 @@ class MeshInstance : public IMeshInstance {
             return {};
         };
         [[nodiscard]] auto getPipelineState() const -> render::DynamicPipelineState override {
-            return entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;
+            return *pipeline_state;
         }
         [[nodiscard]] auto getMaterialIds() const -> std::vector<render::TextureId> override {
             return {material_resource.ambientTextures, material_resource.diffuseTextures,
@@ -87,13 +87,19 @@ class MeshInstance : public IMeshInstance {
                                                        : meshName + " " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
+            pipeline_state =                                                     // NOLINT
+                &entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;  // NOLINT
+            render_state = &entity_.getComponent<ecs::RenderStateComponent>();   // NOLINT
         }
         MeshInstance() = default;
+        ecs::Entity entity_;
+        ecs::RenderStateComponent* render_state;
 
     private:
         UBOs ubos{};
         PushConstants* push_constants{nullptr};
         MeshMaterialResource material_resource;
+        render::DynamicPipelineState* pipeline_state{nullptr};
 };
 
 }  // namespace graphics

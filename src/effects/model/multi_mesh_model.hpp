@@ -11,7 +11,7 @@ class ModelForMultiMesh {
             ZoneScopedNC("model::draw", 210);
             if (render_state->visible) {
                 for (auto& mesh : meshes) {
-                    if (mesh.entity_.getComponent<ecs::RenderStateComponent>().visible) {
+                    if (mesh.render_state->visible) {
                         graphic->draw(mesh);
                     }
                 }

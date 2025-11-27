@@ -126,6 +126,7 @@ auto TextureCache<P>::getCurrentTexture() -> std::pair<ImageView*, Sampler*> {
 template <class P>
 auto TextureCache<P>::getCurrentTextures() -> std::vector<std::pair<ImageView*, Sampler*>> {
     std::vector<std::pair<ImageView*, Sampler*>> result;
+    result.reserve(used_textures.size());
     for (const auto& textureId : used_textures) {
         result.emplace_back(&slot_image_views[textureId], getSampler(currentSamplerPreset));
     }

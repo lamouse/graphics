@@ -67,7 +67,6 @@ class IMeshInstance {
         [[nodiscard]] auto getRenderCommand() const -> render::RenderCommand {
             return render_command;
         }
-        ecs::Entity entity_;
         [[nodiscard]] auto getId() const -> id_t { return id; }
         template <typename T>
         void setUBO(uint32_t binding, const T& data) {
