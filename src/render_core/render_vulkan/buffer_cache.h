@@ -87,7 +87,7 @@ class BufferCacheRuntime {
 
         void BindVertexBuffer(u32 index, vk::Buffer buffer, u32 offset, u32 size, u32 stride);
 
-        void BindVertexBuffers(buffer::HostBindings<BaseBufferCache>& bindings);
+        void BindVertexBuffers(std::unique_ptr<buffer::HostBindings<BaseBufferCache>>&& bindings);
 
         void BindTransformFeedbackBuffer(u32 index, vk::Buffer buffer, u32 offset, u32 size);
 

@@ -295,41 +295,46 @@ auto BufferCacheRuntime::UniformRing::Alloc(u32 bytes, u32& out_offset) -> std::
     return {mapped[current_frame] + out_offset, bytes};
 }
 
-void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>& bindings) {
-    auto buffer_handles = std::make_unique<boost::container::small_vector<vk::Buffer, 32>>();
-    for (u32 i = 0; i < bindings.max_index; ++i) {
-        auto handle = bindings.buffers[i]->Handle();
-        if (handle == VK_NULL_HANDLE) {
-            bindings.offsets[i] = 0;
-            bindings.sizes[i] = VK_WHOLE_SIZE;
-            if (!device.HasNullDescriptor()) {
-                ReserveNullBuffer();
-                handle = *null_buffer;
+void BufferCacheRuntime::BindVertexBuffers(
+    std::unique_ptr<buffer::HostBindings<BaseBufferCache>>&& bindings) {
+    auto bind_buffer = [this](buffer::HostBindings<BaseBufferCache>* binding)
+        -> boost::container::small_vector<vk::Buffer, 32> {
+        boost::container::small_vector<vk::Buffer, 32> buffer_handles;
+        for (u32 i = 0; i < binding->max_index; ++i) {
+            auto handle = binding->buffers[i]->Handle();
+            if (handle == VK_NULL_HANDLE) {
+                binding->offsets[i] = 0;
+                binding->sizes[i] = VK_WHOLE_SIZE;
+                if (!device.HasNullDescriptor()) {
+                    ReserveNullBuffer();
+                    handle = *null_buffer;
+                }
             }
+            buffer_handles.push_back(handle);
         }
-        buffer_handles->push_back(handle);
-    }
-    auto binding_tr = std::make_unique<buffer::HostBindings<BaseBufferCache>>(std::move(bindings));
+        return buffer_handles;
+    };
+
     const u32 device_max = device.getMaxVertexInputBindings();
-    const u32 min_binding = std::min(bindings.min_index, device_max);
-    const u32 max_binding = std::min(bindings.max_index, device_max);
+    const u32 min_binding = std::min(bindings->min_index, device_max);
+    const u32 max_binding = std::min(bindings->max_index, device_max);
     const u32 binding_count = max_binding - min_binding;
     if (binding_count == 0) {
         return;
     }
     if (device.IsExtExtendedDynamicStateSupported()) {
-        scheduler.record([bindings_ = std::move(binding_tr),
-                          buffer_handles_ = std::move(buffer_handles),
+        scheduler.record([bindings_ = std::move(bindings), bind_buffer,
                           binding_count](vk::CommandBuffer cmdbuf) {
-            cmdbuf.bindVertexBuffers2EXT(bindings_->min_index, binding_count, buffer_handles_->data(),
+            auto buffer_handle = bind_buffer(bindings_.get());
+            cmdbuf.bindVertexBuffers2EXT(bindings_->min_index, binding_count, buffer_handle.data(),
                                          bindings_->offsets.data(), bindings_->sizes.data(),
                                          bindings_->strides.data());
         });
     } else {
-        scheduler.record([bindings_ = std::move(binding_tr),
-                          buffer_handles_ = std::move(buffer_handles),
+        scheduler.record([bindings_ = std::move(bindings), bind_buffer,
                           binding_count](vk::CommandBuffer cmdbuf) {
-            cmdbuf.bindVertexBuffers(bindings_->min_index, binding_count, buffer_handles_->data(),
+            auto buffer_handle = bind_buffer(bindings_.get());
+            cmdbuf.bindVertexBuffers(bindings_->min_index, binding_count, buffer_handle.data(),
                                      bindings_->offsets.data());
         });
     }
