@@ -167,7 +167,7 @@ auto TextureCache<P>::getFramebuffer() -> Framebuffer* {
 }
 
 template <class P>
-void TextureCache<P>::setCurrentFrameBuffer(const FramebufferKey& key) {
+void TextureCache<P>::UpdateRenderTarget(const FramebufferKey& key) {
     if (frameRenderTarget.contains(key)) {
         render_targets = frameRenderTarget.find(key)->second;
         return;

@@ -38,7 +38,7 @@ class VulkanGraphics : public render::Graphic {
 
         CLASS_NON_COPYABLE(VulkanGraphics);
         CLASS_NON_MOVEABLE(VulkanGraphics);
-        void clean() override;
+        void clean(const CleanValue& cleanValue) override;
         void dispatchCompute(const IComputeInstance& instance) override;
         auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
@@ -82,7 +82,6 @@ class VulkanGraphics : public render::Graphic {
         void UpdateDepthBounds();
         void UpdateStencilFaces();
         void UpdateLineWidth();
-        void clear();
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;

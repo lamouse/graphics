@@ -2,6 +2,7 @@
 #include "render_core/types.hpp"
 #include "render_core/shader_cache.hpp"
 #include "render_core/compute_instance.hpp"
+#include "render_core/texture/types.hpp"
 #include "common/common_funcs.hpp"
 #include "resource/instance.hpp"
 #include "resource/texture/image.hpp"
@@ -10,6 +11,26 @@
 #include <ktx.h>
 namespace render {
 using GraphicsId = common::SlotId;
+
+struct Framebuffer {
+        std::array<render::surface::PixelFormat, 8> color_formats{};
+        render::surface::PixelFormat depth_format = surface::PixelFormat::Invalid;
+        texture::Extent3D extent{};
+        Framebuffer(){
+            color_formats.fill(surface::PixelFormat::Invalid);
+        }
+};
+
+struct CleanValue {
+        Framebuffer framebuffer;
+        std::array<float, 4> clear_color{1.f, 1.f, 1.f, 1.f};  // RGBA 0 ~ 1
+        float clear_depth{1.f};                                // min max
+        std::int32_t offset_x{};
+        std::int32_t offset_y{};
+        uint32_t width{};
+        uint32_t hight{};
+};
+
 class Graphic {
     public:
         virtual ~Graphic() = default;
@@ -28,7 +49,7 @@ class Graphic {
          */
         virtual auto addShader(std::span<const u32> data, ShaderType type) -> u64 = 0;
         virtual void dispatchCompute(const IComputeInstance& instance) = 0;
-        virtual void clean() = 0;
+        virtual void clean(const CleanValue& cleanValue) = 0;
         Graphic() = default;
         CLASS_DEFAULT_COPYABLE(Graphic);
         CLASS_DEFAULT_MOVEABLE(Graphic);

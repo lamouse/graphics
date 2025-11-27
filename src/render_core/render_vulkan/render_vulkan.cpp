@@ -86,7 +86,6 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     scheduler.flush(*frame->render_ready);
     present_manager.present(frame);
     vulkan_graphics.TickFrame();
-    vulkan_graphics.clean();
 }
 
 }  // namespace render::vulkan

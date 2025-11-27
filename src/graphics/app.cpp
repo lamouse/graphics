@@ -64,13 +64,18 @@ void App::run() {
     auto camera = cameraComponent.getCamera();
 
     float current_mouse_X = 0, current_mouse_Y = 0;
+    render::CleanValue frameClean{};
+    frameClean.width = frame_layout.width;
+    frameClean.hight = frame_layout.height;
+    frameClean.framebuffer.color_formats.at(0) = render::surface::PixelFormat::B8G8R8A8_UNORM;
+    frameClean.framebuffer.depth_format = render::surface::PixelFormat::D32_FLOAT;
+    frameClean.framebuffer.extent = {.width = frame_layout.width, .height = frame_layout.height, .depth = 1};
     while (!window->shouldClose()) {
-         ZoneScopedNC("app::LoopIter", __LINE__); // 每次迭代耗时
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
-
+        graphics->clean(frameClean);
         outliner_entities_ = registry.getOutliner();
         outliner_entities_.push_back({.entity = world.entity_, .children = world.getEntities()});
         window->pullEvents(input_event);

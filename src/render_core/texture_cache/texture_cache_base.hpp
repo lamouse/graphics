@@ -105,7 +105,7 @@ class TextureCache {
 
         void setCurrentTextures(const std::span<const ImageViewId>& textures, SamplerPreset preset);
         auto getCurrentTextures() -> std::span<std::pair<ImageView*, Sampler*>>;
-        void setCurrentFrameBuffer(const FramebufferKey& key);
+        void UpdateRenderTarget(const FramebufferKey& key);
         auto TryFindFramebufferImageView() -> std::pair<typename P::ImageView*, bool>;
         auto getFramebuffer() -> Framebuffer*;
         std::recursive_mutex mutex;

@@ -75,37 +75,58 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
 
 VulkanGraphics::~VulkanGraphics() = default;
 
-void VulkanGraphics::clean() {
-    scheduler.requestRender(texture_cache.getFramebuffer());
-    clear();
-}
+void VulkanGraphics::clean(const CleanValue& cleanValue) {
+    std::scoped_lock lock{texture_cache.mutex};
+    texture::FramebufferKey key;
+    key.size = cleanValue.framebuffer.extent;
+    key.depth_format = cleanValue.framebuffer.depth_format;
+    key.color_formats = cleanValue.framebuffer.color_formats;
+    texture_cache.UpdateRenderTarget(key);
+    auto* framebuffer = texture_cache.getFramebuffer();
+    if(!framebuffer->HasAspectColorBit(0) && !framebuffer->HasAspectDepthBit() && !framebuffer->HasAspectStencilBit()){
+        return;
+    }
+    scheduler.requestRender(framebuffer);
 
-void VulkanGraphics::clear() {
-    const vk::Extent2D render_area{1920, 1080};
-
-    auto clear_value =
-        vk::ClearValue().setColor(vk::ClearColorValue().setFloat32({1.f, 1.f, 1.f, 1.0F}));
-    const vk::ClearAttachment clear_attachment = vk::ClearAttachment()
-                                                     .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                                                     .setColorAttachment(0)
-                                                     .setClearValue(clear_value);
-
-    auto clear_depth = vk::ClearDepthStencilValue().setDepth(1).setStencil(0);
-    auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
-    const vk::ClearAttachment depth_attachment = vk::ClearAttachment()
-                                                     .setAspectMask(vk::ImageAspectFlagBits::eDepth)
-                                                     .setColorAttachment(0)
-                                                     .setClearValue(clear_depth_value);
-
+    const vk::Extent2D render_area{cleanValue.width, cleanValue.hight};
     const vk::ClearRect clear_rect =
         vk::ClearRect()
-            .setRect(vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area))
+            .setRect(
+                vk::Rect2D()
+                    .setOffset(vk::Offset2D().setX(cleanValue.offset_x).setY(cleanValue.offset_y))
+                    .setExtent(render_area))
             .setBaseArrayLayer(0)
             .setLayerCount(1);
-    scheduler.record([clear_attachment, depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
-        cmdbuf.clearAttachments({clear_attachment, depth_attachment}, {clear_rect});
-    });
+
+    if (framebuffer->HasAspectColorBit(0)) {
+        auto clear_value =
+            vk::ClearValue().setColor(vk::ClearColorValue().setFloat32(cleanValue.clear_color));
+        const vk::ClearAttachment clear_attachment =
+            vk::ClearAttachment()
+                .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                .setColorAttachment(0)
+                .setClearValue(clear_value);
+        scheduler.record([clear_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
+            cmdbuf.clearAttachments(clear_attachment, {clear_rect});
+        });
+    }
+
+    if (framebuffer->HasAspectDepthBit()) {
+        auto clear_depth =
+            vk::ClearDepthStencilValue().setDepth(cleanValue.clear_depth).setStencil(0);
+        auto clear_depth_value = vk::ClearValue().setDepthStencil(clear_depth);
+        const vk::ClearAttachment depth_attachment =
+            vk::ClearAttachment()
+                .setAspectMask(vk::ImageAspectFlagBits::eDepth)
+                .setColorAttachment(0)
+                .setClearValue(clear_depth_value);
+
+        scheduler.record([depth_attachment, clear_rect](vk::CommandBuffer cmdbuf) {
+            cmdbuf.clearAttachments(depth_attachment, {clear_rect});
+        });
+    }
 }
+
 void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
     pipeline_cache.setsetCurrentShader(instance.getShaderHash());
     FlushWork();
@@ -659,14 +680,6 @@ void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
         buffer_cache.UploadPushConstants(instance.getPushConstants());
     }
 
-    texture::FramebufferKey key;
-    key.size.width = 1920;
-    key.size.height = 1080;
-    key.size.depth = 1;
-    std::ranges::fill(key.color_formats, render::surface::PixelFormat::Invalid);
-    key.color_formats.at(0) = surface::PixelFormat::B8G8R8A8_UNORM;
-    key.depth_format = surface::PixelFormat::D32_FLOAT;
-    texture_cache.setCurrentFrameBuffer(key);
     current_primitive_topology = instance.getPrimitiveTopology();
     int instance_vertex_count = 0;
     if (instance.getVertexCount() > 0) {
