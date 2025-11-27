@@ -299,15 +299,10 @@ auto BufferCacheRuntime::UniformRing::Alloc(u32 bytes, u32& out_offset) -> std::
 
 void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>& bindings) {
     boost::container::small_vector<vk::Buffer, 32> buffer_handles;
-    for (u32 index = 0; index < bindings.buffers.size(); ++index) {
-        auto handle = bindings.buffers[index]->Handle();
+    for (auto & buffer : bindings.buffers) {
+        auto handle = buffer->Handle();
         if (handle == VK_NULL_HANDLE) {
-            bindings.offsets[index] = 0;
-            bindings.sizes[index] = VK_WHOLE_SIZE;
-            if (!device.HasNullDescriptor()) {
-                ReserveNullBuffer();
-                handle = *null_buffer;
-            }
+            break;
         }
         buffer_handles.push_back(handle);
     }
