@@ -123,6 +123,7 @@ class TextureCache {
         std::vector<ImageViewId> used_textures;
         SamplerPreset currentSamplerPreset{};
         RenderTargets render_targets;
+        Framebuffer* current_frame_buffer{};
         std::unordered_map<RenderTargets, FramebufferId> framebuffers;
         std::unordered_map<FramebufferKey, RenderTargets> frameRenderTarget;
         u64 frame_tick = 0;

@@ -163,7 +163,7 @@ auto TextureCache<P>::createImageAndView(const ImageInfo& info) -> ImageViewId {
 
 template <class P>
 auto TextureCache<P>::getFramebuffer() -> Framebuffer* {
-    return &slot_framebuffers[framebuffers.find(render_targets)->second];
+    return current_frame_buffer;
 }
 
 template <class P>
@@ -199,6 +199,7 @@ void TextureCache<P>::UpdateRenderTarget(const FramebufferKey& key) {
 
     const auto [pair, is_new] = framebuffers.try_emplace(target);
     if (!is_new) {
+        current_frame_buffer = &slot_framebuffers[pair->second];
         return;
     }
     std::array<ImageView*, NUM_RT> color_buffers;
@@ -207,6 +208,7 @@ void TextureCache<P>::UpdateRenderTarget(const FramebufferKey& key) {
     ImageView* const depth_buffer =
         target.depth_buffer_id ? &slot_image_views[target.depth_buffer_id] : nullptr;
     pair->second = slot_framebuffers.insert(runtime, color_buffers, depth_buffer, target);
+    current_frame_buffer = &slot_framebuffers[pair->second];
     render_targets = target;
     frameRenderTarget[key] = target;
 }
