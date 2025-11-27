@@ -156,9 +156,7 @@ auto BufferCacheRuntime::GetStorageBufferAlignment() const -> u32 {
     return static_cast<u32>(device.GetStorageBufferAlignment());
 }
 
-void BufferCacheRuntime::TickFrame() noexcept {
-    uniform_ring.BeginFrame();
-}
+void BufferCacheRuntime::TickFrame() noexcept { uniform_ring.BeginFrame(); }
 
 void BufferCacheRuntime::Finish() { scheduler.finish(); }
 
@@ -299,10 +297,15 @@ auto BufferCacheRuntime::UniformRing::Alloc(u32 bytes, u32& out_offset) -> std::
 
 void BufferCacheRuntime::BindVertexBuffers(buffer::HostBindings<BaseBufferCache>& bindings) {
     boost::container::small_vector<vk::Buffer, 32> buffer_handles;
-    for (auto & buffer : bindings.buffers) {
-        auto handle = buffer->Handle();
+    for (u32 i = 0; i < bindings.max_index; ++i) {
+        auto handle = bindings.buffers[i]->Handle();
         if (handle == VK_NULL_HANDLE) {
-            break;
+            bindings.offsets[i] = 0;
+            bindings.sizes[i] = VK_WHOLE_SIZE;
+            if (!device.HasNullDescriptor()) {
+                ReserveNullBuffer();
+                handle = *null_buffer;
+            }
         }
         buffer_handles.push_back(handle);
     }
