@@ -20,10 +20,12 @@ enum class SamplerReduction : std::uint8_t {
 };
 
 enum class SamplerPreset : std::uint8_t {
-    Linear,
-    Nearest,
-    ShadowMin,
-    HDRMax,
+    Linear = 0,
+    Nearest = 1,
+    ShadowMin = 2,
+    HDRMax = 3,
+
+    MAX_PRESET = 16
 };
 
 }  // namespace render

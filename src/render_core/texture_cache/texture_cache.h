@@ -84,15 +84,16 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
             // 计算当前 mip 层的尺寸
             uint32_t mipWidth = std::max(1u, ktxTexture->baseWidth >> level);
             uint32_t mipHeight = std::max(1u, ktxTexture->baseHeight >> level);
-            BufferImageCopy copy{.buffer_offset = offset,
-                                 .buffer_size = 0,
-                                 .buffer_row_length = 0,
-                                 .buffer_image_height = 0,
-                                 .image_subresource = {.base_level = static_cast<s32>(level),
-                                                       .base_layer = static_cast<int>(face),
-                                                       .num_layers = 1},
-                                 .image_offset = {.x = 0, .y = 0, .z = 0},
-                                 .image_extent = {.width = mipWidth, .height = mipHeight, .depth = 1}};
+            BufferImageCopy copy{
+                .buffer_offset = offset,
+                .buffer_size = 0,
+                .buffer_row_length = 0,
+                .buffer_image_height = 0,
+                .image_subresource = {.base_level = static_cast<s32>(level),
+                                      .base_layer = static_cast<int>(face),
+                                      .num_layers = 1},
+                .image_offset = {.x = 0, .y = 0, .z = 0},
+                .image_extent = {.width = mipWidth, .height = mipHeight, .depth = 1}};
             copys.push_back(copy);
         }
     }
@@ -107,11 +108,12 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
 
 template <class P>
 auto TextureCache<P>::getSampler(SamplerPreset preset) -> typename P::Sampler* {
-    if (!presetSamplers.contains(preset)) {
-        auto sampleId = slot_samplers.insert(runtime, preset);
-        presetSamplers[preset] = sampleId;
+    auto& samplerId = sampler_presets[static_cast<uint8_t>(preset)];
+    if(samplerId){
+        return &slot_samplers[samplerId];
     }
-    return &slot_samplers[presetSamplers.find(preset)->second];
+    samplerId = slot_samplers.insert(runtime, preset);
+    return &slot_samplers[samplerId];
 }
 
 template <class P>
