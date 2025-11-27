@@ -45,7 +45,7 @@ struct Values {
             linkage, enums::VramUsageMode::Conservative, "v_ram_usage_mode", Category::render};
         Setting<bool, false> use_present_thread{linkage, false, "use_present_thread",
                                                 Category::render};
-        Setting<bool, false> render_debug{linkage, false, "render_debug", Category::render};
+        Setting<bool, false> render_debug{linkage, true, "render_debug", Category::render};
         Setting<bool, false> renderer_shader_feedback{linkage, false, "renderer_shader_feedback",
                                                       Category::render};
         Setting<bool, false> enable_compute_pipelines{linkage, true, "enable_compute_pipelines",
