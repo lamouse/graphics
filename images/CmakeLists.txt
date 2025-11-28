@@ -83,6 +83,7 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
         COMMAND ${TOKTX_EXECUTABLE}
         --cubemap
         --target_type RGBA
+        --genmipmap
         ${DST_FILE}
         ${INPUT_FILES}
         DEPENDS ${INPUT_FILES}
