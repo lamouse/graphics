@@ -126,6 +126,7 @@ foreach(TEXTURE_FILE IN LISTS IMAGE_FILES)
         --genmipmap
         ${TEXTURE_OUT_PATH}
         ${INPUT_FILE}
+        DEPENDS "${INPUT_FILE}"
         COMMENT "Generating KTX2 texture: ${TEXTURE_OUT_PATH}"
     )
     list(APPEND KTX_OUTPUTS "${TEXTURE_OUT_PATH}")

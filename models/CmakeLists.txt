@@ -19,9 +19,11 @@ endforeach()
 set(MODEL_COPY_OUT_PUT "")
 foreach(MODEL_FILE IN LISTS MODEL_FILES)
     set(COPY_OUTPUT_PATH "${MODEL_OUTPUT_DIR}/${MODEL_FILE}")
+    set(SOURCE_PATH "${MODEL_SOURCE_DIR}/${MODEL_FILE}")
     add_custom_command(
         OUTPUT ${COPY_OUTPUT_PATH}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${MODEL_SOURCE_DIR}/${MODEL_FILE}" "${COPY_OUTPUT_PATH}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SOURCE_PATH}" "${COPY_OUTPUT_PATH}"
+        DEPENDS "${SOURCE_PATH}"
     )
     list(APPEND MODEL_COPY_OUT_PUT ${COPY_OUTPUT_PATH})
 endforeach()
