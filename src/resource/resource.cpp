@@ -52,7 +52,7 @@ auto ResourceManager::addKtxTexture(std::string name) -> render::TextureId {
         return pair->second;
     }
     std::filesystem::path file{name};
-    file.replace_extension("ktx");
+    file.replace_extension("ktx2");
     resource::image::KtxImage image(texture::TEXTURE_ROOT_PATH + file.string());
     auto* texture = image.getKtxTexture();
     auto id = graphic->uploadTexture(texture);

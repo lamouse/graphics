@@ -1,5 +1,5 @@
 # 找到 toktx（可从 PATH 或指定路径）
-find_program(TOKTX_EXECUTABLE toktx REQUIRED
+find_program(TOKTX_EXECUTABLE ktx REQUIRED
     PATHS ENV PATH
     DOC "Path to toktx executable from KTX-Software"
 )
@@ -81,11 +81,12 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
     add_custom_command(
         OUTPUT ${DST_FILE}
         COMMAND ${TOKTX_EXECUTABLE}
+        create
+        --format R8G8B8A8_SRGB
         --cubemap
-        --target_type RGBA
-        --genmipmap
-        ${DST_FILE}
+        --generate-mipmap
         ${INPUT_FILES}
+        ${DST_FILE}
         DEPENDS ${INPUT_FILES}
         COMMENT "Generating KTX2 cubemap: ${SKYBOX_NAME} (faces: ${USED_FACE_SET}, ext: ${EXT})"
     )
@@ -117,16 +118,17 @@ foreach(TEXTURE_FILE IN LISTS IMAGE_FILES)
     get_filename_component(TEXTURE_NAME_WE "${TEXTURE_FILE}" NAME_WE)
 
     # 拼接相对目录 + 新扩展名
-    set(TEXTURE_OUT_PATH "${IMAGES_OUTPUT_DIR}/${TEXTURE_DIR}/${TEXTURE_NAME_WE}.ktx")
+    set(TEXTURE_OUT_PATH "${IMAGES_OUTPUT_DIR}/${TEXTURE_DIR}/${TEXTURE_NAME_WE}.ktx2")
     set(INPUT_FILE ${IMAGES_SOURCE_DIR}/${TEXTURE_FILE})
     add_custom_command(
         OUTPUT "${TEXTURE_OUT_PATH}"
         COMMAND ${TOKTX_EXECUTABLE}
-        --assign_oetf srgb
-        --target_type RGBA
-        --genmipmap
-        ${TEXTURE_OUT_PATH}
+        create
+        --generate-mipmap
+        --format R8G8B8A8_SRGB
+        --assign-tf srgb
         ${INPUT_FILE}
+        ${TEXTURE_OUT_PATH}
         DEPENDS "${INPUT_FILE}"
         COMMENT "Generating KTX2 texture: ${TEXTURE_OUT_PATH}"
     )

@@ -63,6 +63,8 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
 }
 template <class P>
 auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
+    auto* tex2 = reinterpret_cast<ktxTexture2*>(ktxTexture);
+    auto format = tex2->vkFormat;
     ImageInfo info;
     info.size.width = ktxTexture->baseWidth;
     info.size.height = ktxTexture->baseHeight;
@@ -71,6 +73,8 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
     info.resources.layers = static_cast<s32>(ktxTexture->numFaces);
     info.resources.levels = static_cast<s32>(ktxTexture->numLevels);
     info.format = PixelFormat::A8B8G8R8_UNORM;
+    info.use_vk_format = true;
+    info.vk_format = format;
     const ImageId new_image_id = slot_images.insert(runtime, info);
     Image& new_image = slot_images[new_image_id];
     auto staging = runtime.UploadStagingBuffer(ktxTexture->dataSize);
