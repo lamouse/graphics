@@ -480,8 +480,6 @@ auto IsPixelFormatSignedInteger(PixelFormat format) -> bool;
 
 auto PixelComponentSizeBitsInteger(PixelFormat format) -> std::size_t;
 
-std::pair<u32, u32> GetASTCBlockSize(PixelFormat format);
-
-u64 TranscodedAstcSize(u64 base_size, PixelFormat format);
+auto TranscodedAstcSize(u64 base_size, PixelFormat format) -> u64;
 
 }  // namespace render::surface
