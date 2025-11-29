@@ -299,7 +299,7 @@ void CopyBufferToImage(vk::CommandBuffer cmdbuf, vk::Buffer src_buffer, vk::Imag
     return vk::ImageCreateInfo()
         .setFlags(flags)
         .setImageType(ConvertImageType(info.type))
-        .setFormat(info.use_vk_format ? static_cast<vk::Format>(info.vk_format) : format_info.format)
+        .setFormat(format_info.format)
         .setExtent(vk::Extent3D()
                        .setWidth(info.size.width)
                        .setHeight(info.size.height)

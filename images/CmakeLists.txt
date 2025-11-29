@@ -82,7 +82,7 @@ foreach(SKYBOX_NAME ${SKYBOX_NAMES})
         OUTPUT ${DST_FILE}
         COMMAND ${TOKTX_EXECUTABLE}
         create
-        --format R8G8B8A8_SRGB
+        --format B8G8R8A8_SRGB
         --cubemap
         --generate-mipmap
         ${INPUT_FILES}
@@ -125,7 +125,7 @@ foreach(TEXTURE_FILE IN LISTS IMAGE_FILES)
         COMMAND ${TOKTX_EXECUTABLE}
         create
         --generate-mipmap
-        --format R8G8B8A8_SRGB
+        --format B8G8R8A8_SRGB
         --assign-tf srgb
         ${INPUT_FILE}
         ${TEXTURE_OUT_PATH}

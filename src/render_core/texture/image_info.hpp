@@ -5,8 +5,6 @@ namespace render::texture {
 struct ImageInfo {
         ImageInfo() = default;
         surface::PixelFormat format = surface::PixelFormat::Invalid;
-        bool use_vk_format{false};
-        uint32_t vk_format{};
         SubresourceExtent resources;
         ImageType type = ImageType::e2D;
         Extent3D size{.width = 0, .height = 0, .depth = 1};
