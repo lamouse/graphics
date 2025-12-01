@@ -644,13 +644,10 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
 // current API version, and was not enabled by an extension, skip testing the feature.
 // We set the structure sType explicitly here as it is zeroed by the constructor.
 #define FEATURE(prefix, struct_name, macro_name, var_name)                                \
-    features_.var_name.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_##macro_name##_FEATURES; \
     SetNext(next, features_.var_name);
 
 #define EXT_FEATURE(prefix, struct_name, macro_name, var_name)                  \
     if (extensions_.var_name) {                                                 \
-        features_.var_name.sType =                                              \
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_##macro_name##_FEATURES_##prefix; \
         SetNext(next, features_.var_name);                                      \
     }
 
@@ -878,13 +875,13 @@ void Device::removeExtensionFeature(bool& extension, Feature& feature,
     this->removeExtension(extension, extension_name);
 
     // Save sType and pNext for chain.
-    VkStructureType sType = feature.sType;
+    auto sType = feature.sType;
     void* pNext = feature.pNext;
-    auto* current = static_cast<VkBaseOutStructure*>(features2_.pNext);
+    auto* current = static_cast<vk::BaseOutStructure*>(features2_.pNext);
     // Clear feature struct and restore chain.
     while (current) {
         if (current->pNext && current->pNext->sType == sType) {
-            current->pNext = static_cast<VkBaseOutStructure*>(pNext);
+            current->pNext = static_cast<vk::BaseOutStructure*>(pNext);
             break;
         }
         current = current->pNext;

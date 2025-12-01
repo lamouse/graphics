@@ -474,9 +474,9 @@ class Device {
 
         struct Features {
 #define FEATURE_CORE(prefix, struct_name, macro_name, var_name) \
-    VkPhysicalDevice##struct_name##Features var_name{};
+    vk::PhysicalDevice##struct_name##Features var_name;
 #define FEATURE_EXT(prefix, struct_name, macro_name, var_name) \
-    VkPhysicalDevice##struct_name##Features##prefix var_name{};
+    vk::PhysicalDevice##struct_name##Features##prefix var_name;
 
                 FOR_EACH_VK_FEATURE_1_1(FEATURE_CORE);
                 FOR_EACH_VK_FEATURE_1_2(FEATURE_CORE);
@@ -485,13 +485,13 @@ class Device {
 
 #undef FEATURE_CORE
 #undef FEATURE_EXT
-                VkPhysicalDeviceFeatures features;
+                VkPhysicalDeviceFeatures features{};
         };
         Extensions extensions_{};
         Properties properties_;
         Features features_{};
         vk::PhysicalDeviceFeatures2 features2_;
-        vk::PhysicalDeviceProperties2 properties2_{};
+        vk::PhysicalDeviceProperties2 properties2_;
 };
 
 }  // namespace render::vulkan
