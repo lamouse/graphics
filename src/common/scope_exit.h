@@ -24,22 +24,22 @@ class ScopeGuard {
         }
         constexpr void Cancel() { active = false; }
 
-        constexpr ScopeGuard(ScopeGuard&& rhs) : f(std::move(rhs.f)), active(rhs.active) {
+        constexpr ScopeGuard(ScopeGuard&& rhs) noexcept : f(std::move(rhs.f)), active(rhs.active) {
             rhs.Cancel();
         }
 
-        ScopeGuard& operator=(ScopeGuard&& rhs) = delete;
+        auto operator=(ScopeGuard&& rhs) -> ScopeGuard& = delete;
 };
 
 template <class F>
-constexpr ScopeGuard<F> MakeScopeGuard(F f) {
+constexpr auto MakeScopeGuard(F f) -> ScopeGuard<F> {
     return ScopeGuard<F>(std::move(f));
 }
 
 enum class ScopeGuardOnExit {};
 
 template <typename F>
-constexpr ScopeGuard<F> operator+(ScopeGuardOnExit, F&& f) {
+constexpr auto operator+(ScopeGuardOnExit, F&& f) -> ScopeGuard<F> {
     return ScopeGuard<F>(std::forward<F>(f));
 }
 
