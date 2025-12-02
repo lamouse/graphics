@@ -1,23 +1,9 @@
 #pragma once
-#include "common_settings.hpp"
 #include "settings_enums.hpp"
 #include "common/settings_setting.hpp"
 #undef max
 #undef min
 namespace settings {
-
-class Graphics : public common::settings::BaseSetting<Graphics> {
-        friend common::settings::BaseSetting<Graphics>;
-        auto getImpl() -> Graphics { return *this; }
-
-    public:
-        int fsr_sharpening_slider = 50;
-        enums::AstcRecompression astc_recompression;
-        enums::AstcDecodeMode astc_decodeMode = enums::AstcDecodeMode::Gpu;
-        enums::ScalingFilter scaling_filter = enums::ScalingFilter::Bilinear;
-        enums::AspectRatio aspect_ratio = enums::AspectRatio::R16_9;
-        static auto get() { return Graphics{}; }
-};
 
 auto TranslateCategory(Category category) -> const char*;
 
@@ -26,7 +12,7 @@ auto TranslateCategory(Category category) -> const char*;
 SETTING(enums::VSyncMode, true);
 SETTING(enums::LogLevel, true);
 SETTING(bool, false);
-
+SETTING(int, true);
 #undef SETTING
 
 struct Values {
@@ -59,6 +45,24 @@ struct Values {
 
         Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
         Setting<bool, false> log_file{linkage, true, "file", Category::log};
+        Setting<int, true> fsr_sharpening_slider{
+            linkage, 53, 0, 100, "fsr_sharpening_slider", Category::core, Specialization::Scalar,
+            true};
+        Setting<enums::ScalingFilter, true> scaling_filter{
+            linkage,        enums::ScalingFilter::Fsr,   "scaling_filter",
+            Category::core, Specialization::RuntimeList, true};
+
+        Setting<enums::AspectRatio, true> aspect_ratio{linkage, enums::AspectRatio::R16_9,
+                                                       "aspect_ratio", Category::core,
+                                                       Specialization::List};
+
+        Setting<enums::AstcRecompression, true> astc_recompression{
+            linkage, enums::AstcRecompression::Uncompressed, "astc_recompression", Category::core,
+            Specialization::List};
+
+        Setting<enums::AstcDecodeMode, true> astc_decodeMode{linkage, enums::AstcDecodeMode::Gpu,
+                                                             "astc_recompression", Category::core,
+                                                             Specialization::List};
 };
 
 extern Values values;

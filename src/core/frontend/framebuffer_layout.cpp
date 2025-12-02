@@ -32,9 +32,8 @@ auto DefaultFrameLayout(u32 width, u32 height) -> FrameBufferLayout {
     };
 
     const float window_aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
-    auto graphics = common::settings::get<settings::Graphics>();
     const float emulation_aspect_ratio =
-        EmulationAspectRatio(static_cast<AspectRatio>(graphics.aspect_ratio), window_aspect_ratio);
+        EmulationAspectRatio(static_cast<AspectRatio>(settings::values.aspect_ratio.GetValue()), window_aspect_ratio);
 
     const common::Rectangle<u32> screen_window_area{0, 0, width, height};
     common::Rectangle<u32> screen = MaxRectangle(screen_window_area, emulation_aspect_ratio);
@@ -65,7 +64,6 @@ auto EmulationAspectRatio(AspectRatio aspect, float window_aspect_ratio) -> floa
             return window_aspect_ratio;
         default:
             return 9.0f / 16.0f;
-            ;
     }
 }
 

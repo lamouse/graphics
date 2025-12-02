@@ -227,7 +227,7 @@ auto TranscodedAstcSize(u64 base_size, PixelFormat format) -> u64 {
     const u64 base_block_size = static_cast<u64>(DefaultBlockWidth(format)) *
                                 static_cast<u64>(DefaultBlockHeight(format)) * RGBA8_PIXEL_SIZE;
     const u64 uncompressed_size = (base_size * base_block_size) / BytesPerBlock(format);
-    auto astc_recompression = common::settings::get<settings::Graphics>().astc_recompression;
+    auto astc_recompression = settings::values.astc_recompression.GetValue();
     switch (astc_recompression) {
         case settings::enums::AstcRecompression::Bc1:
             return uncompressed_size / 8;

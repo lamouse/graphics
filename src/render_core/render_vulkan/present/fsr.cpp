@@ -171,7 +171,7 @@ auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image so
                             output_image_height, viewport_x, viewport_y);
 
     const float sharpening =
-        static_cast<float>(common::settings::get<settings::Graphics>().fsr_sharpening_slider) /
+        static_cast<float>(settings::values.fsr_sharpening_slider.GetValue()) /
         100.0F;
     ::FSR::FsrRcasCon(rcas_con.data(), sharpening);
 

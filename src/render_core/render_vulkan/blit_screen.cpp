@@ -29,7 +29,7 @@ void BlitScreen::WaitIdle() {
 
 void BlitScreen::SetWindowAdaptPass() {
     layers.clear();
-    scaling_filter = common::settings::get<settings::Graphics>().scaling_filter;
+    scaling_filter = settings::values.scaling_filter.GetValue();
 
     switch (scaling_filter) {
         case settings::enums::ScalingFilter::NearestNeighbor:
@@ -62,7 +62,7 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
 
     // Recreate dynamic resources if the adapting filter changed
     if (!window_adapt ||
-        scaling_filter != common::settings::get<settings::Graphics>().scaling_filter) {
+        scaling_filter != settings::values.scaling_filter.GetValue()) {
         resource_update_required = true;
     }
 

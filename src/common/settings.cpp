@@ -6,6 +6,7 @@ Values values;
 SETTING(enums::VSyncMode, true);
 SETTING(enums::LogLevel, true);
 SETTING(bool, false);
+SETTING(int, true);
 #undef SETTING
 
 auto TranslateCategory(Category category) -> const char* {
@@ -13,11 +14,11 @@ auto TranslateCategory(Category category) -> const char* {
         case Category::core:
             return "Core";
         case Category::render:
-            return "render";
+            return "Render";
         case Category::log:
-            return "log";
+            return "Log";
         case Category::system:
-            return "system";
+            return "System";
         case Category::MAX_EUM:
             break;
     }

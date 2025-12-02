@@ -6,7 +6,6 @@ set(sources
     bit_field.hpp
     bit_util.h
     common_funcs.hpp
-    common_settings.hpp
     common_types.hpp
     div_ceil.hpp
     error.hpp
