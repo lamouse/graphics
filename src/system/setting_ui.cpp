@@ -34,15 +34,6 @@ void log_settings() {
     ImGui::Combo("log level", &item_current, names.data(), static_cast<int>(names.size()));
     const auto level = settings::enums::ToEnum<settings::enums::LogLevel>(names[item_current]);
     settings::values.log_level.SetValue(level);
-    ImGui::SameLine();
-}
-
-void show_ui_debug_window() {
-    static bool show_window = false;
-    ImGui::Checkbox("show ui debug", &show_window);
-    if (show_window) {
-        ImGui::ShowMetricsWindow();
-    }
 }
 
 }  // namespace
@@ -52,6 +43,35 @@ void draw_setting(bool& show) {
         ImGui::Begin("\ueb51 系统设置", &show);
         vsync_setting();
         log_settings();
+
+        auto to_bool = [](const std::string& s) {
+            if (s == "1" || s == "true" || s == "True" || s == "yes") {
+                return true;
+            }
+            if (s == "0" || s == "false" || s == "False" || s == "no") {
+                return false;
+            }
+            throw std::invalid_argument("Invalid bool string: " + s);
+        };
+        ImGui::Text("render setting");
+        auto& render_category =
+            settings::values.linkage.by_category.find(settings::Category::render)->second;
+        for (auto* setting : render_category) {
+            if (setting->TypeId() == std::type_index(typeid(bool))) {
+                auto value_string = setting->ToString();
+                bool tmp = to_bool(value_string);
+                if (!setting->RuntimeModifiable()) {
+                    ImGui::BeginDisabled(true);  // 禁用交互
+                }
+                ImGui::Checkbox(setting->GetLabel().c_str(), &tmp);
+                if (!setting->RuntimeModifiable()) {
+                    ImGui::EndDisabled();
+                } else {
+                    dynamic_cast<settings::Setting<bool, false>*>(setting)->SetValue(tmp);
+                }
+            }
+        }
+
         ImGui::End();
     }
 }
