@@ -1,9 +1,7 @@
 // module;
 #include "setting_ui.hpp"
 #include "common/settings.hpp"
-#include "ui/ui.hpp"
 #include <imgui.h>
-#include <format>
 #include <ranges>
 #include <vector>
 
