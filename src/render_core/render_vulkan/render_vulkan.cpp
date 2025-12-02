@@ -10,9 +10,7 @@
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
     auto physical = instance.EnumeratePhysicalDevices();
-    if (physical.size() == 1) {
-        return Device(*instance, physical[0], surface);
-    }
+
     for (auto device : physical) {
         vk::PhysicalDeviceProperties properties = device.getProperties();
         switch (properties.deviceType) {
@@ -23,20 +21,22 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {
             case vk::PhysicalDeviceType::eIntegratedGpu:
                 SPDLOG_INFO("设备类型：集成 GPU（如 Intel UHD）设备名称：{}",
                             std::string(properties.deviceName.data()));
-                break;
+                return Device(*instance, device, surface);
             case vk::PhysicalDeviceType::eVirtualGpu:
                 SPDLOG_INFO("设备类型：虚拟 GPU（如远程渲染）设备名称：{}",
                             std::string(properties.deviceName.data()));
-                break;
+                return Device(*instance, device, surface);
             case vk::PhysicalDeviceType::eCpu:
                 SPDLOG_INFO("设备类型：CPU（软件模拟）设备名称：{}",
                             std::string(properties.deviceName.data()));
-                break;
+                return Device(*instance, device, surface);
             default:
                 SPDLOG_INFO("设备类型：未知");
+                return Device(*instance, device, surface);
                 break;
         }
     }
+    throw std::runtime_error("no gpu device select");
 }
 
 RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
