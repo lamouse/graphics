@@ -128,6 +128,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
 include(ClangFormat)
+enable_testing()
 
 add_subdirectory(shader)
 add_subdirectory(models)
