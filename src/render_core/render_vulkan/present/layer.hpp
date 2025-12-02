@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/math_util.h"
+#include "common/common_funcs.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebufferConfig.hpp"
@@ -29,7 +30,8 @@ class Layer final {
                            vk::Sampler sampler, size_t image_index,
                            const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);
-
+            CLASS_NON_COPYABLE(Layer);
+            CLASS_NON_MOVEABLE(Layer);
     private:
         void CreateDescriptorPool();
         void CreateDescriptorSets(vk::DescriptorSetLayout layout);
@@ -55,8 +57,8 @@ class Layer final {
 
         std::vector<Image> raw_images;
         std::vector<ImageView> raw_image_views;
-        u32 raw_width;
-        u32 raw_height;
+        u32 raw_width{};
+        u32 raw_height{};
 
         std::unique_ptr<AntiAliasPass> anti_alias;
 

@@ -12,7 +12,7 @@
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
 
 namespace render::vulkan {
-using PushConstants = std::array<u32, 4 * 4>;
+using PushConstants = std::array<u32, 4 * 4>;//NOLINT
 
 FSR::FSR(const Device& device, MemoryAllocator& memory_allocator, size_t image_count,
          vk::Extent2D extent)
@@ -143,10 +143,8 @@ auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image so
     vk::Image rcas_image = *images.images[Rcas];
     vk::DescriptorSet easu_descriptor_set = images.descriptor_sets[Easu];
     vk::DescriptorSet rcas_descriptor_set = images.descriptor_sets[Rcas];
-    vk::Framebuffer easu_framebuffer = *images.framebuffers[Easu];
 
     vk::ImageView easu_image_view = *images.image_views[Easu];
-    vk::Framebuffer rcas_framebuffer = *images.framebuffers[Rcas];
     vk::ImageView rcas_image_view = *images.image_views[Rcas];
 
     vk::Pipeline easu_pipeline = *m_easu_pipeline;

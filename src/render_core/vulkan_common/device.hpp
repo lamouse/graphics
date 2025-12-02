@@ -485,7 +485,7 @@ class Device {
 
 #undef FEATURE_CORE
 #undef FEATURE_EXT
-                VkPhysicalDeviceFeatures features{};
+                vk::PhysicalDeviceFeatures features{};
         };
         Extensions extensions_{};
         Properties properties_;
