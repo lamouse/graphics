@@ -9,9 +9,7 @@ namespace graphics {
 
 struct CameraSystem {
     public:
-        static void update(ecs::CameraComponent& cam, core::InputState state,
-                           float deltaTime) {
-
+        static void update(ecs::CameraComponent& cam, core::InputState state, float deltaTime) {
             // 计算相机坐标系
             glm::vec3 forward = glm::normalize(cam.center() - cam.eye());
             glm::vec3 right = glm::normalize(glm::cross(cam.up(), forward));
@@ -55,7 +53,6 @@ struct CameraSystem {
 
                 toEye = glm::normalize(toEye);
 
-
                 float dx = state.mouseRelativeX_ * cam.sensitivity;
                 float dy = -state.mouseRelativeY_ * cam.sensitivity;
 
@@ -89,13 +86,13 @@ struct CameraSystem {
             // 🧮 缩放
             if (state.scrollOffset_ != 0.0f && !state.keyDown(core::InputKey::LCtrl)) {
                 auto fov = cam.getFovy();
-                if(fov >.1f && fov <= 45.F){
+                if (fov > .1f && fov <= 45.F) {
                     fov -= state.scrollOffset_;
                 }
-                if(fov <= 1.f){
+                if (fov <= 1.f) {
                     fov = 1.f;
                 }
-                if(fov >= 45.f){
+                if (fov >= 45.f) {
                     fov = 45.f;
                 }
                 cam.setFovy(fov);

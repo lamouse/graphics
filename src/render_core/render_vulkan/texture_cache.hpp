@@ -175,13 +175,12 @@ class TextureFramebuffer {
             return images;
         }
 
-        [[nodiscard]] auto ImageViews() const noexcept -> const std::array<vk::ImageView, texture::NUM_RT>& {
+        [[nodiscard]] auto ImageViews() const noexcept
+            -> const std::array<vk::ImageView, texture::NUM_RT>& {
             return color_views;
         }
 
-        [[nodiscard]] auto DepthView() const noexcept -> vk::ImageView{
-            return depth_view;
-        }
+        [[nodiscard]] auto DepthView() const noexcept -> vk::ImageView { return depth_view; }
 
         [[nodiscard]] auto ImageRanges() const noexcept
             -> const std::array<vk::ImageSubresourceRange, 9>& {

@@ -10,7 +10,7 @@ World::World() : id_(graphics::getCurrentId()) {
     cameraEntity_.addComponent<ecs::CameraComponent>();
     cameraEntity_.addComponent<ecs::RenderStateComponent>(graphics::getCurrentId());
     dirLightEntity_ = scene_.createEntity("dir_light");
-    entity_ = scene_.createEntity("world: " +  std::to_string(id_));
+    entity_ = scene_.createEntity("world: " + std::to_string(id_));
     entity_.addComponent<ecs::RenderStateComponent>(id_);
     ecs::LightComponent dirLight{};
     dirLight.type = ecs::LightType::Directional;
@@ -19,8 +19,8 @@ World::World() : id_(graphics::getCurrentId()) {
     dirLight.direction = glm::vec3{-0.2f, -1.0f, -0.3f};
     dirLightEntity_.addComponent<ecs::LightComponent>(dirLight);
     dirLightEntity_.addComponent<ecs::RenderStateComponent>(graphics::getCurrentId());
-    dir_light = &dirLightEntity_.getComponent<ecs::LightComponent>();//NOLINT
-    lights_.push_back({.light=dir_light, .transform=nullptr});
+    dir_light = &dirLightEntity_.getComponent<ecs::LightComponent>();  // NOLINT
+    lights_.push_back({.light = dir_light, .transform = nullptr});
     child_entitys_ = {cameraEntity_, dirLightEntity_};
 }
 

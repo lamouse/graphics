@@ -67,8 +67,9 @@ class MeshInstance : public IMeshInstance {
         // === 获取所有 UBO 的 byte spans（用于渲染）===
         [[nodiscard]] auto getUBOs() const -> std::span<std::span<const std::byte>> override {
             std::size_t i = 0;
-            std::apply([&](const auto&... ubo) -> auto { ((ubosSpans[i++] = ubo->as_byte_span()), ...); },
-                       ubos);
+            std::apply(
+                [&](const auto&... ubo) -> auto { ((ubosSpans[i++] = ubo->as_byte_span()), ...); },
+                ubos);
             return ubosSpans;
         }
 

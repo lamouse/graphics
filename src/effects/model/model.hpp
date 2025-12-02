@@ -15,11 +15,8 @@ struct MaterialUBO {
         AS_BYTE_SPAN
 };
 
-
 auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMesh& subMesh)
     -> std::tuple<MeshMaterialResource, MaterialUBO>;
-
-
 
 struct ModelPushConstantData {
         glm::mat4 modelMatrix{1.f};
@@ -64,8 +61,8 @@ class LightModel {
         LightUBO light_ubo{};
         std::vector<MaterialUBO> materials;
         ModelPushConstantData push_constant;
-        ecs::RenderStateComponent *render_state;
-        ecs::TransformComponent *transform;
+        ecs::RenderStateComponent* render_state;
+        ecs::TransformComponent* transform;
         id_t id;
         std::unordered_set<id_t> mesh_ids;
         // 用于鼠标移动

@@ -364,7 +364,8 @@ void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
     });
     scheduler_.record([frame_image = *frame->image](vk::CommandBuffer cmdbuf) {
-        present::utils::TransitionImageLayout(cmdbuf, frame_image, vk::ImageLayout::eGeneral, vk::ImageLayout::eUndefined);
+        present::utils::TransitionImageLayout(cmdbuf, frame_image, vk::ImageLayout::eGeneral,
+                                              vk::ImageLayout::eUndefined);
     });
     frame->image_view = device_.logical().CreateImageView(
         vk::ImageViewCreateInfo()

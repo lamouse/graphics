@@ -92,7 +92,8 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
 
         // Update frame format if needed
         if (presentation_recreate_required) {
-            present_manager.recreateFrame(frame, layout.width, layout.height, swapchain_view_format);
+            present_manager.recreateFrame(frame, layout.width, layout.height,
+                                          swapchain_view_format);
         }
     }
 

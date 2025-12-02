@@ -59,7 +59,6 @@ class PresentManager {
 
         void setImageCount();
 
-
         const vk::Instance instance_;
         core::frontend::BaseWindow& render_window_;
         const Device& device_;

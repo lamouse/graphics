@@ -24,7 +24,7 @@ class PickingSystem {
         static void update_transform(id_t id, const ecs::TransformComponent& transform);
 
         static auto pick(const core::Camera& camera, float mouseX, float mouseY, float windowWidth,
-                  float windowHeight) -> std::optional<PickResult>;
+                         float windowHeight) -> std::optional<PickResult>;
 };
 
 }  // namespace graphics

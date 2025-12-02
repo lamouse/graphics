@@ -73,8 +73,8 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
     entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
     entity_.addComponent<ecs::RenderStateComponent>(id);
     entity_.addComponent<ecs::TransformComponent>();
-    render_state = &entity_.getComponent<ecs::RenderStateComponent>();//NOLINT
-    transform =  &entity_.getComponent<ecs::TransformComponent>();//NOLINT
+    render_state = &entity_.getComponent<ecs::RenderStateComponent>();  // NOLINT
+    transform = &entity_.getComponent<ecs::TransformComponent>();       // NOLINT
 }
 
 void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {

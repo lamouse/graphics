@@ -265,8 +265,8 @@ auto PipelineCache::createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     auto pipeline = std::make_unique<GraphicsPipeline>(
         scheduler, vulkan_pipeline_cache, &shader_notify, device, descriptor_pool,
-        guest_descriptor_queue, thread_worker, render_pass_cache, key, texture_cache,
-        buffer_cache, std::move(modules), infos, dynamic_features);
+        guest_descriptor_queue, thread_worker, render_pass_cache, key, texture_cache, buffer_cache,
+        std::move(modules), infos, dynamic_features);
     current_pipeline = pipeline.get();
     if (pipeline) {
         graphics_cache.emplace(key, std::move(pipeline));
@@ -317,8 +317,8 @@ auto PipelineCache::CreateComputePipeline(const ComputePipelineCacheKey& key,
     common::ThreadWorker* const thread_worker{build_in_parallel ? &workers : nullptr};
     mark_loaded(shader_infos);
     return std::make_unique<ComputePipeline>(device, vulkan_pipeline_cache, descriptor_pool,
-                                             guest_descriptor_queue, thread_worker,
-                                             &shader_notify, info, std::move(spv_module));
+                                             guest_descriptor_queue, thread_worker, &shader_notify,
+                                             info, std::move(spv_module));
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("{}", exception.what());
     return nullptr;

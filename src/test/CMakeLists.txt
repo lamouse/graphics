@@ -10,13 +10,16 @@ add_executable(
 target_link_libraries(
   hello_test PRIVATE GTest::gtest GTest::gtest_main glfw absl::strings
 )
+target_link_libraries(
+  hello_test PRIVATE render-core
+)
+target_compile_definitions(hello_test PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+
 if(MINGW)
   target_link_libraries(hello_test PRIVATE "-lstdc++exp")
 endif()
 
-target_link_libraries(
-  hello_test PRIVATE render-core
-)
+
 target_include_directories(
   hello_test PRIVATE ${CMAKE_SOURCE_DIR}/src
 )

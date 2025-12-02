@@ -111,7 +111,7 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
 template <class P>
 auto TextureCache<P>::getSampler(SamplerPreset preset) -> typename P::Sampler* {
     auto& samplerId = sampler_presets[static_cast<uint8_t>(preset)];
-    if(samplerId){
+    if (samplerId) {
         return &slot_samplers[samplerId];
     }
     samplerId = slot_samplers.insert(runtime, preset);
@@ -127,7 +127,6 @@ auto TextureCache<P>::getCurrentTextures() -> std::span<ImageView*> {
     used_textures.clear();
     return sample_texture;
 }
-
 
 template <class P>
 void TextureCache<P>::setCurrentTextures(const std::span<const ImageViewId>& textures) {

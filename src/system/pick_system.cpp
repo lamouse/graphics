@@ -22,8 +22,8 @@ void PickingSystem::update_transform(id_t id, const ecs::TransformComponent& tra
     picker->updateTransform(id, transform);
 }
 
-auto PickingSystem::pick(const core::Camera& camera, float mouseX, float mouseY,
-                         float windowWidth, float windowHeight) -> std::optional<PickResult> {
+auto PickingSystem::pick(const core::Camera& camera, float mouseX, float mouseY, float windowWidth,
+                         float windowHeight) -> std::optional<PickResult> {
     // 📌 1. 获取视图-投影矩阵
     glm::mat4 viewProj = camera.getProjection() * camera.getView();
     glm::mat4 invViewProj = glm::inverse(viewProj);
@@ -31,7 +31,7 @@ auto PickingSystem::pick(const core::Camera& camera, float mouseX, float mouseY,
     // 📌 2. 屏幕坐标 -> NDC [-1, 1]
     float ndcX = (2.0f * mouseX) / windowWidth - 1.0f;
     float ndcY = (2.0f * mouseY) / windowHeight - 1.0f;  //
-    float ndcZ = -1.0f;                                             // 使用 NDC 近平面 (z = -1)
+    float ndcZ = -1.0f;                                  // 使用 NDC 近平面 (z = -1)
 
     // 📌 3. 构建 NDC 射线并转换到世界空间
     glm::vec4 rayNDCStart(ndcX, ndcY, ndcZ, 1.0f);

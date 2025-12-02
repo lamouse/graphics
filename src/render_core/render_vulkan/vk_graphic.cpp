@@ -83,7 +83,8 @@ void VulkanGraphics::clean(const CleanValue& cleanValue) {
     key.color_formats = cleanValue.framebuffer.color_formats;
     texture_cache.UpdateRenderTarget(key);
     auto* framebuffer = texture_cache.getFramebuffer();
-    if(!framebuffer->HasAspectColorBit(0) && !framebuffer->HasAspectDepthBit() && !framebuffer->HasAspectStencilBit()){
+    if (!framebuffer->HasAspectColorBit(0) && !framebuffer->HasAspectDepthBit() &&
+        !framebuffer->HasAspectStencilBit()) {
         return;
     }
     scheduler.requestRender(framebuffer);

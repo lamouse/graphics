@@ -45,6 +45,7 @@ class BlitScreen {
                          std::span<const frame::FramebufferConfig> framebuffers,
                          size_t current_swapchain_image_count,
                          vk::Format current_swapchain_view_format);
+
     private:
         void WaitIdle();
         void SetWindowAdaptPass();

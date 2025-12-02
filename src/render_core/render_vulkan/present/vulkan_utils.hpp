@@ -39,8 +39,7 @@ auto CreateWrappedDescriptorPool(
     -> VulkanDescriptorPool;
 
 auto CreateWrappedDescriptorSets(VulkanDescriptorPool& pool,
-                                 std::span<vk::DescriptorSetLayout> layouts)
-    -> DescriptorSets;
+                                 std::span<vk::DescriptorSetLayout> layouts) -> DescriptorSets;
 
 auto CreateWriteDescriptorSet(std::vector<vk::DescriptorImageInfo>& images, vk::Sampler sampler,
                               vk::ImageView view, vk::DescriptorSet set, u32 binding)
@@ -60,7 +59,8 @@ void TransitionImageLayout(vk::CommandBuffer& cmdbuf, vk::Image image,
 void BeginRenderPass(vk::CommandBuffer& cmdbuf, vk::RenderPass render_pass,
                      vk::Framebuffer framebuffer, vk::Extent2D extent);
 
-void BeginDynamicRendering(vk::CommandBuffer& cmdbuf, vk::ImageView image_view, vk::Extent2D extent);
+void BeginDynamicRendering(vk::CommandBuffer& cmdbuf, vk::ImageView image_view,
+                           vk::Extent2D extent);
 
 auto CreateNearestNeighborSampler(const Device& device) -> Sampler;
 

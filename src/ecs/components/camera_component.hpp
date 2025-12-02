@@ -9,7 +9,6 @@ constexpr auto DEFAULT_FAR = 100.F;
 constexpr auto DEFAULT_SPEED = 5.5f;
 constexpr auto DEFAULT_SENSITIVITY = 0.02f;
 
-
 constexpr glm::vec3 DEFAULT_UP{.0F, 1.F, 0.F};
 constexpr glm::vec3 DEFAULT_EYE{0.F, .0F, 5.0F};
 constexpr glm::vec3 DEFAULT_CENTER{.0F, .0F, .0F};

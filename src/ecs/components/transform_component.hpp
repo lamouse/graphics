@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>      // for inverse
+#include <glm/gtc/matrix_inverse.hpp>  // for inverse
 #include "common/common_funcs.hpp"
 namespace ecs {
 struct TransformComponent {
@@ -29,7 +29,7 @@ struct TransformComponent {
         operator glm::mat4() { return mat4(); }
 
         [[nodiscard]] auto normalMatrix() const -> glm::mat3 {
-          return glm::inverseTranspose(glm::mat3(mat4()));
+            return glm::inverseTranspose(glm::mat3(mat4()));
         }
 
         // 添加平移方法

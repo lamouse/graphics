@@ -14,8 +14,6 @@ struct FrameInfo {
         InputState input_state;
         int window_width{};
         int window_hight{};
-        void clean(){
-                input_state = {};
-        }
+        void clean() { input_state = {}; }
 };
 }  // namespace core

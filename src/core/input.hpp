@@ -58,7 +58,8 @@ struct InputState {
         }
 
         [[nodiscard]] auto onlyMouseMove() const -> bool {
-            return mouse_move && !mouse_button_left && !mouse_button_right && !mouse_button_center && key == InputKey::UN_SUPER;
+            return mouse_move && !mouse_button_left && !mouse_button_right &&
+                   !mouse_button_center && key == InputKey::UN_SUPER;
         }
 
         [[nodiscard]] auto mouseLeftButtonUp() const -> bool { return mouse_button_left && key_up; }

@@ -19,10 +19,11 @@ class Graphic;
 namespace graphics {
 // 概念约束
 template <typename T>
-concept DrawableLike = requires(T t, const core::FrameInfo& info, world::World& world, render::Graphic* gfx) {
-    { t->update(info, world) } -> std::same_as<void>;
-    { t->draw(gfx) } -> std::same_as<void>;
-};
+concept DrawableLike =
+    requires(T t, const core::FrameInfo& info, world::World& world, render::Graphic* gfx) {
+        { t->update(info, world) } -> std::same_as<void>;
+        { t->draw(gfx) } -> std::same_as<void>;
+    };
 
 template <typename T>
 concept HasPointECSInterface = requires(T* t) {
@@ -45,8 +46,10 @@ class RenderRegistry {
                 // 构造函数：接受任何满足 DrawableLike 的类型
                 template <DrawableLike T>
                 explicit Drawable(T&& obj)
-                    : update([o = std::forward<T>(obj)](
-                                 const core::FrameInfo& info, world::World& world) mutable -> auto { o->update(info, world); }),
+                    : update([o = std::forward<T>(obj)](const core::FrameInfo& info,
+                                                        world::World& world) mutable -> auto {
+                          o->update(info, world);
+                      }),
                       draw([o = std::forward<T>(obj)](render::Graphic* gfx) mutable -> auto {
                           o->draw(gfx);
                       }) {}
@@ -115,7 +118,7 @@ class RenderRegistry {
         // 控制
         void clear() { objects_.clear(); }
         void reserve(size_t n) { objects_.reserve(n); }
-        auto getOutliner(this auto && self) -> decltype(auto) { return (self.outliner_entities_); };
+        auto getOutliner(this auto&& self) -> decltype(auto) { return (self.outliner_entities_); };
         [[nodiscard]] auto size() const -> size_t { return objects_.size(); }
         [[nodiscard]] auto empty() const -> bool { return objects_.empty(); }
 };

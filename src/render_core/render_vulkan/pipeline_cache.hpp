@@ -68,8 +68,7 @@ class PipelineCache : public ShaderCache {
         ~PipelineCache();
         CLASS_NON_COPYABLE(PipelineCache);
         CLASS_NON_MOVEABLE(PipelineCache);
-        [[nodiscard]] auto currentGraphicsPipeline(PrimitiveTopology topology)
-            -> GraphicsPipeline*;
+        [[nodiscard]] auto currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline*;
         [[nodiscard]] auto currentComputePipeline(const std::array<u32, 3>& workgroupSize)
             -> ComputePipeline*;
 
@@ -79,8 +78,8 @@ class PipelineCache : public ShaderCache {
         [[nodiscard]] auto builtPipeline(GraphicsPipeline* pipeline) const noexcept
             -> GraphicsPipeline*;
 
-        auto createGraphicsPipeline(const GraphicsPipelineCacheKey& key,
-                                    bool build_in_parallel) -> std::unique_ptr<GraphicsPipeline>;
+        auto createGraphicsPipeline(const GraphicsPipelineCacheKey& key, bool build_in_parallel)
+            -> std::unique_ptr<GraphicsPipeline>;
 
         auto CreateComputePipeline(const ComputePipelineCacheKey& key)
             -> std::unique_ptr<ComputePipeline>;

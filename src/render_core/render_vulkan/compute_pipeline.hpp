@@ -32,9 +32,8 @@ class ComputePipeline {
         explicit ComputePipeline(const Device& device, VulkanPipelineCache& pipeline_cache,
                                  resource::DescriptorPool& descriptor_pool,
                                  GuestDescriptorQueue& guest_descriptor_queue,
-                                 common::ThreadWorker* thread_worker,
-                                 ShaderNotify* shader_notify, const shader::Info& info,
-                                 ShaderModule spv_module);
+                                 common::ThreadWorker* thread_worker, ShaderNotify* shader_notify,
+                                 const shader::Info& info, ShaderModule spv_module);
 
         CLASS_NON_COPYABLE(ComputePipeline);
         CLASS_NON_MOVEABLE(ComputePipeline);

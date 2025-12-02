@@ -74,6 +74,7 @@ class BufferCache : public BufferCacheInfo {
 
         using Runtime = typename P::Runtime;
         using Buffer = typename P::Buffer;
+
     public:
         explicit BufferCache(Runtime& runtime_);
         void TickFrame();
@@ -105,7 +106,6 @@ class BufferCache : public BufferCacheInfo {
 
         IndirectParams* current_draw_indirect{};
         u32 last_index_count = 0;
-
 
         // 当前需要bind的graphic的uniform buffer，如果没有.empty()应该返回true
         std::span<std::span<const std::byte>> graphic_uniform_buffers;

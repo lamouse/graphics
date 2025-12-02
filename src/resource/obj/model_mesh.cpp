@@ -415,7 +415,8 @@ auto Model::getIndices() const -> std::span<const std::byte> {
     return as_bytes(std::span(indices_));
 }
 
-MultiMeshModel::MultiMeshModel(std::string_view path, uint64_t file_hash_, bool flip_uv) : file_hash(file_hash_) {
+MultiMeshModel::MultiMeshModel(std::string_view path, uint64_t file_hash_, bool flip_uv)
+    : file_hash(file_hash_) {
     if (file_hash_ == 0) {
         auto model_file_hash = common::file_hash(std::string(path));
         file_hash = model_file_hash ? model_file_hash.value() : 0;
@@ -427,7 +428,8 @@ MultiMeshModel::MultiMeshModel(std::string_view path, uint64_t file_hash_, bool 
     }
     Assimp::Importer importer;
     // NOLINTNEXTLINE
-    const aiScene* scene = importer.ReadFile(std::string(path), flip_uv ? FLIP_UV_ULT_ASSIMP_LOAD_FLAGS : DEFAULT_ULT_ASSIMP_LOAD_FLAGS);
+    const aiScene* scene = importer.ReadFile(
+        std::string(path), flip_uv ? FLIP_UV_ULT_ASSIMP_LOAD_FLAGS : DEFAULT_ULT_ASSIMP_LOAD_FLAGS);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
         scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
         throw std::runtime_error("load empty model");

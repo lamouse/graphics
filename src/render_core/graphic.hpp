@@ -16,9 +16,7 @@ struct Framebuffer {
         std::array<render::surface::PixelFormat, 8> color_formats{};
         render::surface::PixelFormat depth_format = surface::PixelFormat::Invalid;
         texture::Extent3D extent{};
-        Framebuffer(){
-            color_formats.fill(surface::PixelFormat::Invalid);
-        }
+        Framebuffer() { color_formats.fill(surface::PixelFormat::Invalid); }
 };
 
 struct CleanValue {

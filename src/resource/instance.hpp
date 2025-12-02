@@ -38,10 +38,10 @@ class IMeshInstance {
         CLASS_DEFAULT_COPYABLE(IMeshInstance);
         CLASS_DEFAULT_MOVEABLE(IMeshInstance);
         IMeshInstance(render::PrimitiveTopology topology_, render::RenderCommand render_command_,
-                      render::MeshId meshId_,
-                      std::uint64_t vertex_shader_hash_, std::uint64_t fragment_shader_hash_)
+                      render::MeshId meshId_, std::uint64_t vertex_shader_hash_,
+                      std::uint64_t fragment_shader_hash_)
             : topology(topology_),
-            render_command(render_command_),
+              render_command(render_command_),
               meshId(meshId_),
               vertex_shader_hash(vertex_shader_hash_),
               fragment_shader_hash(fragment_shader_hash_),

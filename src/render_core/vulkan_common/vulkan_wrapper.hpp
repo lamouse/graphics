@@ -604,7 +604,8 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
 
         [[nodiscard]] auto createPipeline(const vk::ComputePipelineCreateInfo& ci,
                                           const vk::PipelineCache& cache = {}) const -> Pipeline;
-        [[nodiscard]] auto createPipelineCache(const vk::PipelineCacheCreateInfo& ci) const -> VulkanPipelineCache;
+        [[nodiscard]] auto createPipelineCache(const vk::PipelineCacheCreateInfo& ci) const
+            -> VulkanPipelineCache;
         [[nodiscard]] auto createFence(const vk::FenceCreateInfo& ci) const -> Fence;
 
         [[nodiscard]] auto createSemaphore() const -> Semaphore;

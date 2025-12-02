@@ -69,7 +69,8 @@ void App::run() {
     frameClean.hight = frame_layout.height;
     frameClean.framebuffer.color_formats.at(0) = render::surface::PixelFormat::B8G8R8A8_UNORM;
     frameClean.framebuffer.depth_format = render::surface::PixelFormat::D32_FLOAT;
-    frameClean.framebuffer.extent = {.width = frame_layout.width, .height = frame_layout.height, .depth = 1};
+    frameClean.framebuffer.extent = {
+        .width = frame_layout.width, .height = frame_layout.height, .depth = 1};
     while (!window->shouldClose()) {
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -114,7 +115,7 @@ void App::run() {
                         world.pick(pick->id);
                     }
                 }
-                if(e->mouseLeftButtonUp()){
+                if (e->mouseLeftButtonUp()) {
                     world.cancelPick();
                 }
                 CameraSystem::update(cameraComponent, e.value(), frame);

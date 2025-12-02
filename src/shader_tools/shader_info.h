@@ -68,7 +68,7 @@ struct ImageDescriptor {
         auto operator<=>(const ImageDescriptor&) const = default;
 };
 
-struct PushConstant{
+struct PushConstant {
         uint32_t size{};
 };
 

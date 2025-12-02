@@ -40,7 +40,8 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
         glm::vec2 ndc1 = toNDC(newMouseX, newMouseY);
 
         // 相机矩阵
-        glm::mat4 invVP = glm::inverse(frameInfo.camera->getProjection() * frameInfo.camera->getView());
+        glm::mat4 invVP =
+            glm::inverse(frameInfo.camera->getProjection() * frameInfo.camera->getView());
 
         auto ndcToWorld = [&](glm::vec2 ndc) {
             glm::vec4 clip(ndc.x, ndc.y, 1.0f, 1.0f);  // 在远平面上取点

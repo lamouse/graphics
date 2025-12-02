@@ -11,7 +11,6 @@
 
 namespace graphics::effects {
 
-
 struct PointLightPushConstants {
         glm::vec4 position{};
         glm::vec4 color{};
@@ -38,13 +37,13 @@ class PointLightEffect {
             transformComponent.translation =
                 glm::vec3(rotateLight * glm::vec4(-2.f, .0f, -1.f, 1.f));
             entity_.addComponent<ecs::TransformComponent>(transformComponent);
-            transform = &entity_.getComponent<ecs::TransformComponent>();//NOLINT
+            transform = &entity_.getComponent<ecs::TransformComponent>();  // NOLINT
             ecs::LightComponent default_lightComponent{};
             default_lightComponent.color = color_;
             default_lightComponent.intensity = intensity;
             default_lightComponent.range = radius;
             entity_.addComponent<ecs::LightComponent>(default_lightComponent);
-            lightComponent = &entity_.getComponent<ecs::LightComponent>();//NOLINT
+            lightComponent = &entity_.getComponent<ecs::LightComponent>();  // NOLINT
             point_light.setUBO<LightUBO>(&light_ubo);
             point_light.setPushConstant(&push_constants);
         }

@@ -18,7 +18,7 @@ auto PrimitiveTopologyToVK(render::PrimitiveTopology topology) -> vk::PrimitiveT
 
 auto StencilOp(render::StencilOp::Op stencilOp) -> vk::StencilOp;
 
-auto ComparisonOp(render::ComparisonOp compreOp)-> vk::CompareOp;
+auto ComparisonOp(render::ComparisonOp compreOp) -> vk::CompareOp;
 
 auto CullFace(render::CullFace cull_face) -> vk::CullModeFlagBits;
 

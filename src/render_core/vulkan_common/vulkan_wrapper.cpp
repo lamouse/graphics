@@ -264,7 +264,8 @@ auto LogicDevice::createPipeline(const vk::ComputePipelineCreateInfo& ci,
     return Pipeline{result.value, handle};
 }
 
-[[nodiscard]] auto LogicDevice::createPipelineCache(const vk::PipelineCacheCreateInfo& ci) const -> VulkanPipelineCache{
+[[nodiscard]] auto LogicDevice::createPipelineCache(const vk::PipelineCacheCreateInfo& ci) const
+    -> VulkanPipelineCache {
     auto result = handle.createPipelineCache(ci);
     return VulkanPipelineCache{result, handle};
 }

@@ -10,14 +10,15 @@ namespace world {
 enum class WorldEntityType : std::uint8_t { CAMERA };
 
 class World {
-    struct LightInfo{
-        ecs::LightComponent* light;
-        ecs::TransformComponent* transform;
-    };
+        struct LightInfo {
+                ecs::LightComponent* light;
+                ecs::TransformComponent* transform;
+        };
+
     public:
         World();
         [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
-        void addLight(const LightInfo& info){lights_.push_back(info);}
+        void addLight(const LightInfo& info) { lights_.push_back(info); }
         [[nodiscard]] auto getLightEntities(this auto&& self) -> decltype(auto) {
             {
                 return (std::span(self.lights_));
@@ -30,7 +31,7 @@ class World {
         }
 
         void cancelPick() { is_pick = false; };
-        //如果选中有效返回选中的id和true，否则返回任意id和false
+        // 如果选中有效返回选中的id和true，否则返回任意id和false
         [[nodiscard]] auto pick() const -> std::pair<id_t, bool> {
             return std::make_pair(pick_id, is_pick);
         }
@@ -42,7 +43,7 @@ class World {
 
         void cleanLight() {
             lights_.clear();
-            lights_.push_back({.light=dir_light, .transform=nullptr});
+            lights_.push_back({.light = dir_light, .transform = nullptr});
         }
 
         [[nodiscard]] auto getEntities() const -> std::vector<ecs::Entity> {
@@ -58,7 +59,7 @@ class World {
         ecs::Scene scene_;
         ecs::Entity cameraEntity_;
         ecs::Entity dirLightEntity_;
-        ecs::LightComponent *dir_light;
+        ecs::LightComponent* dir_light;
         std::vector<LightInfo> lights_;
         std::vector<ecs::Entity> child_entitys_;
 };

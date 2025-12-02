@@ -643,12 +643,11 @@ auto Device::getSuitability(bool requires_swapchain) -> bool {
     // Test all features we know about. If the feature is not available in core at our
 // current API version, and was not enabled by an extension, skip testing the feature.
 // We set the structure sType explicitly here as it is zeroed by the constructor.
-#define FEATURE(prefix, struct_name, macro_name, var_name)                                \
-    SetNext(next, features_.var_name);
+#define FEATURE(prefix, struct_name, macro_name, var_name) SetNext(next, features_.var_name);
 
-#define EXT_FEATURE(prefix, struct_name, macro_name, var_name)                  \
-    if (extensions_.var_name) {                                                 \
-        SetNext(next, features_.var_name);                                      \
+#define EXT_FEATURE(prefix, struct_name, macro_name, var_name) \
+    if (extensions_.var_name) {                                \
+        SetNext(next, features_.var_name);                     \
     }
 
     FOR_EACH_VK_FEATURE_1_1(FEATURE);

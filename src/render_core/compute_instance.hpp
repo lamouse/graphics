@@ -5,7 +5,8 @@
 namespace render {
 class IComputeInstance {
     public:
-        [[nodiscard]] virtual auto getUBOData() const -> std::vector<std::span<const std::byte>> = 0;
+        [[nodiscard]] virtual auto getUBOData() const
+            -> std::vector<std::span<const std::byte>> = 0;
         virtual ~IComputeInstance() = default;
         IComputeInstance() = default;
         [[nodiscard]] auto getMeshIds() const -> std::span<const MeshId> { return mesh_ids; }

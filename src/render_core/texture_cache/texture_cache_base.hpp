@@ -117,7 +117,7 @@ class TextureCache {
         common::SlotVector<Framebuffer> slot_framebuffers;
         ImageViewId currentTextureId;
         std::vector<ImageView*> sample_texture;
-        std::array<SamplerId, static_cast<uint8_t>( SamplerPreset::MAX_PRESET)> sampler_presets;
+        std::array<SamplerId, static_cast<uint8_t>(SamplerPreset::MAX_PRESET)> sampler_presets;
         std::vector<ImageViewId> used_textures;
         RenderTargets render_targets;
         Framebuffer* current_frame_buffer{};

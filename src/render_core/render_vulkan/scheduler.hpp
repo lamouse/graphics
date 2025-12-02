@@ -82,6 +82,7 @@ class Scheduler {
         void requestRender(const TextureFramebuffer* framebuffer);
 
         void requestOutsideRenderOperationContext();
+
     private:
         class Command {
             public:

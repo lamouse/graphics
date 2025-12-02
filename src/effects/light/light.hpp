@@ -3,17 +3,17 @@
 #include <glm/glm.hpp>
 #include <span>
 namespace world {
-    class World;
+class World;
 }
 
-namespace core{
-    struct FrameInfo;
+namespace core {
+struct FrameInfo;
 }
 
 namespace graphics::effects {
 constexpr auto MAX_LIGHTS = 10;
 
-    struct PointLight {
+struct PointLight {
         glm::vec4 position{};  // ignore w
         glm::vec4 color{};     // w is intensity
         CLASS_DEFAULT_COPYABLE(PointLight);
@@ -45,4 +45,4 @@ struct LightUBO {
 };
 
 void updateLightUBO(const core::FrameInfo& frameInfo, LightUBO& lightUBO, world::World& world);
-}
+}  // namespace graphics::effects

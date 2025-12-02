@@ -68,7 +68,6 @@ auto get_windows_display(SDL_Window *window) -> void * {
 
 #endif
 
-
 auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey {
     switch (scancode) {
         case SDL_SCANCODE_W:
@@ -96,7 +95,7 @@ auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey {
         case SDL_SCANCODE_ESCAPE:
             return core::InputKey::Esc;
 
-        case SDL_SCANCODE_LCTRL :
+        case SDL_SCANCODE_LCTRL:
             return core::InputKey::LCtrl;
 
         default:
