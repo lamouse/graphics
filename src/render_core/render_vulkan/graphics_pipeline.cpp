@@ -100,7 +100,7 @@ auto IsLine(vk::PrimitiveTopology topology) -> bool {
     return std::ranges::find(line_topologies, topology) == line_topologies.end();
 }
 
-auto MsaaMode(MsaaMode msaa_mode) -> vk::SampleCountFlagBits {
+auto MsaaModeToVk(MsaaMode msaa_mode) -> vk::SampleCountFlagBits {
     switch (msaa_mode) {
         case MsaaMode::Msaa1x1:
             return vk::SampleCountFlagBits::e1;
@@ -363,7 +363,7 @@ void GraphicsPipeline::makePipeline(vk::RenderPass render_pass) {
     }
 
     const auto multisample_ci = vk::PipelineMultisampleStateCreateInfo()
-                                    .setRasterizationSamples(MsaaMode(key_.state.msaa_mode))
+                                    .setRasterizationSamples(MsaaModeToVk(key_.state.msaa_mode))
                                     .setSampleShadingEnable(VK_FALSE)
                                     .setMinSampleShading(0.0f)
                                     .setAlphaToCoverageEnable(key_.state.alpha_to_coverage_enabled)
