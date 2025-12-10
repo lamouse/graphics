@@ -32,10 +32,15 @@ else()
 endif()
 
 target_link_libraries(${LIB_NAME} PUBLIC Boost::container core)
+
+if(TARGET abseil::abseil)
+    target_link_libraries(${LIB_NAME} PUBLIC abseil::abseil)
+endif()
+
 if(TARGET spirv-cross::spirv-cross)
-target_link_libraries(${LIB_NAME} PRIVATE spirv-cross::spirv-cross)
+    target_link_libraries(${LIB_NAME} PRIVATE spirv-cross::spirv-cross)
 else()
-target_link_libraries(${LIB_NAME} PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl)
+    target_link_libraries(${LIB_NAME} PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl)
 endif()
 
 target_link_libraries(${LIB_NAME} PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
