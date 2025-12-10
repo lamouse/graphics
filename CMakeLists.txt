@@ -29,7 +29,7 @@ endif()
 
 if(MSVC)
         add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)
-
+        set(CMAKE_CXX_STANDARD 26)
         # boost still makes use of deprecated result_of.
         add_definitions(-D_HAS_DEPRECATED_RESULT_OF)
 else()
