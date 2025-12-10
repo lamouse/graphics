@@ -72,7 +72,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 
 find_package(spirv-cross CONFIG QUIET)
-if(NOT TARGET spirv-cross_FOUND)
+if(NOT spirv-cross_FOUND)
         find_package(spirv_cross_core CONFIG REQUIRED)
         find_package(spirv_cross_glsl CONFIG REQUIRED)
         find_package(spirv_cross_cpp CONFIG REQUIRED)
