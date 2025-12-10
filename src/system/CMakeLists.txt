@@ -68,7 +68,13 @@ else()
     target_link_libraries(${LIB_NAME} PUBLIC absl::strings)
 endif()
 
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog Imgui::Imgui ui utils embree common)
+if(TARGET embree::embree)
+    target_link_libraries(${LIB_NAME} PUBLIC embree::embree)
+else()
+    target_link_libraries(${LIB_NAME} PUBLIC embree)
+endif()
+
+target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog Imgui::Imgui ui utils common)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_NAME}/lib)
