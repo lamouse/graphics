@@ -23,6 +23,7 @@ class GraphicsConan(ConanFile):
         self.requires("spirv-cross/1.4.321.0")
         self.requires("glslang/1.4.313.0")
         self.requires("sdl/3.2.20")
+        self.requires("spdlog/1.16.0")
         self.requires("farmhash/cci.20190513")
         self.requires("entt/3.15.0")
         self.requires("abseil/20250814.0")
