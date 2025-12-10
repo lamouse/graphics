@@ -4,9 +4,11 @@
 #include "render_core/types.hpp"
 #include <span>
 #include "render_core/pipeline_state.h"
-#include "ecs/scene/entity.hpp"
 #include <spdlog/spdlog.h>
 #include "resource/id.hpp"
+namespace ecs {
+    class Scene;
+}
 namespace graphics {
 
 template <typename T>
