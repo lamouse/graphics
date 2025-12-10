@@ -15,6 +15,11 @@ target_link_libraries(
   ${TEST_NAME} PRIVATE render-core
 )
 target_compile_definitions(${TEST_NAME} PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+if(TARGET Vulkan::Headers)
+    target_link_libraries(${TEST_NAME} PRIVATE Vulkan::Headers)
+else()
+    target_link_libraries(${TEST_NAME} PRIVATE vulkan-headers::vulkan-headers vulkan-utility-libraries::vulkan-utility-libraries)
+endif()
 
 if(MINGW)
   target_link_libraries(${TEST_NAME} PRIVATE "-lstdc++exp")
