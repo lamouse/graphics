@@ -35,7 +35,7 @@ target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers GPUOpen::VulkanMemoryA
 if(TARGET Vulkan::Headers)
     target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers)
 else()
-    target_link_libraries(${LIB_NAME} PRIVATE vulkan-headers::vulkan-headers vulkan-utility-libraries::vulkan-utility-libraries)
+    target_link_libraries(${LIB_NAME} PRIVATE vulkan-headers::vulkan-headers VulkanUtilityLibraries::VulkanUtilityLibraries)
 endif()
 
 if(TARGET GOOGLE::farmhash)
