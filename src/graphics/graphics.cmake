@@ -1,0 +1,17 @@
+set(sources
+    app.hpp
+    app.cpp
+    glfw_common.hpp
+    glfw_common.cpp
+    glfw_window.hpp
+    glfw_window.cpp
+    graphic.hpp
+    graphic.cpp
+    SDL_common.hpp
+    SDL_common.cpp
+    sdl_window.hpp
+    sdl_window.cpp
+    gui.hpp
+    gui.cpp
+    main.cpp
+)

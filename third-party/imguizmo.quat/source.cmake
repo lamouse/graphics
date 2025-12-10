@@ -1,0 +1,11 @@
+set(sources
+    imguizmo_config.h
+    imguizmo_quat.cpp
+    imguizmo_quat.h
+    imGuIZMOquat.cpp
+    imGuIZMOquat.h
+    vGizmo3D_config.h
+    vGizmo3D.h
+    vgMath_config.h
+    vgMath.h
+)

@@ -1,0 +1,19 @@
+# Xmake cache
+.xmake/
+build/
+build-*/
+cmake-build/
+cmake-build*/
+# MacOS Cache
+.DS_Store
+
+.cache/
+.vs/
+.vscode
+out/
+*idea/
+CPTCMakeBuild/
+CMakeSettings.json
+CMakeUserPresets.json
+*.sublime-project
+*.sublime-workspace

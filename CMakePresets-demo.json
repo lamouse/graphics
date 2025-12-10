@@ -1,0 +1,81 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "vcpkg",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_FEATURE_FLAGS": "-manifests"
+            }
+        },
+        {
+            "name": "Debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "MinSizeRel",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "MinSizeRel"
+            }
+        },
+        {
+            "name": "RelWithDebInfo",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-debug",
+            "description": "build with Debug configuration",
+            "hidden": true,
+            "verbose": true,
+            "displayName": "Debug",
+            "configuration": "Debug",
+            "jobs": 8
+        },
+        {
+            "name": "build-release",
+            "description": "build with Release configuration",
+            "hidden": true,
+            "verbose": true,
+            "displayName": "Release",
+            "configuration": "Release",
+            "jobs": 8
+        },
+        {
+            "name": "build-min-size-rel",
+            "description": "build with MinSizeRel configuration",
+            "hidden": true,
+            "verbose": true,
+            "displayName": "MinSizeRel",
+            "configuration": "MinSizeRel",
+            "jobs": 8
+        },
+        {
+            "name": "build-rel-with-debInfo",
+            "description": "build with RelWithDebInfo configuration",
+            "hidden": true,
+            "verbose": true,
+            "displayName": "RelWithDebInfo",
+            "configuration": "RelWithDebInfo",
+            "jobs": 8
+        }
+    ]
+}

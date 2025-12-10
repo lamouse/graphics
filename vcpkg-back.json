@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "graphics",
+  "builtin-baseline": "4bb07a326d9b9bce3703272a509e5bc25dd9cfd5",
+  "version": "1.0",
+    "dependencies": [
+        "abseil",
+        "glfw3",
+        "fmt",
+        "spdlog",
+        "assimp",
+        "stb",
+        "glm",
+        "ms-gsl",
+        "gtest",
+        "boost-container",
+        "glslang",
+        "spirv-cross",
+        "farmhash",
+        "vulkan-memory-allocator",
+        "vulkan-utility-libraries",
+        "xxhash",
+        "embree3",
+        "nlohmann-json",
+        "ktx",
+        {
+            "name": "sdl3",
+            "features": [
+                "vulkan"
+            ]
+        },
+        "tracy",
+        {
+            "name": "entt",
+            "version>=": "3.15.0"
+        },
+        {
+            "name": "vulkan-headers",
+            "version>=": "1.4.309.0"
+        }
+    ]
+}

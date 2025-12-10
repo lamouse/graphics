@@ -1,0 +1,11 @@
+extensions = [ "breathe", "m2r2" ]
+breathe_projects = { "graphics": "@CMAKE_CURRENT_BINARY_DIR@/xml" }
+breathe_default_project = "graphics"
+
+project = "graphics"
+author = "ziyu"
+copyright = "c"
+version = "@PROJECT_VERSION@"
+release = "@PROJECT_VERSION@"
+
+html_theme = 'sphinx_rtd_theme'

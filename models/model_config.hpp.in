@@ -1,0 +1,8 @@
+#pragma once
+
+namespace model {
+    constexpr const char* MODEL_ROOT_PATH = "@MODEL_ROOT_PATH@";
+    constexpr const char* MODEL_HASH_PATH = "@MODEL_HASH_PATH@";
+}// namespace shader
+
+
