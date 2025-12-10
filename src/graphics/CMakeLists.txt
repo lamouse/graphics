@@ -9,7 +9,7 @@ target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_SDL)
 add_dependencies(${PROGRAM_NAME} copy_fonts)
 # target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_GLFW)
 target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core resource)
-target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog Microsoft.GSL::GSL)
+target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog)
 target_link_libraries(${PROGRAM_NAME} PRIVATE effects)
 target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3 world system Imgui::Imgui ImGuizmo::ImGuizmo)
 
