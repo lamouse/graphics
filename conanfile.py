@@ -38,8 +38,8 @@ class GraphicsConan(ConanFile):
     def build_requirements(self):
         self.tool_requires("cmake/4.2.0")
 
-    # def layout(self):
-    #     cmake_layout(self)
+    def layout(self):
+        cmake_layout(self)
 
     def build(self):
         cmake = CMake(self)
