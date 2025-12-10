@@ -1,5 +1,4 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include "device_utils.hpp"
 #include <unordered_map>
 #include <set>
