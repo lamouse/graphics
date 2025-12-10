@@ -282,7 +282,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
             : Setting<Type, false>{
                   linkage, default_val,         name,          category_, specialization_,
                   save_,   runtime_modifiable_, other_setting_} {
-            linkage.restore_functions.emplace_back([this]() {});
+            linkage.restore_functions.emplace_back([]() {});
         }
         virtual ~SwitchableSetting() = default;
 
@@ -308,7 +308,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
                                   max_val,         name,        category_,
                                   specialization_, save_,       runtime_modifiable_,
                                   other_setting_} {
-            linkage.restore_functions.emplace_back([this]() {});
+            linkage.restore_functions.emplace_back([]() {});
         }
 
         template <typename T = BasicSetting>
@@ -327,7 +327,7 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
                                   save_,
                                   runtime_modifiable_,
                                   other_setting_} {
-            linkage.restore_functions.emplace_back([this]() {});
+            linkage.restore_functions.emplace_back([]() {});
         }
 
         /**
