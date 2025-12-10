@@ -27,6 +27,8 @@ class EmbreePicker {
         // 禁止拷贝
         EmbreePicker(const EmbreePicker&) = delete;
         auto operator=(const EmbreePicker&) -> EmbreePicker& = delete;
+        EmbreePicker(const EmbreePicker&&) = delete;
+        auto operator=(const EmbreePicker&&) -> EmbreePicker& = delete;
         // 所有物体更新完后，一次性 commit scene
         void commit();
 
