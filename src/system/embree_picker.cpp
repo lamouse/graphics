@@ -4,6 +4,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <ranges>
+#include <limits>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "system/pick_system.hpp"
@@ -20,7 +21,7 @@ void warmup_embree(RTCScene scene) {
     rayhit.ray.dir_z = 1.0f;
     rayhit.ray.tnear = 0.0f;
     rayhit.ray.tfar = std::numeric_limits<float>::infinity();
-    rayhit.ray.mask = -1;
+    rayhit.ray.mask = std::numeric_limits<unsigned int>::max();;
     rayhit.ray.time = 0.0f;
     rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
@@ -166,7 +167,7 @@ auto EmbreePicker::pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
     ray_hit.ray.tnear = 1e-4f;  // 避免自相交
     ray_hit.ray.tfar = std::numeric_limits<float>::max();
-    ray_hit.ray.mask = -1;
+    ray_hit.ray.mask = std::numeric_limits<unsigned int>::max();;
     ray_hit.ray.time = 0.f;
 
     ray_hit.hit.geomID = RTC_INVALID_GEOMETRY_ID;

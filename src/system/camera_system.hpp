@@ -61,15 +61,15 @@ struct CameraSystem {
                 toEye = glm::vec3(yawRot * glm::vec4(toEye, 0.0f));
 
                 // 🔁 2. 重新计算 right（因为 toEye 变了）
-                glm::vec3 right = glm::cross(toEye, cam.up());
-                if (glm::length(right) < 1e-6f) {
-                    right = glm::vec3(1, 0, 0);  // fallback
+                glm::vec3 cam_right = glm::cross(toEye, cam.up());
+                if (glm::length(cam_right) < 1e-6f) {
+                    cam_right = glm::vec3(1, 0, 0);  // fallback
                 } else {
-                    right = glm::normalize(right);
+                    cam_right = glm::normalize(cam_right);
                 }
 
                 // 🔽 3. 绕 right 旋转（pitch）—— 上下
-                glm::mat4 pitchRot = glm::rotate(glm::mat4(1.0f), -dy, right);
+                glm::mat4 pitchRot = glm::rotate(glm::mat4(1.0f), -dy, cam_right);
                 glm::vec3 newToEye = glm::vec3(pitchRot * glm::vec4(toEye, 0.0f));
 
                 // ✅ 限制 pitch，防止翻转

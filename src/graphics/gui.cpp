@@ -29,40 +29,6 @@ void* GImGuiDemoMarkerCallbackUserData = NULL;
 namespace {
 constexpr float OUTLINER_WIDTH = 0.3f;
 constexpr float RENDER_STATUS_BAR_HEIGHT = 45.f;
-// ======================================
-// 手动绘制箭头函数（替代不存在的 ImGui::RenderArrow）
-// ======================================
-void RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float size = 5.0f) {
-    std::array<ImVec2, 3> points;
-    pos = ImVec2(floorf(pos.x) + 0.5F, floorf(pos.y) + 0.5F);
-
-    switch (dir) {
-        case ImGuiDir_Left:
-            points[0] = ImVec2(pos.x + size, pos.y - size);
-            points[1] = ImVec2(pos.x + size, pos.y + size);
-            points[2] = ImVec2(pos.x - size, pos.y);
-            break;
-        case ImGuiDir_Right:
-            points[0] = ImVec2(pos.x - size, pos.y - size);
-            points[1] = ImVec2(pos.x - size, pos.y + size);
-            points[2] = ImVec2(pos.x + size, pos.y);
-            break;
-        case ImGuiDir_Up:
-            points[0] = ImVec2(pos.x - size, pos.y + size);
-            points[1] = ImVec2(pos.x + size, pos.y + size);
-            points[2] = ImVec2(pos.x, pos.y - size);
-            break;
-        case ImGuiDir_Down:
-            points[0] = ImVec2(pos.x - size, pos.y - size);
-            points[1] = ImVec2(pos.x + size, pos.y - size);
-            points[2] = ImVec2(pos.x, pos.y + size);
-            break;
-        default:
-            return;
-    }
-
-    draw_list->AddTriangleFilled(points[0], points[1], points[2], col);
-}
 
 // Note that shortcuts are currently provided for display only
 // (future version will add explicit flags to BeginMenu() to request processing shortcuts)

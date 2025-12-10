@@ -13,6 +13,7 @@ if(MSVC)
         # /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
         # /we4254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
         # /we4800 # Implicit conversion from 'type' to bool. Possible information loss
+        /we5038 # data member 'member1' will be initialized after data member 'member2'
     )
 else()
     target_compile_options(${LIB_NAME} PRIVATE

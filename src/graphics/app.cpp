@@ -169,13 +169,13 @@ App::~App() = default;
 void App::load_resource() {
     std::string viking_obj_path = "backpack";
     std::string model_shader_name = "model";
-    std::string particle_shader_name = "particle";
+    std::string particle_shader = "particle";
     std::string point_light_shader_name = "point_light";
 
     resourceManager.addGraphShader(model_shader_name);
-    resourceManager.addGraphShader(particle_shader_name);
+    resourceManager.addGraphShader(particle_shader);
     resourceManager.addGraphShader(point_light_shader_name);
-    resourceManager.addComputeShader(particle_shader_name);
+    resourceManager.addComputeShader(particle_shader);
     auto frame_layout = window->getFramebufferLayout();
 
     ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};

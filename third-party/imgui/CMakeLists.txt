@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(imgui LANGUAGES C CXX ASM VERSION 1.91.6)
+project(imgui LANGUAGES C CXX VERSION 1.91.6)
 
 # Determine if we're built as a subproject (using add_subdirectory)
 # or if this is the master project.

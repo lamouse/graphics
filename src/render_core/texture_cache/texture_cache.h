@@ -63,8 +63,6 @@ auto TextureCache<P>::addTexture(const Extent2D& extent, std::span<unsigned char
 }
 template <class P>
 auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
-    auto* tex2 = reinterpret_cast<ktxTexture2*>(ktxTexture);
-    auto format = tex2->vkFormat;
     ImageInfo info;
     info.size.width = ktxTexture->baseWidth;
     info.size.height = ktxTexture->baseHeight;
@@ -83,6 +81,9 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
         for (uint32_t level = 0; level < ktxTexture->numLevels; ++level) {
             ktx_size_t offset{};
             KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, 0, face, &offset);
+            if(result != KTX_SUCCESS){
+                throw std::runtime_error("ktxTexture_GetImageOffset");
+            }
             // 计算当前 mip 层的尺寸
             uint32_t mipWidth = std::max(1u, ktxTexture->baseWidth >> level);
             uint32_t mipHeight = std::max(1u, ktxTexture->baseHeight >> level);
