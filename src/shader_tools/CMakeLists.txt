@@ -7,11 +7,13 @@ set(sources
     varying_state.hpp
 )
 
-add_library(shader STATIC ${sources})
+set(LIB_NAME shader)
+
+add_library(${LIB_NAME} STATIC ${sources})
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)
-    target_compile_options(shader PRIVATE
+    target_compile_options(${LIB_NAME} PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
         /we4245 # 'conversion': conversion from 'type1' to 'type2', signed/unsigned mismatch
@@ -19,7 +21,7 @@ if(MSVC)
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
 else()
-    target_compile_options(shader PRIVATE
+    target_compile_options(${LIB_NAME} PRIVATE
         -Werror=conversion
 
         -Wno-sign-conversion
@@ -29,11 +31,16 @@ else()
     )
 endif()
 
-target_link_libraries(shader PUBLIC Boost::container core)
-target_link_libraries(shader PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl)
-target_link_libraries(shader PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
+target_link_libraries(${LIB_NAME} PUBLIC Boost::container core)
+if(TARGET spirv-cross::spirv-cross)
+target_link_libraries(${LIB_NAME} PRIVATE spirv-cross::spirv-cross)
+else()
+target_link_libraries(${LIB_NAME} PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl)
+endif()
+
+target_link_libraries(${LIB_NAME} PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-set_target_properties(shader PROPERTIES VERSION 0.0.1 SOVERSION 0)
-create_target_directory_groups(shader)
+set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)
+create_target_directory_groups(${LIB_NAME})
