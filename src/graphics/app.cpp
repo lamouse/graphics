@@ -11,7 +11,6 @@
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
 #include <spdlog/spdlog.h>
-#include "render_core/render_vulkan/render_vulkan.hpp"
 #include <thread>
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
