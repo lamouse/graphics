@@ -13,11 +13,6 @@ if(LINUX)
     add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
 endif()
 
-if(WIN32)
-    # Avoid windows.h junk
-    add_definitions(-DNOMINMAX)
-endif()
-
 if(MSVC)
     # set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING "" FORCE)
 
@@ -172,6 +167,23 @@ else()
 endif()
 
 add_definitions(-DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DGLM_ENABLE_EXPERIMENTAL)
+
+if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    foreach(target absl::base absl::strings)
+        if(TARGET ${target})
+            get_target_property(opts ${target} INTERFACE_LINK_LIBRARIES)
+            if(opts)
+                # opts 是一个列表，把它拼成字符串再替换
+                string(REPLACE ";-ignore:4221" "" cleaned_opts "${opts}")
+                # 再拆回列表
+                separate_arguments(cleaned_opts)
+                set_target_properties(${target} PROPERTIES INTERFACE_LINK_LIBRARIES "${cleaned_opts}")
+                message(STATUS "Cleaned INTERFACE_LINK_LIBRARIES for ${target}: ${cleaned_opts}")
+            endif()
+        endif()
+    endforeach()
+endif()
+
 
 add_subdirectory(common)
 add_subdirectory(core)

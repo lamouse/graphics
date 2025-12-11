@@ -7,6 +7,7 @@ add_executable(${PROGRAM_NAME} ${sources})
 target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_SDL)
 
 add_dependencies(${PROGRAM_NAME} copy_fonts)
+
 # target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_GLFW)
 target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core resource)
 target_link_libraries(${PROGRAM_NAME} PRIVATE glfw spdlog::spdlog)
@@ -17,8 +18,8 @@ target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 
 add_custom_command(TARGET graphics POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:${PROGRAM_NAME}>
-            $<TARGET_FILE_DIR:${PROGRAM_NAME}>
+    $<TARGET_RUNTIME_DLLS:${PROGRAM_NAME}>
+    $<TARGET_FILE_DIR:${PROGRAM_NAME}>
     COMMAND_EXPAND_LISTS
 )
 

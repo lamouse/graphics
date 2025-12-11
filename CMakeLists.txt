@@ -5,6 +5,11 @@ if(WIN32)
         endif()
 endif()
 
+if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
+        set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install)
+        list(APPEND VCPKG_MANIFEST_FEATURES "classic-dependencies")
+endif()
+
 cmake_minimum_required(VERSION 4.0)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(graphics)
@@ -21,14 +26,15 @@ endif()
 
 if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
         if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
-                set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-                option(VCPKG_MANIFEST_MODE "")
-                include("${CMAKE_TOOLCHAIN_FILE}")
+                # option(VCPKG_MANIFEST_MODE "")
+                set(VCPKG_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+                include("${VCPKG_TOOLCHAIN_FILE}")
         endif()
 endif()
 
 if(MSVC)
         add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)
+
         # boost still makes use of deprecated result_of.
         add_definitions(-D_HAS_DEPRECATED_RESULT_OF)
 else()
@@ -57,6 +63,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 
 find_package(spirv-cross CONFIG QUIET)
+
 if(NOT spirv-cross_FOUND)
         find_package(spirv_cross_core CONFIG REQUIRED)
         find_package(spirv_cross_glsl CONFIG REQUIRED)

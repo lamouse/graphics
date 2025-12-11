@@ -1,0 +1,17 @@
+{
+  "default-registry": {
+    "kind": "git",
+    "repository": "https://ghfast.top/https://github.com/Microsoft/vcpkg",
+    "baseline": "4bb07a326d9b9bce3703272a509e5bc25dd9cfd5"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://ghfast.top/https://github.com/Microsoft/vcpkg",
+      "baseline": "fef715db0cad13d7db3a29797969a57b44e73531",
+      "packages": [
+        "embree*"
+      ]
+    }
+  ]
+}

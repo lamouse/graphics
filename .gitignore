@@ -4,6 +4,8 @@ build/
 build-*/
 cmake-build/
 cmake-build*/
+.vcpkg_install/
+vcpkg_install/
 # MacOS Cache
 .DS_Store
 
