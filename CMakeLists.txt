@@ -34,7 +34,7 @@ endif()
 
 if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
         if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
-                # option(VCPKG_MANIFEST_MODE "")
+                option(VCPKG_MANIFEST_MODE "")
                 set(VCPKG_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
                 include("${VCPKG_TOOLCHAIN_FILE}")
         endif()
