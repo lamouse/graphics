@@ -45,6 +45,7 @@ if(MSVC)
 
         # boost still makes use of deprecated result_of.
         add_definitions(-D_HAS_DEPRECATED_RESULT_OF)
+        set(CMAKE_CXX_STANDARD 23)
 else()
         set(CMAKE_CXX_STANDARD 26)
         set(CMAKE_CXX_STANDARD_REQUIRED ON)
