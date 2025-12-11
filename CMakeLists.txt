@@ -6,7 +6,15 @@ if(WIN32)
 endif()
 
 if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
-        set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install)
+        if(CMAKE_CXX_COMPILER MATCHES "cl.exe")
+                set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/MSVC)
+        elseif(CMAKE_CXX_COMPILER MATCHES "clang")
+                set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/Clang)
+        else()
+                set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install)
+        endif()
+
+        # set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions" CACHE STRING "vcpkg install options" FORCE)
         list(APPEND VCPKG_MANIFEST_FEATURES "classic-dependencies")
 endif()
 
