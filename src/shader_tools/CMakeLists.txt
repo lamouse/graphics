@@ -43,7 +43,11 @@ else()
     target_link_libraries(${LIB_NAME} PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl)
 endif()
 
-target_link_libraries(${LIB_NAME} PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
+if(TARGET glslang::_glslang-do-not-use)
+    target_link_libraries(${LIB_NAME} PRIVATE glslang::_glslang-do-not-use)
+else()
+    target_link_libraries(${LIB_NAME} PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
+endif()
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
