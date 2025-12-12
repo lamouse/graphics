@@ -7,6 +7,7 @@ set_property(DIRECTORY APPEND PROPERTY
 
 if(WIN32)
     add_compile_definitions(NOMINMAX)
+    add_compile_definitions(SPDLOG_WCHAR_TO_UTF8_SUPPORT)
 endif()
 
 if(LINUX)

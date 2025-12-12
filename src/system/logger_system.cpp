@@ -6,6 +6,7 @@
 #include "utils/log_util.hpp"
 #include "common/settings.hpp"
 #include <memory>
+#include <filesystem>
 namespace sys {
 
 LoggerSystem::LoggerSystem()
@@ -26,9 +27,10 @@ LoggerSystem::LoggerSystem()
         sinks.push_back(console_sink);
     }
     if (settings::values.log_file.GetValue()) {
+        auto log_path = std::filesystem::path("logs/graphics.log");
         // 创建文件接收器
         auto file_sink =
-            std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/graphics.log", true);
+            std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path.string(), true);
         file_sink->set_level(log_level_);
         file_sink->set_pattern(file_patten);
         sinks.push_back(file_sink);
