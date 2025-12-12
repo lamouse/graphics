@@ -108,7 +108,7 @@ void App::run() {
                 const auto [down, first] = e->mouseLeftButtonDown();
                 if (down && first) {
                     auto pick = PickingSystem::pick(camera, e->mouseX_, e->mouseY_,
-                                                    frameInfo.window_width, frameInfo.window_hight);
+                                                    static_cast<float>(frameInfo.window_width), static_cast<float>(frameInfo.window_hight));
                     if (pick) {
                         spdlog::debug("pick id{}", pick->id);
                         world.pick(pick->id);

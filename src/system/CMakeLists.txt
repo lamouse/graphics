@@ -25,8 +25,8 @@ add_library(${LIB_NAME} STATIC)
 
 # 添加模块文件 (CXX_MODULES) - 这是解决你错误的关键！
 # target_sources(${LIB_NAME} PUBLIC
-# FILE_SET CXX_MODULES
-# FILES ${MODULE_FILES}   # 这里传入 setting.cppm
+#     FILE_SET CXX_MODULES
+#     FILES ${MODULE_FILES} # 这里传入 setting.cppm
 # )
 
 # 添加头文件 (HEADERS) - 可选，主要用于 IDE 显示

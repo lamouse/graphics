@@ -7,6 +7,7 @@
 #include "common/settings.hpp"
 #include <memory>
 #include <filesystem>
+
 namespace sys {
 
 LoggerSystem::LoggerSystem()
