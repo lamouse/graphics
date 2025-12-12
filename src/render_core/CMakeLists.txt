@@ -39,11 +39,6 @@ else()
     target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers)
 endif()
 
-if(TARGET GOOGLE::farmhash)
-    target_link_libraries(${LIB_NAME} PRIVATE GOOGLE::farmhash)
-else()
-    target_link_libraries(${LIB_NAME} PRIVATE farmhash::farmhash)
-endif()
 
 target_link_libraries(${LIB_NAME} PRIVATE xxHash::xxhash KTX::ktx)
 

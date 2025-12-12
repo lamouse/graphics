@@ -26,7 +26,6 @@ class GraphicsConan(ConanFile):
         self.requires("sdl/3.2.20")
         self.requires("spdlog/1.16.0")
         self.requires("fmt/12.1.0", override = True)
-        self.requires("farmhash/cci.20190513")
         self.requires("entt/3.15.0")
         self.requires("abseil/20250814.0")
         self.requires("vulkan-headers/1.4.313.0")

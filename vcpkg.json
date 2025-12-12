@@ -15,7 +15,6 @@
         "boost-container",
         "glslang",
         "spirv-cross",
-        "farmhash",
         "vulkan-memory-allocator",
         "vulkan-utility-libraries",
         "xxhash",
