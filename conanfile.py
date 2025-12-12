@@ -12,6 +12,7 @@ class GraphicsConan(ConanFile):
     def configure(self):
         if self.settings.compiler == "msvc":
             self.settings.compiler.runtime = "dynamic"  # 统一到 /MD
+            self.settings.compiler.cppstd = None        #忽略msvc cppstd
 
     def requirements(self):
         self.requires("stb/cci.20230920")
