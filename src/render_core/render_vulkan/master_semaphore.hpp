@@ -1,5 +1,4 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include <thread>
 #include <mutex>
 #include <condition_variable>

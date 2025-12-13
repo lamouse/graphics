@@ -1,6 +1,6 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include "common/common_funcs.hpp"
+#include <vector>
 namespace render::vulkan {
 namespace semaphore {
 class MasterSemaphore;

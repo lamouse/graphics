@@ -1,5 +1,4 @@
 #include "command_pool.hpp"
-#include <vulkan/vulkan.hpp>
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/device.hpp"
 #include "master_semaphore.hpp"

@@ -6,7 +6,6 @@
 #include "common/common_types.hpp"
 #include "render_core/vulkan_common/device.hpp"
 #include "common/common_funcs.hpp"
-#include <vulkan/vulkan.h>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 
 VK_DEFINE_HANDLE(VmaAllocator)

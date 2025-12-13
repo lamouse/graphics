@@ -1,5 +1,4 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include <stop_token>
 #include <queue>
 #include <condition_variable>

@@ -1,5 +1,4 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include "render_core/render_vulkan/resource_pool.hpp"
 #include "common/common_funcs.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"

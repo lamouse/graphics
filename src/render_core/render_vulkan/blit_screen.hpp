@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
 #include "render_core/framebufferConfig.hpp"

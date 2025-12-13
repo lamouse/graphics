@@ -1,5 +1,6 @@
 #pragma once
 #include "resource_pool.hpp"
+#include <vulkan/vulkan.hpp>
 namespace render::vulkan {
 class Device;
 namespace semaphore {
