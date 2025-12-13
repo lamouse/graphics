@@ -46,7 +46,7 @@ endif()
 if(TARGET glslang::_glslang-do-not-use)
     target_link_libraries(${LIB_NAME} PRIVATE glslang::_glslang-do-not-use)
 else()
-    target_link_libraries(${LIB_NAME} PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper)
+    target_link_libraries(${LIB_NAME} PRIVATE glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV)
 endif()
 
 # 设置动态库/静态库生成路径

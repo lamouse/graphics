@@ -1,6 +1,6 @@
 set(sources
     imguizmo_config.h
-    imguizmo_quat.cpp
+    # imguizmo_quat.cpp
     imguizmo_quat.h
     imGuIZMOquat.cpp
     imGuIZMOquat.h
