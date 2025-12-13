@@ -1,6 +1,5 @@
 #pragma once
 #include <algorithm>
-#include <vulkan/vulkan.hpp>
 #include "buffer_cache.h"
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
