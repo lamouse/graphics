@@ -79,8 +79,6 @@ set(sources
     render_vulkan/present/vulkan_utils.hpp
     render_vulkan/present/window_adapt_pass.cpp
     render_vulkan/present/window_adapt_pass.hpp
-    texture/accelerated_swizzle.cpp
-    texture/accelerated_swizzle.h
     texture/formatter.cpp
     texture/formatter.h
     texture/image_info.hpp

@@ -1008,7 +1008,6 @@ auto Device::computeIsOptimalAstcSupported() const -> bool {
         return (physical_format_properties.optimalTilingFeatures & format_feature_usage) ==
                format_feature_usage;
     });
-    return true;
 }
 
 auto Device::isFormatSupported(vk::Format wanted_format, vk::FormatFeatureFlags wanted_usage,
