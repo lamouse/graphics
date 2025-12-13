@@ -45,18 +45,9 @@ if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
         endif()
 endif()
 
-if(MSVC)
-        add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/std:c++latest>)
-
-        # boost still makes use of deprecated result_of.
-        add_definitions(-D_HAS_DEPRECATED_RESULT_OF)
-        set(CMAKE_CXX_STANDARD 23)
-        set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-        set(CMAKE_CXX_STANDARD 26)
-        set(CMAKE_CXX_STANDARD_REQUIRED ON)
-        set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(TRACY_ENABLE "Enable Tracy profiling support" ON)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)
