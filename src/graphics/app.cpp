@@ -186,7 +186,7 @@ void App::load_resource() {
                                glm::vec3{1.f, 1.f, 1.f}};
     for (auto& light_color : light_colors) {
         auto point_light = std::make_shared<effects::PointLightEffect>(
-            resourceManager, frame_layout, 1, .04f, light_color);
+            resourceManager, frame_layout, 1.f, .04f, light_color);
         registry.add(point_light);
     }
 

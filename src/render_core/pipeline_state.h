@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
+#ifdef _MSC_VER
+#pragma warning(disable:4201)
+#endif
 
 #include <array>
 #include <type_traits>
