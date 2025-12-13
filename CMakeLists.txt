@@ -14,7 +14,6 @@ if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
                 set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/GNU)
         endif()
 
-        # set(VCPKG_INSTALL_OPTIONS "--x-abi-tools-use-exact-versions" CACHE STRING "vcpkg install options" FORCE)
         list(APPEND VCPKG_MANIFEST_FEATURES "classic-dependencies")
 endif()
 
