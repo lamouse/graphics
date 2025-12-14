@@ -396,7 +396,7 @@ auto Model::createFromFile(const ::std::string& model_path, std::uint64_t obj_ha
     const aiScene* scene = importer.ReadFile(model_path, importer_flag);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
         scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
-        throw std::runtime_error("load empty model");
+        throw std::runtime_error("load model fail: " + std::string(importer.GetErrorString()));
     }
     Model model = loadModelFromAssimpScene(scene);
     std::string cache_path = model_cache_path + std::to_string(obj_hash) + model_cache_extend;
@@ -432,7 +432,7 @@ MultiMeshModel::MultiMeshModel(std::string_view path, uint64_t file_hash_, bool 
         std::string(path), flip_uv ? FLIP_UV_ULT_ASSIMP_LOAD_FLAGS : DEFAULT_ULT_ASSIMP_LOAD_FLAGS);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
         scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
-        throw std::runtime_error("load empty model");
+        throw std::runtime_error("load model fail: " + std::string(importer.GetErrorString()));
     }
     processNode(scene->mRootNode, scene);
 }
