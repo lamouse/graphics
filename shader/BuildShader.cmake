@@ -1,5 +1,7 @@
 
 set(SHADER_FILES
+    animation.frag
+    animation.vert
     model.frag
     model.vert
     particle.comp
