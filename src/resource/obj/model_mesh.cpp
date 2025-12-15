@@ -64,17 +64,17 @@ void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
     // 写入数据
     if (vcount > 0) {
         file.write(reinterpret_cast<const char*>(model.vertices_.data()),
-                   sizeof(graphics::Model::Vertex) * vcount);
+                   static_cast<long long>(sizeof(graphics::Model::Vertex) * vcount));
     }
     if (icount > 0) {
-        file.write(reinterpret_cast<const char*>(model.indices_.data()), sizeof(uint32_t) * icount);
+        file.write(reinterpret_cast<const char*>(model.indices_.data()), static_cast<long long>(sizeof(uint32_t) * icount));
     }
     if (ocount > 0) {
         file.write(reinterpret_cast<const char*>(model.only_vertex.data()),
-                   sizeof(glm::vec3) * ocount);
+                   static_cast<long long>(sizeof(glm::vec3) * ocount));
     }
 
-    // 写入 submeshes
+    // 写入 sub meshes
     for (const auto& sub : model.subMeshes) {
         file.write(reinterpret_cast<const char*>(&sub.indexOffset), sizeof(sub.indexOffset));
         file.write(reinterpret_cast<const char*>(&sub.indexCount), sizeof(sub.indexCount));
@@ -121,9 +121,9 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
     std::vector<glm::vec3> only_vertices(onlyVertexCount);
 
     file.read(reinterpret_cast<char*>(vertices.data()),
-              sizeof(graphics::Model::Vertex) * vertexCount);
-    file.read(reinterpret_cast<char*>(indices.data()), sizeof(uint32_t) * indexCount);
-    file.read(reinterpret_cast<char*>(only_vertices.data()), sizeof(glm::vec3) * onlyVertexCount);
+              static_cast<long long>(sizeof(graphics::Model::Vertex) * vertexCount));
+    file.read(reinterpret_cast<char*>(indices.data()), static_cast<long long>(sizeof(uint32_t) * indexCount));
+    file.read(reinterpret_cast<char*>(only_vertices.data()), static_cast<long long>(sizeof(glm::vec3) * onlyVertexCount));
 
     // 读取所有 SubMesh
     std::vector<graphics::SubMesh> subMeshes;
