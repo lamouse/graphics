@@ -37,4 +37,14 @@ auto read_string_vector(std::istream& is, std::vector<std::string>& vec) -> bool
     return true;
 };
 
+auto make_vertex_attribute(u32 location, render::VertexAttribute::Type type, u32 offset, render::VertexAttribute::Size size) -> render::VertexAttribute{
+    render::VertexAttribute attribute{};
+    attribute.hex = 0;
+    attribute.location.Assign(location);
+    attribute.type.Assign(type);
+    attribute.offset.Assign(offset);
+    attribute.size.Assign(size);
+    return attribute;
+}
+
 }  // namespace graphics

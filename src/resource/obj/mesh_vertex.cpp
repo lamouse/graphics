@@ -1,4 +1,5 @@
 #include "resource/obj/mesh_vertex.hpp"
+#include "resource/obj/mesh_util.hpp"
 namespace graphics {
 auto Vertex::getVertexBinding() -> std::vector<render::VertexBinding> {
     std::vector<render::VertexBinding> bindings;
@@ -9,38 +10,20 @@ auto Vertex::getVertexBinding() -> std::vector<render::VertexBinding> {
 
 auto Vertex::getVertexAttribute() -> std::vector<render::VertexAttribute> {
     std::vector<render::VertexAttribute> vertex_attributes;
+    u32 location{};
+    vertex_attributes.push_back(make_vertex_attribute(
+        location++, render::VertexAttribute::Type::Float, offsetof(Vertex, position),
+        render::VertexAttribute::Size::R32_G32_B32));
+    vertex_attributes.push_back(
+        make_vertex_attribute(location++, render::VertexAttribute::Type::Float,
+                              offsetof(Vertex, color), render::VertexAttribute::Size::R32_G32_B32));
+    vertex_attributes.push_back(make_vertex_attribute(
+        location++, render::VertexAttribute::Type::Float, offsetof(Vertex, normal),
+        render::VertexAttribute::Size::R32_G32_B32));
+    vertex_attributes.push_back(
+        make_vertex_attribute(location++, render::VertexAttribute::Type::Float,
+                              offsetof(Vertex, texCoord), render::VertexAttribute::Size::R32_G32));
 
-    render::VertexAttribute position{};
-    position.hex = 0;
-    position.location.Assign(0);
-    position.type.Assign(render::VertexAttribute::Type::Float);
-    position.offset.Assign(offsetof(Vertex, position));
-    position.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
-    vertex_attributes.push_back(position);
-
-    render::VertexAttribute color{};
-    color.hex = 0;
-    color.location.Assign(1);
-    color.type.Assign(render::VertexAttribute::Type::Float);
-    color.offset.Assign(offsetof(Vertex, color));
-    color.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
-    vertex_attributes.push_back(color);
-
-    render::VertexAttribute normal{};
-    normal.hex = 0;
-    normal.location.Assign(2);
-    normal.type.Assign(render::VertexAttribute::Type::Float);
-    normal.offset.Assign(offsetof(Vertex, normal));
-    normal.size.Assign(render::VertexAttribute::Size::R32_G32_B32);
-    vertex_attributes.push_back(normal);
-
-    render::VertexAttribute texCoord{};
-    texCoord.hex = 0;
-    texCoord.location.Assign(3);
-    texCoord.type.Assign(render::VertexAttribute::Type::Float);
-    texCoord.offset.Assign(offsetof(Vertex, texCoord));
-    texCoord.size.Assign(render::VertexAttribute::Size::R32_G32);
-    vertex_attributes.push_back(texCoord);
     return vertex_attributes;
 }
 
