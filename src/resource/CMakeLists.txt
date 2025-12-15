@@ -1,26 +1,6 @@
 
 set(LIB_RESOURCE_NAME resource)
-
-set (sources
-    id.hpp
-    id.cpp
-    instance.hpp
-    instance.cpp
-    texture/image.hpp
-    texture/image.cpp
-    texture/ktx_image.hpp
-    texture/ktx_image.cpp
-    obj/mesh.hpp
-    obj/model_mesh.hpp
-    obj/model_mesh.cpp
-    obj/particle.hpp
-    obj/particle.cpp
-    shader/shader.hpp
-    shader/shader.cpp
-    mesh_instance.hpp
-    resource.hpp
-    resource.cpp
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/resource.cmake)
 
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 add_dependencies(${LIB_RESOURCE_NAME} build_shaders)

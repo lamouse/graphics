@@ -1,0 +1,31 @@
+set(sources
+    id.hpp
+    id.cpp
+    instance.hpp
+    instance.cpp
+    texture/image.hpp
+    texture/image.cpp
+    texture/ktx_image.hpp
+    texture/ktx_image.cpp
+    obj/animal_vertex.hpp
+    obj/animation_model.hpp
+    obj/animation_model.cpp
+    obj/animation.hpp
+    obj/animation.cpp
+    obj/assimp_glm_helpers.hpp
+    obj/bone.hpp
+    obj/bone.cpp
+    obj/mesh_material.hpp
+    obj/mesh_util.hpp
+    obj/mesh_util.cpp
+    obj/mesh.hpp
+    obj/model_mesh.hpp
+    obj/model_mesh.cpp
+    obj/particle.hpp
+    obj/particle.cpp
+    shader/shader.hpp
+    shader/shader.cpp
+    mesh_instance.hpp
+    resource.hpp
+    resource.cpp
+)
