@@ -16,6 +16,7 @@ set(sources
     obj/bone.hpp
     obj/bone.cpp
     obj/mesh_material.hpp
+    obj/mesh_material.cpp
     obj/mesh_util.hpp
     obj/mesh_util.cpp
     obj/mesh.hpp
