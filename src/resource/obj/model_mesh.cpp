@@ -64,7 +64,7 @@ void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
     // 写入数据
     if (vcount > 0) {
         file.write(reinterpret_cast<const char*>(model.vertices_.data()),
-                   static_cast<long long>(sizeof(graphics::Model::Vertex) * vcount));
+                   static_cast<long long>(sizeof(graphics::Vertex) * vcount));
     }
     if (icount > 0) {
         file.write(reinterpret_cast<const char*>(model.indices_.data()), static_cast<long long>(sizeof(uint32_t) * icount));
@@ -116,12 +116,12 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
     file.read(reinterpret_cast<char*>(&onlyVertexCount), sizeof(onlyVertexCount));
 
     // 读取数据
-    std::vector<graphics::Model::Vertex> vertices(vertexCount);
+    std::vector<graphics::Vertex> vertices(vertexCount);
     std::vector<uint32_t> indices(indexCount);
     std::vector<glm::vec3> only_vertices(onlyVertexCount);
 
     file.read(reinterpret_cast<char*>(vertices.data()),
-              static_cast<long long>(sizeof(graphics::Model::Vertex) * vertexCount));
+              static_cast<long long>(sizeof(graphics::Vertex) * vertexCount));
     file.read(reinterpret_cast<char*>(indices.data()), static_cast<long long>(sizeof(uint32_t) * indexCount));
     file.read(reinterpret_cast<char*>(only_vertices.data()), static_cast<long long>(sizeof(glm::vec3) * onlyVertexCount));
 
@@ -249,7 +249,7 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 
         // === 1. 加载顶点 ===
         for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
-            graphics::Model::Vertex v{};
+            graphics::Vertex v{};
 
             // Position
             const aiVector3D& pos = mesh->mVertices[j];
@@ -408,7 +408,7 @@ auto Model::createFromFile(const ::std::string& model_path, std::uint64_t obj_ha
 // 返回顶点坐标（仅 position），展平为 float 数组
 [[nodiscard]] auto Model::getMesh() const -> std::span<const float> {
     return std::span<const float>(reinterpret_cast<const float*>(vertices_.data()),
-                                  vertices_.size() * sizeof(Model::Vertex) / sizeof(float));
+                                  vertices_.size() * sizeof(Vertex) / sizeof(float));
 }
 
 auto Model::getIndices() const -> std::span<const std::byte> {
@@ -467,7 +467,7 @@ void MultiMeshModel::processMesh(aiMesh* mesh, const aiScene* scene) {
 
     // 处理顶点
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-        Model::Vertex vertex{};
+        Vertex vertex{};
 
         // 位置
         const aiVector3D& pos = mesh->mVertices[i];

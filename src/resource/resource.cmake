@@ -19,6 +19,8 @@ set(sources
     obj/mesh_material.cpp
     obj/mesh_util.hpp
     obj/mesh_util.cpp
+    obj/mesh_vertex.hpp
+    obj/mesh_vertex.cpp
     obj/mesh.hpp
     obj/model_mesh.hpp
     obj/model_mesh.cpp
