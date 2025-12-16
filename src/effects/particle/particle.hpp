@@ -10,6 +10,7 @@
 #include "effects/effect.hpp"
 #include "core/frame_info.hpp"
 #include "common/common_funcs.hpp"
+#include "world/world.hpp"
 const uint32_t PARTICLE_COUNT = 8192;
 
 constexpr const char* particle_shader_name = "particle";
@@ -59,7 +60,7 @@ class Particle : public render::IComputeInstance {
             workgroup_size = {group_x, 1, 1};
         }
 
-        void update(const core::FrameInfo& frame) {}
+        void update(const core::FrameInfo& frame, world::World& world) {}
         void draw(render::Graphic* graphics) {
             graphics->dispatchCompute(*this);
             std::swap(compute_mesh.at(0), compute_mesh.at(1));

@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "SDL_common.hpp"
 #include "imgui_impl_sdl3.h"
+#include <imgui.h>
 namespace graphics {
 SDLWindow::SDLWindow(int width, int height, std::string_view title) {
     core::frontend::BaseWindow::WindowConfig conf;
@@ -144,6 +145,9 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
 
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
+        if(ImGui::GetIO().WantCaptureMouse){
+            return;
+        }
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {
             should_close_ = true;

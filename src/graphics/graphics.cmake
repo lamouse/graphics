@@ -14,4 +14,8 @@ set(sources
     gui.hpp
     gui.cpp
     main.cpp
+    QT_common.hpp
+    QT_common.cpp
+    QT_window.hpp
+    QT_window.cpp
 )
