@@ -1,4 +1,5 @@
 #pragma once
+#include <assimp/scene.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <ostream>
@@ -43,4 +44,6 @@ struct MeshMaterial {
         // ----------------------------
         [[nodiscard]] auto deserialize(std::istream& is) -> bool;
 };
+
+auto loadMaterial(const aiScene* scene, const aiMesh* mesh) -> MeshMaterial;
 }

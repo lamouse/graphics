@@ -84,17 +84,6 @@ void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
     }
 }
 
-auto getTexturePath(aiMaterial* mat, aiTextureType type) -> std::vector<std::string> {
-    std::vector<std::string> paths;
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
-        aiString str;
-        if (mat->GetTexture(type, i, &str) == AI_SUCCESS) {
-            paths.emplace_back(str.C_Str());
-        }
-    }
-    return paths;
-}
-
 auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Model> {
     auto cachePath = std::string(model_cache_path) + std::to_string(file_hash) + model_cache_extend;
     std::ifstream file(cachePath, std::ios::binary);
@@ -149,91 +138,6 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
     return std::move(model);
 }
 
-auto loadMaterial(const aiScene* scene, const aiMesh* mesh) -> graphics::MeshMaterial {
-    graphics::MeshMaterial mat{};
-    if (scene->HasMaterials() && mesh->mMaterialIndex < scene->mNumMaterials) {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-        // 名称
-        aiString name;
-        if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
-            mat.name = name.C_Str();
-        }
-
-        // 颜色
-        aiColor3D ka(1.f, 1.f, 1.f), kd(1.f, 1.f, 1.f), ks(1.f, 1.f, 1.f), ke(0.f, 0.f, 0.f);
-        if (material->Get(AI_MATKEY_COLOR_AMBIENT, ka) == AI_SUCCESS && !ka.IsBlack()) {
-            mat.ambientColor = {ka.r, ka.g, ka.b};
-        };
-
-        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, kd) == AI_SUCCESS && !kd.IsBlack()) {
-            mat.diffuseColor = {kd.r, kd.g, kd.b};
-        }
-        if (material->Get(AI_MATKEY_COLOR_SPECULAR, ks) == AI_SUCCESS && !ks.IsBlack()) {
-            mat.specularColor = {ks.r, ks.g, ks.b};
-        }
-
-        if (material->Get(AI_MATKEY_COLOR_EMISSIVE, ke) == AI_SUCCESS && !ke.IsBlack()) {
-            mat.emissiveColor = {ke.r, ke.g, ke.b};
-        }
-        // 标量
-        ai_real shininess = NAN;
-        if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS && !std::isnan(shininess)) {
-            if (shininess > .0f) {
-                mat.shininess = shininess;
-            }
-        }
-
-        ai_real opacity = NAN;
-        if (material->Get(AI_MATKEY_OPACITY, opacity) == AI_SUCCESS && !std::isnan(opacity)) {
-            mat.opacity = opacity;
-        }
-        ai_real ior = NAN;
-        if (material->Get(AI_MATKEY_REFRACTI, ior) == AI_SUCCESS && !std::isnan(ior)) {
-            mat.ior = ior;
-        }
-
-        ai_real value = NAN;
-        if (material->Get(AI_MATKEY_METALLIC_FACTOR, value) == AI_SUCCESS && !std::isnan(value)) {
-            mat.metallic = static_cast<float>(value);
-        }
-
-        ai_real roughness_value = NAN;
-        if (material->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness_value) == AI_SUCCESS &&
-            !std::isnan(roughness_value)) {
-            mat.roughness = static_cast<float>(roughness_value);
-        }
-
-        // 纹理
-        mat.ambientTextures = getTexturePath(material, aiTextureType_AMBIENT);
-        mat.diffuseTextures = getTexturePath(material, aiTextureType_DIFFUSE);
-        mat.specularTextures = getTexturePath(material, aiTextureType_SPECULAR);
-        mat.heightTextures = getTexturePath(material, aiTextureType_HEIGHT);
-        mat.normalTextures = getTexturePath(material, aiTextureType_NORMALS);
-        if (mat.normalTextures.empty()) {
-            mat.normalTextures = mat.heightTextures;
-        }
-        mat.emissiveTextures = getTexturePath(material, aiTextureType_EMISSIVE);
-
-        // ========== PBR 贴图（Assimp 5.0+ 支持）==========
-
-        // Albedo (Base Color) —— PBR 中的 diffuse 替代
-        mat.albedoTextures = getTexturePath(material, aiTextureType_BASE_COLOR);
-        if (mat.albedoTextures.empty()) {
-            mat.albedoTextures = mat.diffuseTextures;
-        }
-        // Metallic
-        mat.metallicTextures = getTexturePath(material, aiTextureType_METALNESS);
-        // Roughness
-        mat.metallicRoughnessTextures = getTexturePath(material, aiTextureType_DIFFUSE_ROUGHNESS);
-
-        mat.aoTextures = getTexturePath(material, aiTextureType_AMBIENT_OCCLUSION);
-        if (mat.aoTextures.empty()) {
-            mat.aoTextures = mat.ambientTextures;
-        }
-    }
-    return mat;
-}
 
 auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
     graphics::Model model;
@@ -301,11 +205,12 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
             meshIndexCount += face.mNumIndices;
         }
 
+
         // === 3. 创建 SubMesh ===
         graphics::SubMesh sub{.indexOffset = indexOffset,
                               .indexCount = meshIndexCount,
                               .primitiveTopology = topology,
-                              .material = loadMaterial(scene, mesh)};
+                              .material = graphics::loadMaterial(scene, mesh)};
         model.subMeshes.push_back(sub);
 
         // === 5. 更新偏移 ===
