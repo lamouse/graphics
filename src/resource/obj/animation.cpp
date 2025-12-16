@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <stack>
 namespace graphics::animation {
-Animation::Animation(std::string_view animationPath) {
+Animation::Animation(std::string_view animationPath, Model* model) {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(animationPath.data(), aiProcess_Triangulate);
     if (!scene || !scene->HasMeshes() || !scene->mRootNode ||
@@ -18,15 +18,32 @@ Animation::Animation(std::string_view animationPath) {
     ticks_per_second = static_cast<int>(animation->mTicksPerSecond);
     aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
     globalTransformation = globalTransformation.Inverse();
+    readHierarchyData(root_node_, scene->mRootNode);
+    readMissingBones(animation, *model);
 }
 
-void Animation::readMissingBones(const aiAnimation* animation) {}
-void Animation::readHierarchyData(AssimpNodeDate& rootDest, const aiNode* rootSrc) {
+void Animation::readMissingBones(const aiAnimation* animation,  Model& model) {
+    unsigned int size = animation->mNumChannels;
+    auto& bone_info_map =  model.getBoneInfoMap();
+    auto& bone_count = model.getBoneCount();
+    for(unsigned int i = 0; i < size; i++){
+        auto* channel = animation->mChannels[i];
+        std::string boneName = channel->mNodeName.C_Str();
+        if(auto bone_info = bone_info_map.find(boneName); bone_info != bone_info_map.end()){
+            bone_info->second.id = bone_count;
+            bone_count++;
+        }
+        bones_.emplace_back(channel->mNodeName.C_Str(), bone_info_map[channel->mNodeName.C_Str()].id, channel);
+    }
+    boneInfoMap_ = bone_info_map;
+
+}
+void Animation::readHierarchyData(AssimpNodeData& rootDest, const aiNode* rootSrc) {
     assert(rootSrc);
 
     // 映射关系：srcNode -> destNode 指针
     struct NodePair {
-            AssimpNodeDate* dest;
+            AssimpNodeData* dest;
             const aiNode* src;
     };
 
@@ -41,14 +58,14 @@ void Animation::readHierarchyData(AssimpNodeDate& rootDest, const aiNode* rootSr
         NodePair current = stack.top();
         stack.pop();
 
-        AssimpNodeDate* dest = current.dest;
+        AssimpNodeData* dest = current.dest;
         const aiNode* src = current.src;
         dest->childrenCount = static_cast<int>(src->mNumChildren);
         dest->children.reserve(dest->childrenCount);
 
         for (unsigned int i = 0; i < src->mNumChildren; ++i) {
             const aiNode* childSrc = src->mChildren[i];
-            AssimpNodeDate childDest;
+            AssimpNodeData childDest;
             childDest.name = childSrc->mName.C_Str();
             childDest.transformation = AssimpGLMHelpers::convert(childSrc->mTransformation);
             dest->children.push_back(std::move(childDest));

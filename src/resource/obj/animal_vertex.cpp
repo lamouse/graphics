@@ -5,7 +5,7 @@ namespace graphics::animation {
 auto Vertex::operator==(const Vertex& other) const -> bool {
     return position == other.position && texCoords == other.texCoords && normal == other.normal &&
            tangent == other.tangent && bitangent == other.bitangent &&
-           (std::memcmp(boneIDS, other.boneIDS, sizeof(boneIDS)) == 0);  // NOLINT
+           (std::memcmp(boneIDs, other.boneIDs, sizeof(boneIDs)) == 0);  // NOLINT
 }
 
 auto Vertex::getVertexBinding() -> std::vector<render::VertexBinding> {
@@ -38,7 +38,7 @@ auto Vertex::getVertexAttribute() -> std::vector<render::VertexAttribute> {
         render::VertexAttribute::Size::R32_G32_B32));
 
     vertex_attributes.push_back(make_vertex_attribute(
-        location++, render::VertexAttribute::Type::SInt, offsetof(Vertex, boneIDS),
+        location++, render::VertexAttribute::Type::SInt, offsetof(Vertex, boneIDs),
         render::VertexAttribute::Size::R32_G32_B32_A32));
 
     vertex_attributes.push_back(make_vertex_attribute(

@@ -1,4 +1,5 @@
 #include "resource/obj/animation_model.hpp"
+#include "resource/obj/assimp_glm_helpers.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -39,10 +40,57 @@ void Model::processNode(aiNode* root_node, const aiScene* scene) {
     }
 }
 
-auto Model::processMesh(aiMesh* mesh, const aiScene* scene) -> Mesh{
+void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     std::vector<Vertex> vertices;
+    std::vector<glm::vec3> positions;
+    vertices.reserve(mesh->mNumVertices);
     std::vector<std::uint32_t> indices;
-    MeshMaterial material;
+    MeshMaterial material = loadMaterial(scene, mesh);
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        Vertex vertex{};
+        vertex.position =
+            glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+        if (mesh->HasNormals()) {
+            vertex.normal =
+                glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
+        }
+        if (mesh->HasTextureCoords(0)) {
+            vertex.texCoords =
+                glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+        }
+        extract_bone_weight(vertices, mesh);
+        vertices.push_back(vertex);
+    }
+
+    meshes_.emplace_back(vertices, positions, indices, material);
+}
+
+void Model::extract_bone_weight(std::vector<graphics::animation::Vertex>& vertices, aiMesh* mesh) {
+    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {\
+        auto* bone = mesh->mBones[boneIndex];
+        int boneID = -1;
+        std::string boneName = bone->mName.C_Str();
+        const auto [pair, is_new] = bone_info_map_.try_emplace(boneName);
+        if(is_new){
+            BoneInfo newBoneInfo{};
+            newBoneInfo.id = bone_counter_;
+            newBoneInfo.offset = AssimpGLMHelpers::convert(bone->mOffsetMatrix);
+            pair->second = newBoneInfo;
+            boneID = bone_counter_;
+            bone_counter_++;
+        }else {
+            boneID = pair->second.id;
+        }
+        assert(boneID != -1);
+        auto* weights = bone->mWeights;
+        auto numWeights = bone->mNumWeights;
+        for(unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++){
+            unsigned int vertexId = weights[weightIndex].mVertexId;
+            float weight = weights[weightIndex].mWeight;
+            assert(vertexId <= vertices.size());
+            vertices[vertexId].setBone(boneID, weight);
+        }
+    }
 }
 
 }  // namespace graphics::animation

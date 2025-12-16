@@ -23,6 +23,7 @@ class Bone {
     public:
         Bone(std::string name, int id, const aiNodeAnim* channel);
         void update(float animationTime);
+        [[nodiscard]] auto Name() const -> std::string_view { return name_; }
 
     private:
         template <typename Container>
