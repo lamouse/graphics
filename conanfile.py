@@ -34,7 +34,7 @@ class GraphicsConan(ConanFile):
         self.requires("xxhash/0.8.3")
         self.requires("tracy/0.11.1")
         self.requires("ktx/4.3.2")
-        self.requires("qt/6.8.3")
+        self.requires("qt/6.8.3", options={"shared": True})
         self.requires("embree/4.4.0")
         self.requires("gtest/1.17.0")
 
