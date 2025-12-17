@@ -34,8 +34,7 @@ clang-format version 16.0.5
 
 ```text
 本项目优先使用vcpkg的包
-vcpkg安装ktx的时候需要注意windows11系统需要开启开发者模式并将区域设置中的使用Unicode打上对勾，
-但是这样对仅支持gbk的东西，需要注意
+vcpkg安装ktx的时候需要注意windows11系统需要开启开发者模式并将区域设置中的使用Unicode开启
 ```
 
  ## 代码规范

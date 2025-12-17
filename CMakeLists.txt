@@ -64,7 +64,7 @@ find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
 find_package(embree CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(Ktx CONFIG REQUIRED) # vcpkg install ktx --x-abi-tools-use-exact-versions
+find_package(Ktx CONFIG REQUIRED)
 
 # need vcpkg end
 add_subdirectory(third-party)
