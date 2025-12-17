@@ -28,9 +28,9 @@ class Bone {
     private:
         template <typename Container>
         auto index(float animationTime, const Container& keys) -> int {
-            for (int i = 0; i < keys.size() - 1; i++) {
+            for (unsigned int i = 0; i < keys.size() - 1; i++) {
                 if (animationTime < keys[i].timeStamp) {
-                    return i;
+                    return static_cast<int>(i);
                 }
             }
             assert(0);
