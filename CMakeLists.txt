@@ -1,25 +1,5 @@
-if(WIN32)
-        if(CMAKE_C_COMPILER MATCHES "gcc" OR CMAKE_CXX_COMPILER MATCHES ".*/g\\+\\+$")
-                message(STATUS "Compiler is MinGW GCC on Windows")
-                set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
-        endif()
-endif()
-
-option(VCPKG_MANIFEST_MODE "")
-
-if(VCPKG_MANIFEST_MODE)
-        if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
-                if(CMAKE_CXX_COMPILER MATCHES "cl.exe")
-                        set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/MSVC)
-                elseif(CMAKE_CXX_COMPILER MATCHES "clang")
-                        set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/Clang)
-                endif()
-
-                list(APPEND VCPKG_MANIFEST_FEATURES "classic-dependencies")
-        endif()
-endif()
-
 cmake_minimum_required(VERSION 4.0)
+include(${CMAKE_CURRENT_LIST_DIR}/CMakeModules/VcpkgConfig.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444") #开启这个需要设置CMAKE_CXX_MODULE_STD ON
@@ -36,13 +16,6 @@ CMAKE_DEPENDENT_OPTION(USE_FASTER_LD "Check if a faster linker is available" ON 
 
 if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
         message(FATAL_ERROR "This project requires the Ninja generator. Refers to https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html#generator-support")
-endif()
-
-if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
-        if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
-                set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-                include("${CMAKE_TOOLCHAIN_FILE}")
-        endif()
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
@@ -139,8 +112,8 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         endif()
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 include(ClangFormat)
 enable_testing()
 

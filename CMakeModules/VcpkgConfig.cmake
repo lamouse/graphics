@@ -1,0 +1,27 @@
+if(WIN32)
+        if(CMAKE_C_COMPILER MATCHES "gcc" OR CMAKE_CXX_COMPILER MATCHES ".*/g\\+\\+$")
+                message(STATUS "Compiler is MinGW GCC on Windows")
+                set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+        endif()
+endif()
+
+option(VCPKG_MANIFEST_MODE "")
+
+if(VCPKG_MANIFEST_MODE)
+        if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
+                if(CMAKE_CXX_COMPILER MATCHES "cl.exe")
+                        set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/MSVC)
+                elseif(CMAKE_CXX_COMPILER MATCHES "clang")
+                        set(VCPKG_INSTALLED_DIR ${CMAKE_CURRENT_LIST_DIR}/.vcpkg_install/Clang)
+                endif()
+
+                list(APPEND VCPKG_MANIFEST_FEATURES "classic-dependencies")
+        endif()
+endif()
+
+if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
+        if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
+                set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+                include("${CMAKE_TOOLCHAIN_FILE}")
+        endif()
+endif()

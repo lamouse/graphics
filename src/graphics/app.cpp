@@ -167,37 +167,37 @@ App::App()
 App::~App() = default;
 
 void App::load_resource() {
-    std::string viking_obj_path = "backpack";
-    std::string model_shader_name = "model";
-    std::string particle_shader = "particle";
-    std::string point_light_shader_name = "point_light";
+    // std::string viking_obj_path = "backpack";
+    // std::string model_shader_name = "model";
+    // std::string particle_shader = "particle";
+    // std::string point_light_shader_name = "point_light";
 
-    resourceManager.addGraphShader(model_shader_name);
-    resourceManager.addGraphShader(particle_shader);
-    resourceManager.addGraphShader(point_light_shader_name);
-    resourceManager.addComputeShader(particle_shader);
-    auto frame_layout = window->getFramebufferLayout();
+    // resourceManager.addGraphShader(model_shader_name);
+    // resourceManager.addGraphShader(particle_shader);
+    // resourceManager.addGraphShader(point_light_shader_name);
+    // resourceManager.addComputeShader(particle_shader);
+    // auto frame_layout = window->getFramebufferLayout();
 
-    ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};
+    // ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};
 
-    std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
-                               glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
-                               glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
-                               glm::vec3{1.f, 1.f, 1.f}};
-    for (auto& light_color : light_colors) {
-        auto point_light = std::make_shared<effects::PointLightEffect>(
-            resourceManager, frame_layout, 1.f, .04f, light_color);
-        registry.add(point_light);
-    }
+    // std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
+    //                            glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
+    //                            glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
+    //                            glm::vec3{1.f, 1.f, 1.f}};
+    // for (auto& light_color : light_colors) {
+    //     auto point_light = std::make_shared<effects::PointLightEffect>(
+    //         resourceManager, frame_layout, 1.f, .04f, light_color);
+    //     registry.add(point_light);
+    // }
 
     // auto delta_particle =
     //     std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
     // registry.add(delta_particle);
-    auto light_model =
-        std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
-    registry.add(light_model);
-    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
-    registry.add(sky_box);
+    // auto light_model =
+    //     std::make_shared<effects::LightModel>(resourceManager, frame_layout, names, "model");
+    // registry.add(light_model);
+    // auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
+    // registry.add(sky_box);
 }
 
 }  // namespace graphics
