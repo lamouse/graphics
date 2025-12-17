@@ -24,6 +24,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(TRACY_ENABLE "Enable Tracy profiling support" ON)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)
+option(USE_QT "use qt" OFF)
 
 # 设置可执行文件输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
@@ -39,11 +40,6 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
-
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets)
 
 find_package(spirv-cross CONFIG QUIET)
 
@@ -64,6 +60,13 @@ find_package(Tracy CONFIG REQUIRED)
 find_package(embree CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
+
+if(USE_QT)
+        set(CMAKE_AUTOUIC ON)
+        set(CMAKE_AUTOMOC ON)
+        set(CMAKE_AUTORCC ON)
+        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets)
+endif()
 
 # need vcpkg end
 add_subdirectory(third-party)
@@ -110,7 +113,6 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
                 add_link_options("-fuse-ld=lld")
         endif()
 endif()
-
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 include(ClangFormat)

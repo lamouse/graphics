@@ -5,17 +5,9 @@
 #include <QMainWindow>
 
 namespace graphics {
-class UIWindow : public QMainWindow {
-        Q_OBJECT
-    public:
-        UIWindow(QWidget* parent = nullptr);
-        void resizeEvent(QResizeEvent* event) override;
-        CLASS_NON_COPYABLE(UIWindow);
-        CLASS_NON_MOVEABLE(UIWindow);
-        ~UIWindow() override;
-};
 
-class QTWindow : public core::frontend::BaseWindow, public QMainWindow {
+class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
+        Q_OBJECT
     public:
         QTWindow(int width, int height, ::std::string_view title);
         [[nodiscard]] auto IsShown() const -> bool override;
@@ -27,14 +19,19 @@ class QTWindow : public core::frontend::BaseWindow, public QMainWindow {
         }
         void setWindowTitle(std::string_view title) override;
 
+        void resizeEvent(QResizeEvent* event) override;
+
         void configGUI() override {};
         void destroyGUI() override {};
-        void newFrame() override {};
+        void newFrame() override;
         void pullEvents(core::InputEvent& event) override;
+        void mousePressEvent(QMouseEvent* event) override;
+        void mouseReleaseEvent(QMouseEvent* event) override;
+        void mouseMoveEvent(QMouseEvent* event) override;
+        void wheelEvent(QWheelEvent* event) override;
         void setShouldClose() override;
 
     private:
-        UIWindow window_;
         bool should_close_;
 };
 

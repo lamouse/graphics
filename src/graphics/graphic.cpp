@@ -1,8 +1,13 @@
 #include "graphics/graphic.hpp"
+#if defined(USE_SDL)
 #include "graphics/sdl_window.hpp"
+#elif defined(USE_QT)
+#include "graphics/QT_window.hpp"
+#else
+#error "Must define either USE_SDL or USE_QT"
+#endif
 #include "graphics/gui.hpp"
 #include "render_core/render_core.hpp"
-
 
 namespace graphics {
 auto createWindow() -> std::unique_ptr<core::frontend::BaseWindow> {
@@ -12,6 +17,8 @@ auto createWindow() -> std::unique_ptr<core::frontend::BaseWindow> {
 
 #if defined(USE_SDL)
     return std::make_unique<graphics::SDLWindow>(width, height, title);
+#elif defined(USE_QT)
+    return std::make_unique<graphics::QTWindow>(width, height, title);
 #endif
     return nullptr;
 }

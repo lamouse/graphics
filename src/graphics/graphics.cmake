@@ -3,15 +3,23 @@ set(sources
     app.cpp
     graphic.hpp
     graphic.cpp
-    SDL_common.hpp
-    SDL_common.cpp
-    sdl_window.hpp
-    sdl_window.cpp
     gui.hpp
     gui.cpp
     main.cpp
-    QT_common.hpp
-    QT_common.cpp
-    QT_window.hpp
-    QT_window.cpp
 )
+
+if(USE_QT)
+    list(APPEND sources
+        QT_common.hpp
+        QT_common.cpp
+        QT_window.hpp
+        QT_window.cpp
+    )
+else()
+    list(APPEND sources
+        SDL_common.hpp
+        SDL_common.cpp
+        sdl_window.hpp
+        sdl_window.cpp
+    )
+endif()

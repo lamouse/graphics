@@ -281,10 +281,10 @@ void VulkanGraphics::UpdateDepthBiasEnable() {
 void VulkanGraphics::UpdateVertexInput() {
     if (current_modelId) {
         auto resource = modelResource[current_modelId];
-        auto* attrs = &vertex_attributes[resource.vertex_attribute_id];
-        auto* bindings = &vertex_bindings[resource.vertex_binding_id];
+        auto attrs = vertex_attributes[resource.vertex_attribute_id];
+        auto bindings = vertex_bindings[resource.vertex_binding_id];
         scheduler.record([bindings, attrs](vk::CommandBuffer cmdbuf) -> void {
-            cmdbuf.setVertexInputEXT(*bindings, *attrs);
+            cmdbuf.setVertexInputEXT(bindings, attrs);
         });
     } else {
         scheduler.record([](vk::CommandBuffer cmdbuf) -> void {
