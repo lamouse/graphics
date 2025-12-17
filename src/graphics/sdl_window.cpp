@@ -65,7 +65,7 @@ SDLWindow::SDLWindow(int width, int height, std::string_view title) {
 }
 
 auto SDLWindow::IsMinimized() const -> bool {  // 获取窗口的标志
-    Uint32 flags = SDL_GetWindowFlags(window_);
+    SDL_WindowFlags flags = SDL_GetWindowFlags(window_);
     // 检查是否包含 SDL_WINDOW_MINIMIZED 标志
     return (flags & SDL_WINDOW_MINIMIZED) != 0;
 }

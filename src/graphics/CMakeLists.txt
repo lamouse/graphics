@@ -40,9 +40,9 @@ if(WIN32 AND NOT CMAKE_CROSSCOMPILING)
     get_target_property(_qt6_core_location Qt6::Core LOCATION)
     get_filename_component(_qt6_bin_dir "${_qt6_core_location}" DIRECTORY)
     get_filename_component(_qt6_prefix "${_qt6_bin_dir}/.." ABSOLUTE)
-    set(QT6_PLUGINS_DIR "${_qt6_prefix}/Qt6/plugins/platforms/qwindows.dll")
+    set(QT6_PLUGINS_DIR "${_qt6_prefix}/${QT6_INSTALL_PLUGINS}/platforms/qwindows.dll")
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(QT6_PLUGINS_DIR "${_qt6_prefix}/debug/Qt6/plugins/platforms/qwindowsd.dll")
+        set(QT6_PLUGINS_DIR "${_qt6_prefix}/debug/${QT6_INSTALL_PLUGINS}/platforms/qwindowsd.dll")
     endif()
     # 构建后复制平台插件 qwindows.dll
     add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
