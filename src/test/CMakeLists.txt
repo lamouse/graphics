@@ -9,7 +9,7 @@ add_executable(
   common_test.cpp
 )
 target_link_libraries(
-  ${TEST_NAME} PRIVATE GTest::gtest GTest::gtest_main glfw absl::strings
+  ${TEST_NAME} PRIVATE GTest::gtest GTest::gtest_main absl::strings
 )
 target_link_libraries(
   ${TEST_NAME} PRIVATE render-core

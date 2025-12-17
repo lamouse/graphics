@@ -6,7 +6,6 @@ set(ARCHITECTURE "@ARCHITECTURE@")
 
 if (NOT @BUILD_SHARED_LIBS@)
     find_dependency(Vulkan)
-    find_dependency(glfw3)
 
     if (@DYNARMIC_USE_LLVM@)
         find_dependency(LLVM)
