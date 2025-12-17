@@ -72,10 +72,9 @@ else()
 endif()
 
 find_package(VulkanHeaders CONFIG)
-find_package(glfw3 CONFIG REQUIRED)
 find_package(SDL3 CONFIG REQUIRED)
 add_compile_definitions(IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
-target_link_libraries(imgui PRIVATE glfw SDL3::SDL3 Vulkan::Headers)
+target_link_libraries(imgui PRIVATE SDL3::SDL3 Vulkan::Headers)
 
 add_library(Imgui INTERFACE)
 add_library(Imgui::Imgui ALIAS Imgui)

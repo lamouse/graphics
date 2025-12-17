@@ -18,7 +18,6 @@ class GraphicsConan(ConanFile):
         self.requires("stb/cci.20230920")
         self.requires("assimp/6.0.2")
         self.requires("boost/1.80.0")
-        self.requires("glfw/3.4")
         self.requires("glm/1.0.1")
         self.requires("ms-gsl/4.2.0")
         self.requires("spirv-cross/1.4.321.0")

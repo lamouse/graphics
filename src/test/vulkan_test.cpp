@@ -1,4 +1,3 @@
-#include <GLFW/glfw3.h>
 #include "render_core/vulkan_common/vk_instance.hpp"
 #include "render_core/vulkan_common/device.hpp"
 #include "shader_tools/shader_compile.hpp"

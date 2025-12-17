@@ -2,8 +2,6 @@ set(sources
         src/imconfig.h
         src/imgui_demo.cpp
         src/imgui_draw.cpp
-        src/imgui_impl_glfw.h
-        src/imgui_impl_glfw.cpp
         src/imgui_impl_sdl3.h
         src/imgui_impl_sdl3.cpp
         src/imgui_impl_vulkan.h

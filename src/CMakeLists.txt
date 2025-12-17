@@ -10,10 +10,6 @@ if(WIN32)
     add_compile_definitions(SPDLOG_WCHAR_TO_UTF8_SUPPORT)
 endif()
 
-if(LINUX)
-    add_definitions(-DGLFW_EXPOSE_NATIVE_X11)
-endif()
-
 if(MSVC)
     # set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING "" FORCE)
 
