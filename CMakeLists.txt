@@ -44,7 +44,7 @@ find_package(glslang CONFIG REQUIRED)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-find_package(Qt6Widgets CONFIG REQUIRED)
+find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets)
 
 find_package(spirv-cross CONFIG QUIET)
 
