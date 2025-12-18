@@ -11,22 +11,16 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
     conf.extent.height = height;
     conf.fullscreen = false;
     setWindowConfig(conf);
-    QScreen* screen = QGuiApplication::primaryScreen();
-    qreal scale = screen->devicePixelRatio();
-    this->resize(static_cast<int>(width / scale), static_cast<int>(height / scale));
+    this->resize(static_cast<int>(width), static_cast<int>(height));
     QMainWindow::setWindowTitle(QString::fromStdString(std::string(title)));
-#if defined(SDL_PLATFORM_MACOS)
-    window_info.render_surface_scale = 1.0f;
-#else
     window_info.render_surface_scale = 1.f;
-#endif
     window_info.type = qt::get_window_system_info();
     window_info.render_surface = reinterpret_cast<void*>(this->winId());
     this->show();
 }
 auto QTWindow::IsShown() const -> bool { return this->isVisible(); }
 
-auto QTWindow::IsMinimized() const -> bool { return this->isMinimized(); }
+auto QTWindow::IsMinimized() const -> bool { return this->isMinimized() || this->isHidden() || !this->IsShown(); }
 
 auto QTWindow::shouldClose() const -> bool { return should_close_ || !this->isVisible(); }
 void QTWindow::setWindowTitle(std::string_view title) {
@@ -48,8 +42,6 @@ void QTWindow::resizeEvent(QResizeEvent* event) {
 void QTWindow::newFrame() {
     QSize logicalSize = this->size();
     QSize physicalSize = logicalSize * this->devicePixelRatio();
-    QScreen* screen = QGuiApplication::primaryScreen();
-    auto geometry = screen->geometry();
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize =
         ImVec2(static_cast<float>(logicalSize.width()), static_cast<float>(logicalSize.height()));
