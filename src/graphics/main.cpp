@@ -19,7 +19,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #ifdef USE_QT
         QApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-        QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "plugins");
+        QCoreApplication::addLibraryPath("plugins");
         QApplication a(argc, argv);
 #endif
         graphics::App app;
