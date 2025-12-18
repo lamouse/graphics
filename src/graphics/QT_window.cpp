@@ -57,17 +57,26 @@ void QTWindow::newFrame() {
 
 void QTWindow::mousePressEvent(QMouseEvent* event) {
     ImGuiIO& io = ImGui::GetIO();
-    if (event->button() == Qt::LeftButton) {
-        io.MouseDown[0] = true;
+    int mouse_button = -1;
+    switch (event->button()) {
+        case Qt::LeftButton:
+            mouse_button = 0;
+            break;
+        case Qt::RightButton:
+            mouse_button = 1;
+            break;
+        case Qt::MiddleButton:
+            mouse_button = 2;
+            break;
+        default:
+            break;
     }
-    if (event->button() == Qt::RightButton) {
-        io.MouseDown[1] = true;
-    }
-    if (event->button() == Qt::MiddleButton) {
-        io.MouseDown[2] = true;
+    QMainWindow::mousePressEvent(event);
+    if (mouse_button == -1) {
+        return;
     }
     io.MousePos = ImVec2(event->position().x(), event->position().y());
-    QMainWindow::mousePressEvent(event);
+    io.AddMouseButtonEvent(mouse_button, true);
 }
 
 void QTWindow::mouseReleaseEvent(QMouseEvent* event) {
@@ -84,9 +93,10 @@ void QTWindow::mouseReleaseEvent(QMouseEvent* event) {
     }
 
     QMainWindow::mouseReleaseEvent(event);
-    if(mouse_button == -1){
+    if (mouse_button == -1) {
         return;
     }
+    io.MousePos = ImVec2(event->position().x(), event->position().y());
     io.AddMouseButtonEvent(mouse_button, false);
 }
 
