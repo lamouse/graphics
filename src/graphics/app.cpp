@@ -71,6 +71,8 @@ void App::run() {
     frameClean.framebuffer.extent = {
         .width = frame_layout.width, .height = frame_layout.height, .depth = 1};
     while (!window->shouldClose()) {
+        window->pullEvents(input_event);
+
         if (window->IsMinimized()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
@@ -78,7 +80,6 @@ void App::run() {
         graphics->clean(frameClean);
         outliner_entities_ = registry.getOutliner();
         outliner_entities_.push_back({.entity = world.entity_, .children = world.getEntities()});
-        window->pullEvents(input_event);
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
         frameInfo.camera = &camera;
