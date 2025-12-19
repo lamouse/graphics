@@ -3,17 +3,22 @@ set(PROGRAM_NAME "graphics")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
 
-add_executable(${PROGRAM_NAME} ${sources})
+if(USE_QT AND TARGET Qt6::Quick)
+    qt_standard_project_setup(REQUIRES 6.8)
+    qt_add_executable(${PROGRAM_NAME} ${sources})
+    qt_add_qml_module(${PROGRAM_NAME}
+        URI baseqml
+        VERSION 1.0
+        QML_FILES
+        Main.qml
+    )
+else()
+    add_executable(${PROGRAM_NAME} ${sources})
+endif()
 
 add_dependencies(${PROGRAM_NAME} copy_fonts)
 
-target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core effects resource)
-target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3 world system Imgui::Imgui ImGuizmo::ImGuizmo)
-
-target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
-
 if(USE_QT)
-    target_link_libraries(${PROGRAM_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
     target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_QT)
 
     if(WIN32 AND NOT CMAKE_CROSSCOMPILING)
@@ -22,23 +27,47 @@ if(USE_QT)
         get_filename_component(_qt6_bin_dir "${_qt6_core_location}" DIRECTORY)
         get_filename_component(_qt6_prefix "${_qt6_bin_dir}/.." ABSOLUTE)
         set(QT6_PLUGINS_DIR "${_qt6_prefix}/${QT6_INSTALL_PLUGINS}/platforms/qwindows.dll")
+        get_target_property(_windeployqt_exe Qt6::windeployqt IMPORTED_LOCATION)
 
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(QT6_PLUGINS_DIR "${_qt6_prefix}/debug/${QT6_INSTALL_PLUGINS}/platforms/qwindowsd.dll")
+            if(USE_VCPKG)
+                set(QT6_PLUGINS_DIR "${_qt6_prefix}/debug/${QT6_INSTALL_PLUGINS}/platforms/qwindowsd.dll")
+                string(REPLACE "windeployqt.exe" "windeployqt.debug.bat" _windeployqt_exe "${_windeployqt_exe}")
+            endif()
         endif()
 
         # 构建后复制平台插件 qwindows.dll
         add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROGRAM_NAME}>/plugins/platforms"
+            COMMAND ${_windeployqt_exe}
+            --include-soft-plugins
+            --qmldir ${CMAKE_CURRENT_SOURCE_DIR}
+            --no-translations
+            --no-libraries
+            --skip-plugin-types networkinformation,imageformats,iconengines,qmltooling,styles,tls,generic
+            "$<TARGET_FILE_DIR:${PROGRAM_NAME}>"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${QT6_PLUGINS_DIR}
             "$<TARGET_FILE_DIR:${PROGRAM_NAME}>/plugins/platforms/"
             COMMENT "Copying Qt platform plugin qwindows.dll..."
         )
     endif()
+
+    if(TARGET Qt6::Quick)
+        target_link_libraries(${PROGRAM_NAME} PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::QuickControls2Basic Qt6::QuickControls2Fusion Qt6::QuickDialogs2 Qt6::QuickEffects
+        Qt6::QuickControls2WindowsStyleImpl)
+    endif()
+
+    target_link_libraries(${PROGRAM_NAME} PRIVATE Qt6::Widgets)
+
 else()
     target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_SDL)
 endif()
+
+target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core effects resource)
+target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3 world system Imgui::Imgui ImGuizmo::ImGuizmo)
+
+target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 
 add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

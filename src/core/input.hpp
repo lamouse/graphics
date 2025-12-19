@@ -18,6 +18,8 @@ enum class InputKey : std::int16_t {
     Insert,
     Esc,
     LCtrl,
+
+    MAX_KEY,
 };
 
 struct InputState {
@@ -39,7 +41,9 @@ struct InputState {
 
         // 重载 == 运算符（成员函数）
         auto operator!=(const InputState& other) const -> bool { return !(*this == other); }
-
+        operator bool() const {
+            return key != InputKey::UN_SUPER || raw1 != 0 || mouseX_ >= 0 || mouseY_ >= 0 || scrollOffset_ != 0.0f;
+        }
         float mouseX_ = -1.0f, mouseY_ = -1.0f;
         float mouseRelativeX_{0}, mouseRelativeY_{0};
         float scrollOffset_ = 0.0f;
@@ -84,7 +88,7 @@ class InputEvent {
             return ret;
         }
         auto empty() -> bool { return input_queue.empty(); }
-
+        auto count() -> size_t { return input_queue.size(); }
     private:
         std::queue<InputState> input_queue;
 };

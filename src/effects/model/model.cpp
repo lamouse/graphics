@@ -95,7 +95,9 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     } else {
         render_state->mouse_select = false;
     }
-    if (render_state->mouse_select) {
+    if (render_state->mouse_select && frameInfo.input_state) {
+        spdlog::info("move model id {}, {}", id, frameInfo.input_state.mouseX_,
+                     frameInfo.input_state.mouseY_);
         move_model(frameInfo, *transform);
     }
 

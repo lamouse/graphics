@@ -2,8 +2,12 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #ifdef USE_QT
-#include <QApplication>
+// #include <QApplication>
 #include <QScreen>
+#include <QQmlApplicationEngine>
+#include <QWindow>
+#include <QApplication>
+#include <QFontDatabase>
 #endif
 #if defined(_WIN32)
 #include <windows.h>
@@ -18,12 +22,34 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
     try {
 #ifdef USE_QT
         QApplication::setHighDpiScaleFactorRoundingPolicy(
-            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-        QCoreApplication::addLibraryPath("plugins");
-        QApplication a(argc, argv);
+            Qt::HighDpiScaleFactorRoundingPolicy::Floor);
+        QApplication::addLibraryPath("plugins");
+
+        QApplication app(argc, argv);
+
+        // 加载中文字体
+        int chineseId = QFontDatabase::addApplicationFont("fonts/AlibabaPuHuiTi-3-55-Regular.otf");
+        QString chineseFamily = QFontDatabase::applicationFontFamilies(chineseId).at(0);
+
+        // 加载图标字体（例如 FontAwesome）
+        int iconId = QFontDatabase::addApplicationFont("fonts/MesloLGS NF Regular.ttf");
+        QString iconFamily = QFontDatabase::applicationFontFamilies(iconId).at(0);
+
+        // 设置全局默认字体为中文字体
+        QApplication::setFont(QFont(chineseFamily, 10));
+
+        QQmlApplicationEngine engine;
+        engine.addImportPath(QCoreApplication::applicationDirPath() + "/qml");
+
+        QObject::connect(
+            &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
+            []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
+        engine.loadFromModule("baseqml", "Main");
+
+        QGuiApplication::exec();
 #endif
-        graphics::App app;
-        app.run();
+        graphics::App g_app;
+        g_app.run();
     } catch (const ::std::exception& e) {
         ::spdlog::error(e.what());
         return EXIT_FAILURE;

@@ -18,6 +18,8 @@
         "vulkan-utility-libraries",
         "xxhash",
         "embree",
+        "qtbase",
+        "qtdeclarative",
         "nlohmann-json",
         {
             "name": "sdl3",

@@ -1,6 +1,5 @@
 #pragma once
 #include "core/frontend/window.hpp"
-#include "common/common_funcs.hpp"
 
 #include <QMainWindow>
 
@@ -18,6 +17,7 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
             return getWindowConfig();
         }
         void setWindowTitle(std::string_view title) override;
+        void setShouldClose() override;
 
         void resizeEvent(QResizeEvent* event) override;
 
@@ -29,10 +29,13 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         void mouseReleaseEvent(QMouseEvent* event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
         void wheelEvent(QWheelEvent* event) override;
-        void setShouldClose() override;
-
+        void focusInEvent(QFocusEvent* event) override;
+        void focusOutEvent(QFocusEvent* event) override;
     private:
         bool should_close_;
+        std::queue<core::InputState> eventQueue;
+        float lastMouseX_{-1};
+        float lastMouseY_{-1};
 };
 
 }  // namespace graphics

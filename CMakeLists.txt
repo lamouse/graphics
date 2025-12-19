@@ -24,7 +24,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(TRACY_ENABLE "Enable Tracy profiling support" ON)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)
-option(USE_QT "use qt" OFF)
+option(USE_QT "use qt" ON)
 
 # 设置可执行文件输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
@@ -65,7 +65,8 @@ if(USE_QT)
         set(CMAKE_AUTOUIC ON)
         set(CMAKE_AUTOMOC ON)
         set(CMAKE_AUTORCC ON)
-        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets)
+        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets Quick QuickControls2 QuickControls2Basic QuickControls2Fusion QuickDialogs2 QuickEffects QuickControls2WindowsStyleImpl)
+        set(QT_QML_GENERATE_QMLLS_INI ON)
 endif()
 
 # need vcpkg end

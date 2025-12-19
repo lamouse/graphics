@@ -145,9 +145,6 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
 
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
-        if(ImGui::GetIO().WantCaptureMouse){
-            return;
-        }
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {
             should_close_ = true;

@@ -5,6 +5,7 @@ if(WIN32)
         endif()
 endif()
 
+option(USE_VCPKG "Use vcpkg for dependencies" OFF)
 option(VCPKG_MANIFEST_MODE "")
 
 if(VCPKG_MANIFEST_MODE)
@@ -22,6 +23,10 @@ endif()
 if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
         if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
                 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+
                 # include("${CMAKE_TOOLCHAIN_FILE}")
         endif()
+
+        message("use vcpkg tool chanin")
+        set(USE_VCPKG ON CACHE BOOL "Use vcpkg for dependencies" FORCE)
 endif()
