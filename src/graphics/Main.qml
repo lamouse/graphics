@@ -69,7 +69,7 @@ ApplicationWindow {
                     topMargin: 60  // 距离顶部留空，避免和 Text 重叠
                 }
 
-                CheckBox {
+                Switch {
                     id: render_debug
                     text: "开启渲染调试"
                     checked: render_ctrl.isRenderDebugEnabled()
