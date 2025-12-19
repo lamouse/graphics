@@ -8,6 +8,7 @@
 #include <QWindow>
 #include <QApplication>
 #include <QFontDatabase>
+#include "graphics/ui/render_config.hpp"
 #endif
 #if defined(_WIN32)
 #include <windows.h>
@@ -24,7 +25,6 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         QApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::Floor);
         QApplication::addLibraryPath("plugins");
-
         QApplication app(argc, argv);
 
         // 加载中文字体
@@ -39,14 +39,18 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         QApplication::setFont(QFont(chineseFamily, 10));
 
         QQmlApplicationEngine engine;
+        graphics::registerRenderController(engine);
         engine.addImportPath(QCoreApplication::applicationDirPath() + "/qml");
 
         QObject::connect(
             &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
             []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
         engine.loadFromModule("baseqml", "Main");
+        if (engine.rootObjects().isEmpty()) {
+            return -1;
+        }
 
-        QGuiApplication::exec();
+        QApplication::exec();
 #endif
         graphics::App g_app;
         g_app.run();
