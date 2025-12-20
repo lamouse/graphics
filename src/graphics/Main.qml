@@ -82,6 +82,7 @@ ApplicationWindow {
                     onClicked: {
                         console.log("渲染已开启！");
                         // render_ctrl.startRendering(); // 如果有这个方法
+                        Qt.quit()
                     }
                 }
             }
