@@ -20,13 +20,13 @@ if(VCPKG_MANIFEST_MODE)
         endif()
 endif()
 
-if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
-        if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
+if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
+        if(NOT $ENV{VCPKG_ROOT} STREQUAL "")
                 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-
-                # include("${CMAKE_TOOLCHAIN_FILE}")
+                message("use vcpkg tool chanin")
+                set(USE_VCPKG ON CACHE BOOL "Use vcpkg for dependencies" FORCE)
         endif()
-
+elseif(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg\\.cmake")
         message("use vcpkg tool chanin")
         set(USE_VCPKG ON CACHE BOOL "Use vcpkg for dependencies" FORCE)
 endif()
