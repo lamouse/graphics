@@ -1,10 +1,12 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(PROGRAM_NAME "graphics")
 set(QML_MODULE_NAME "graphics")
+set(QML_IMPORT_PATH "${CMAKE_BINARY_DIR}/qml" CACHE STRING "QML import path")
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
 
 if(USE_QT AND TARGET Qt6::Quick)
-add_subdirectory(qml_ui)
+    add_subdirectory(ui)
     qt_standard_project_setup(REQUIRES 6.8)
     qt_add_executable(${PROGRAM_NAME} ${sources})
     set_target_properties(${PROGRAM_NAME} PROPERTIES
@@ -17,6 +19,12 @@ add_subdirectory(qml_ui)
         VERSION 1.0
         QML_FILES
         Main.qml
+        SOURCES
+        ui/render_config.hpp
+        ui/render_config.cpp
+    )
+    set_target_properties(${PROGRAM_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
     )
 else()
     add_executable(${PROGRAM_NAME} ${sources})
@@ -60,7 +68,7 @@ if(USE_QT)
     endif()
 
     if(TARGET Qt6::Quick)
-        target_link_libraries(${PROGRAM_NAME} PRIVATE qml_ui)
+        target_link_libraries(${PROGRAM_NAME} PRIVATE RenderCtrlLibplugin)
     endif()
 
     target_link_libraries(${PROGRAM_NAME} PRIVATE Qt6::Widgets)

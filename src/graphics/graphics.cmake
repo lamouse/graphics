@@ -14,8 +14,6 @@ if(USE_QT)
         QT_common.cpp
         QT_window.hpp
         QT_window.cpp
-        ui/render_config.hpp
-        ui/render_config.cpp
     )
 else()
     list(APPEND sources

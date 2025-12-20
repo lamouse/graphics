@@ -47,7 +47,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
             []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
         engine.loadFromModule("graphics", "Main");
         if (engine.rootObjects().isEmpty()) {
-            return -1;
+            spdlog::warn("Failed to load QML root object.");
         }
 
         QApplication::exec();
@@ -64,6 +64,6 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #if defined(_WIN32)
 auto WINAPI WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance,
                     [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow) -> int {
-    return main(1, nullptr);
+    return main(__argc, __argv);
 }
 #endif

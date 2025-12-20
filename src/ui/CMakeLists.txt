@@ -1,5 +1,5 @@
 
-set(LIB_NAME ui)
+set(LIB_NAME ImguiHelper)
 
 set (sources
     ui.hpp
@@ -25,7 +25,7 @@ else()
         $<$<CXX_COMPILER_ID:Clang>:-fsized-deallocation>
     )
 endif()
-target_link_libraries(${LIB_NAME} PRIVATE spdlog::spdlog glm::glm Imgui::Imgui)
+target_link_libraries(${LIB_NAME} PUBLIC spdlog::spdlog glm::glm Imgui::Imgui)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${LIB_NAME}/lib)
 set_target_properties(${LIB_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)
