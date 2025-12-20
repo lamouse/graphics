@@ -2,7 +2,12 @@
 #include "graphics/QT_common.hpp"
 #include <Qscreen>
 #include <QResizeEvent>
+#include <QFileDialog>
+#include <QMenuBar>
+#include <QAction>
+#include <spdlog/spdlog.h>
 #include <imgui.h>
+
 
 namespace graphics {
 
@@ -22,6 +27,12 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
     window_info.type = qt::get_window_system_info();
     window_info.render_surface = reinterpret_cast<void*>(this->winId());
     this->setMouseTracking(true);
+    auto* fileMenu = menuBar()->addMenu(tr("&File"));
+    auto* openAction = new QAction(tr("&Open"), this);
+    fileMenu->addAction(openAction);
+    connect(openAction, &QAction::triggered, this, &QTWindow::openFile);
+    openAction->setShortcut(QKeySequence::Open);
+
     this->show();
 }
 auto QTWindow::IsShown() const -> bool { return this->isVisible(); }
@@ -191,5 +202,11 @@ void QTWindow::focusOutEvent(QFocusEvent* event) {
     ImGuiIO& io = ImGui::GetIO();
     io.AddFocusEvent(false);
     QMainWindow::focusOutEvent(event);
+}
+void QTWindow::openFile(){
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("All Files (*)"));
+    if (!fileName.isEmpty()) {
+        spdlog::info("Selected file: {}", fileName.toStdString());
+    }
 }
 }  // namespace graphics

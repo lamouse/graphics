@@ -89,41 +89,39 @@ void App::run() {
         frameInfo.resource_manager = &resourceManager;
         frameInfo.window_width = window->getActiveConfig().extent.width;
         frameInfo.window_hight = window->getActiveConfig().extent.height;
-        if (input_event.empty()) {
-            registry.updateAll(frameInfo, world);
-        } else {
-            while (auto e = input_event.pop_event()) {
-                if (!e) {
-                    continue;
-                }
+        registry.updateAll(frameInfo, world);
 
-                if (e->key == core::InputKey::Insert) {
-                    show_debug_ui = !show_debug_ui;
-                }
-                if (e->key == core::InputKey::Esc) {
-                    window->setShouldClose();
-                }
-                if (e->mouseX_ > 0 && e->mouseY_ > 0) {
-                    current_mouse_X = e->mouseX_;
-                    current_mouse_Y = e->mouseY_;
-                }
-                if (!e->onlyMouseMove()) {
-                    const auto [down, first] = e->mouseLeftButtonDown();
-                    if (down && first) {
-                        auto pick = PickingSystem::pick(camera, e->mouseX_, e->mouseY_,
-                                                        static_cast<float>(frameInfo.window_width),
-                                                        static_cast<float>(frameInfo.window_hight));
-                        if (pick) {
-                            world.pick(pick->id);
-                        }
+        while (auto e = input_event.pop_event()) {
+            if (!e) {
+                continue;
+            }
+
+            if (e->key == core::InputKey::Insert) {
+                show_debug_ui = !show_debug_ui;
+            }
+            if (e->key == core::InputKey::Esc) {
+                window->setShouldClose();
+            }
+            if (e->mouseX_ > 0 && e->mouseY_ > 0) {
+                current_mouse_X = e->mouseX_;
+                current_mouse_Y = e->mouseY_;
+            }
+            if (!e->onlyMouseMove()) {
+                const auto [down, first] = e->mouseLeftButtonDown();
+                if (down && first) {
+                    auto pick = PickingSystem::pick(camera, e->mouseX_, e->mouseY_,
+                                                    static_cast<float>(frameInfo.window_width),
+                                                    static_cast<float>(frameInfo.window_hight));
+                    if (pick) {
+                        world.pick(pick->id);
                     }
-                    if (e->mouseLeftButtonUp()) {
-                        world.cancelPick();
-                    }
-                    CameraSystem::update(cameraComponent, e.value(), frame);
-                    frameInfo.input_state = e.value();
-                    registry.updateAll(frameInfo, world);
                 }
+                if (e->mouseLeftButtonUp()) {
+                    world.cancelPick();
+                }
+                CameraSystem::update(cameraComponent, e.value(), frame);
+                frameInfo.input_state = e.value();
+                registry.updateAll(frameInfo, world);
             }
         }
 
