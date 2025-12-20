@@ -33,16 +33,10 @@ if(USE_QT)
     target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_QT)
 
     if(WIN32 AND NOT CMAKE_CROSSCOMPILING)
-        # 获取 Qt6 安装前缀（vcpkg 会设置 Qt6_DIR）
-        get_target_property(_qt6_core_location Qt6::Core LOCATION)
-        get_filename_component(_qt6_bin_dir "${_qt6_core_location}" DIRECTORY)
-        get_filename_component(_qt6_prefix "${_qt6_bin_dir}/.." ABSOLUTE)
-        set(QT6_PLUGINS_DIR "${_qt6_prefix}/${QT6_INSTALL_PLUGINS}/platforms/qwindows.dll")
         get_target_property(_windeployqt_exe Qt6::windeployqt IMPORTED_LOCATION)
 
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             if(USE_VCPKG)
-                set(QT6_PLUGINS_DIR "${_qt6_prefix}/debug/${QT6_INSTALL_PLUGINS}/platforms/qwindowsd.dll")
                 string(REPLACE "windeployqt.exe" "windeployqt.debug.bat" _windeployqt_exe "${_windeployqt_exe}")
             endif()
         endif()
@@ -57,10 +51,7 @@ if(USE_QT)
             --no-libraries
             --skip-plugin-types networkinformation,imageformats,iconengines,qmltooling,styles,tls,generic
             "$<TARGET_FILE_DIR:${PROGRAM_NAME}>"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${QT6_PLUGINS_DIR}
-            "$<TARGET_FILE_DIR:${PROGRAM_NAME}>/plugins/platforms/"
-            COMMENT "Copying Qt platform plugin qwindows.dll..."
+            COMMENT "windeployqt running..."
         )
     endif()
 
