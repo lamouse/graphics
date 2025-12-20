@@ -6,6 +6,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
 if(USE_QT AND TARGET Qt6::Quick)
     qt_standard_project_setup(REQUIRES 6.8)
     qt_add_executable(${PROGRAM_NAME} ${sources})
+    set_target_properties(${PROGRAM_NAME} PROPERTIES
+        AUTOUIC ON
+        AUTOMOC ON
+        AUTORCC ON
+    )
     qt_add_qml_module(${PROGRAM_NAME}
         URI baseqml
         VERSION 1.0
@@ -55,7 +60,7 @@ if(USE_QT)
 
     if(TARGET Qt6::Quick)
         target_link_libraries(${PROGRAM_NAME} PRIVATE Qt6::Quick Qt6::QuickControls2 Qt6::QuickControls2Basic Qt6::QuickControls2Fusion Qt6::QuickDialogs2 Qt6::QuickEffects
-        Qt6::QuickControls2WindowsStyleImpl)
+            Qt6::QuickControls2WindowsStyleImpl)
     endif()
 
     target_link_libraries(${PROGRAM_NAME} PRIVATE Qt6::Widgets)
