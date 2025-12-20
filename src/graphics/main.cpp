@@ -2,7 +2,6 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #ifdef USE_QT
-// #include <QApplication>
 #include <QScreen>
 #include <QQmlApplicationEngine>
 #include <QWindow>
