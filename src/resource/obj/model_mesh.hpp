@@ -23,8 +23,6 @@ struct ModelCacheHeader {
         uint32_t padding = 0;       // 对齐
 };
 
-
-
 struct SubMesh {
         uint32_t indexOffset = 0;
         uint32_t indexCount = 0;
@@ -34,8 +32,6 @@ struct SubMesh {
 
 class Model : public IMeshData {
     public:
-
-
         // 返回顶点坐标（仅 position），展平为 float 数组
         [[nodiscard]] auto getMesh() const -> std::span<const float> override;
 
@@ -167,4 +163,3 @@ class MultiMeshModel {
 };
 
 }  // namespace graphics
-

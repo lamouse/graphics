@@ -30,8 +30,9 @@ class Layer final {
                            vk::Sampler sampler, size_t image_index,
                            const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);
-            CLASS_NON_COPYABLE(Layer);
-            CLASS_NON_MOVEABLE(Layer);
+        CLASS_NON_COPYABLE(Layer);
+        CLASS_NON_MOVEABLE(Layer);
+
     private:
         void CreateDescriptorPool();
         void CreateDescriptorSets(vk::DescriptorSetLayout layout);

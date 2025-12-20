@@ -22,21 +22,21 @@ Animation::Animation(std::string_view animationPath, Model* model) {
     readMissingBones(animation, *model);
 }
 
-void Animation::readMissingBones(const aiAnimation* animation,  Model& model) {
+void Animation::readMissingBones(const aiAnimation* animation, Model& model) {
     unsigned int size = animation->mNumChannels;
-    auto& bone_info_map =  model.getBoneInfoMap();
+    auto& bone_info_map = model.getBoneInfoMap();
     auto& bone_count = model.getBoneCount();
-    for(unsigned int i = 0; i < size; i++){
+    for (unsigned int i = 0; i < size; i++) {
         auto* channel = animation->mChannels[i];
         std::string boneName = channel->mNodeName.C_Str();
-        if(auto bone_info = bone_info_map.find(boneName); bone_info != bone_info_map.end()){
+        if (auto bone_info = bone_info_map.find(boneName); bone_info != bone_info_map.end()) {
             bone_info->second.id = bone_count;
             bone_count++;
         }
-        bones_.emplace_back(channel->mNodeName.C_Str(), bone_info_map[channel->mNodeName.C_Str()].id, channel);
+        bones_.emplace_back(channel->mNodeName.C_Str(),
+                            bone_info_map[channel->mNodeName.C_Str()].id, channel);
     }
     boneInfoMap_ = bone_info_map;
-
 }
 void Animation::readHierarchyData(AssimpNodeData& rootDest, const aiNode* rootSrc) {
     assert(rootSrc);

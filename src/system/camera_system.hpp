@@ -14,7 +14,7 @@ struct CameraSystem {
             glm::vec3 forward = glm::normalize(cam.center() - cam.eye());
             glm::vec3 right = glm::normalize(glm::cross(cam.up(), forward));
             glm::vec3 up = glm::normalize(glm::cross(forward, right));
-            if(state.mouseX_ < 0 || state.mouseY_ < 0) {
+            if (state.mouseX_ < 0 || state.mouseY_ < 0) {
                 return;
             }
 

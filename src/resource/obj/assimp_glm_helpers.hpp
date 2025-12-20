@@ -28,4 +28,4 @@ class AssimpGLMHelpers {
         }
 };
 
-}  // namespace graphics::animation
+}  // namespace graphics

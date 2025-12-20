@@ -4,7 +4,7 @@
 #include <QQmlContext>
 namespace graphics {
 void registerRenderController(QQmlApplicationEngine& engine) {
-    auto* ctrl = new RenderController(&engine);//NOLINT
+    auto* ctrl = new RenderController(&engine);  // NOLINT
     engine.rootContext()->setContextProperty("render_ctrl", ctrl);
 }
 

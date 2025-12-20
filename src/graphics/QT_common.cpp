@@ -23,4 +23,4 @@ auto get_window_system_info() -> core::frontend::WindowSystemType {
     }
     return core::frontend::WindowSystemType::Headless;
 }
-}  // namespace graphics
+}  // namespace graphics::qt

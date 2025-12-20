@@ -65,5 +65,5 @@ struct Values {
                                                              Specialization::List};
 };
 
-extern Values values; //NOLINT
+extern Values values;  // NOLINT
 }  // namespace settings

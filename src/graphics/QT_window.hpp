@@ -31,6 +31,7 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         void wheelEvent(QWheelEvent* event) override;
         void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
+
     private:
         bool should_close_;
         std::queue<core::InputState> eventQueue;

@@ -3,5 +3,5 @@
 #include "core/frontend/window.hpp"
 #include <memory>
 namespace render {
-    auto createRender(core::frontend::BaseWindow* window) -> std::unique_ptr<RenderBase>;
+auto createRender(core::frontend::BaseWindow* window) -> std::unique_ptr<RenderBase>;
 }

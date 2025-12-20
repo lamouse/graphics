@@ -21,7 +21,8 @@ void warmup_embree(RTCScene scene) {
     rayhit.ray.dir_z = 1.0f;
     rayhit.ray.tnear = 0.0f;
     rayhit.ray.tfar = std::numeric_limits<float>::infinity();
-    rayhit.ray.mask = std::numeric_limits<unsigned int>::max();;
+    rayhit.ray.mask = std::numeric_limits<unsigned int>::max();
+    ;
     rayhit.ray.time = 0.0f;
     rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
@@ -132,7 +133,6 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
     embree_to_user[instance_id] = id;
     commit();
     warmup_embree(main_scene_);
-
 }
 
 // 在每帧更新所有移动物体的 transform
@@ -167,7 +167,8 @@ auto EmbreePicker::pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 
     ray_hit.ray.tnear = 1e-4f;  // 避免自相交
     ray_hit.ray.tfar = std::numeric_limits<float>::max();
-    ray_hit.ray.mask = std::numeric_limits<unsigned int>::max();;
+    ray_hit.ray.mask = std::numeric_limits<unsigned int>::max();
+    ;
     ray_hit.ray.time = 0.f;
 
     ray_hit.hit.geomID = RTC_INVALID_GEOMETRY_ID;

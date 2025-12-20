@@ -1,6 +1,6 @@
 #include "settings.hpp"
 namespace settings {
-Values values;//NOLINT
+Values values;  // NOLINT
 
 #define SETTING(TYPE, RANGED) template class Setting<TYPE, RANGED>
 SETTING(enums::VSyncMode, true);

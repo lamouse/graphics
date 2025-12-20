@@ -66,25 +66,25 @@ void Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 }
 
 void Model::extract_bone_weight(std::vector<graphics::animation::Vertex>& vertices, aiMesh* mesh) {
-    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {\
+    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
         auto* bone = mesh->mBones[boneIndex];
         int boneID = -1;
         std::string boneName = bone->mName.C_Str();
         const auto [pair, is_new] = bone_info_map_.try_emplace(boneName);
-        if(is_new){
+        if (is_new) {
             BoneInfo newBoneInfo{};
             newBoneInfo.id = bone_counter_;
             newBoneInfo.offset = AssimpGLMHelpers::convert(bone->mOffsetMatrix);
             pair->second = newBoneInfo;
             boneID = bone_counter_;
             bone_counter_++;
-        }else {
+        } else {
             boneID = pair->second.id;
         }
         assert(boneID != -1);
         auto* weights = bone->mWeights;
         auto numWeights = bone->mNumWeights;
-        for(unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++){
+        for (unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++) {
             unsigned int vertexId = weights[weightIndex].mVertexId;
             float weight = weights[weightIndex].mWeight;
             assert(vertexId <= vertices.size());

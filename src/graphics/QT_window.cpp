@@ -166,7 +166,6 @@ void QTWindow::mouseMoveEvent(QMouseEvent* event) {
     lastMouseY_ = event->position().y();
     eventQueue.push(input_state);
     QMainWindow::mouseMoveEvent(event);
-
 }
 
 void QTWindow::wheelEvent(QWheelEvent* event) {

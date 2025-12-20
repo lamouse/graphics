@@ -64,5 +64,5 @@ void LoggerSystem::drawUi(bool& show) {
         spdlog::flush_on(log_level_);
     }
 }
-LoggerSystem::~LoggerSystem() {spdlog::shutdown();}
+LoggerSystem::~LoggerSystem() { spdlog::shutdown(); }
 }  // namespace sys

@@ -1117,7 +1117,7 @@ auto Device::surfaceFormat(FormatType format_type, bool with_srgb,
     // Transcode on hardware that doesn't support ASTC natively
     if (!isOptimalAstcSupported() && surface::IsPixelFormatASTC(pixel_format)) {
         const bool is_srgb = with_srgb && surface::IsPixelFormatSRGB(pixel_format);
-        auto astc =settings::values.astc_recompression.GetValue();
+        auto astc = settings::values.astc_recompression.GetValue();
         switch (astc) {
             case settings::enums::AstcRecompression::Uncompressed:
                 if (is_srgb) {

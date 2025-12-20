@@ -2,8 +2,7 @@
 #include <xxhash.h>
 namespace render {
 auto FixedPipelineState::Hash() const noexcept -> size_t {
-    const u64 hash =
-        XXH64(reinterpret_cast<const char*>(this), Size(), 0);
+    const u64 hash = XXH64(reinterpret_cast<const char*>(this), Size(), 0);
     return static_cast<size_t>(hash);
 }
 

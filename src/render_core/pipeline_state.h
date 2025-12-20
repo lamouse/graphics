@@ -3,7 +3,7 @@
 
 #pragma once
 #ifdef _MSC_VER
-#pragma warning(disable:4201)
+#pragma warning(disable : 4201)
 #endif
 
 #include <array>

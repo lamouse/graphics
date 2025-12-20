@@ -61,8 +61,7 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
     bool presentation_recreate_required = false;
 
     // Recreate dynamic resources if the adapting filter changed
-    if (!window_adapt ||
-        scaling_filter != settings::values.scaling_filter.GetValue()) {
+    if (!window_adapt || scaling_filter != settings::values.scaling_filter.GetValue()) {
         resource_update_required = true;
     }
 

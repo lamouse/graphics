@@ -46,4 +46,4 @@ struct MeshMaterial {
 };
 
 auto loadMaterial(const aiScene* scene, const aiMesh* mesh) -> MeshMaterial;
-}
+}  // namespace graphics

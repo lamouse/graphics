@@ -34,7 +34,7 @@ enum Specialization : u8 {
     Countable = 6,    // Can be stepped through
     Paired = 7,       // Another setting is associated with this setting
     Radio = 8,        // Setting should be presented in a radio group
-    Checkbox = 9,     //check box
+    Checkbox = 9,     // check box
 
     Percentage = (1 << SpecializationAttributeOffset),  // Should be represented as a percentage
 };

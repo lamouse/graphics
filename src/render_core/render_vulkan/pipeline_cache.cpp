@@ -37,8 +37,7 @@ auto GetTotalPipelineWorkers() -> size_t {
 }  // namespace
 
 auto ComputePipelineCacheKey::Hash() const noexcept -> size_t {
-    const u64 hash = XXH64(
-        reinterpret_cast<const char*>(this), sizeof *this, 0);
+    const u64 hash = XXH64(reinterpret_cast<const char*>(this), sizeof *this, 0);
     return static_cast<size_t>(hash);
 }
 

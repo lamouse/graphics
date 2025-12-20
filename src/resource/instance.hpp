@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 #include "resource/id.hpp"
 namespace ecs {
-    class Scene;
+class Scene;
 }
 namespace graphics {
 

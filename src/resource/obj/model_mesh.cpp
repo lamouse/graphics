@@ -67,7 +67,8 @@ void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
                    static_cast<long long>(sizeof(graphics::Vertex) * vcount));
     }
     if (icount > 0) {
-        file.write(reinterpret_cast<const char*>(model.indices_.data()), static_cast<long long>(sizeof(uint32_t) * icount));
+        file.write(reinterpret_cast<const char*>(model.indices_.data()),
+                   static_cast<long long>(sizeof(uint32_t) * icount));
     }
     if (ocount > 0) {
         file.write(reinterpret_cast<const char*>(model.only_vertex.data()),
@@ -111,8 +112,10 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
 
     file.read(reinterpret_cast<char*>(vertices.data()),
               static_cast<long long>(sizeof(graphics::Vertex) * vertexCount));
-    file.read(reinterpret_cast<char*>(indices.data()), static_cast<long long>(sizeof(uint32_t) * indexCount));
-    file.read(reinterpret_cast<char*>(only_vertices.data()), static_cast<long long>(sizeof(glm::vec3) * onlyVertexCount));
+    file.read(reinterpret_cast<char*>(indices.data()),
+              static_cast<long long>(sizeof(uint32_t) * indexCount));
+    file.read(reinterpret_cast<char*>(only_vertices.data()),
+              static_cast<long long>(sizeof(glm::vec3) * onlyVertexCount));
 
     // 读取所有 SubMesh
     std::vector<graphics::SubMesh> subMeshes;
@@ -137,7 +140,6 @@ auto loadModelWithCache(std::uint64_t file_hash) -> std::optional<graphics::Mode
 
     return std::move(model);
 }
-
 
 auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
     graphics::Model model;
@@ -204,7 +206,6 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
             }
             meshIndexCount += face.mNumIndices;
         }
-
 
         // === 3. 创建 SubMesh ===
         graphics::SubMesh sub{.indexOffset = indexOffset,

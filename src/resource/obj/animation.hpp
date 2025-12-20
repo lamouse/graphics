@@ -37,7 +37,9 @@ class Animation {
             return static_cast<float>(ticks_per_second);
         }
         inline auto getRootNode() -> const AssimpNodeData& { return root_node_; }
-        inline auto GetBoneIDMap() -> const std::map<std::string, BoneInfo>& { return boneInfoMap_; }
+        inline auto GetBoneIDMap() -> const std::map<std::string, BoneInfo>& {
+            return boneInfoMap_;
+        }
 
     private:
         void readMissingBones(const aiAnimation* animation, Model& model);

@@ -12,7 +12,7 @@
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
 
 namespace render::vulkan {
-using PushConstants = std::array<u32, 4 * 4>;//NOLINT
+using PushConstants = std::array<u32, 4 * 4>;  // NOLINT
 
 FSR::FSR(const Device& device, MemoryAllocator& memory_allocator, size_t image_count,
          vk::Extent2D extent)
@@ -169,8 +169,7 @@ auto FSR::Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image so
                             output_image_height, viewport_x, viewport_y);
 
     const float sharpening =
-        static_cast<float>(settings::values.fsr_sharpening_slider.GetValue()) /
-        100.0F;
+        static_cast<float>(settings::values.fsr_sharpening_slider.GetValue()) / 100.0F;
     ::FSR::FsrRcasCon(rcas_con.data(), sharpening);
 
     UploadImages(scheduler);

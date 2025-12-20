@@ -81,7 +81,7 @@ auto TextureCache<P>::addTexture(ktxTexture* ktxTexture) -> ImageViewId {
         for (uint32_t level = 0; level < ktxTexture->numLevels; ++level) {
             ktx_size_t offset{};
             KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, 0, face, &offset);
-            if(result != KTX_SUCCESS){
+            if (result != KTX_SUCCESS) {
                 throw std::runtime_error("ktxTexture_GetImageOffset");
             }
             // 计算当前 mip 层的尺寸
