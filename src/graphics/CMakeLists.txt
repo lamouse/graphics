@@ -19,9 +19,6 @@ if(USE_QT AND TARGET Qt6::Quick)
         VERSION 1.0
         QML_FILES
         Main.qml
-        SOURCES
-        ui/render_config.hpp
-        ui/render_config.cpp
     )
     set_target_properties(${PROGRAM_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE
