@@ -1,6 +1,6 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(PROGRAM_NAME "graphics")
-
+set(QML_MODULE_NAME "graphics")
 include(${CMAKE_CURRENT_SOURCE_DIR}/graphics.cmake)
 
 if(USE_QT AND TARGET Qt6::Quick)
@@ -12,7 +12,7 @@ if(USE_QT AND TARGET Qt6::Quick)
         AUTORCC ON
     )
     qt_add_qml_module(${PROGRAM_NAME}
-        URI baseqml
+        URI ${QML_MODULE_NAME}
         VERSION 1.0
         QML_FILES
         Main.qml

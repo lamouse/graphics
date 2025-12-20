@@ -45,7 +45,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         QObject::connect(
             &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
             []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
-        engine.loadFromModule("baseqml", "Main");
+        engine.loadFromModule("graphics", "Main");
         if (engine.rootObjects().isEmpty()) {
             return -1;
         }
