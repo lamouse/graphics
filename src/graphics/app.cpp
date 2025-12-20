@@ -7,6 +7,7 @@
 #include "effects/light/point_light.hpp"
 #include "effects/model/model.hpp"
 #include "effects/model/multi_mesh_model.hpp"
+#include "common/settings.hpp"
 #include "effects/cubemap/skybox.hpp"
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
@@ -55,7 +56,6 @@ void App::run() {
 
     render::frame::FramebufferConfig frames{
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
-    bool show_debug_ui = true;
     world::World world;
 
     auto& cameraComponent =
@@ -95,10 +95,6 @@ void App::run() {
             if (!e) {
                 continue;
             }
-
-            if (e->key == core::InputKey::Insert) {
-                show_debug_ui = !show_debug_ui;
-            }
             if (e->key == core::InputKey::Esc) {
                 window->setShouldClose();
             }
@@ -130,7 +126,7 @@ void App::run() {
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
 
-        if (show_debug_ui) {
+        if (settings::values.use_debug_ui.GetValue()) {
             if (shaders_building > 0) {
                 statusData.build_shaders = shaders_building;
             } else {

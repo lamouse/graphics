@@ -33,12 +33,19 @@ Item {
                 onCheckedChanged: render_ctrl.handleOptionRenderDebug(checked)
             }
 
+            Switch {
+                id: debug_ui
+                text: "开启调试UI"
+                checked: render_ctrl.isUseDebugUIEnabled()
+                onCheckedChanged: render_ctrl.setUseDebugUI(checked)
+            }
+
             Button {
                 id: began_render
                 text: "开启渲染"
                 onClicked: {
                     console.log("渲染已开启！");
-                    Qt.quit()
+                    Qt.quit();
                 }
             }
         }

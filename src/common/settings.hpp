@@ -63,6 +63,7 @@ struct Values {
         Setting<enums::AstcDecodeMode, true> astc_decodeMode{linkage, enums::AstcDecodeMode::Gpu,
                                                              "astc_recompression", Category::core,
                                                              Specialization::List};
+        Setting<bool, false> use_debug_ui{linkage, true, "use_debug_ui", Category::system};
 };
 
 extern Values values;  // NOLINT
