@@ -6,6 +6,7 @@
 namespace graphics {
 class RenderController : public QObject {
         Q_OBJECT
+        QML_ELEMENT
     public:
         explicit RenderController(QObject* parent = nullptr)
             : QObject(parent), render_debug_(settings::values.render_debug.GetValue()) {}
