@@ -2,15 +2,12 @@ cmake_minimum_required(VERSION 4.0)
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeModules/VcpkgConfig.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444") #开启这个需要设置CMAKE_CXX_MODULE_STD ON
 project(graphics)
 set(EXECUTE_NAME graphics)
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 1)
 
-# set(CMAKE_CXX_MODULE_STD ON)
-# set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(USE_FASTER_LD "Check if a faster linker is available" ON "NOT WIN32" OFF)
 
