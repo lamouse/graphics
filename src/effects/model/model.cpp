@@ -80,10 +80,10 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
 void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
 
-    if (render_state->is_select()) {
-        if (frameInfo.input_state.key == core::InputKey::LCtrl) {
-            if (frameInfo.input_state.scrollOffset_ != 0.0f) {
-                scale(*transform, frameInfo.input_state.scrollOffset_);
+    if (render_state->is_select() && frameInfo.input_event) {
+        if (frameInfo.input_event->key == core::InputKey::LCtrl) {
+            if (frameInfo.input_event->scrollOffset_ != 0.0f) {
+                scale(*transform, frameInfo.input_event->scrollOffset_);
             }
         }
     }
@@ -95,7 +95,7 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     } else {
         render_state->mouse_select = false;
     }
-    if (render_state->mouse_select && frameInfo.input_state) {
+    if (render_state->mouse_select && frameInfo.input_event) {
         move_model(frameInfo, *transform);
     }
 

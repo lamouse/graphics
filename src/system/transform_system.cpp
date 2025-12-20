@@ -19,13 +19,13 @@ void move_model(const core::FrameInfo& frameInfo, ecs::TransformComponent& trans
     auto width = static_cast<float>(frameInfo.window_width);
     auto height = static_cast<float>(frameInfo.window_hight);
 
-    float dx = frameInfo.input_state.mouseRelativeX_;
-    float dy = frameInfo.input_state.mouseRelativeY_;
+    float dx = frameInfo.input_event->mouseRelativeX_;
+    float dy = frameInfo.input_event->mouseRelativeY_;
 
     if (std::abs(dx) > 1e-6f || std::abs(dy) > 1e-6f) {
         // 当前鼠标位置 (屏幕坐标)
-        auto mouseX = static_cast<float>(frameInfo.input_state.mouseX_);
-        auto mouseY = static_cast<float>(frameInfo.input_state.mouseY_);
+        auto mouseX = static_cast<float>(frameInfo.input_event->mouseX_);
+        auto mouseY = static_cast<float>(frameInfo.input_event->mouseY_);
 
         // 新鼠标位置
         float newMouseX = mouseX + dx;

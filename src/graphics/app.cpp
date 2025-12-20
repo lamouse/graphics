@@ -46,7 +46,6 @@ auto getRuntime() -> FrameTime {
 void App::run() {
     load_resource();
     const auto frame_layout = window->getFramebufferLayout();
-    core::FrameInfo frameInfo{};
     auto* graphics = render_base->getGraphics();
     ui::MenuData menu_data{};
 
@@ -82,6 +81,7 @@ void App::run() {
         outliner_entities_.push_back({.entity = world.entity_, .children = world.getEntities()});
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
+        core::FrameInfo frameInfo{};
         frameInfo.camera = &camera;
         auto [duration, frame] = getRuntime();
         frameInfo.frameTime = frame;
@@ -116,7 +116,7 @@ void App::run() {
                     world.cancelPick();
                 }
                 CameraSystem::update(cameraComponent, e.value(), frame);
-                frameInfo.input_state = e.value();
+                frameInfo.input_event = e;
                 registry.updateAll(frameInfo, world);
             }
         }
@@ -149,7 +149,6 @@ void App::run() {
             render_base->composite(std::span{&frames, 1});
         }
 
-        frameInfo.clean();
         world.cleanLight();
     }
 }

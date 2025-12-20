@@ -52,9 +52,9 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
     }
 
     if (render_state->is_select()) {
-        if (frameInfo.input_state.key == core::InputKey::LCtrl) {
-            if (frameInfo.input_state.scrollOffset_ != 0.0f) {
-                scale(*transform, frameInfo.input_state.scrollOffset_);
+        if (frameInfo.input_event->key == core::InputKey::LCtrl) {
+            if (frameInfo.input_event->scrollOffset_ != 0.0f) {
+                scale(*transform, frameInfo.input_event->scrollOffset_);
             }
         }
     }

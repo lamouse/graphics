@@ -11,9 +11,8 @@ struct FrameInfo {
         Camera* camera{};
         float frameTime{};
         float durationTime{};
-        InputState input_state;
+        std::optional<InputState> input_event;
         int window_width{};
         int window_hight{};
-        void clean() { input_state = {}; }
 };
 }  // namespace core
