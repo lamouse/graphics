@@ -1,5 +1,7 @@
 #include "graphics/QT_window.hpp"
 #include "graphics/QT_common.hpp"
+#include "graphics/QT_render_widget.hpp"
+#include "common/settings.hpp"
 #include <Qscreen>
 #include <QResizeEvent>
 #include <QFileDialog>
@@ -23,6 +25,7 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
 #ifdef _WIN32
     scale = this->screen()->logicalDotsPerInch() / 96.0;
 #endif
+
     window_info.render_surface_scale = static_cast<float>(scale);
     window_info.type = qt::get_window_system_info();
     window_info.render_surface = reinterpret_cast<void*>(this->winId());
@@ -32,6 +35,12 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
     fileMenu->addAction(openAction);
     connect(openAction, &QAction::triggered, this, &QTWindow::openFile);
     openAction->setShortcut(QKeySequence::Open);
+
+    auto* viewMenu = menuBar()->addMenu(tr("&View"));
+    auto* debugUIAction = new QAction(tr("Toggle &Debug UI"), this);
+    viewMenu->addAction(debugUIAction);
+    connect(debugUIAction, &QAction::triggered, this, &QTWindow::setDebugUI);
+    debugUIAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
 
     this->show();
 }
@@ -208,5 +217,8 @@ void QTWindow::openFile(){
     if (!fileName.isEmpty()) {
         spdlog::info("Selected file: {}", fileName.toStdString());
     }
+}
+void QTWindow::setDebugUI(){
+    settings::values.use_debug_ui.SetValue(!settings::values.use_debug_ui.GetValue());
 }
 }  // namespace graphics

@@ -33,6 +33,7 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         void focusOutEvent(QFocusEvent* event) override;
 
         void openFile();
+        void setDebugUI();
     private:
         bool should_close_;
         std::queue<core::InputState> eventQueue;
