@@ -1,7 +1,7 @@
 #include "graphics/ui/render_config.hpp"
 #include <QAction>
-#include <QQmlEngine>
-#include <QQmlContext>
+#include <QtQml/QQmlEngine>
+#include <QtQml/QQmlContext>
 namespace graphics {
 void registerRenderController(QQmlApplicationEngine& engine) {
     auto* ctrl = new RenderController(&engine);  // NOLINT

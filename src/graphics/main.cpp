@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 #ifdef USE_QT
 #include <QScreen>
-#include <QQmlApplicationEngine>
+#include <QtQml/QQmlApplicationEngine>
 #include <QWindow>
 #include <QApplication>
 #include <QFontDatabase>

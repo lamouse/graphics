@@ -1,7 +1,7 @@
 #pragma once
 #include <QObject>
 #include <spdlog/spdlog.h>
-#include <QQmlApplicationEngine>
+#include <QtQml/QQmlApplicationEngine>
 #include "common/settings.hpp"
 namespace graphics {
 class RenderController : public QObject {
