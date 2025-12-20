@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
+import qml_ui
 
 ApplicationWindow {
     width: 640
@@ -51,41 +52,8 @@ ApplicationWindow {
 
     Component {
         id: gameList
-        Rectangle {
-            color: "lightgray"
-
-            // 居中的文本
-            Text {
-                anchors.centerIn: parent
-                text: "这里显示游戏列表"
-            }
-
-            // 布局容器：垂直排列 CheckBox 和 Button
-            Column {
-                spacing: 12  // 控件间距（可调）
-                anchors {
-                    horizontalCenter: parent.horizontalCenter  // 水平居中
-                    top: parent.top
-                    topMargin: 60  // 距离顶部留空，避免和 Text 重叠
-                }
-
-                Switch {
-                    id: render_debug
-                    text: "开启渲染调试"
-                    checked: render_ctrl.isRenderDebugEnabled()
-                    onCheckedChanged: render_ctrl.handleOptionRenderDebug(checked)
-                }
-
-                Button {
-                    id: began_render
-                    text: "开启渲染"
-                    onClicked: {
-                        console.log("渲染已开启！");
-                        // render_ctrl.startRendering(); // 如果有这个方法
-                        Qt.quit()
-                    }
-                }
-            }
+        RenderControl{
+            anchors.centerIn: parent
         }
     }
 

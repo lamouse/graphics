@@ -40,6 +40,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         QQmlApplicationEngine engine;
         graphics::registerRenderController(engine);
         engine.addImportPath(QCoreApplication::applicationDirPath() + "/qml");
+        engine.addImportPath(":/");
 
         QObject::connect(
             &engine, &QQmlApplicationEngine::objectCreationFailed, &app,

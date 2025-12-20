@@ -1,5 +1,4 @@
 set(QML_MODULE_NAME "qml_ui")
-set(QML_IMPORT_DIR ${CMAKE_BINARY_DIR}/qml)
 set(LIB_NAME "${QML_MODULE_NAME}")
 qt_add_library(${LIB_NAME} STATIC)
 set_target_properties(${LIB_NAME} PROPERTIES
@@ -7,10 +6,10 @@ set_target_properties(${LIB_NAME} PROPERTIES
 
 qt_add_qml_module(${QML_MODULE_NAME}
     URI ${QML_MODULE_NAME}
-    VERSION 1.0
+    # VERSION 1.0
     RESOURCE_PREFIX /
     QML_FILES
-        RedButton.qml
+        RenderControl.qml
 )
 
 target_link_libraries(${LIB_NAME} PUBLIC
