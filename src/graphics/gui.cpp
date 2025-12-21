@@ -27,7 +27,7 @@ void* GImGuiDemoMarkerCallbackUserData = NULL;
                                      GImGuiDemoMarkerCallbackUserData); \
     } while (0)
 namespace {
-constexpr float OUTLINER_WIDTH = 0.3f;
+constexpr float OUTLINER_WIDTH = 400.f;
 constexpr float RENDER_STATUS_BAR_HEIGHT = 45.f;
 
 // Note that shortcuts are currently provided for display only
@@ -193,7 +193,7 @@ void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float as
     ImGui::SetNextWindowPos(viewport->WorkPos);
     auto window_size = viewport->Size;
     if (data.show_out_liner) {
-        window_size.x *= (1.f - OUTLINER_WIDTH);
+        window_size.x  -= OUTLINER_WIDTH;
     }
     if (data.show_status) {
         window_size.y -= RENDER_STATUS_BAR_HEIGHT;
@@ -385,7 +385,7 @@ void showOutliner(world::World& world, settings::MenuData& data) {
         if (data.show_status) {
             window_size.y -= RENDER_STATUS_BAR_HEIGHT;
         }
-        window_size.x *= OUTLINER_WIDTH;
+        window_size.x = OUTLINER_WIDTH;
 
         ImVec2 panelPos(viewport->WorkPos.x + (viewport->Size.x - window_size.x),
                         viewport->WorkPos.y);
