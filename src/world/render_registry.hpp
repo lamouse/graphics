@@ -1,7 +1,6 @@
 #pragma once
 #include "resource/id.hpp"
 #include <vector>
-#include <memory>
 #include <functional>
 #include <utility>
 #include <unordered_map>

@@ -22,7 +22,7 @@ class World {
         void addLight(const LightInfo& info) { lights_.push_back(info); }
         void update(const core::FrameInfo& frameInfo);
         void draw(render::Graphic* gfx);
-        template<DrawableLike T>
+        template <DrawableLike T>
         void addDrawable(T obj) {
             render_registry_.add(std::forward<T>(obj));
         }
@@ -34,14 +34,21 @@ class World {
 
         void pick(id_t id) {
             pick_id = id;
-            is_pick = true;
+            auto* draw_able = render_registry_.getDrawableById(id);
+            if (draw_able) {
+                draw_able->getEntity().getComponent<ecs::RenderStateComponent>().mouse_select =
+                    true;
+            }
         }
 
-        void cancelPick() { is_pick = false; };
-        // 如果选中有效返回选中的id和true，否则返回任意id和false
-        [[nodiscard]] auto pick() const -> std::pair<id_t, bool> {
-            return std::make_pair(pick_id, is_pick);
-        }
+        void cancelPick() {
+            auto* draw_able = render_registry_.getDrawableById(pick_id);
+            if (draw_able) {
+                draw_able->getEntity().getComponent<ecs::RenderStateComponent>().mouse_select =
+                    false;
+            }
+        };
+
 
         [[nodiscard]] auto getScene() -> ecs::Scene&;
         ~World();
@@ -66,7 +73,6 @@ class World {
     private:
         id_t id_;
         id_t pick_id;
-        bool is_pick{false};
         ecs::Scene scene_;
         ecs::Entity cameraEntity_;
         ecs::Entity dirLightEntity_;

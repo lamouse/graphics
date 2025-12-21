@@ -65,11 +65,12 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
         meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
         meshes.back().setPushConstant(&push_constant);
+        auto vertex = manager.getMeshVertex(mesh_id);
+        auto indics = manager.getMeshIndics(mesh_id);
+        PickingSystem::upload_vertex(id, meshes.back().getId(), vertex, indics);
+        mesh_ids.insert(meshes.back().getId());
     }
-    mesh_ids.insert(meshes.back().getId());
-    auto vertex = manager.getMeshVertex(mesh_id);
-    auto indics = manager.getMeshIndics(mesh_id);
-    PickingSystem::upload_vertex(id, vertex, indics);
+
     entity_ = getEffectsScene().createEntity("LightModel" + std::to_string(id));
     entity_.addComponent<ecs::RenderStateComponent>(id);
     entity_.addComponent<ecs::TransformComponent>();
@@ -88,13 +89,6 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
         }
     }
 
-    auto [pick_id, pick] = world.pick();
-
-    if (pick && id == pick_id) {
-        render_state->mouse_select = true;
-    } else {
-        render_state->mouse_select = false;
-    }
     if (render_state->mouse_select && frameInfo.input_event) {
         move_model(frameInfo, *transform);
     }

@@ -66,27 +66,26 @@ EmbreePicker::~EmbreePicker() {
     }
 }
 
-void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
+void EmbreePicker::buildMesh(id_t id, id_t mesh, std::span<const glm::vec3> vertices,
                              std::span<const uint32_t> indices, bool rebuild) {
-    if (geometries_.contains(id)) {
-        ZoneScopedN("EmbreePicker::buildMesh");
+    if (geometries_.contains(mesh)) {
         if (!rebuild) {
             return;
         }
-        rtcReleaseGeometry(geometries_.find(id)->second);
-        geometries_.erase(id);
+        rtcReleaseGeometry(geometries_.find(mesh)->second);
+        geometries_.erase(mesh);
 
         // 释放实例（如果存在）
-        if (instances_.contains(id)) {
+        if (instances_.contains(mesh)) {
             for (auto& [k, v] : embree_to_user) {
-                if (v == id) {
+                if (v == mesh) {
                     rtcDetachGeometry(main_scene_, k);
                     embree_to_user.erase(k);
                     break;
                 }
             }
-            rtcReleaseGeometry(instances_[id]);
-            instances_.erase(id);
+            rtcReleaseGeometry(instances_[mesh]);
+            instances_.erase(mesh);
         }
     }
 
@@ -108,7 +107,7 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
     // 5. 提交几何体（构建 BVH）
     rtcCommitGeometry(geometry_);
 
-    geometries_[id] = geometry_;
+    geometries_[mesh] = geometry_;
 
     // 4. 创建 instance（在主场景中）
     RTCGeometry instance = rtcNewGeometry(device_, RTC_GEOMETRY_TYPE_INSTANCE);
@@ -127,10 +126,11 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
     unsigned int instance_id = rtcAttachGeometry(main_scene_, instance);
     // 6. 将几何体添加到场景
     rtcAttachGeometry(scene_, geometry_);
-    instances_[id] = instance;
+    instances_[mesh] = instance;
 
     // 6. 映射拾取 ID
-    embree_to_user[instance_id] = id;
+    embree_to_user[instance_id] = mesh;
+    embree_to_model[instance_id] = id;
 }
 
 // 在每帧更新所有移动物体的 transform
@@ -182,7 +182,8 @@ auto EmbreePicker::pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
         return PickResult{.position = rayOrigin + rayDirection * ray_hit.ray.tfar,
                           .distance = ray_hit.ray.tfar,
                           .primitiveId = ray_hit.hit.primID,
-                          .id = embree_to_user.at(ray_hit.hit.geomID)};
+                          .id = embree_to_user.at(ray_hit.hit.geomID),
+                          .model_id = embree_to_model.at(ray_hit.hit.geomID)};
     }
 
     return std::nullopt;

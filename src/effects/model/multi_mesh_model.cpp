@@ -28,7 +28,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
         meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
         meshes.back().setPushConstant(&push_constant);
-        PickingSystem::upload_vertex(meshes.back().getId(), mesh.only_vertex, mesh.indices_);
+        PickingSystem::upload_vertex(id, meshes.back().getId(), mesh.only_vertex, mesh.indices_);
         mesh_ids.insert(meshes.back().getId());
         child_entitys_.push_back(meshes.back().entity_);
     }
@@ -42,13 +42,6 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
 void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
 
-    auto [pick_id, pick] = world.pick();
-
-    if (pick && mesh_ids.contains(pick_id)) {
-        render_state->mouse_select = true;
-    } else {
-        render_state->mouse_select = false;
-    }
     if (frameInfo.input_event) {
         if (render_state->mouse_select) {
             move_model(frameInfo, *transform);

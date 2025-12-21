@@ -11,10 +11,10 @@ auto get_embree_picker() -> graphics::EmbreePicker* {
 
 namespace graphics {
 
-void PickingSystem::upload_vertex(id_t id, std::span<const glm::vec3> localVertices,
+void PickingSystem::upload_vertex(id_t id, id_t mesh, std::span<const glm::vec3> localVertices,
                                   std::span<const uint32_t> indices) {
     auto* picker = get_embree_picker();
-    picker->buildMesh(id, localVertices, indices);
+    picker->buildMesh(id, mesh, localVertices, indices);
 }
 
 void PickingSystem::update_transform(id_t id, const ecs::TransformComponent& transform) {

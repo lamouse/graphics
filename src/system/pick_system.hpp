@@ -14,11 +14,12 @@ struct PickResult {
         float distance;
         uint32_t primitiveId;  // 三角形 ID
         id_t id;
+        id_t model_id;
 };
 
 class PickingSystem {
     public:
-        static void upload_vertex(id_t id, std::span<const glm::vec3> localVertices,
+        static void upload_vertex(id_t id, id_t mesh, std::span<const glm::vec3> localVertices,
                                   std::span<const uint32_t> indices);
         static void update_transform(id_t id, const ecs::TransformComponent& transform);
 

@@ -18,6 +18,7 @@ class EmbreePicker {
         RTCScene main_scene_;  // 主场景（包含 instances）
         std::unordered_map<id_t, RTCGeometry> geometries_;
         std::unordered_map<unsigned int, id_t> embree_to_user;  // Embree 回调用
+        std::unordered_map<unsigned int, id_t> embree_to_model;  // Embree 回调用
         std::unordered_map<id_t, RTCGeometry> instances_;       // id → instance geom
 
     public:
@@ -34,7 +35,7 @@ class EmbreePicker {
         void warmUp();
 
         // 构建三角形网格
-        void buildMesh(id_t id, std::span<const glm::vec3> vertices,
+        void buildMesh(id_t id, id_t mesh, std::span<const glm::vec3> vertices,
                        std::span<const uint32_t> indices, bool rebuild = false);
         void updateTransform(id_t id, const ecs::TransformComponent& transform);
 

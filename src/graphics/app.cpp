@@ -106,7 +106,7 @@ void App::run() {
                                                     static_cast<float>(frameInfo.window_width),
                                                     static_cast<float>(frameInfo.window_hight));
                     if (pick) {
-                        world.pick(pick->id);
+                        world.pick(pick->model_id);
                     }
                 }
                 if (e->mouseLeftButtonUp()) {
