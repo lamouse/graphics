@@ -171,11 +171,11 @@ void QTWindow::mouseMoveEvent(QMouseEvent* event) {
         input_state.key_down.Assign(1);
     }
     if (buttons & Qt::RightButton) {
-        input_state.mouse_button_center.Assign(1);
+        input_state.mouse_button_right.Assign(1);
         input_state.key_down.Assign(1);
     }
     if (buttons & Qt::MiddleButton) {
-        input_state.mouse_button_right.Assign(1);
+        input_state.mouse_button_center.Assign(1);
         input_state.key_down.Assign(1);
     }
     if (lastMouseX_ >= 0 && lastMouseY_ >= 0) {
