@@ -1,13 +1,15 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import RenderCtrl
 
 ApplicationWindow {
+    id: mainWindow
     width: 640
     height: 480
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("graphics config")
 
     // 顶部菜单栏
     menuBar: MenuBar {
@@ -56,6 +58,7 @@ ApplicationWindow {
             anchors.centerIn: parent
             onRenderStart:{
                 console.log("render start")
+                mainWindow.close()
                 Qt.quit()
             }
         }
