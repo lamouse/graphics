@@ -11,12 +11,6 @@ Item {
     Rectangle {
         color: "lightgray"
 
-        // 居中的文本
-        Text {
-            anchors.centerIn: parent
-            text: "这里显示游戏列表"
-        }
-
         // 布局容器：垂直排列 CheckBox 和 Button
         Column {
             spacing: 12  // 控件间距（可调）

@@ -110,6 +110,43 @@ pip install sphinx-rtd-theme
 }
 ```
 
+## Q6
+
+1. vs code 使用qml LSP的配置
+
+```json
+    "qt-qml.qmlls.additionalImportPaths": [
+        "${workspaceFolder}/build/qml"
+    ]
+```
+
+1. 使用vcpkg的qt我们需要一些配置,这里主要是针对windows平台的vcpkg
+
+```cmake
+    if(WIN32 AND NOT CMAKE_CROSSCOMPILING)
+        get_target_property(_windeployqt_exe Qt6::windeployqt IMPORTED_LOCATION)
+
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            if(USE_VCPKG)
+                string(REPLACE "windeployqt.exe" "windeployqt.debug.bat" _windeployqt_exe "${_windeployqt_exe}")
+            endif()
+        endif()
+
+        # 构建后复制平台插件 qwindows.dll
+        add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROGRAM_NAME}>/plugins/platforms"
+            COMMAND ${_windeployqt_exe}
+            --include-soft-plugins
+            --qmldir ${CMAKE_CURRENT_SOURCE_DIR}
+            --no-translations
+            --no-libraries
+            --skip-plugin-types networkinformation,imageformats,iconengines,qmltooling,styles,tls,generic
+            "$<TARGET_FILE_DIR:${PROGRAM_NAME}>"
+            COMMENT "windeployqt running..."
+        )
+    endif()
+```
+
 ## 学习vulkan的一些记录
 
  1. 有些教学还在设置逻辑设备的验证层，其实不需要了[说明](https://www.lunarg.com/wp-content/uploads/2019/04/UberLayer_V3.pdf)
