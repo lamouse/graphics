@@ -3,10 +3,9 @@ import QtQuick.Controls
 
 Item {
     id: renderCtrl
-    x: 10
-    y: 10
     width: 100
     height: 200
+    signal renderStart
 
     Rectangle {
         color: "lightgray"
@@ -38,8 +37,7 @@ Item {
                 id: began_render
                 text: "开启渲染"
                 onClicked: {
-                    console.log("渲染已开启！");
-                    Qt.quit();
+                    renderCtrl.renderStart()
                 }
             }
         }

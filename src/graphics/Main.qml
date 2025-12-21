@@ -54,6 +54,10 @@ ApplicationWindow {
         id: gameList
         RenderControl{
             anchors.centerIn: parent
+            onRenderStart:{
+                console.log("render start")
+                Qt.quit()
+            }
         }
     }
 
