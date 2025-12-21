@@ -15,8 +15,18 @@ SETTING(bool, false);
 SETTING(int, true);
 #undef SETTING
 
+struct MenuData {
+        bool show_system_setting{};
+        bool show_log{};
+        bool show_out_liner{true};
+        bool show_detail{true};
+        bool show_status{true};
+};
+
+
 struct Values {
         Linkage linkage;
+        MenuData menu_data;
         SwitchableSetting<enums::VSyncMode, true> vsync_mode{linkage,
                                                              enums::VSyncMode::Fifo,
                                                              "use_vsync",

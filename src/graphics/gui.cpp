@@ -180,7 +180,7 @@ void pipeline_state(render::DynamicPipelineState& state) {
 }  // namespace
 namespace graphics::ui {
 
-void draw_texture(MenuData& data, ImTextureID imguiTextureID, float aspectRatio) {
+void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float aspectRatio) {
     // 设置窗口标志
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
@@ -273,7 +273,7 @@ void init_imgui(float scale) {
     io.Fonts->AddFontFromFileTTF("fonts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
 }
 
-void draw_detail(MenuData& data, ecs::Entity entity) {
+void draw_detail(settings::MenuData& data, ecs::Entity entity) {
     ImGui::Begin("Detail", &data.show_detail);
     if (entity.hasComponent<ecs::TagComponent>()) {
         auto& tag = entity.getComponent<ecs::TagComponent>();
@@ -319,7 +319,7 @@ void draw_detail(MenuData& data, ecs::Entity entity) {
 // ======================================
 // 递归绘制树节点（专业级 Outliner 风格）
 // ======================================
-void DrawModelTreeNode(MenuData& data, ecs::Entity entity) {
+void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
     ImGui::PushID(&entity);
     auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
     auto& tag = entity.getComponent<ecs::TagComponent>();
@@ -372,7 +372,7 @@ void DrawModelTreeNode(MenuData& data, ecs::Entity entity) {
     ImGui::PopID();
 }
 
-void ShowOutliner(std::span<Outliner> outlineres, MenuData& data) {
+void ShowOutliner(std::span<Outliner> outlineres, settings::MenuData& data) {
     if (data.show_out_liner) {
         // 设置窗口标志
         ImGuiWindowFlags window_flags =
@@ -419,7 +419,7 @@ void ShowOutliner(std::span<Outliner> outlineres, MenuData& data) {
     }
 }
 
-void show_menu(MenuData& data) {
+void show_menu(settings::MenuData& data) {
     static bool show_imgui_debug_window = false;
     if (show_imgui_debug_window) {
         ImGui::ShowMetricsWindow(&show_imgui_debug_window);
@@ -461,7 +461,7 @@ auto IsMouseControlledByImGui() -> bool {
     return io.WantCaptureMouse;
 }
 
-void render_status_bar(MenuData& menuData, StatusBarData& barData) {
+void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     if (!menuData.show_status) {
         return;
     }

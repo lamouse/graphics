@@ -47,7 +47,6 @@ void App::run() {
     load_resource();
     const auto frame_layout = window->getFramebufferLayout();
     auto* graphics = render_base->getGraphics();
-    ui::MenuData menu_data{};
 
     ui::StatusBarData statusData;
     auto deviceVendor = render_base->GetDeviceVendor();
@@ -137,12 +136,12 @@ void App::run() {
             statusData.mouseY_ = current_mouse_Y;
             auto imageId = graphics->getDrawImage();
             auto ui_fun = [&]() -> void {
-                ui::show_menu(menu_data);
-                draw_setting(menu_data.show_system_setting);
-                ui::ShowOutliner(outliner_entities_, menu_data);
-                render_status_bar(menu_data, statusData);
-                ui::draw_texture(menu_data, imageId, window->getAspectRatio());
-                logger.drawUi(menu_data.show_log);
+                ui::show_menu(settings::values.menu_data);
+                draw_setting(settings::values.menu_data.show_system_setting);
+                ui::ShowOutliner(outliner_entities_, settings::values.menu_data);
+                render_status_bar(settings::values.menu_data, statusData);
+                ui::draw_texture(settings::values.menu_data, imageId, window->getAspectRatio());
+                logger.drawUi(settings::values.menu_data.show_log);
             };
             render_base->composite(std::span{&frames, 1}, ui_fun);
         } else {
