@@ -3,13 +3,17 @@ import QtQuick.Controls
 
 Item {
     id: renderCtrl
-    width: 100
-    height: 200
+    width: parent.width
+    height: parent.height
     signal renderStart
 
     Rectangle {
         color: "lightgray"
-
+        anchors.fill: parent
+        focus: true
+        Keys.onPressed: {
+            renderCtrl.renderStart();
+        }
         // 布局容器：垂直排列 CheckBox 和 Button
         Column {
             spacing: 12  // 控件间距（可调）
@@ -37,7 +41,7 @@ Item {
                 id: began_render
                 text: "开启渲染"
                 onClicked: {
-                    renderCtrl.renderStart()
+                    renderCtrl.renderStart();
                 }
             }
         }
