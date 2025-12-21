@@ -36,8 +36,11 @@ LoggerSystem::LoggerSystem()
         file_sink->set_pattern(file_patten);
         sinks.push_back(file_sink);
     }
-    imgui_sink = std::make_shared<ImGuiLogSink_mt>();
-    sinks.push_back(imgui_sink);
+    if (settings::values.use_debug_ui) {
+        imgui_sink = std::make_shared<ImGuiLogSink_mt>();
+        sinks.push_back(imgui_sink);
+    }
+
     logger_ = std::make_shared<spdlog::async_logger>("multi_sink", sinks.begin(), sinks.end(),
                                                      spdlog::thread_pool(),
                                                      spdlog::async_overflow_policy::block);
