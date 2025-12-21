@@ -89,9 +89,7 @@ void App::run() {
         world.update(frameInfo);
 
         while (auto e = input_event.pop_event()) {
-            if (!e) {
-                continue;
-            }
+            assert(e && "e can't be nullopt");
             if (e->key == core::InputKey::Esc) {
                 window->setShouldClose();
             }
