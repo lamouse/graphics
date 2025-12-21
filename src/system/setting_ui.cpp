@@ -33,17 +33,6 @@ void log_settings() {
     ImGui::Separator();
     ImGui::Text("log setting");
 
-    auto canon = settings::enums::EnumMetadata<settings::enums::LogLevel>::canonicalizations();
-    std::vector<const char*> names;
-    for (auto& key : canon | std::views::keys) {
-        names.push_back(key.c_str());
-    }
-
-    static int item_current = static_cast<int>(settings::values.log_level.GetValue());
-    ImGui::Combo("log level", &item_current, names.data(), static_cast<int>(names.size()));
-    const auto level = settings::enums::ToEnum<settings::enums::LogLevel>(names[item_current]);
-    settings::values.log_level.SetValue(level);
-
     auto& render_category =
         settings::values.linkage.by_category.find(settings::Category::log)->second;
     for (auto* setting : render_category) {

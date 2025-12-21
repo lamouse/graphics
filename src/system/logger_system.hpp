@@ -2,6 +2,8 @@
 #include <spdlog/sinks/sink.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/async_logger.h>
+#include <ranges>
+#include "common/settings.hpp"
 #include <mutex>
 #include <deque>
 #include <imgui.h>
@@ -20,7 +22,24 @@ class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
             ImGui::Begin(title, &popen);
 
             std::lock_guard lock(mutex_);
+            ImGui::BeginTable("Options", 2);
+            ImGui::TableNextColumn();
             ImGui::Checkbox("Auto-scroll", &auto_scroll_);
+
+            auto canon =
+                settings::enums::EnumMetadata<settings::enums::LogLevel>::canonicalizations();
+            std::vector<const char*> names;
+            for (auto& key : canon | std::views::keys) {
+                names.push_back(key.c_str());
+            }
+
+            static int item_current = static_cast<int>(settings::values.log_level.GetValue());
+            ImGui::TableNextColumn();
+            ImGui::Combo("log level", &item_current, names.data(), static_cast<int>(names.size()));
+            ImGui::EndTable();
+            const auto level =
+                settings::enums::ToEnum<settings::enums::LogLevel>(names[item_current]);
+            settings::values.log_level.SetValue(level);
             ImGui::Separator();
 
             ImGui::BeginChild("LogRegion", ImVec2(0, 0), false,
@@ -33,11 +52,22 @@ class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
                 } else if (absl::StrContains(line, "[warn]") ||
                            absl::StrContains(line, "WARNING") ||
                            absl::StrContains(line, "warning")) {
+                    if (item_current > static_cast<int>(settings::enums::LogLevel::warn)) {
+                        continue;  // 过滤掉非当前级别的日志
+                    }
                     color = ImVec4(1.0F, 1.0F, 0.4F, 1.0F);  // 黄色
+
                 } else if (absl::StrContains(line, "[info]") || absl::StrContains(line, "INFO")) {
+                    if (item_current > static_cast<int>(settings::enums::LogLevel::info)) {
+                        continue;  // 过滤掉非当前级别的日志
+                    }
                     color = ImVec4(0.6F, 1.0F, 0.6F, 1.0F);  // 绿色
+
                 } else if (absl::StrContains(line, "[debug]") || absl::StrContains(line, "DEBUG")) {
                     color = ImVec4(0.6F, 0.8F, 1.0F, 1.0F);  // 蓝色
+                    if (item_current > static_cast<int>(settings::enums::LogLevel::debug)) {
+                        continue;  // 过滤掉非当前级别的日志
+                    }
                 }
 
                 ImGui::PushStyleColor(ImGuiCol_Text, color);

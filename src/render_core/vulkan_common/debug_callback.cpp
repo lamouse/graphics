@@ -15,7 +15,7 @@ debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         }
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose:
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo: {
-            spdlog::info("validation layer: {}", pCallbackData->pMessage);
+            spdlog::debug("validation layer: {}", pCallbackData->pMessage);
             break;
         }
         case vk::DebugUtilsMessageSeverityFlagBitsEXT::eError: {
