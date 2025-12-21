@@ -131,8 +131,6 @@ void EmbreePicker::buildMesh(id_t id, std::span<const glm::vec3> vertices,
 
     // 6. 映射拾取 ID
     embree_to_user[instance_id] = id;
-    commit();
-    warmup_embree(main_scene_);
 }
 
 // 在每帧更新所有移动物体的 transform
@@ -151,6 +149,8 @@ void EmbreePicker::commit() {
     rtcCommitScene(scene_);
     rtcCommitScene(main_scene_);
 }
+
+void EmbreePicker::warmUp() { warmup_embree(main_scene_); }
 
 auto EmbreePicker::pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
     -> std::optional<PickResult> {

@@ -47,14 +47,16 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
     } else {
         render_state->mouse_select = false;
     }
-    if (render_state->mouse_select) {
-        move_model(frameInfo, *transform);
-    }
+    if (frameInfo.input_event) {
+        if (render_state->mouse_select) {
+            move_model(frameInfo, *transform);
+        }
 
-    if (render_state->is_select()) {
-        if (frameInfo.input_event->key == core::InputKey::LCtrl) {
-            if (frameInfo.input_event->scrollOffset_ != 0.0f) {
-                scale(*transform, frameInfo.input_event->scrollOffset_);
+        if (render_state->is_select()) {
+            if (frameInfo.input_event->key == core::InputKey::LCtrl) {
+                if (frameInfo.input_event->scrollOffset_ != 0.0f) {
+                    scale(*transform, frameInfo.input_event->scrollOffset_);
+                }
             }
         }
     }

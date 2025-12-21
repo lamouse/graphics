@@ -199,6 +199,8 @@ void QTWindow::wheelEvent(QWheelEvent* event) {
         io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
     }
     core::InputState input_state;
+    input_state.mouseX_ = event->position().x();
+    input_state.mouseY_ = event->position().y();
     input_state.scrollOffset_ = event->angleDelta().y() / 120.0f;
     eventQueue.push(input_state);
 }

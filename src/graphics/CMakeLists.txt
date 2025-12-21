@@ -20,9 +20,6 @@ if(USE_QT AND TARGET Qt6::Quick)
         QML_FILES
         Main.qml
     )
-    set_target_properties(${PROGRAM_NAME} PROPERTIES
-        WIN32_EXECUTABLE TRUE
-    )
 else()
     add_executable(${PROGRAM_NAME} ${sources})
 endif()

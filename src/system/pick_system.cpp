@@ -22,6 +22,13 @@ void PickingSystem::update_transform(id_t id, const ecs::TransformComponent& tra
     picker->updateTransform(id, transform);
 }
 
+void PickingSystem::commit() {
+    ZoneScopedN("PickingSystem::commit");
+    auto* picker = get_embree_picker();
+    picker->commit();
+    picker->warmUp();
+}
+
 auto PickingSystem::pick(const core::Camera& camera, float mouseX, float mouseY, float windowWidth,
                          float windowHeight) -> std::optional<PickResult> {
     // 📌 1. 获取视图-投影矩阵

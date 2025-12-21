@@ -22,6 +22,8 @@ class PickingSystem {
                                   std::span<const uint32_t> indices);
         static void update_transform(id_t id, const ecs::TransformComponent& transform);
 
+        static void commit();
+
         static auto pick(const core::Camera& camera, float mouseX, float mouseY, float windowWidth,
                          float windowHeight) -> std::optional<PickResult>;
 };
