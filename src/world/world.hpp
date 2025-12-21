@@ -1,10 +1,11 @@
 #pragma once
 #include "common/common_funcs.hpp"
+#include "world/render_registry.hpp"
 #include "resource/id.hpp"
 #include "ecs/scene/scene.hpp"
-#include "ecs/scene/entity.hpp"
 #include "ecs/component.hpp"
 #include <vector>
+#include <functional>
 namespace world {
 
 enum class WorldEntityType : std::uint8_t { CAMERA };
@@ -19,6 +20,12 @@ class World {
         World();
         [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
         void addLight(const LightInfo& info) { lights_.push_back(info); }
+        void update(const core::FrameInfo& frameInfo);
+        void draw(render::Graphic* gfx);
+        template<DrawableLike T>
+        void addDrawable(T obj) {
+            render_registry_.add(std::forward<T>(obj));
+        }
         [[nodiscard]] auto getLightEntities(this auto&& self) -> decltype(auto) {
             {
                 return (std::span(self.lights_));
@@ -46,8 +53,12 @@ class World {
             lights_.push_back({.light = dir_light, .transform = nullptr});
         }
 
-        [[nodiscard]] auto getEntities() const -> std::vector<ecs::Entity> {
-            return child_entitys_;
+        void processOutlineres(const std::function<void(ecs::Outliner&&)>& func) {
+            ecs::Outliner outliner;
+            outliner.entity = entity_;
+            outliner.children = child_entitys_;
+            func(std::move(outliner));
+            render_registry_.processOutlineres(func);
         }
 
         ecs::Entity entity_;
@@ -62,5 +73,6 @@ class World {
         ecs::LightComponent* dir_light;
         std::vector<LightInfo> lights_;
         std::vector<ecs::Entity> child_entitys_;
+        RenderRegistry render_registry_;
 };
 }  // namespace world

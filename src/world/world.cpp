@@ -1,7 +1,9 @@
 #include "world.hpp"
+#include "core/frame_info.hpp"
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/component.hpp"
 #include "resource/id.hpp"
+#include "system/camera_system.hpp"
 
 namespace world {
 
@@ -36,5 +38,16 @@ World::World() : id_(graphics::getCurrentId()) {
 [[nodiscard]] auto World::getScene() -> ecs::Scene& { return scene_; }
 
 World::~World() = default;
+
+void World::update(const core::FrameInfo& frameInfo) {
+    if (frameInfo.input_event) {
+        auto& cameraComponent = cameraEntity_.getComponent<ecs::CameraComponent>();
+        graphics::CameraSystem::update(cameraComponent, frameInfo.input_event.value(),
+                                       frameInfo.frameTime);
+    }
+    render_registry_.updateAll(frameInfo, *this);
+}
+
+void World::draw(render::Graphic* gfx) { render_registry_.drawAll(gfx); }
 
 }  // namespace world

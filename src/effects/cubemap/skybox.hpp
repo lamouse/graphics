@@ -60,6 +60,7 @@ class SkyBox {
         }
         ecs::Entity entity_;
 
+        auto getId() const -> id_t { return id; }
     private:
         using SkyBoxInstance =
             MeshInstance<EmptyPushConstants, render::PrimitiveTopology::Triangles, SkyUBO>;

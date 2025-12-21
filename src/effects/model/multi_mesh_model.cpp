@@ -11,6 +11,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
     MultiMeshModel model(model_config.path, model_config.hash, model_config.flip_uv);
     auto sub_meshes = model.getMeshes();
     materials.reserve(sub_meshes.size());
+    child_entitys_.reserve(sub_meshes.size());
     for (uint32_t i = 0; const auto& mesh : sub_meshes) {
         auto mesh_id = manager.addMesh(names.mesh_name + "mesh: " + std::to_string(i++), mesh);
         manager.addMeshVertex(mesh_id, mesh.only_vertex, mesh.indices_);
@@ -29,6 +30,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
         meshes.back().setPushConstant(&push_constant);
         PickingSystem::upload_vertex(meshes.back().getId(), mesh.only_vertex, mesh.indices_);
         mesh_ids.insert(meshes.back().getId());
+        child_entitys_.push_back(meshes.back().entity_);
     }
     entity_ = getEffectsScene().createEntity(name + ": " + std::to_string(id));
     entity_.addComponent<ecs::RenderStateComponent>(id);

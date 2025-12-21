@@ -372,7 +372,7 @@ void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
     ImGui::PopID();
 }
 
-void ShowOutliner(std::span<Outliner> outlineres, settings::MenuData& data) {
+void showOutliner(world::World& world, settings::MenuData& data) {
     if (data.show_out_liner) {
         // 设置窗口标志
         ImGuiWindowFlags window_flags =
@@ -392,30 +392,33 @@ void ShowOutliner(std::span<Outliner> outlineres, settings::MenuData& data) {
         ImGui::SetNextWindowSize(window_size);
         ImGui::SetNextWindowPos(panelPos);
         ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
-
-        for (auto& outliner : outlineres) {
-            auto& tag = outliner.entity.getComponent<ecs::TagComponent>();
+        static int push_id= 0;
+        world.processOutlineres([&](ecs::Outliner&& outliner) {
+            ecs::Outliner local = std::move(outliner);
+            auto& tag = local.entity.getComponent<ecs::TagComponent>();
             ImGuiTreeNodeFlags flags =
                 ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-
-            bool open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
+            ImGui::PushID(push_id++); // 使用 entity 的唯一 id
+            bool open = ImGui::TreeNodeEx(&local.entity, flags, "%s", tag.tag.c_str());
             // 只有展开时才绘制子节点
             if (open) {
-                DrawModelTreeNode(data, outliner.entity);
+                DrawModelTreeNode(data, local.entity);
 
-                if (!outliner.children.empty()) {
+                if (!local.children.empty()) {
                     // children with indent
                     ImGui::Indent();
-                    for (auto& childEntity : outliner.children) {
+                    for (auto& childEntity : local.children) {
                         DrawModelTreeNode(data, childEntity);
                     }
                     ImGui::Unindent();
                 }
                 ImGui::TreePop();
             }
-        }
+            ImGui::PopID();
+        });
 
         ImGui::End();
+        push_id = 0;
     }
 }
 

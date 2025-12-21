@@ -1,11 +1,11 @@
 #pragma once
+#include "resource/id.hpp"
 #include <vector>
 #include <memory>
 #include <functional>
 #include <utility>
-#include "ecs/scene/entity.hpp"
-#include "gui.hpp"
-#include "world/world.hpp"
+#include <unordered_map>
+#include "ecs/component.hpp"
 
 // 前向声明
 namespace core {
@@ -16,20 +16,19 @@ namespace render {
 class Graphic;
 }
 
-namespace graphics {
+namespace world {
+class World;
+
 // 概念约束
 template <typename T>
 concept DrawableLike =
     requires(T t, const core::FrameInfo& info, world::World& world, render::Graphic* gfx) {
         { t->update(info, world) } -> std::same_as<void>;
         { t->draw(gfx) } -> std::same_as<void>;
+        { t->getId() } -> std::same_as<id_t>;
+        { t->entity_ } -> std::same_as<ecs::Entity&>;
+        { t->getChildEntitys() } -> std::same_as<std::vector<ecs::Entity>>;
     };
-
-template <typename T>
-concept HasPointECSInterface = requires(T* t) {
-    { t->entity_ } -> std::same_as<ecs::Entity&>;
-    { t->getChildEntitys() } -> std::same_as<std::vector<ecs::Entity>>;
-};
 
 template <typename T>
 concept HasValueECSInterface = requires(T t) {
@@ -42,6 +41,9 @@ class RenderRegistry {
         struct Drawable {
                 std::function<void(const core::FrameInfo&, world::World&)> update;
                 std::function<void(render::Graphic*)> draw;
+                std::function<id_t()> getId;
+                std::function<ecs::Entity&()> getEntity;
+                std::function<std::vector<ecs::Entity>()> getChildren;
 
                 // 构造函数：接受任何满足 DrawableLike 的类型
                 template <DrawableLike T>
@@ -52,7 +54,10 @@ class RenderRegistry {
                       }),
                       draw([o = std::forward<T>(obj)](render::Graphic* gfx) mutable -> auto {
                           o->draw(gfx);
-                      }) {}
+                      }),
+                      getId([o = obj]() { return o->getId(); }),
+                      getEntity([o = obj]() -> ecs::Entity& { return o->entity_; }),
+                      getChildren([o = obj]() { return o->getChildEntitys(); }) {}
 
                 // 如果需要支持拷贝/移动，确保 std::function 的行为符合预期
                 Drawable(const Drawable&) = default;
@@ -63,35 +68,17 @@ class RenderRegistry {
         };
 
         std::vector<Drawable> objects_;
-        std::vector<ui::Outliner> outliner_entities_;
+        std::unordered_map<id_t, size_t> id_to_index_;
 
     public:
         RenderRegistry() = default;
 
-        template <typename T>
-            requires DrawableLike<T>
+        template <DrawableLike T>
         void add(T obj) {
             objects_.push_back(Drawable{obj});
-            ui::Outliner outliner;
-            // 处理 shared_ptr 和 值类型
-            if constexpr (std::is_same_v<std::decay_t<T>,
-                                         std::shared_ptr<typename std::decay_t<T>::element_type>>) {
-                // T 是 shared_ptr<U>
-                using U = typename std::decay_t<T>::element_type;
-                if constexpr (HasPointECSInterface<std::decay_t<U>>) {
-                    outliner.entity = obj->entity_;
-                    outliner.children = obj->getChildEntitys();
-                    outliner_entities_.push_back(outliner);
-                }
-            } else {
-                // T 是普通类型（值）
-                objects_.push_back(Drawable{obj});
-                if constexpr (HasValueECSInterface<std::decay_t<T>>) {
-                    outliner.entity = obj->entity_;
-                    outliner.children = obj->getChildEntitys();
-                    outliner_entities_.push_back(outliner);
-                }
-            }
+
+            using U = typename std::decay_t<T>::element_type;
+            id_to_index_[obj->getId()] = objects_.size() - 1;
         }
         // 批量添加
         template <DrawableLike T, typename... Args>
@@ -115,6 +102,23 @@ class RenderRegistry {
             }
         }
 
+        auto getDrawableById(id_t id) -> Drawable* {
+            auto it = id_to_index_.find(id);
+            if (it != id_to_index_.end()) {
+                return &objects_[it->second];
+            }
+            return nullptr;
+        }
+
+        void processOutlineres(const std::function<void(ecs::Outliner&&)>& func) {
+            for (auto& obj : objects_) {
+                ecs::Outliner outliner;
+                outliner.entity = obj.getEntity();
+                outliner.children = obj.getChildren();
+                func(std::move(outliner));
+            }
+        }
+
         // 控制
         void clear() { objects_.clear(); }
         void reserve(size_t n) { objects_.reserve(n); }
@@ -122,4 +126,4 @@ class RenderRegistry {
         [[nodiscard]] auto size() const -> size_t { return objects_.size(); }
         [[nodiscard]] auto empty() const -> bool { return objects_.empty(); }
 };
-}  // namespace graphics
+}  // namespace world

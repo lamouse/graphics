@@ -19,16 +19,11 @@ class ModelForMultiMesh {
         }
 
         [[nodiscard]] auto getChildEntitys() const -> std::vector<ecs::Entity> {
-            std::vector<ecs::Entity> entity;
-            entity.reserve(meshes.size());
-            for (const auto& mesh : meshes) {
-                entity.push_back(mesh.entity_);
-            }
-            return entity;
+            return child_entitys_;
         }
 
         void update(const core::FrameInfo& frameInfo, world::World& world);
-
+        [[nodiscard]] auto getId() const -> id_t { return id; }
     private:
         using MeshInstance =
             MeshInstance<ModelPushConstantData, render::PrimitiveTopology::Triangles, LightUBO,
@@ -47,5 +42,6 @@ class ModelForMultiMesh {
         std::unordered_set<id_t> mesh_ids;
         ecs::RenderStateComponent* render_state{nullptr};
         ecs::TransformComponent* transform{nullptr};
+        std::vector<ecs::Entity> child_entitys_;
 };
 }  // namespace graphics::effects

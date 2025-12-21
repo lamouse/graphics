@@ -54,7 +54,7 @@ void App::run() {
 
     render::frame::FramebufferConfig frames{
         .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
-    world::World world;
+
 
     auto& cameraComponent =
         world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
@@ -76,8 +76,6 @@ void App::run() {
             continue;
         }
         graphics->clean(frameClean);
-        outliner_entities_ = registry.getOutliner();
-        outliner_entities_.push_back({.entity = world.entity_, .children = world.getEntities()});
         cameraComponent.setAspect(window->getAspectRatio());
         camera = cameraComponent.getCamera();
         core::FrameInfo frameInfo{};
@@ -88,7 +86,7 @@ void App::run() {
         frameInfo.resource_manager = &resourceManager;
         frameInfo.window_width = window->getActiveConfig().extent.width;
         frameInfo.window_hight = window->getActiveConfig().extent.height;
-        registry.updateAll(frameInfo, world);
+        world.update(frameInfo);
 
         while (auto e = input_event.pop_event()) {
             if (!e) {
@@ -114,13 +112,13 @@ void App::run() {
                 if (e->mouseLeftButtonUp()) {
                     world.cancelPick();
                 }
-                CameraSystem::update(cameraComponent, e.value(), frame);
+
                 frameInfo.input_event = e;
-                registry.updateAll(frameInfo, world);
+                world.update(frameInfo);
             }
         }
 
-        registry.drawAll(graphics);
+        world.draw(graphics);
 
         auto& shader_notify = render_base->getShaderNotify();
         const int shaders_building = shader_notify.ShadersBuilding();
@@ -131,14 +129,13 @@ void App::run() {
             } else {
                 statusData.build_shaders = 0;
             }
-            statusData.registry_count = static_cast<int>(registry.size());
             statusData.mouseX_ = current_mouse_X;
             statusData.mouseY_ = current_mouse_Y;
             auto imageId = graphics->getDrawImage();
             auto ui_fun = [&]() -> void {
                 ui::show_menu(settings::values.menu_data);
                 draw_setting(settings::values.menu_data.show_system_setting);
-                ui::ShowOutliner(outliner_entities_, settings::values.menu_data);
+                ui::showOutliner(world, settings::values.menu_data);
                 render_status_bar(settings::values.menu_data, statusData);
                 ui::draw_texture(settings::values.menu_data, imageId, window->getAspectRatio());
                 logger.drawUi(settings::values.menu_data.show_log);
@@ -180,18 +177,16 @@ void App::load_resource() {
     for (auto& light_color : light_colors) {
         auto point_light = std::make_shared<effects::PointLightEffect>(
             resourceManager, frame_layout, 1.f, .04f, light_color);
-        registry.add(point_light);
+            world.addDrawable(point_light);
     }
 
     auto delta_particle =
         std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
-    registry.add(delta_particle);
     auto light_model =
         std::make_shared<effects::ModelForMultiMesh>(resourceManager, frame_layout, names, "model");
-    registry.add(light_model);
+        world.addDrawable(light_model);
     auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
-    registry.add(sky_box);
-
+ world.addDrawable(sky_box);
     PickingSystem::commit();
 }
 

@@ -76,6 +76,7 @@ class PointLightEffect {
             return std::vector{point_light.entity_};
         }
 
+        auto getId() const -> id_t { return id; }
     private:
         using PointLightInstance =
             MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles, LightUBO>;
