@@ -36,19 +36,22 @@ class World {
             pick_id = id;
             auto* draw_able = render_registry_.getDrawableById(id);
             if (draw_able) {
-                draw_able->getEntity().getComponent<ecs::RenderStateComponent>().mouse_select =
-                    true;
+                auto& render_state =
+                    draw_able->getEntity().getComponent<ecs::RenderStateComponent>();
+                render_state.mouse_select = true;
+                render_state.select_id = id;
             }
         }
 
         void cancelPick() {
             auto* draw_able = render_registry_.getDrawableById(pick_id);
             if (draw_able) {
-                draw_able->getEntity().getComponent<ecs::RenderStateComponent>().mouse_select =
-                    false;
+                auto& render_state =
+                    draw_able->getEntity().getComponent<ecs::RenderStateComponent>();
+                render_state.mouse_select = false;
+                render_state.select_id = std::numeric_limits<unsigned int>::max();
             }
         };
-
 
         [[nodiscard]] auto getScene() -> ecs::Scene&;
         ~World();
