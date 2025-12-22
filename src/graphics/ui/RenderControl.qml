@@ -1,12 +1,13 @@
 import QtQuick
 import QtQuick.Controls
 
-Item {
+Window {
     id: renderCtrl
-    width: parent.width
-    height: parent.height
+    width: 800
+    height: 600
     signal renderStart
 
+    visible: true
     Rectangle {
         color: "lightgray"
         anchors.fill: parent

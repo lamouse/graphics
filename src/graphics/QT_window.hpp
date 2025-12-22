@@ -2,6 +2,7 @@
 #include "core/frontend/window.hpp"
 
 #include <QMainWindow>
+#include <QtQml/QQmlApplicationEngine>
 
 namespace graphics {
 
@@ -32,6 +33,7 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
 
+        void openRenderConfig();
         void openFile();
         void setDebugUI();
     private:
@@ -39,6 +41,7 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         std::queue<core::InputState> eventQueue;
         float lastMouseX_{-1};
         float lastMouseY_{-1};
+        QQmlApplicationEngine* engine_{nullptr};
 };
 
 }  // namespace graphics

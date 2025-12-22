@@ -37,20 +37,20 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         // 设置全局默认字体为中文字体
         QApplication::setFont(QFont(chineseFamily, 10));
 
-        QQmlApplicationEngine engine;
-        graphics::registerRenderController(engine);
-        engine.addImportPath(QCoreApplication::applicationDirPath() + "/qml");
-        engine.addImportPath(":/");
+        // QQmlApplicationEngine engine;
+        // graphics::registerRenderController(engine);
+        // engine.addImportPath(QCoreApplication::applicationDirPath() + "/qml");
+        // engine.addImportPath(":/");
 
-        QObject::connect(
-            &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
-            []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
-        engine.loadFromModule("graphics", "Main");
-        if (engine.rootObjects().isEmpty()) {
-            spdlog::warn("Failed to load QML root object.");
-        }
+        // QObject::connect(
+        //     &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
+        //     []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
+        // engine.loadFromModule("graphics", "Main");
+        // if (engine.rootObjects().isEmpty()) {
+        //     spdlog::warn("Failed to load QML root object.");
+        // }
 
-        QApplication::exec();
+        // QApplication::exec();
 #endif
         graphics::App g_app;
         g_app.run();

@@ -1,15 +1,17 @@
 #include "graphics/QT_window.hpp"
 #include "graphics/QT_common.hpp"
 #include "graphics/QT_render_widget.hpp"
+#include "graphics/ui/render_config.hpp"
 #include "common/settings.hpp"
 #include <Qscreen>
 #include <QResizeEvent>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QAction>
+
+#include <QtQuick/QQuickWindow>
 #include <spdlog/spdlog.h>
 #include <imgui.h>
-
 
 namespace graphics {
 
@@ -40,8 +42,13 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
     auto* debugUIAction = new QAction(tr("Toggle &Debug UI"), this);
     viewMenu->addAction(debugUIAction);
     connect(debugUIAction, &QAction::triggered, this, &QTWindow::setDebugUI);
-    debugUIAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    debugUIAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
 
+    auto* configMenu = menuBar()->addMenu(tr("&Config"));
+    auto* configAction = new QAction(tr("Toggle &config"), this);
+    configMenu->addAction(configAction);
+    connect(configAction, &QAction::triggered, this, &QTWindow::openRenderConfig);
+    debugUIAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
     this->show();
 }
 auto QTWindow::IsShown() const -> bool { return this->isVisible(); }
@@ -214,13 +221,38 @@ void QTWindow::focusOutEvent(QFocusEvent* event) {
     io.AddFocusEvent(false);
     QMainWindow::focusOutEvent(event);
 }
-void QTWindow::openFile(){
+void QTWindow::openFile() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("All Files (*)"));
     if (!fileName.isEmpty()) {
         spdlog::info("Selected file: {}", fileName.toStdString());
     }
 }
-void QTWindow::setDebugUI(){
+void QTWindow::setDebugUI() {
     settings::values.use_debug_ui.SetValue(!settings::values.use_debug_ui.GetValue());
+}
+
+void QTWindow::openRenderConfig() {
+    if (engine_ == nullptr) {
+        engine_ = new QQmlApplicationEngine(this);  // NOLINT
+        registerRenderController(*engine_);
+        engine_->addImportPath(QCoreApplication::applicationDirPath() + "/qml");
+        engine_->addImportPath(":/");
+        engine_->loadFromModule("RenderCtrl", "RenderControl");
+        if (engine_->rootObjects().isEmpty()) {
+            spdlog::warn("Failed to load RenderConfig.qml");
+            return;
+        }
+    }
+
+    auto* qmlWindow = qobject_cast<QQuickWindow*>(engine_->rootObjects().first());
+    if (!qmlWindow) {
+        spdlog::warn("Root object is not a QQuickWindow");
+        return;
+    }
+    qmlWindow->show();
+    // QWidget* widget = QWidget::createWindowContainer(qmlWindow, this);
+    // widget->setWindowTitle(tr("Render Configuration"));
+    // widget->resize(400, 300); // 必须设置大小
+    // widget->show();
 }
 }  // namespace graphics
