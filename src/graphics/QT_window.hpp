@@ -2,9 +2,10 @@
 #include "core/frontend/window.hpp"
 
 #include <QMainWindow>
-#include <QtQml/QQmlApplicationEngine>
+class QQmlApplicationEngine;
 
 namespace graphics {
+    class RenderWindow;
 
 class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         Q_OBJECT
@@ -36,7 +37,16 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
         void openRenderConfig();
         void openFile();
         void setDebugUI();
+
+        // NOLINTNEXTLINE
+    public slots:
+        void OnExit();
+        void OnExecuteProgram(std::size_t program_index);
+        void OnLoadComplete();
+
     private:
+        RenderWindow* render_window_{nullptr};
+        void InitializeWidgets();
         bool should_close_;
         std::queue<core::InputState> eventQueue;
         float lastMouseX_{-1};

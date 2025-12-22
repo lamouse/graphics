@@ -10,7 +10,7 @@ class InputSystem {
         InputSystem(InputSystem &&) = delete;
         auto operator=(const InputSystem &) -> InputSystem & = delete;
         auto operator=(InputSystem &&) -> InputSystem & = delete;
-        ~InputSystem() = default;
+        ~InputSystem();
 
     private:
         struct Impl;

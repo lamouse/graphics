@@ -13,5 +13,6 @@ struct InputSystem::Impl {
 };
 
 InputSystem::InputSystem() : impl_(std::make_unique<Impl>()) {}
+InputSystem::~InputSystem() = default;
 auto InputSystem::GetMouse() -> Mouse* { return impl_->mouse.get(); }
 }  // namespace graphics::input

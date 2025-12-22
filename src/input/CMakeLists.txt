@@ -1,9 +1,11 @@
 set(LIB_NAME input)
 
 set(sources
-    mouse.h
-    mouse.cpp
-    input_engine.hpp
+        mouse.h
+        mouse.cpp
+        input_engine.hpp
+        input.hpp
+        input.cpp
     )
 add_library(${LIB_NAME} STATIC ${sources})
 

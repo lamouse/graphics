@@ -7,19 +7,19 @@ constexpr float default_stick_sensitivity = 0.0006f;
 
 Mouse::Mouse(std::string_view engine_name) : InputEngine<MouseButton>(engine_name) {};
 
-void Mouse::MouseButtonPress(const glm::vec2& position, MouseButton button) {
+void Mouse::PressButton(const glm::vec2& position, MouseButton button) {
     button_pressed_ = true;
     SetButtonState(button, button_pressed_);
     mouse_origin_ = position;
     last_position_ = position;
 }
 
-void Mouse::MouseButtonPress(MouseButton button) {
+void Mouse::PressMouseButton(MouseButton button) {
     button_pressed_ = true;
     SetButtonState(button, button_pressed_);
 }
 
-void Mouse::MouseButtonRelease(MouseButton button) {
+void Mouse::ReleaseButton(MouseButton button) {
     button_pressed_ = false;
     SetButtonState(button, button_pressed_);
     if (!IsMousePanningEnabled()) {
@@ -75,7 +75,7 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
 }
 // TODO implement
 auto Mouse::IsMousePanningEnabled() -> bool { return false; }
-void Mouse::MouseScroll(const glm::vec2& offset) { scroll_offset_ = offset; }
+void Mouse::Scroll(const glm::vec2& offset) { scroll_offset_ += offset; }
 
 auto Mouse::GetMouseOrigin() const -> glm::vec2 { return mouse_origin_; }
 auto Mouse::GetLastPosition() const -> glm::vec2 { return mouse_origin_; }

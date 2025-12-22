@@ -62,7 +62,7 @@ else()
     target_compile_definitions(${PROGRAM_NAME} PRIVATE USE_SDL)
 endif()
 
-target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core effects resource)
+target_link_libraries(${PROGRAM_NAME} PRIVATE core utils render-core effects resource input)
 target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3 world system Imgui::Imgui ImGuizmo::ImGuizmo)
 
 target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)

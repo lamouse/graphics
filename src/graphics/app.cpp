@@ -16,6 +16,7 @@
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
 #include "system/camera_system.hpp"
+#include "input/input.hpp"
 #include "system/pick_system.hpp"
 #include <tracy/Tracy.hpp>
 #define image_path ::std::string{"./images/"}
@@ -150,7 +151,7 @@ void App::run() {
 App::App()
     : window(createWindow()),
       render_base(createRender(window.get())),
-      resourceManager(render_base->getGraphics()) {}
+      resourceManager(render_base->getGraphics()),input_system_(std::make_shared<input::InputSystem>()) {}
 
 App::~App() = default;
 

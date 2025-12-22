@@ -25,13 +25,13 @@ class Mouse final : public InputEngine<MouseButton> {
         Mouse(std::string_view engine_name);
         ~Mouse() override = default;
 
-        void MouseButtonPress(const glm::vec2& position, MouseButton button);
-        void MouseButtonPress(MouseButton button);
-        void MouseButtonRelease(MouseButton button);
+        void PressButton(const glm::vec2& position, MouseButton button);
+        void PressMouseButton(MouseButton button);
+        void ReleaseButton(MouseButton button);
 
         void MouseMove(const glm::vec2& position);
         void Move(int x, int y, int center_x, int center_y);
-        void MouseScroll(const glm::vec2& offset);
+        void Scroll(const glm::vec2& offset);
         [[nodiscard]] auto GetAxis() const -> Axis { return axis_; }
         [[nodiscard]] auto IsButtonPressed() const -> bool;
         [[nodiscard]] auto GetMouseOrigin() const -> glm::vec2;

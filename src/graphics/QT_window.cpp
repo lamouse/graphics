@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QAction>
+#include <QtQml/QQmlApplicationEngine>
 
 #include <QtQuick/QQuickWindow>
 #include <spdlog/spdlog.h>
@@ -23,14 +24,7 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
     setWindowConfig(conf);
     this->resize(static_cast<int>(width), static_cast<int>(height));
     QMainWindow::setWindowTitle(QString::fromStdString(std::string(title)));
-    qreal scale = 1.f;
-#ifdef _WIN32
-    scale = this->screen()->logicalDotsPerInch() / 96.0;
-#endif
 
-    window_info.render_surface_scale = static_cast<float>(scale);
-    window_info.type = qt::get_window_system_info();
-    window_info.render_surface = reinterpret_cast<void*>(this->winId());
     this->setMouseTracking(true);
     auto* fileMenu = menuBar()->addMenu(tr("&File"));
     auto* openAction = new QAction(tr("&Open"), this);
@@ -49,8 +43,19 @@ QTWindow::QTWindow(int width, int height, ::std::string_view title) : should_clo
     configMenu->addAction(configAction);
     connect(configAction, &QAction::triggered, this, &QTWindow::openRenderConfig);
     debugUIAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
+    // this->windowHandle()->create();
+
     this->show();
+    window_info = qt::get_window_system_info(this->windowHandle());
+    InitializeWidgets();
 }
+void QTWindow::OnExit() { spdlog::debug("Received exit signal from render widget."); }
+
+void QTWindow::OnExecuteProgram(std::size_t program_index) {
+    spdlog::debug("on execute program {}", program_index);
+}
+void QTWindow::OnLoadComplete() { spdlog::debug("load complete"); }
+
 auto QTWindow::IsShown() const -> bool { return this->isVisible(); }
 
 auto QTWindow::IsMinimized() const -> bool {
@@ -254,5 +259,10 @@ void QTWindow::openRenderConfig() {
     // widget->setWindowTitle(tr("Render Configuration"));
     // widget->resize(400, 300); // 必须设置大小
     // widget->show();
+}
+
+void QTWindow::InitializeWidgets() {
+    render_window_ = new RenderWindow(this, nullptr);  // NOLINT
+    render_window_->hide();
 }
 }  // namespace graphics

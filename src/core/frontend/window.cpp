@@ -7,4 +7,5 @@ auto BaseWindow::getAspectRatio() const -> float {
 
     return std::abs(ratio);
 }
+
 }  // namespace core::frontend

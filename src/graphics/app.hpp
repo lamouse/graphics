@@ -7,7 +7,12 @@
 #include "system/logger_system.hpp"
 #include "world/world.hpp"
 
+
+
 namespace graphics {
+    namespace input {
+        class InputSystem;
+    }
 class RenderRegistry;
 class App {
     public:
@@ -25,5 +30,6 @@ class App {
         core::InputEvent input_event;
         world::World world;
         void load_resource();
+        std::shared_ptr<input::InputSystem> input_system_;
 };
 }  // namespace graphics

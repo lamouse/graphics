@@ -20,6 +20,7 @@ enum class WindowSystemType : uint8_t {
     Wayland,
     Cocoa,
     Android,
+    Xcb
 };
 class EXPORT BaseWindow {
     public:
