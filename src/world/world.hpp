@@ -92,7 +92,7 @@ class World {
 
     private:
 
-        void process_mouse_input(const core::FrameInfo& frameInfo, graphics::input::Mouse* mouse);
+        void process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mouse* mouse);
         id_t id_;
         id_t pick_id{0};
         bool is_pick{false};

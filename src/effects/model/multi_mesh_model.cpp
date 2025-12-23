@@ -43,10 +43,6 @@ void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& w
     ZoneScopedNC("model::update", 110);
 
     if (frameInfo.input_event) {
-        if (render_state->mouse_select) {
-            move_model(frameInfo, *transform);
-        }
-
         if (render_state->is_select()) {
             if (frameInfo.input_event->key == core::InputKey::LCtrl) {
                 if (frameInfo.input_event->scrollOffset_ != 0.0f) {

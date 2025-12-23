@@ -89,10 +89,6 @@ void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
         }
     }
 
-    if (render_state->mouse_select && frameInfo.input_event) {
-        move_model(frameInfo, *transform);
-    }
-
     updateLightUBO(frameInfo, light_ubo, world);
 
     push_constant.modelMatrix = transform->mat4();

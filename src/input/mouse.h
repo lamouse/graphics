@@ -38,7 +38,14 @@ class Mouse final : public InputEngine<MouseButton> {
         [[nodiscard]] auto GetLastPosition() const -> glm::vec2;
         [[nodiscard]] auto GetLastMotionChange() const -> glm::vec2;
         [[nodiscard]] auto GetScrollOffset() const -> glm::vec2;
-        [[nodiscard]] auto GetRelative()const  ->glm::vec2;
+        [[nodiscard]] auto GetRelative() const ->glm::vec2;
+        /**
+         * @brief 这里会将记录的鼠标偏移重置为0，如果需要就调用这个
+            不要同时多次调用，会得到意想不到的后果
+         *
+         * @return glm::vec2
+         */
+        [[nodiscard]] auto popRelative() ->glm::vec2;
 
     private:
         auto IsMousePanningEnabled() -> bool;

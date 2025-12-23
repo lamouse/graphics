@@ -10,6 +10,7 @@
 
 #include "system/camera_system.hpp"
 #include "system/pick_system.hpp"
+#include "system/transform_system.hpp"
 #include "core/core.hpp"
 
 namespace world {
@@ -67,23 +68,37 @@ void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager
     render_registry_.updateAll(frameInfo, *this);
 }
 
-void World::process_mouse_input(const core::FrameInfo& frameInfo, graphics::input::Mouse* mouse) {
+void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mouse* mouse) {
     if (mouse->IsPressed(graphics::input::MouseButton::Left)) {
         auto mouse_axis = mouse->GetAxis();
 
         if (!is_pick) {
             auto origin = mouse->GetMouseOrigin();
-            auto pick_result = graphics::PickingSystem::pick(*frameInfo.camera, origin.x, origin.y,
-                                                      static_cast<float>(frameInfo.window_width),
-                                                      static_cast<float>(frameInfo.window_hight));
+            auto pick_result = graphics::PickingSystem::pick(
+                *frameInfo.camera, origin.x, origin.y, static_cast<float>(frameInfo.window_width),
+                static_cast<float>(frameInfo.window_hight));
             if (pick_result) {
                 this->pick(pick_result->model_id);
             }
             is_pick = true;
+        } else {
+            auto* draw_able = render_registry_.getDrawableById(pick_id);
+            if (draw_able->getEntity().hasComponent<ecs::TransformComponent>()) {
+                auto& transform = draw_able->getEntity().getComponent<ecs::TransformComponent>();
+                core::InputState state;
+                state.mouseX_ = mouse_axis.x;
+                state.mouseY_ = mouse_axis.y;
+                auto relative =  mouse->popRelative();
+                state.mouseRelativeX_ = relative.x;
+                state.mouseRelativeY_ = relative.y;
+                frameInfo.input_event = state;
+                graphics::move_model(frameInfo, transform);
+            }
         }
 
     } else {
         this->cancelPick();
+
         is_pick = false;
     }
 }

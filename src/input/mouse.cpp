@@ -91,4 +91,9 @@ auto Mouse::GetLastPosition() const -> glm::vec2 { return last_position_; }
 auto Mouse::GetLastMotionChange() const -> glm::vec2 { return last_motion_change; }
 auto Mouse::GetScrollOffset() const -> glm::vec2 { return scroll_offset_; }
 auto Mouse::GetRelative() const -> glm::vec2 { return relative; }
+auto Mouse::popRelative() -> glm::vec2{
+    auto tmp = relative;
+    relative = glm::vec2{.0f};
+    return tmp;
+ }
 }  // namespace graphics::input
