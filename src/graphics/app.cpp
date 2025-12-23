@@ -6,152 +6,90 @@
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
 #include "effects/model/model.hpp"
+#include "core/core.hpp"
 #include "effects/model/multi_mesh_model.hpp"
 #include "common/settings.hpp"
 #include "effects/cubemap/skybox.hpp"
 #include "system/setting_ui.hpp"
 #include "world/world.hpp"
+#include <qcoreapplication.h>
 #include <spdlog/spdlog.h>
-#include <thread>
 #include "render_core/framebufferConfig.hpp"
 #include "gui.hpp"
-#include "system/camera_system.hpp"
 #include "input/input.hpp"
+#include "input/mouse.h"
 #include "system/pick_system.hpp"
+#include <QTimer>
+
 #include <tracy/Tracy.hpp>
-#define image_path ::std::string{"./images/"}
-#define models_path ::std::string{"./models/"}
 
 namespace graphics {
-namespace {
-struct FrameTime {
-        float duration;
-        float frame;
-};
-auto getRuntime() -> FrameTime {
-    FrameTime frameTIme{};
-    static auto startTime = ::std::chrono::high_resolution_clock::now();
-    static auto lastTime = startTime;
-    auto currentTime = ::std::chrono::high_resolution_clock::now();
-    frameTIme.duration =
-        ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime)
-            .count();
-    frameTIme.frame =
-        ::std::chrono::duration<float, std::chrono::seconds::period>(currentTime - lastTime)
-            .count();
-    lastTime = currentTime;
-    return frameTIme;
-}
-}  // namespace
 
 void App::run() {
-    load_resource();
-    const auto frame_layout = window->getFramebufferLayout();
-    auto* graphics = render_base->getGraphics();
-
-    ui::StatusBarData statusData;
-    auto deviceVendor = render_base->GetDeviceVendor();
-    statusData.device_name = deviceVendor;
-
-    render::frame::FramebufferConfig frames{
-        .width = frame_layout.width, .height = frame_layout.height, .stride = frame_layout.width};
-
-
-    auto& cameraComponent =
-        world.getEntity(world::WorldEntityType::CAMERA).getComponent<ecs::CameraComponent>();
-    auto camera = cameraComponent.getCamera();
-
-    float current_mouse_X = 0, current_mouse_Y = 0;
-    render::CleanValue frameClean{};
-    frameClean.width = frame_layout.width;
-    frameClean.hight = frame_layout.height;
-    frameClean.framebuffer.color_formats.at(0) = render::surface::PixelFormat::B8G8R8A8_UNORM;
-    frameClean.framebuffer.depth_format = render::surface::PixelFormat::D32_FLOAT;
-    frameClean.framebuffer.extent = {
-        .width = frame_layout.width, .height = frame_layout.height, .depth = 1};
     while (!window->shouldClose()) {
-        window->pullEvents(input_event);
-
-        if (window->IsMinimized()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            continue;
-        }
-        graphics->clean(frameClean);
-        cameraComponent.setAspect(window->getAspectRatio());
-        camera = cameraComponent.getCamera();
-        core::FrameInfo frameInfo{};
-        frameInfo.camera = &camera;
-        auto [duration, frame] = getRuntime();
-        frameInfo.frameTime = frame;
-        frameInfo.durationTime = duration;
-        frameInfo.resource_manager = &resourceManager;
-        frameInfo.window_width = window->getActiveConfig().extent.width;
-        frameInfo.window_hight = window->getActiveConfig().extent.height;
-        world.update(frameInfo);
-
-        while (auto e = input_event.pop_event()) {
-            assert(e && "e can't be nullopt");
-            if (e->key == core::InputKey::Esc) {
-                window->setShouldClose();
-            }
-            if (e->mouseX_ > 0 && e->mouseY_ > 0) {
-                current_mouse_X = e->mouseX_;
-                current_mouse_Y = e->mouseY_;
-            }
-            if (!e->onlyMouseMove()) {
-                const auto [down, first] = e->mouseLeftButtonDown();
-                if (down && first) {
-                    auto pick = PickingSystem::pick(camera, e->mouseX_, e->mouseY_,
-                                                    static_cast<float>(frameInfo.window_width),
-                                                    static_cast<float>(frameInfo.window_hight));
-                    if (pick) {
-                        world.pick(pick->model_id);
-                    }
-                }
-                if (e->mouseLeftButtonUp()) {
-                    world.cancelPick();
-                }
-
-                frameInfo.input_event = e;
-                world.update(frameInfo);
-            }
-        }
-
-        world.draw(graphics);
-
-        auto& shader_notify = render_base->getShaderNotify();
-        const int shaders_building = shader_notify.ShadersBuilding();
-
-        if (settings::values.use_debug_ui.GetValue()) {
-            if (shaders_building > 0) {
-                statusData.build_shaders = shaders_building;
-            } else {
-                statusData.build_shaders = 0;
-            }
-            statusData.mouseX_ = current_mouse_X;
-            statusData.mouseY_ = current_mouse_Y;
-            auto imageId = graphics->getDrawImage();
-            auto ui_fun = [&]() -> void {
-                ui::show_menu(settings::values.menu_data);
-                draw_setting(settings::values.menu_data.show_system_setting);
-                ui::showOutliner(world, settings::values.menu_data);
-                render_status_bar(settings::values.menu_data, statusData);
-                ui::draw_texture(settings::values.menu_data, imageId, window->getAspectRatio());
-                logger.drawUi(settings::values.menu_data.show_log);
-            };
-            render_base->composite(std::span{&frames, 1}, ui_fun);
-        } else {
-            render_base->composite(std::span{&frames, 1});
-        }
-
-        world.cleanLight();
+        render();
     }
+}
+void App::render() {
+    QCoreApplication::processEvents();
+
+    auto* graphics = render_base->getGraphics();
+    graphics->clean(frameClean);
+    world.update(*window, *resourceManager, *input_system_);
+
+    world.draw(graphics);
+
+    auto& shader_notify = render_base->getShaderNotify();
+    const int shaders_building = shader_notify.ShadersBuilding();
+
+    if (settings::values.use_debug_ui.GetValue()) {
+        if (shaders_building > 0) {
+            statusData.build_shaders = shaders_building;
+        } else {
+            statusData.build_shaders = 0;
+        }
+        auto mouse_axis = input_system_->GetMouse()->GetAxis();
+        if (mouse_axis.x > 0 && mouse_axis.y > 0) {
+            statusData.mouseX_ = mouse_axis.x;
+            statusData.mouseY_ = mouse_axis.y;
+        }
+
+        auto imageId = graphics->getDrawImage();
+        auto ui_fun = [&]() -> void {
+            ui::show_menu(settings::values.menu_data);
+            draw_setting(settings::values.menu_data.show_system_setting);
+            ui::showOutliner(world, settings::values.menu_data);
+            render_status_bar(settings::values.menu_data, statusData);
+            ui::draw_texture(settings::values.menu_data, imageId, window->getAspectRatio());
+            logger.drawUi(settings::values.menu_data.show_log);
+        };
+        render_base->composite(std::span{&frame_config_, 1}, ui_fun);
+    } else {
+        render_base->composite(std::span{&frame_config_, 1});
+    }
+
+    world.cleanLight();
 }
 
 App::App()
-    : window(createWindow()),
-      render_base(createRender(window.get())),
-      resourceManager(render_base->getGraphics()),input_system_(std::make_shared<input::InputSystem>()) {}
+    : input_system_(std::make_shared<input::InputSystem>()),
+      qt_main_window(std::make_unique<QTWindow>(input_system_, 1920, 1080, "graphics")),
+      window(qt_main_window->initRenderWindow()),
+      render_base(createRender(window)),
+      resourceManager(std::make_unique<ResourceManager>(render_base->getGraphics())) {
+    frame_config_ = {.width = 1920, .height = 1080, .stride = 1920};
+    frameClean.width = frame_config_.width;
+    frameClean.hight = frame_config_.height;
+    frameClean.framebuffer.color_formats.at(0) = render::surface::PixelFormat::B8G8R8A8_UNORM;
+    frameClean.framebuffer.depth_format = render::surface::PixelFormat::D32_FLOAT;
+    frameClean.framebuffer.extent = {
+        .width = frame_config_.width, .height = frame_config_.height, .depth = 1};
+    auto deviceVendor = render_base->GetDeviceVendor();
+    statusData.device_name = deviceVendor;
+    load_resource();
+
+    run();
+}
 
 App::~App() = default;
 
@@ -161,10 +99,10 @@ void App::load_resource() {
     std::string particle_shader = "particle";
     std::string point_light_shader_name = "point_light";
 
-    resourceManager.addGraphShader(model_shader_name);
-    resourceManager.addGraphShader(particle_shader);
-    resourceManager.addGraphShader(point_light_shader_name);
-    resourceManager.addComputeShader(particle_shader);
+    resourceManager->addGraphShader(model_shader_name);
+    resourceManager->addGraphShader(particle_shader);
+    resourceManager->addGraphShader(point_light_shader_name);
+    resourceManager->addComputeShader(particle_shader);
     auto frame_layout = window->getFramebufferLayout();
 
     ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};
@@ -175,17 +113,17 @@ void App::load_resource() {
                                glm::vec3{1.f, 1.f, 1.f}};
     for (auto& light_color : light_colors) {
         auto point_light = std::make_shared<effects::PointLightEffect>(
-            resourceManager, frame_layout, 1.f, .04f, light_color);
-            world.addDrawable(point_light);
+            *resourceManager, frame_layout, 1.f, .04f, light_color);
+        world.addDrawable(point_light);
     }
 
     auto delta_particle =
-        std::make_shared<effects::DeltaParticle>(resourceManager, frame_layout, PARTICLE_COUNT);
-    auto light_model =
-        std::make_shared<effects::ModelForMultiMesh>(resourceManager, frame_layout, names, "model");
-        world.addDrawable(light_model);
-    auto sky_box = std::make_shared<effects::SkyBox>(resourceManager, frame_layout);
- world.addDrawable(sky_box);
+        std::make_shared<effects::DeltaParticle>(*resourceManager, frame_layout, PARTICLE_COUNT);
+    auto light_model = std::make_shared<effects::ModelForMultiMesh>(*resourceManager, frame_layout,
+                                                                    names, "model");
+    world.addDrawable(light_model);
+    auto sky_box = std::make_shared<effects::SkyBox>(*resourceManager, frame_layout);
+    world.addDrawable(sky_box);
     PickingSystem::commit();
 }
 

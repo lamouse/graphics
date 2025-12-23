@@ -20,7 +20,7 @@ class InputEngine {
 
         [[nodiscard]] auto GetEngineName() const -> std::string_view { return engine_name_; }
 
-        [[nodiscard]] auto IsButtonPressed(BUTTON button) const -> bool {
+        [[nodiscard]] auto IsPressed(BUTTON button) const -> bool {
             auto it = button_states_.find(button);
             if (it != button_states_.end()) {
                 return it->second;

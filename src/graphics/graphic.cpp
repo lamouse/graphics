@@ -10,7 +10,7 @@
 #include "render_core/render_core.hpp"
 
 namespace graphics {
-auto createWindow() -> std::unique_ptr<core::frontend::BaseWindow> {
+auto createWindow(std::shared_ptr<input::InputSystem> input_system) -> std::unique_ptr<core::frontend::BaseWindow> {
     const int width = 1920;
     const int height = 1080;
     const char* title = "graphic engine";
@@ -18,7 +18,7 @@ auto createWindow() -> std::unique_ptr<core::frontend::BaseWindow> {
 #if defined(USE_SDL)
     return std::make_unique<graphics::SDLWindow>(width, height, title);
 #elif defined(USE_QT)
-    return std::make_unique<graphics::QTWindow>(width, height, title);
+    // return std::make_unique<graphics::QTWindow>(input_system, width, height, title);
 #endif
     return nullptr;
 }

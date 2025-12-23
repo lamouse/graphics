@@ -57,7 +57,11 @@ auto get_window_system_info(QWindow* window) -> core::frontend::BaseWindow::Wind
     else
         wsi.render_surface = window ? reinterpret_cast<void*>(window->winId()) : nullptr;
 #endif
+#ifdef _WIN32
+    wsi.render_surface_scale = window ? window->screen()->logicalDotsPerInch() / 96.0f : 1.f;
+#else
     wsi.render_surface_scale = window ? static_cast<float>(window->devicePixelRatio()) : 1.0f;
+#endif
     return wsi;
 }
 

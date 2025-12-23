@@ -1,42 +1,31 @@
 #pragma once
-#include "core/frontend/window.hpp"
-
 #include <QMainWindow>
+#include <memory>
+#include "core/frontend/window.hpp"
+#include "common/common_funcs.hpp"
 class QQmlApplicationEngine;
 
 namespace graphics {
-    class RenderWindow;
+namespace input {
+class InputSystem;
 
-class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
+}
+class RenderWindow;
+
+class QTWindow : public QMainWindow {
         Q_OBJECT
     public:
-        QTWindow(int width, int height, ::std::string_view title);
-        [[nodiscard]] auto IsShown() const -> bool override;
-        [[nodiscard]] auto IsMinimized() const -> bool override;
-        [[nodiscard]] auto shouldClose() const -> bool override;
-        void OnFrameDisplayed() override {};
-        [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
-            return getWindowConfig();
-        }
-        void setWindowTitle(std::string_view title) override;
-        void setShouldClose() override;
+        CLASS_NON_COPYABLE(QTWindow);
+        CLASS_NON_MOVEABLE(QTWindow);
+        QTWindow(std::shared_ptr<input::InputSystem> input_system, int width, int height,
+                 ::std::string_view title);
 
-        void resizeEvent(QResizeEvent* event) override;
-
-        void configGUI() override {};
-        void destroyGUI() override {};
-        void newFrame() override;
-        void pullEvents(core::InputEvent& event) override;
-        void mousePressEvent(QMouseEvent* event) override;
-        void mouseReleaseEvent(QMouseEvent* event) override;
-        void mouseMoveEvent(QMouseEvent* event) override;
-        void wheelEvent(QWheelEvent* event) override;
-        void focusInEvent(QFocusEvent* event) override;
-        void focusOutEvent(QFocusEvent* event) override;
-
+        auto initRenderWindow() -> core::frontend::BaseWindow*;
+        ~QTWindow() override;
         void openRenderConfig();
         void openFile();
         void setDebugUI();
+        void closeEvent(QCloseEvent* event) override;
 
         // NOLINTNEXTLINE
     public slots:
@@ -47,11 +36,8 @@ class QTWindow : public QMainWindow, public core::frontend::BaseWindow {
     private:
         RenderWindow* render_window_{nullptr};
         void InitializeWidgets();
-        bool should_close_;
-        std::queue<core::InputState> eventQueue;
-        float lastMouseX_{-1};
-        float lastMouseY_{-1};
         QQmlApplicationEngine* engine_{nullptr};
+        std::shared_ptr<input::InputSystem> input_system_;
 };
 
 }  // namespace graphics

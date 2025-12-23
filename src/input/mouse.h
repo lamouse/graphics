@@ -38,6 +38,7 @@ class Mouse final : public InputEngine<MouseButton> {
         [[nodiscard]] auto GetLastPosition() const -> glm::vec2;
         [[nodiscard]] auto GetLastMotionChange() const -> glm::vec2;
         [[nodiscard]] auto GetScrollOffset() const -> glm::vec2;
+        [[nodiscard]] auto GetRelative()const  ->glm::vec2;
 
     private:
         auto IsMousePanningEnabled() -> bool;
@@ -49,5 +50,6 @@ class Mouse final : public InputEngine<MouseButton> {
         glm::vec2 last_change_{};
         // x: horizontal, y: vertical
         glm::vec2 scroll_offset_{};
+        glm::vec2 relative{};
 };
 }  // namespace graphics::input

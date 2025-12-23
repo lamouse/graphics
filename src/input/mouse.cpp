@@ -33,6 +33,7 @@ void Mouse::ReleaseButton(MouseButton button) {
 auto Mouse::IsButtonPressed() const -> bool { return button_pressed_; }
 
 void Mouse::MouseMove(const glm::vec2& position) {
+    relative = position - glm::vec2(axis_.x, axis_.y);
     axis_.x = position.x;
     axis_.y = position.y;
 }
@@ -63,22 +64,31 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
         const auto mouse_move = glm::vec2{x, y} - mouse_origin_;
         const float x_sensitivity = default_stick_sensitivity;
         const float y_sensitivity = default_stick_sensitivity;
-        axis_.x = static_cast<float>(mouse_move.x) * x_sensitivity;
-        axis_.y = static_cast<float>(-mouse_move.y) * y_sensitivity;
+        // axis_.x = static_cast<float>(mouse_move.x) * x_sensitivity;
+        // axis_.y = static_cast<float>(-mouse_move.y) * y_sensitivity;
 
         last_motion_change = {
-            static_cast<float>(-mouse_move.y) * x_sensitivity,
-            static_cast<float>(-mouse_move.x) * y_sensitivity,
+            static_cast<float>(-mouse_move.x) * x_sensitivity,
+            static_cast<float>(-mouse_move.y) * y_sensitivity,
             last_motion_change.z,
         };
     }
 }
 // TODO implement
 auto Mouse::IsMousePanningEnabled() -> bool { return false; }
-void Mouse::Scroll(const glm::vec2& offset) { scroll_offset_ += offset; }
+void Mouse::Scroll(const glm::vec2& offset) {
+    scroll_offset_ += offset;
+    if(scroll_offset_.y > 45.f){
+        scroll_offset_.y = 45;
+    }
+    if(scroll_offset_.y < 0.f ){
+        scroll_offset_.y = 0.f;
+    }
+}
 
 auto Mouse::GetMouseOrigin() const -> glm::vec2 { return mouse_origin_; }
-auto Mouse::GetLastPosition() const -> glm::vec2 { return mouse_origin_; }
-auto Mouse::GetLastMotionChange() const -> glm::vec2 { return mouse_origin_; }
-auto Mouse::GetScrollOffset() const -> glm::vec2 { return mouse_origin_; }
+auto Mouse::GetLastPosition() const -> glm::vec2 { return last_position_; }
+auto Mouse::GetLastMotionChange() const -> glm::vec2 { return last_motion_change; }
+auto Mouse::GetScrollOffset() const -> glm::vec2 { return scroll_offset_; }
+auto Mouse::GetRelative() const -> glm::vec2 { return relative; }
 }  // namespace graphics::input

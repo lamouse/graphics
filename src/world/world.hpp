@@ -6,6 +6,22 @@
 #include "ecs/component.hpp"
 #include <vector>
 #include <functional>
+
+namespace core {
+class FrameTime;
+namespace frontend {
+class BaseWindow;
+}
+}  // namespace core
+
+namespace graphics {
+class ResourceManager;
+namespace input {
+class InputSystem;
+class Mouse;
+}
+}  // namespace graphics
+
 namespace world {
 
 enum class WorldEntityType : std::uint8_t { CAMERA };
@@ -20,7 +36,8 @@ class World {
         World();
         [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
         void addLight(const LightInfo& info) { lights_.push_back(info); }
-        void update(const core::FrameInfo& frameInfo);
+        void update(core::frontend::BaseWindow& window, graphics::ResourceManager& resourceManager,
+                    graphics::input::InputSystem& input_system);
         void draw(render::Graphic* gfx);
         template <DrawableLike T>
         void addDrawable(T obj) {
@@ -74,8 +91,12 @@ class World {
         ecs::Entity entity_;
 
     private:
+
+        void process_mouse_input(const core::FrameInfo& frameInfo, graphics::input::Mouse* mouse);
         id_t id_;
-        id_t pick_id;
+        id_t pick_id{0};
+        bool is_pick{false};
+        ecs::CameraComponent* cameraComponent_{nullptr};
         ecs::Scene scene_;
         ecs::Entity cameraEntity_;
         ecs::Entity dirLightEntity_;
@@ -83,5 +104,6 @@ class World {
         std::vector<LightInfo> lights_;
         std::vector<ecs::Entity> child_entitys_;
         RenderRegistry render_registry_;
+        std::unique_ptr<core::FrameTime> frame_time_;
 };
 }  // namespace world

@@ -26,8 +26,8 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         };
         void configGUI() override {};
         void destroyGUI() override {};
-        void pullEvents(core::InputEvent& event) override{}
-        void newFrame() override {};
+        void pullEvents(core::InputEvent& event) override {}
+        void newFrame() override;
         void OnFrameDisplayed() override;
         [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {
             return getWindowConfig();
@@ -41,6 +41,8 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         void mouseMoveEvent(QMouseEvent* event) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
         void wheelEvent(QWheelEvent* event) override;
+        void focusInEvent(QFocusEvent* event) override;
+        void focusOutEvent(QFocusEvent* event) override;
 
         [[nodiscard]] auto windowPixelRatio() const -> qreal;
         auto InitRenderTarget() -> bool;
@@ -63,7 +65,6 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         bool first_frame{false};
         std::shared_ptr<input::InputSystem> input_system_;
         QWidget* child_widget_ = nullptr;
-        QByteArray geometry_;
 
     protected:
         void showEvent(QShowEvent* event) override;

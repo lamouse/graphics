@@ -114,7 +114,7 @@ struct CameraComponent {
         }
 
         // ✅ 改写 getCamera()
-        [[nodiscard]] auto getCamera() const -> const core::Camera& {
+        [[nodiscard]] auto getCamera() const -> core::Camera& {
             updateCamera();  // 只有在 dirty 时才会真正更新
             return camera;
         }

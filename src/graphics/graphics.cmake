@@ -16,6 +16,8 @@ if(USE_QT)
         QT_window.cpp
         QT_render_widget.hpp
         QT_render_widget.cpp
+        imgui_qt.hpp
+        imgui_qt.cpp
     )
 else()
     list(APPEND sources

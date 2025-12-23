@@ -2,15 +2,23 @@
 #include "core/frame_info.hpp"
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/component.hpp"
+#include "input/input.hpp"
+#include "input/mouse.h"
+#include "core/frontend/window.hpp"
 #include "resource/id.hpp"
+#include "resource/resource.hpp"
+
 #include "system/camera_system.hpp"
+#include "system/pick_system.hpp"
+#include "core/core.hpp"
 
 namespace world {
 
-World::World() : id_(graphics::getCurrentId()) {
+World::World() : id_(graphics::getCurrentId()), frame_time_(std::make_unique<core::FrameTime>()) {
     cameraEntity_ = scene_.createEntity("camera");
     cameraEntity_.addComponent<ecs::CameraComponent>();
     cameraEntity_.addComponent<ecs::RenderStateComponent>(graphics::getCurrentId());
+    cameraComponent_ = &cameraEntity_.getComponent<ecs::CameraComponent>();  // NOLINT
     dirLightEntity_ = scene_.createEntity("dir_light");
     entity_ = scene_.createEntity("world: " + std::to_string(id_));
     entity_.addComponent<ecs::RenderStateComponent>(id_);
@@ -39,13 +47,45 @@ World::World() : id_(graphics::getCurrentId()) {
 
 World::~World() = default;
 
-void World::update(const core::FrameInfo& frameInfo) {
-    if (frameInfo.input_event) {
-        auto& cameraComponent = cameraEntity_.getComponent<ecs::CameraComponent>();
-        graphics::CameraSystem::update(cameraComponent, frameInfo.input_event.value(),
-                                       frameInfo.frameTime);
-    }
+void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager& resourceManager,
+                   graphics::input::InputSystem& input_system) {
+    cameraComponent_->setAspect(window.getAspectRatio());
+    core::FrameInfo frameInfo;
+    auto extent = window.getActiveConfig().extent;
+    auto layout = window.getFramebufferLayout();
+    frameInfo.window_width = layout.width;
+    frameInfo.window_hight = layout.height;
+    auto [durationTime, frameTime] = frame_time_->get();
+    frameInfo.durationTime = static_cast<float>(durationTime);
+    frameInfo.frameTime = static_cast<float>(frameTime);
+    frameInfo.resource_manager = &resourceManager;
+    auto& camera = cameraComponent_->getCamera();
+    frameInfo.camera = &camera;
+    graphics::CameraSystem::update(*cameraComponent_, &input_system, core::InputState{}, frameInfo.frameTime);
+    process_mouse_input(frameInfo, input_system.GetMouse());
+
     render_registry_.updateAll(frameInfo, *this);
+}
+
+void World::process_mouse_input(const core::FrameInfo& frameInfo, graphics::input::Mouse* mouse) {
+    if (mouse->IsPressed(graphics::input::MouseButton::Left)) {
+        auto mouse_axis = mouse->GetAxis();
+
+        if (!is_pick) {
+            auto origin = mouse->GetMouseOrigin();
+            auto pick_result = graphics::PickingSystem::pick(*frameInfo.camera, origin.x, origin.y,
+                                                      static_cast<float>(frameInfo.window_width),
+                                                      static_cast<float>(frameInfo.window_hight));
+            if (pick_result) {
+                this->pick(pick_result->model_id);
+            }
+            is_pick = true;
+        }
+
+    } else {
+        this->cancelPick();
+        is_pick = false;
+    }
 }
 
 void World::draw(render::Graphic* gfx) { render_registry_.drawAll(gfx); }

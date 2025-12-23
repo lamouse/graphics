@@ -2,6 +2,7 @@
 set(LIB_NAME system)
 set(sources
     camera_system.hpp
+    camera_system.cpp
     logger_system.cpp
     setting_ui.cpp
     pick_system.hpp
