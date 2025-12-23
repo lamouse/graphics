@@ -91,7 +91,7 @@ void rotating(ecs::CameraComponent &cam, float mouseRelativeX_, float mouseRelat
 }  // namespace
 
 namespace graphics {
-void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem* input, core::InputState state, float deltaTime) {
+void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem* input,  float deltaTime) {
     if(!input){
         return;
     }

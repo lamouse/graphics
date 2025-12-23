@@ -61,7 +61,7 @@ void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager
     frameInfo.resource_manager = &resourceManager;
     auto& camera = cameraComponent_->getCamera();
     frameInfo.camera = &camera;
-    graphics::CameraSystem::update(*cameraComponent_, &input_system, core::InputState{}, frameInfo.frameTime);
+    graphics::CameraSystem::update(*cameraComponent_, &input_system, frameInfo.frameTime);
     process_mouse_input(frameInfo, input_system.GetMouse());
 
     render_registry_.updateAll(frameInfo, *this);
