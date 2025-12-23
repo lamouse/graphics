@@ -10,5 +10,4 @@ auto get_windows_handles(SDL_Window* window) -> void*;
 auto get_windows_display(SDL_Window* window) -> void*;
 #endif
 
-auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey;
 }  // namespace graphics

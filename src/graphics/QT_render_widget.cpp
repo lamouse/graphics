@@ -64,6 +64,8 @@ void RenderWindow::OnFrameDisplayed() {
     }
 }
 
+void RenderWindow::pullEvents() { QCoreApplication::processEvents(); }
+
 void RenderWindow::newFrame() {
     QSize logicalSize = this->size();
     imgui::qt::new_frame(logicalSize.width(), logicalSize.height());
@@ -170,7 +172,7 @@ void RenderWindow::mouseReleaseEvent(QMouseEvent* event) {
 void RenderWindow::wheelEvent(QWheelEvent* event) {
     imgui::qt::mouse_wheel_event(event);
     const int x = event->angleDelta().x();
-    const int y = event->angleDelta().y()/120;
+    const int y = event->angleDelta().y() / 120;
     input_system_->GetMouse()->Scroll(glm::vec2{x, y});
 }
 

@@ -83,65 +83,12 @@ void SDLWindow::setWindowTitle(std::string_view title) {
 void SDLWindow::configGUI() { ImGui_ImplSDL3_InitForVulkan(window_); }
 void SDLWindow::destroyGUI() { ImGui_ImplSDL3_Shutdown(); }
 void SDLWindow::newFrame() { ImGui_ImplSDL3_NewFrame(); }
-void SDLWindow::pullEvents(core::InputEvent& event) {
+void SDLWindow::pullEvents() {
     SDL_Event e;
 
-    const std::vector<SDL_Scancode> keys_to_check = {
-        SDL_SCANCODE_W,     SDL_SCANCODE_A,     SDL_SCANCODE_S,
-        SDL_SCANCODE_D,     SDL_SCANCODE_SPACE, SDL_SCANCODE_LEFT,
-        SDL_SCANCODE_RIGHT, SDL_SCANCODE_DOWN,  SDL_SCANCODE_UP};
-    const auto* keyboardState = SDL_GetKeyboardState(nullptr);
 
-    for (auto sc : keys_to_check) {
-        if (keyboardState[sc]) {
-            auto key = transform_SDL_Key(sc);
-            if (key != core::InputKey::UN_SUPER) {
-                core::InputState state{};
-                state.key = key;
-                state.key_down.Assign(1);  // 持续推送“按下”事件
-                event.push_event(state);
-            }
-        }
-    }
 
-    float mx{}, my{};
-    Uint32 mouseState = SDL_GetMouseState(&mx, &my);
-    float lastMouseX_ = 0.0f;
-    float lastMouseY_ = 0.0f;
-    SDL_GetRelativeMouseState(&lastMouseX_, &lastMouseY_);
-    bool leftButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_LEFT);
-    bool rightButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_RIGHT);
-    bool middleButton = mouseState & SDL_BUTTON_MASK(SDL_BUTTON_MIDDLE);
-    if (leftButton) {
-        core::InputState state{};
-        state.mouse_button_left.Assign(1);
-        state.mouseX_ = mx;
-        state.mouseY_ = my;
-        state.key_down.Assign(1);
-        state.mouseRelativeX_ = lastMouseX_;
-        state.mouseRelativeY_ = lastMouseY_;
-        event.push_event(state);
-    }
-    if (rightButton) {
-        core::InputState state{};
-        state.mouse_button_right.Assign(1);
-        state.mouseX_ = mx;
-        state.mouseY_ = my;
-        state.mouseRelativeX_ = lastMouseX_;
-        state.mouseRelativeY_ = lastMouseY_;
-        state.key_down.Assign(1);
-        event.push_event(state);
-    }
-    if (middleButton) {
-        core::InputState state{};
-        state.mouse_button_center.Assign(1);
-        state.mouseX_ = mx;
-        state.mouseY_ = my;
-        state.mouseRelativeX_ = lastMouseX_;
-        state.mouseRelativeY_ = lastMouseY_;
-        state.key_down.Assign(1);
-        event.push_event(state);
-    }
+
 
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
@@ -159,70 +106,28 @@ void SDLWindow::pullEvents(core::InputEvent& event) {
             }
             case SDL_EVENT_KEY_UP: {
                 if (e.key.repeat == 0) {
-                    if (transform_SDL_Key(e.key.scancode) != core::InputKey::UN_SUPER) {
-                        core::InputState input_state;
-                        input_state.key_up.Assign(1);
-                        input_state.key = transform_SDL_Key(e.key.scancode);
-                        event.push_event(input_state);
-                    }
+
                 }
                 break;
             }
             case SDL_EVENT_MOUSE_MOTION: {
-                core::InputState input_state;
-                input_state.mouseX_ = e.motion.x;
-                input_state.mouseY_ = e.motion.y;
-                input_state.mouse_move.Assign(1);
-                event.push_event(input_state);
+
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_UP: {
                 if (e.button.button >= 1 && e.button.button <= 3) {
-                    core::InputState input_state;
-                    input_state.key_up.Assign(1);
-                    if (e.button.button == SDL_BUTTON_LEFT) {
-                        input_state.mouse_button_left.Assign(1);
-                    }
-                    if (e.button.button == SDL_BUTTON_MIDDLE) {
-                        input_state.mouse_button_center.Assign(1);
-                    }
-                    if (e.button.button == SDL_BUTTON_RIGHT) {
-                        input_state.mouse_button_right.Assign(1);
-                    }
-                    event.push_event(input_state);
+
                 }
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                 if (e.button.button >= 1 && e.button.button <= 3) {
-                    core::InputState input_state;
-                    input_state.key_down.Assign(1);
-                    input_state.first_down.Assign(1);
-                    if (e.button.button == SDL_BUTTON_LEFT) {
-                        input_state.mouse_button_left.Assign(1);
-                    }
-                    if (e.button.button == SDL_BUTTON_MIDDLE) {
-                        input_state.mouse_button_center.Assign(1);
-                    }
-                    if (e.button.button == SDL_BUTTON_RIGHT) {
-                        input_state.mouse_button_right.Assign(1);
-                    }
-                    input_state.mouseX_ = e.motion.x;
-                    input_state.mouseY_ = e.motion.y;
-                    event.push_event(input_state);
+
                 }
                 break;
             }
             case SDL_EVENT_MOUSE_WHEEL: {
-                core::InputState input_state;
-                const auto* sdl_key_state = SDL_GetKeyboardState(nullptr);
-                if (sdl_key_state[SDL_SCANCODE_LCTRL]) {
-                    // 左 Ctrl 被按下
-                    input_state.key = core::InputKey::LCtrl;
-                    input_state.key_down.Assign(1);
-                }
-                input_state.scrollOffset_ += e.wheel.y;
-                event.push_event(input_state);
+
                 break;
             }
         }

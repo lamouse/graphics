@@ -4,7 +4,6 @@
 #include <string_view>
 #include "framebuffer_layout.hpp"
 #include "common/common_funcs.hpp"
-#include "core/input.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -76,7 +75,7 @@ class EXPORT BaseWindow {
         void UpdateCurrentFramebufferLayout(u32 width, u32 height) {
             notifyFramebufferLayoutChanged(layout::DefaultFrameLayout(width, height));
         }
-        virtual void pullEvents(InputEvent& event) = 0;
+        virtual void pullEvents() = 0;
         virtual void setWindowTitle(std::string_view) = 0;
 
     protected:

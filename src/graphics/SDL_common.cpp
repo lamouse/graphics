@@ -68,38 +68,4 @@ auto get_windows_display(SDL_Window *window) -> void * {
 
 #endif
 
-auto transform_SDL_Key(SDL_Scancode scancode) -> core::InputKey {
-    switch (scancode) {
-        case SDL_SCANCODE_W:
-            return core::InputKey::W;
-        case SDL_SCANCODE_A:
-            return core::InputKey::A;
-        case SDL_SCANCODE_S:
-            return core::InputKey::S;
-        case SDL_SCANCODE_D:
-            return core::InputKey::D;
-
-        case SDL_SCANCODE_LEFT:
-            return core::InputKey::Left;
-        case SDL_SCANCODE_RIGHT:
-            return core::InputKey::Right;
-        case SDL_SCANCODE_DOWN:
-            return core::InputKey::Down;
-        case SDL_SCANCODE_UP:
-            return core::InputKey::Up;
-
-        case SDL_SCANCODE_SPACE:
-            return core::InputKey::Space;
-        case SDL_SCANCODE_INSERT:
-            return core::InputKey::Insert;
-        case SDL_SCANCODE_ESCAPE:
-            return core::InputKey::Esc;
-
-        case SDL_SCANCODE_LCTRL:
-            return core::InputKey::LCtrl;
-
-        default:
-            return core::InputKey::UN_SUPER;  // 未支持的键
-    }
-}
 }  // namespace graphics

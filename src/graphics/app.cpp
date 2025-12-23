@@ -31,7 +31,8 @@ void App::run() {
     }
 }
 void App::render() {
-    QCoreApplication::processEvents();
+
+    window->pullEvents();
 
     auto* graphics = render_base->getGraphics();
     graphics->clean(frameClean);

@@ -83,7 +83,7 @@ void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mou
             is_pick = true;
         } else {
             auto* draw_able = render_registry_.getDrawableById(pick_id);
-            if (draw_able->getEntity().hasComponent<ecs::TransformComponent>()) {
+            if (draw_able && draw_able->getEntity().hasComponent<ecs::TransformComponent>()) {
                 auto& transform = draw_able->getEntity().getComponent<ecs::TransformComponent>();
                 core::InputState state;
                 state.mouseX_ = mouse_axis.x;

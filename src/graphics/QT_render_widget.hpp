@@ -26,7 +26,7 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         };
         void configGUI() override {};
         void destroyGUI() override {};
-        void pullEvents(core::InputEvent& event) override {}
+        void pullEvents() override;
         void newFrame() override;
         void OnFrameDisplayed() override;
         [[nodiscard]] auto getActiveConfig() const -> WindowConfig override {

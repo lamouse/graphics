@@ -33,7 +33,6 @@ class App {
 
         std::unique_ptr<render::RenderBase> render_base;
         std::unique_ptr<ResourceManager> resourceManager;
-        core::InputEvent input_event;
         world::World world;
 
         render::frame::FramebufferConfig frame_config_;
