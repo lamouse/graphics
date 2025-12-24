@@ -86,10 +86,6 @@ void SDLWindow::newFrame() { ImGui_ImplSDL3_NewFrame(); }
 void SDLWindow::pullEvents() {
     SDL_Event e;
 
-
-
-
-
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
@@ -106,28 +102,23 @@ void SDLWindow::pullEvents() {
             }
             case SDL_EVENT_KEY_UP: {
                 if (e.key.repeat == 0) {
-
                 }
                 break;
             }
             case SDL_EVENT_MOUSE_MOTION: {
-
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_UP: {
                 if (e.button.button >= 1 && e.button.button <= 3) {
-
                 }
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_DOWN: {
                 if (e.button.button >= 1 && e.button.button <= 3) {
-
                 }
                 break;
             }
             case SDL_EVENT_MOUSE_WHEEL: {
-
                 break;
             }
         }

@@ -8,6 +8,7 @@
 #include "ecs/components/transform_component.hpp"
 #include "ecs/components/light_component.hpp"
 #include "world/world.hpp"
+#include "render_core/graphic.hpp"
 
 namespace graphics::effects {
 
@@ -77,6 +78,7 @@ class PointLightEffect {
         }
 
         auto getId() const -> id_t { return id; }
+
     private:
         using PointLightInstance =
             MeshInstance<PointLightPushConstants, render::PrimitiveTopology::Triangles, LightUBO>;

@@ -2,6 +2,8 @@
 
 #include "system/pick_system.hpp"
 #include "system/transform_system.hpp"
+#include "resource/obj/model_mesh.hpp"
+
 namespace graphics::effects {
 
 auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMesh& subMesh)

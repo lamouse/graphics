@@ -44,7 +44,7 @@ class VulkanGraphics : public render::Graphic {
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
         auto uploadTexture(ktxTexture* ktxTexture) -> TextureId override;
         void draw(const graphics::IMeshInstance& instance) override;
-        auto getDrawImage() -> ImTextureID override;
+        auto getDrawImage() -> unsigned long long override;
         auto addShader(std::span<const u32> data, ShaderType type) -> u64 override {
             return pipeline_cache.addShader(data, type);
         };
@@ -109,7 +109,7 @@ class VulkanGraphics : public render::Graphic {
             boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32>>
             vertex_bindings;
 
-        std::unordered_map<VkImageView, ImTextureID> imgui_textures;
+        std::unordered_map<VkImageView, unsigned long long> imgui_textures;
         DynamicPipelineState last_pipeline_state;
         DynamicPipelineState current_pipeline_state;
         PrimitiveTopology current_primitive_topology;

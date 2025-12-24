@@ -38,7 +38,6 @@ void move_right(ecs::CameraComponent &cam, float frameSpeed) {
 }
 
 void change_fov(ecs::CameraComponent &cam, float scroll) {
-
     auto fov = ecs::DEFAULT_FOVY - scroll;
     if (fov <= 1.f) {
         fov = 1.f;
@@ -91,8 +90,8 @@ void rotating(ecs::CameraComponent &cam, float mouseRelativeX_, float mouseRelat
 }  // namespace
 
 namespace graphics {
-void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem* input,  float deltaTime) {
-    if(!input){
+void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem *input, float deltaTime) {
+    if (!input) {
         return;
     }
 
@@ -119,12 +118,12 @@ void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem* input, 
     // }
 
     // 🔁 右键旋转视角（如果你还需要旋转功能）
-    auto* mouse = input->GetMouse();
+    auto *mouse = input->GetMouse();
     if (mouse->IsPressed(input::MouseButton::Right)) {
-       rotating(cam, mouse->GetRelative().x ,mouse->GetRelative().y);
+        rotating(cam, mouse->GetRelative().x, mouse->GetRelative().y);
     }
 
     // 🧮 缩放
-        change_fov(cam, mouse->GetScrollOffset().y);
+    change_fov(cam, mouse->GetScrollOffset().y);
 }
 }  // namespace graphics

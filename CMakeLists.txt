@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeModules/VcpkgConfig.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 project(graphics)
 set(EXECUTE_NAME graphics)
 set(PROJECT_VERSION_MAJOR 0)
@@ -18,6 +17,7 @@ endif()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
 option(TRACY_ENABLE "Enable Tracy profiling support" ON)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)

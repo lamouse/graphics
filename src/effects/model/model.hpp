@@ -2,6 +2,7 @@
 #include "effects/light/point_light.hpp"
 #include "ecs/components/transform_component.hpp"
 #include "world/world.hpp"
+#include "render_core/graphic.hpp"
 #include <tuple>
 #include <tracy/Tracy.hpp>
 #include <unordered_set>

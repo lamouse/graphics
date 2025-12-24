@@ -48,10 +48,6 @@ if(MSVC)
         /we4800 # Implicit conversion from 'type' to bool. Possible information loss
     )
 
-# target_compile_features(system
-# PUBLIC
-# cxx_std_23
-# )
 else()
     target_compile_options(${LIB_NAME} PRIVATE
         -Werror=conversion

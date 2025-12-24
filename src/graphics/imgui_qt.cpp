@@ -79,16 +79,16 @@ void mouse_wheel_event(QWheelEvent* event) {
         io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
     }
 }
-void mouse_focus_in_event(){
+void mouse_focus_in_event() {
     ImGuiIO& io = ImGui::GetIO();
     io.AddFocusEvent(true);
 }
-void mouse_focus_out_event(){
+void mouse_focus_out_event() {
     ImGuiIO& io = ImGui::GetIO();
     io.AddFocusEvent(false);
 }
 
-void new_frame(float weight, float height){
+void new_frame(float weight, float height) {
     if (ImGui::GetCurrentContext() == nullptr) {
         return;
     }

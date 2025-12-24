@@ -10,4 +10,4 @@ void mouse_wheel_event(QWheelEvent* event);
 void mouse_focus_in_event();
 void mouse_focus_out_event();
 void new_frame(float weight, float height);
-}
+}  // namespace imgui::qt

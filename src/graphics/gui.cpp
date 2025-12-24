@@ -193,7 +193,7 @@ void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float as
     ImGui::SetNextWindowPos(viewport->WorkPos);
     auto window_size = viewport->Size;
     if (data.show_out_liner) {
-        window_size.x  -= OUTLINER_WIDTH;
+        window_size.x -= OUTLINER_WIDTH;
     }
     if (data.show_status) {
         window_size.y -= RENDER_STATUS_BAR_HEIGHT;
@@ -392,13 +392,13 @@ void showOutliner(world::World& world, settings::MenuData& data) {
         ImGui::SetNextWindowSize(window_size);
         ImGui::SetNextWindowPos(panelPos);
         ImGui::Begin("Outliner", &data.show_out_liner, window_flags);
-        static int push_id= 0;
+        static int push_id = 0;
         world.processOutlineres([&](ecs::Outliner&& outliner) {
             ecs::Outliner local = std::move(outliner);
             auto& tag = local.entity.getComponent<ecs::TagComponent>();
             ImGuiTreeNodeFlags flags =
                 ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-            ImGui::PushID(push_id++); // 使用 entity 的唯一 id
+            ImGui::PushID(push_id++);  // 使用 entity 的唯一 id
             bool open = ImGui::TreeNodeEx(&local.entity, flags, "%s", tag.tag.c_str());
             // 只有展开时才绘制子节点
             if (open) {

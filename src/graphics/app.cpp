@@ -6,7 +6,6 @@
 #include "effects/particle/particle.hpp"
 #include "effects/light/point_light.hpp"
 #include "effects/model/model.hpp"
-#include "core/core.hpp"
 #include "effects/model/multi_mesh_model.hpp"
 #include "common/settings.hpp"
 #include "effects/cubemap/skybox.hpp"
@@ -33,15 +32,15 @@ void App::render_thread_func(std::stop_token token) {
 }
 
 void App::render() {
-    //window->pullEvents();
+    // window->pullEvents();
 
-    auto* graphics = render_base->getGraphics();
+    auto* graphics = sys_->Render().getGraphics();
     graphics->clean(frameClean);
     world.update(*window, *resourceManager, *input_system_);
 
     world.draw(graphics);
 
-    auto& shader_notify = render_base->getShaderNotify();
+    auto& shader_notify = sys_->Render().getShaderNotify();
     const int shaders_building = shader_notify.ShadersBuilding();
 
     if (settings::values.use_debug_ui.GetValue()) {
@@ -65,9 +64,9 @@ void App::render() {
             ui::draw_texture(settings::values.menu_data, imageId, window->getAspectRatio());
             logger.drawUi(settings::values.menu_data.show_log);
         };
-        render_base->composite(std::span{&frame_config_, 1}, ui_fun);
+        sys_->Render().composite(std::span{&frame_config_, 1}, ui_fun);
     } else {
-        render_base->composite(std::span{&frame_config_, 1});
+        sys_->Render().composite(std::span{&frame_config_, 1});
     }
 
     world.cleanLight();
@@ -76,9 +75,7 @@ void App::render() {
 App::App()
     : input_system_(std::make_shared<input::InputSystem>()),
       qt_main_window(std::make_unique<QTWindow>(input_system_, 1920, 1080, "graphics")),
-      window(qt_main_window->initRenderWindow()),
-      render_base(createRender(window)),
-      resourceManager(std::make_unique<ResourceManager>(render_base->getGraphics())) {
+      sys_(std::make_unique<core::System>()) {
     frame_config_ = {.width = 1920, .height = 1080, .stride = 1920};
     frameClean.width = frame_config_.width;
     frameClean.hight = frame_config_.height;
@@ -86,47 +83,45 @@ App::App()
     frameClean.framebuffer.depth_format = render::surface::PixelFormat::D32_FLOAT;
     frameClean.framebuffer.extent = {
         .width = frame_config_.width, .height = frame_config_.height, .depth = 1};
-    statusData.device_name = render_base->GetDeviceVendor();
-    load_resource();
-    render_thread = std::jthread([this](std::stop_token st){
-        render_thread_func(std::move(st));});
-
+    //statusData.device_name = render_base->GetDeviceVendor();
+    //load_resource();
+    //render_thread = std::jthread([this](std::stop_token st) { render_thread_func(std::move(st)); });
 }
 
 App::~App() = default;
 
 void App::load_resource() {
-        std::string viking_obj_path = "backpack";
-        std::string model_shader_name = "model";
-        std::string particle_shader = "particle";
-        std::string point_light_shader_name = "point_light";
+    std::string viking_obj_path = "backpack";
+    std::string model_shader_name = "model";
+    std::string particle_shader = "particle";
+    std::string point_light_shader_name = "point_light";
 
-        resourceManager->addGraphShader(model_shader_name);
-        resourceManager->addGraphShader(particle_shader);
-        resourceManager->addGraphShader(point_light_shader_name);
-        resourceManager->addComputeShader(particle_shader);
-        auto frame_layout = window->getFramebufferLayout();
+    resourceManager->addGraphShader(model_shader_name);
+    resourceManager->addGraphShader(particle_shader);
+    resourceManager->addGraphShader(point_light_shader_name);
+    resourceManager->addComputeShader(particle_shader);
+    auto frame_layout = window->getFramebufferLayout();
 
-        ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};
+    ModelResourceName names{.shader_name = model_shader_name, .mesh_name = viking_obj_path};
 
-        std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
-                                   glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
-                                   glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
-                                   glm::vec3{1.f, 1.f, 1.f}};
-        for (auto& light_color : light_colors) {
-            auto point_light = std::make_shared<effects::PointLightEffect>(
-                *resourceManager, frame_layout, 1.f, .04f, light_color);
-            world.addDrawable(point_light);
-        }
+    std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
+                               glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
+                               glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
+                               glm::vec3{1.f, 1.f, 1.f}};
+    for (auto& light_color : light_colors) {
+        auto point_light = std::make_shared<effects::PointLightEffect>(
+            *resourceManager, frame_layout, 1.f, .04f, light_color);
+        world.addDrawable(point_light);
+    }
 
-        auto delta_particle = std::make_shared<effects::DeltaParticle>(
-            *resourceManager, frame_layout, PARTICLE_COUNT);
-        auto light_model = std::make_shared<effects::ModelForMultiMesh>(
-            *resourceManager, frame_layout, names, "model");
-        world.addDrawable(light_model);
-        auto sky_box = std::make_shared<effects::SkyBox>(*resourceManager, frame_layout);
-        world.addDrawable(sky_box);
-        PickingSystem::commit();
+    auto delta_particle =
+        std::make_shared<effects::DeltaParticle>(*resourceManager, frame_layout, PARTICLE_COUNT);
+    auto light_model = std::make_shared<effects::ModelForMultiMesh>(*resourceManager, frame_layout,
+        names, "model");
+    world.addDrawable(light_model);
+    auto sky_box = std::make_shared<effects::SkyBox>(*resourceManager, frame_layout);
+    world.addDrawable(sky_box);
+    PickingSystem::commit();
 }
 
 }  // namespace graphics

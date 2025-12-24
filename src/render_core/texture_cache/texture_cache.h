@@ -2,8 +2,6 @@
 #include "render_core/texture_cache/texture_cache_base.hpp"
 #include "render_core/texture_cache/utils.hpp"
 #include "render_core/texture/image_view_base.hpp"
-#include <cstring>
-#include "common/assert.hpp"
 namespace render::texture {
 using surface::GetFormatType;
 using surface::PixelFormat;
@@ -172,7 +170,7 @@ void TextureCache<P>::UpdateRenderTarget(const FramebufferKey& key) {
         }
         if (surface::GetFormatType(format) != SurfaceType::ColorTexture) {
             // NOLINTNEXTLINE
-            ASSERT_MSG(false, "颜色格式错误");
+            throw std::runtime_error("颜色格式错误");
         }
         info.format = format;
         target.color_buffer_ids.at(index) = createImageAndView(info);
@@ -182,7 +180,7 @@ void TextureCache<P>::UpdateRenderTarget(const FramebufferKey& key) {
         target.depth_buffer_id = createImageAndView(info);
     } else {
         // NOLINTNEXTLINE
-        ASSERT_MSG(false, "深度格式错误");
+        throw std::runtime_error("深度格式错误");
     }
 
     const auto [pair, is_new] = framebuffers.try_emplace(target);

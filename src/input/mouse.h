@@ -38,7 +38,7 @@ class Mouse final : public InputEngine<MouseButton> {
         [[nodiscard]] auto GetLastPosition() const -> glm::vec2;
         [[nodiscard]] auto GetLastMotionChange() const -> glm::vec2;
         [[nodiscard]] auto GetScrollOffset() const -> glm::vec2;
-        [[nodiscard]] auto GetRelative() const ->glm::vec2;
+        [[nodiscard]] auto GetRelative() const -> glm::vec2;
 
         void ReleaseAllButtons();
         /**
@@ -47,7 +47,7 @@ class Mouse final : public InputEngine<MouseButton> {
          *
          * @return glm::vec2
          */
-        [[nodiscard]] auto popRelative() ->glm::vec2;
+        [[nodiscard]] auto popRelative() -> glm::vec2;
 
     private:
         auto IsMousePanningEnabled() -> bool;

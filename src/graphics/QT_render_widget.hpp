@@ -1,13 +1,43 @@
-#pragma once
-#include <QWidget>
 #include "core/frontend/window.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
+#include "core/core.hpp"
 #include <memory>
+#include <QWidget>
+#include <QThread>
+#include <stop_token>
+#include <atomic>
 
 namespace graphics {
 namespace input {
 class InputSystem;
 }
+
+class RenderThread final : public QThread {
+        Q_OBJECT
+
+    public:
+        explicit RenderThread(core::System& sys);
+        ~RenderThread() override;
+        CLASS_NON_COPYABLE(RenderThread);
+        CLASS_NON_MOVEABLE(RenderThread);
+        void run() override;
+
+        void SetRunning(bool running) {
+            should_run_.store(running, std::memory_order::release);
+            should_run_.notify_one();
+        }
+
+        bool IsRunning() {
+            return should_run_;
+        }
+
+    private:
+        core::System& system;
+        std::stop_source stop_source_;
+        std::atomic<bool> should_run_{true};
+};
+
+
 class QTWindow;
 
 class RenderWindow : public QWidget, public core::frontend::BaseWindow {

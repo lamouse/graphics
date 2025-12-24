@@ -5,10 +5,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace graphics {
-    namespace input {
-        class InputSystem;
+namespace input {
+class InputSystem;
 
-    }
+}
 
 struct CameraSystem {
     public:

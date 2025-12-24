@@ -1,5 +1,6 @@
 #pragma once
 #include "effects/model/model.hpp"
+#include "render_core/graphic.hpp"
 
 namespace graphics::effects {
 class ModelForMultiMesh {
@@ -24,6 +25,7 @@ class ModelForMultiMesh {
 
         void update(const core::FrameInfo& frameInfo, world::World& world);
         [[nodiscard]] auto getId() const -> id_t { return id; }
+
     private:
         using MeshInstance =
             MeshInstance<ModelPushConstantData, render::PrimitiveTopology::Triangles, LightUBO,

@@ -1,5 +1,7 @@
+
 #include <utility>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
+#include "common/thread_worker.hpp"
 #include "graphics/QT_render_widget.hpp"
 #include "graphics/QT_window.hpp"
 #include "graphics/QT_common.hpp"
@@ -41,6 +43,25 @@ struct VulkanRenderWidget : public RenderWidget {
 
 }  // namespace
 
+
+RenderThread::RenderThread(core::System& sys) : system(sys) {
+}
+
+RenderThread::~RenderThread() = default;
+
+void RenderThread::run() {
+    common::thread::SetCurrentThreadName("RenderThread");
+    auto stop_token = stop_source_.get_token();
+    while (!stop_token.stop_requested()) {
+        if (should_run_) {
+            system.run();
+            should_run_.wait(false);
+        } else {
+            should_run_.wait(true);
+        }
+    }
+}
+
 RenderWindow::RenderWindow(QTWindow* parent, std::shared_ptr<input::InputSystem> input_system)
     : QWidget(parent), input_system_(std::move(input_system)) {
     QWidget::setWindowTitle(QString("graphics"));
@@ -64,9 +85,7 @@ void RenderWindow::OnFrameDisplayed() {
     }
 }
 
- RenderWindow::~RenderWindow(){
-    input_system_->Shutdown();
- }
+RenderWindow::~RenderWindow() { input_system_->Shutdown(); }
 
 void RenderWindow::pullEvents() { QCoreApplication::processEvents(); }
 

@@ -1,17 +1,26 @@
 #pragma once
+#include "common/class_traits.hpp"
 #include "render_core/types.hpp"
-#include "render_core/graphic.hpp"
-#include "resource/obj/mesh.hpp"
+#include "render_core/shader_cache.hpp"
 #include "resource/obj/model_mesh.hpp"
-#include "common/common_funcs.hpp"
-#include "resource/texture/image.hpp"
+
 #include <unordered_map>
 #include <string>
 #include <functional>
 #include <glm/glm.hpp>
 #include <vector>
+#include <span>
+
+namespace render {
+class Graphic;
+}
+
+namespace resource::image {
+class ITexture;
+}
 
 namespace graphics {
+class IMeshData;
 
 constexpr std::string_view DEFAULT_1X1_WRITE_TEXTURE{"__default_1x1_white_texture__"};
 struct ShaderHash {

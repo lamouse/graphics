@@ -5,6 +5,7 @@ set(sources
     bit_cast.h
     bit_field.hpp
     bit_util.h
+    class_traits.hpp
     common_funcs.hpp
     common_types.hpp
     div_ceil.hpp

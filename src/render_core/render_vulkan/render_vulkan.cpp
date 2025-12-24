@@ -53,8 +53,10 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
                 window->getFramebufferLayout().height),
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
-      imgui(
-          std::make_unique<ImguiCore>(window, device, scheduler, device.getPhysical(), *instance)),
+      imgui(settings::values.use_debug_ui.GetValue()
+                ? std::make_unique<ImguiCore>(window, device, scheduler, device.getPhysical(),
+                                              *instance)
+                : nullptr),
       vulkan_graphics(window, device, memory_allocator, scheduler, getShaderNotify()) {
 } catch (const std::exception& exception) {
     SPDLOG_ERROR("Vulkan initialization failed with error: {}", exception.what());
@@ -80,7 +82,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
-    if (func) {
+    if (imgui && func) {
         imgui->draw(func, frame);
     }
     scheduler.flush(*frame->render_ready);

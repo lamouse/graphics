@@ -3,11 +3,10 @@
 #include "render_core/shader_cache.hpp"
 #include "render_core/compute_instance.hpp"
 #include "render_core/texture/types.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "resource/instance.hpp"
 #include "resource/texture/image.hpp"
 #include "resource/obj/mesh.hpp"
-#include <imgui.h>
 #include <ktx.h>
 namespace render {
 using GraphicsId = common::SlotId;
@@ -32,7 +31,7 @@ struct CleanValue {
 class Graphic {
     public:
         virtual ~Graphic() = default;
-        virtual auto getDrawImage() -> ImTextureID = 0;
+        virtual auto getDrawImage() -> unsigned long long = 0;
         virtual auto uploadModel(const graphics::IMeshData& instance) -> MeshId = 0;
         virtual auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId = 0;
         virtual auto uploadTexture(ktxTexture* ktxTexture) -> TextureId = 0;

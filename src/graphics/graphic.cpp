@@ -10,7 +10,8 @@
 #include "render_core/render_core.hpp"
 
 namespace graphics {
-auto createWindow(std::shared_ptr<input::InputSystem> input_system) -> std::unique_ptr<core::frontend::BaseWindow> {
+auto createWindow(std::shared_ptr<input::InputSystem> input_system)
+    -> std::unique_ptr<core::frontend::BaseWindow> {
     const int width = 1920;
     const int height = 1080;
     const char* title = "graphic engine";

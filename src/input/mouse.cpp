@@ -78,10 +78,10 @@ void Mouse::Move(int x, int y, int center_x, int center_y) {
 auto Mouse::IsMousePanningEnabled() -> bool { return false; }
 void Mouse::Scroll(const glm::vec2& offset) {
     scroll_offset_ += offset;
-    if(scroll_offset_.y > 45.f){
+    if (scroll_offset_.y > 45.f) {
         scroll_offset_.y = 45;
     }
-    if(scroll_offset_.y < 0.f ){
+    if (scroll_offset_.y < 0.f) {
         scroll_offset_.y = 0.f;
     }
 }
@@ -91,12 +91,10 @@ auto Mouse::GetLastPosition() const -> glm::vec2 { return last_position_; }
 auto Mouse::GetLastMotionChange() const -> glm::vec2 { return last_motion_change; }
 auto Mouse::GetScrollOffset() const -> glm::vec2 { return scroll_offset_; }
 auto Mouse::GetRelative() const -> glm::vec2 { return relative; }
-auto Mouse::popRelative() -> glm::vec2{
+auto Mouse::popRelative() -> glm::vec2 {
     auto tmp = relative;
     relative = glm::vec2{.0f};
     return tmp;
- }
- void Mouse::ReleaseAllButtons(){
-    button_pressed_ = false;
- }
+}
+void Mouse::ReleaseAllButtons() { button_pressed_ = false; }
 }  // namespace graphics::input

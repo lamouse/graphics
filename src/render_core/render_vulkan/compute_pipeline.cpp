@@ -1,4 +1,4 @@
-
+#include "common/assert.hpp"
 #include <boost/container/small_vector.hpp>
 
 #include "render_core/render_vulkan/compute_pipeline.hpp"
@@ -6,6 +6,7 @@
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/render_vulkan/pipeline_helper.hpp"
+
 
 namespace render::vulkan {
 

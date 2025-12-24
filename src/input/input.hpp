@@ -4,7 +4,7 @@ namespace graphics::input {
 class Mouse;
 class InputSystem {
     public:
-        auto GetMouse() -> Mouse*;
+        auto GetMouse() -> Mouse *;
         InputSystem();
         /**
          * @brief 使用之前必须调用否则GetMouse()等将返回nullptr，

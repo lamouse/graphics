@@ -23,7 +23,6 @@ struct MenuData {
         bool show_status{true};
 };
 
-
 struct Values {
         Linkage linkage;
         MenuData menu_data;

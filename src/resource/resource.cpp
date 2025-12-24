@@ -1,11 +1,13 @@
 #include "resource/resource.hpp"
 #include "common/assert.hpp"
-#include "resource/obj/model_mesh.hpp"
 #include "resource/shader/shader.hpp"
 #include "resource/texture/ktx_image.hpp"
 #include "render_core/types.hpp"
+#include "render_core/graphic.hpp"
 #include "model_config.hpp"
 #include "image_config.hpp"
+#include "resource/obj/mesh.hpp"
+#include "resource/texture/image.hpp"
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include <fstream>

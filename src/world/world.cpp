@@ -11,7 +11,6 @@
 #include "system/camera_system.hpp"
 #include "system/pick_system.hpp"
 #include "system/transform_system.hpp"
-#include "core/core.hpp"
 
 namespace world {
 
@@ -60,7 +59,8 @@ void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager
     frameInfo.resource_manager = &resourceManager;
     auto& camera = cameraComponent_->getCamera();
     frameInfo.camera = &camera;
-    graphics::CameraSystem::update(*cameraComponent_, &input_system, static_cast<float>(frameInfo.frame_time.frame));
+    graphics::CameraSystem::update(*cameraComponent_, &input_system,
+                                   static_cast<float>(frameInfo.frame_time.frame));
     process_mouse_input(frameInfo, input_system.GetMouse());
 
     render_registry_.updateAll(frameInfo, *this);

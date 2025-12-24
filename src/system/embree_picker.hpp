@@ -17,9 +17,9 @@ class EmbreePicker {
         RTCScene scene_;
         RTCScene main_scene_;  // 主场景（包含 instances）
         std::unordered_map<id_t, RTCGeometry> geometries_;
-        std::unordered_map<unsigned int, id_t> embree_to_user;  // Embree 回调用
+        std::unordered_map<unsigned int, id_t> embree_to_user;   // Embree 回调用
         std::unordered_map<unsigned int, id_t> embree_to_model;  // Embree 回调用
-        std::unordered_map<id_t, RTCGeometry> instances_;       // id → instance geom
+        std::unordered_map<id_t, RTCGeometry> instances_;        // id → instance geom
 
     public:
         EmbreePicker();

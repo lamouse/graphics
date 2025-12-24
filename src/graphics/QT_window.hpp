@@ -2,7 +2,7 @@
 #include <QMainWindow>
 #include <memory>
 #include "core/frontend/window.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 class QQmlApplicationEngine;
 
 namespace graphics {

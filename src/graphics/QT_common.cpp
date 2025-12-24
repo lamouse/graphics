@@ -65,20 +65,20 @@ auto get_window_system_info(QWindow* window) -> core::frontend::BaseWindow::Wind
     return wsi;
 }
 
-auto QtButtonToMouseButton(Qt::MouseButton button) -> input::MouseButton{
+auto QtButtonToMouseButton(Qt::MouseButton button) -> input::MouseButton {
     switch (button) {
-    case Qt::LeftButton:
-        return input::MouseButton::Left;
-    case Qt::RightButton:
-        return input::MouseButton::Right;
-    case Qt::MiddleButton:
-        return input::MouseButton::Middle;
-    case Qt::BackButton:
-        return input::MouseButton::Backward;
-    case Qt::ForwardButton:
-        return input::MouseButton::Forward;
-    default:
-        return input::MouseButton::UnDefined;
+        case Qt::LeftButton:
+            return input::MouseButton::Left;
+        case Qt::RightButton:
+            return input::MouseButton::Right;
+        case Qt::MiddleButton:
+            return input::MouseButton::Middle;
+        case Qt::BackButton:
+            return input::MouseButton::Backward;
+        case Qt::ForwardButton:
+            return input::MouseButton::Forward;
+        default:
+            return input::MouseButton::UnDefined;
     }
 }
 }  // namespace graphics::qt

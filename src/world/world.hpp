@@ -19,7 +19,7 @@ class ResourceManager;
 namespace input {
 class InputSystem;
 class Mouse;
-}
+}  // namespace input
 }  // namespace graphics
 
 namespace world {
@@ -91,7 +91,6 @@ class World {
         ecs::Entity entity_;
 
     private:
-
         void process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mouse* mouse);
         id_t id_;
         id_t pick_id{0};

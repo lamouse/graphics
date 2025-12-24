@@ -1,6 +1,6 @@
 #pragma once
 #include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <unordered_map>
 #include <memory>
 #include <span>
@@ -31,7 +31,7 @@ class ShaderCache {
         // 返回计算后的hash
         auto addShader(std::span<const u32> data, ShaderType type) -> u64;
         void setCurrentShader(u64 vertexHash, u64 fragmentHas);
-        void setsetCurrentShader(u64 computeHash);
+        void setCurrentShader(u64 computeHash);
 
     protected:
         std::array<const ShaderInfo*, NUM_PROGRAMS> shader_infos{};

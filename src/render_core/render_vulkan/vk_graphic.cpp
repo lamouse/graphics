@@ -129,7 +129,7 @@ void VulkanGraphics::clean(const CleanValue& cleanValue) {
 }
 
 void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
-    pipeline_cache.setsetCurrentShader(instance.getShaderHash());
+    pipeline_cache.setCurrentShader(instance.getShaderHash());
     FlushWork();
     auto work = instance.getWorkgroupSize();
 
@@ -160,7 +160,7 @@ void VulkanGraphics::dispatchCompute(const IComputeInstance& instance) {
         [work](vk::CommandBuffer cmdbuf) -> void { cmdbuf.dispatch(work[0], work[1], work[2]); });
 }
 
-auto VulkanGraphics::getDrawImage() -> ImTextureID {
+auto VulkanGraphics::getDrawImage() -> unsigned long long {
     // 将 Vulkan 纹理绑定到 ImGui
     const auto& image_view = texture_cache.TryFindFramebufferImageView();
     if (!sampler) {

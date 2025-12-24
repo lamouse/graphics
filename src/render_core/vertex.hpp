@@ -3,12 +3,8 @@
 //
 #pragma once
 
-#ifndef GRAPHICS_VERTEX_HPP
-#define GRAPHICS_VERTEX_HPP
-
 #include "common/common_types.hpp"
 #include "common/bit_field.hpp"
-#include "common/assert.hpp"
 #include <string>
 namespace render {
 struct VertexBinding {
@@ -93,7 +89,6 @@ struct VertexAttribute {
                 case Size::B10_G11_R11:
                     return 3;
                 default:
-                    ASSERT(false);
                     return 1;
             }
         }
@@ -132,7 +127,6 @@ struct VertexAttribute {
                 case Size::B10_G11_R11:
                     return 4;
                 default:
-                    ASSERT(false);
                     return 1;
             }
         }
@@ -170,7 +164,6 @@ struct VertexAttribute {
                 case Size::B10_G11_R11:
                     return "10_11_11";
                 default:
-                    ASSERT(false);
                     return {};
             }
         }
@@ -194,7 +187,6 @@ struct VertexAttribute {
                 case Type::Float:
                     return "FLOAT";
             }
-            ASSERT(false);
             return {};
         }
 
@@ -207,4 +199,3 @@ struct VertexAttribute {
 static_assert(sizeof(VertexAttribute) == 0x4);
 }  // namespace render
 
-#endif  // GRAPHICS_VERTEX_HPP

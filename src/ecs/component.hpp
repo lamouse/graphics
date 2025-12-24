@@ -5,7 +5,7 @@
 #include "components/render_state_component.hpp"
 #include "ecs/scene/entity.hpp"
 namespace ecs {
-    struct Outliner {
+struct Outliner {
         Entity entity;
         std::vector<Entity> children;
 };
