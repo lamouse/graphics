@@ -250,7 +250,7 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
         .setImageIndices(image_index_);
 
     try {
-        switch (const vk::Result result = present_queue.presentKHR(present_info)) {
+        switch (const vk::Result result = present_queue.presentKHR(&present_info)) {
             case vk::Result::eSuccess:
                 break;
             case vk::Result::eSuboptimalKHR:

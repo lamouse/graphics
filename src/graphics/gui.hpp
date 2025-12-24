@@ -13,7 +13,7 @@ struct StatusBarData {
         float mouseY_;
         int registry_count;
         int build_shaders;
-        std::string_view device_name;
+        std::string device_name;
 };
 
 void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float aspectRatio);

@@ -492,7 +492,7 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     ImGui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
-    ImGui::Text("device: %s", barData.device_name.data());
+    ImGui::Text("device: %s", barData.device_name.c_str());
 
     if (barData.build_shaders > 0) {
         ImGui::SameLine();

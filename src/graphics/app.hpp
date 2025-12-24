@@ -9,6 +9,7 @@
 #include "world/world.hpp"
 #include "QT_window.hpp"
 #include "graphics/gui.hpp"
+#include <thread>
 
 namespace graphics {
 namespace input {
@@ -29,6 +30,7 @@ class App {
         std::unique_ptr<QTWindow> qt_main_window;
         core::frontend::BaseWindow* window;
 
+        void render_thread_func(std::stop_token token);
         void render();
 
         std::unique_ptr<render::RenderBase> render_base;
@@ -39,5 +41,6 @@ class App {
         render::CleanValue frameClean{};
         ui::StatusBarData statusData;
         void load_resource();
+        std::jthread render_thread;
 };
 }  // namespace graphics

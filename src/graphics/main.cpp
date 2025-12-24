@@ -50,7 +50,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         //     spdlog::warn("Failed to load QML root object.");
         // }
             graphics::App g_app;
-            // app.exec();
+            QApplication::exec();
 
 
 #endif

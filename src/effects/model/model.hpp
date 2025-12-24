@@ -66,7 +66,6 @@ class LightModel {
         id_t id;
         std::unordered_set<id_t> mesh_ids;
         // 用于鼠标移动
-        glm::vec3 out_dragStartWorldPos{};
         float out_initialWorldZ{};
 };
 
