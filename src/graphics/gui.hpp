@@ -9,10 +9,10 @@
 namespace graphics::ui {
 
 struct StatusBarData {
-        float mouseX_;
-        float mouseY_;
-        int registry_count;
-        int build_shaders;
+        float mouseX_{};
+        float mouseY_{};
+        int registry_count{};
+        int build_shaders{};
         std::string device_name;
 };
 

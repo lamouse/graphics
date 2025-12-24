@@ -498,7 +498,7 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
-        ImGui::Text("build shaders: %d", barData.registry_count);
+        ImGui::Text("build shaders: %d", barData.build_shaders);
     }
 
     ImGui::End();

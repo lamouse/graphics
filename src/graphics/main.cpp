@@ -49,9 +49,9 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         // if (engine.rootObjects().isEmpty()) {
         //     spdlog::warn("Failed to load QML root object.");
         // }
-            graphics::App g_app;
-            QApplication::exec();
 
+        graphics::App g_app;
+        QApplication::exec();
 
 #endif
         // graphics::App g_app;
