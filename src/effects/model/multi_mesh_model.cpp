@@ -42,16 +42,6 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
 void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
 
-    if (frameInfo.input_event) {
-        if (render_state->is_select()) {
-            if (frameInfo.input_event->key == core::InputKey::LCtrl) {
-                if (frameInfo.input_event->scrollOffset_ != 0.0f) {
-                    scale(*transform, frameInfo.input_event->scrollOffset_);
-                }
-            }
-        }
-    }
-
     updateLightUBO(frameInfo, light_ubo, world);
     push_constant.modelMatrix = transform->mat4();
     push_constant.normalMatrix = glm::inverseTranspose(glm::mat3(push_constant.modelMatrix));

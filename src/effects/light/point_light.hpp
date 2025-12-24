@@ -53,7 +53,7 @@ class PointLightEffect {
 
         void update(const core::FrameInfo& frameInfo, world::World& world) {
             constexpr float angularSpeed = .5f;  // 弧度/秒
-            float angle = angularSpeed * frameInfo.frameTime;
+            float angle = angularSpeed * static_cast<float>(frameInfo.frame_time.frame);
             glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
             glm::vec4 localOffset(transform->translation, 1.f);
 

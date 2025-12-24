@@ -56,13 +56,11 @@ void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager
     auto layout = window.getFramebufferLayout();
     frameInfo.window_width = layout.width;
     frameInfo.window_hight = layout.height;
-    auto [durationTime, frameTime] = frame_time_->get();
-    frameInfo.durationTime = static_cast<float>(durationTime);
-    frameInfo.frameTime = static_cast<float>(frameTime);
+    frameInfo.frame_time = frame_time_->get();
     frameInfo.resource_manager = &resourceManager;
     auto& camera = cameraComponent_->getCamera();
     frameInfo.camera = &camera;
-    graphics::CameraSystem::update(*cameraComponent_, &input_system, frameInfo.frameTime);
+    graphics::CameraSystem::update(*cameraComponent_, &input_system, static_cast<float>(frameInfo.frame_time.frame));
     process_mouse_input(frameInfo, input_system.GetMouse());
 
     render_registry_.updateAll(frameInfo, *this);
@@ -85,13 +83,6 @@ void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mou
             auto* draw_able = render_registry_.getDrawableById(pick_id);
             if (draw_able && draw_able->getEntity().hasComponent<ecs::TransformComponent>()) {
                 auto& transform = draw_able->getEntity().getComponent<ecs::TransformComponent>();
-                core::InputState state;
-                state.mouseX_ = mouse_axis.x;
-                state.mouseY_ = mouse_axis.y;
-                auto relative =  mouse->popRelative();
-                state.mouseRelativeX_ = relative.x;
-                state.mouseRelativeY_ = relative.y;
-                frameInfo.input_event = state;
                 graphics::move_model(frameInfo, transform);
             }
         }

@@ -81,14 +81,6 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
 void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
     ZoneScopedNC("model::update", 110);
 
-    if (render_state->is_select() && frameInfo.input_event) {
-        if (frameInfo.input_event->key == core::InputKey::LCtrl) {
-            if (frameInfo.input_event->scrollOffset_ != 0.0f) {
-                scale(*transform, frameInfo.input_event->scrollOffset_);
-            }
-        }
-    }
-
     updateLightUBO(frameInfo, light_ubo, world);
 
     push_constant.modelMatrix = transform->mat4();
