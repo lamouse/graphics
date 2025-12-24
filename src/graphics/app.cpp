@@ -26,12 +26,6 @@
 
 namespace graphics {
 
-void App::run() {
-    while (!window->shouldClose()) {
-        render();
-    }
-}
-
 void App::render_thread_func(std::stop_token token) {
     while (!token.stop_requested() && !window->shouldClose()) {
         render();

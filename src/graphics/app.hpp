@@ -18,7 +18,6 @@ class InputSystem;
 class RenderRegistry;
 class App {
     public:
-        void run();
         explicit App();
         CLASS_NON_COPYABLE(App);
         CLASS_NON_MOVEABLE(App);
