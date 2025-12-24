@@ -39,6 +39,8 @@ class Mouse final : public InputEngine<MouseButton> {
         [[nodiscard]] auto GetLastMotionChange() const -> glm::vec2;
         [[nodiscard]] auto GetScrollOffset() const -> glm::vec2;
         [[nodiscard]] auto GetRelative() const ->glm::vec2;
+
+        void ReleaseAllButtons();
         /**
          * @brief 这里会将记录的鼠标偏移重置为0，如果需要就调用这个
             不要同时多次调用，会得到意想不到的后果

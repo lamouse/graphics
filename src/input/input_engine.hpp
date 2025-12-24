@@ -19,6 +19,11 @@ class InputEngine {
         virtual ~InputEngine() = default;
 
         [[nodiscard]] auto GetEngineName() const -> std::string_view { return engine_name_; }
+        void ResetButtonState(){
+            for(auto& [k,v] : button_states_){
+                button_states_[k] = false;
+            }
+        }
 
         [[nodiscard]] auto IsPressed(BUTTON button) const -> bool {
             auto it = button_states_.find(button);

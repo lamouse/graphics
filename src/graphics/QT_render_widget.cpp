@@ -64,6 +64,10 @@ void RenderWindow::OnFrameDisplayed() {
     }
 }
 
+ RenderWindow::~RenderWindow(){
+    input_system_->Shutdown();
+ }
+
 void RenderWindow::pullEvents() { QCoreApplication::processEvents(); }
 
 void RenderWindow::newFrame() {
@@ -100,6 +104,7 @@ auto RenderWindow::InitRenderTarget() -> bool {
     layout()->addWidget(child_widget_);
     setMinimumSize(1, 1);
 
+    input_system_->Init();
     OnFramebufferResized();
     return true;
 }
@@ -183,6 +188,7 @@ void RenderWindow::focusInEvent(QFocusEvent* event) {
 void RenderWindow::focusOutEvent(QFocusEvent* event) {
     imgui::qt::mouse_focus_out_event();
     QWidget::focusOutEvent(event);
+    input_system_->GetMouse()->ResetButtonState();
 }
 
 void RenderWindow::showEvent(QShowEvent* event) {

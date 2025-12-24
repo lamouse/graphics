@@ -1,7 +1,9 @@
 #pragma once
 #include <QWidget>
 #include "core/frontend/window.hpp"
+#include "common/common_funcs.hpp"
 #include <memory>
+
 namespace graphics {
 namespace input {
 class InputSystem;
@@ -12,7 +14,9 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         Q_OBJECT
     public:
         explicit RenderWindow(QTWindow* parent, std::shared_ptr<input::InputSystem> input_system);
-
+        CLASS_NON_COPYABLE(RenderWindow);
+        CLASS_NON_MOVEABLE(RenderWindow);
+        ~RenderWindow() override;
         void Exit();
         void ExecuteProgram(std::size_t program_index);
         [[nodiscard]] auto IsLoadingComplete() const -> bool;

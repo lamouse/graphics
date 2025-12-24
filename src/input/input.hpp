@@ -6,6 +6,13 @@ class InputSystem {
     public:
         auto GetMouse() -> Mouse*;
         InputSystem();
+        /**
+         * @brief 使用之前必须调用否则GetMouse()等将返回nullptr，
+            提供这个函数主要是进行渲染切换时重置输入状态
+         *
+         */
+        void Init();
+        void Shutdown();
         InputSystem(const InputSystem &) = delete;
         InputSystem(InputSystem &&) = delete;
         auto operator=(const InputSystem &) -> InputSystem & = delete;

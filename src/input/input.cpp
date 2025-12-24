@@ -7,12 +7,26 @@ struct InputSystem::Impl {
             engine = std::make_shared<Engine>(name);
         }
 
+        template<typename Engine>
+        void UnRegisterEngine(std::shared_ptr<Engine>& engine){
+            engine.reset();
+        }
+
+        void ShutDown(){
+            UnRegisterEngine(mouse);
+        }
         Impl() { RegisterEngine<Mouse>("Mouse", mouse); }
 
         std::shared_ptr<Mouse> mouse;
 };
 
-InputSystem::InputSystem() : impl_(std::make_unique<Impl>()) {}
+InputSystem::InputSystem():impl_(nullptr) {}
+void InputSystem::Init(){
+    impl_ = std::make_unique<Impl>();
+}
+void InputSystem::Shutdown(){
+    impl_->ShutDown();
+}
 InputSystem::~InputSystem() = default;
 auto InputSystem::GetMouse() -> Mouse* { return impl_->mouse.get(); }
 }  // namespace graphics::input
