@@ -2,11 +2,11 @@
 #include "render_core/render_vulkan/vk_graphic.hpp"
 #include "present_push_constants.h"
 #include "render_core/host_shaders/vulkan_present_vert_spv.h"
-#include "render_vulkan/vk_shader_util.hpp"
 #include "render_vulkan/present_manager.hpp"
 #include "vulkan_utils.hpp"
 #include "layer.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
+import render.vulkan.shader;
 namespace render::vulkan::present {
 
 namespace {}  // namespace

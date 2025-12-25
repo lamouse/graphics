@@ -8,10 +8,10 @@
 #include <utility>
 #include "common/settings.hpp"
 #include "render_core/render_vulkan/compute_pipeline.hpp"
-#include "render_core/render_vulkan/vk_shader_util.hpp"
 #include "shader_tools/shader_compile.hpp"
 #include <xxhash.h>
 import render.vulkan.common;
+import render.vulkan.shader;
 namespace render::vulkan {
 
 constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";

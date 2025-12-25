@@ -10,6 +10,7 @@ module;
 
 #include <vulkan/vk_enum_string_helper.h>
 module render.vulkan.ImGui;
+import render.vulkan.common;
 namespace {
 void init_imgui(float scale) {
     // 这里使用了imgui的一个分支docking
