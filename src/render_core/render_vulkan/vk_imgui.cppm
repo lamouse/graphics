@@ -1,20 +1,15 @@
-//
-// Created by ziyu on 2023/11/6:0006.
-//
-
-#ifndef GRAPHICS_G_IMGUI_HPP
-#define GRAPHICS_G_IMGUI_HPP
-#pragma once
+module;
 #include "core/frontend/window.hpp"
 #include <functional>
 #include <atomic>
 #include <vulkan/vulkan.hpp>
+#include "present_manager.hpp"
+
+export module render.vulkan.ImGui;
 import render.vulkan.common;
-namespace render::vulkan {
-struct Frame;
-namespace scheduler {
-class Scheduler;
-}
+
+export namespace render::vulkan {
+
 class ImguiCore {
     private:
         const Device& device;
@@ -39,5 +34,3 @@ class ImguiCore {
 };
 
 }  // namespace render::vulkan
-
-#endif  // GRAPHICS_G_IMGUI_HPP

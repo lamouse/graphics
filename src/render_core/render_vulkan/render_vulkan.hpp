@@ -5,6 +5,7 @@
 #include "render_core/render_vulkan/blit_screen.hpp"
 #include "render_core/render_vulkan/vk_graphic.hpp"
 import render.vulkan.common;
+import render.vulkan.ImGui;
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
 

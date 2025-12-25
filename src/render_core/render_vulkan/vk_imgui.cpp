@@ -1,8 +1,4 @@
-//
-// Created by ziyu on 2023/11/6:0006.
-//
-
-#include "vk_imgui.hpp"
+module;
 
 #include <spdlog/spdlog.h>
 
@@ -13,7 +9,7 @@
 #include "common/settings.hpp"
 
 #include <vulkan/vk_enum_string_helper.h>
-
+module render.vulkan.ImGui;
 namespace {
 void init_imgui(float scale) {
     // 这里使用了imgui的一个分支docking

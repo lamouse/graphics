@@ -64,7 +64,6 @@ set(sources
     render_vulkan/vk_graphic.cpp
     render_vulkan/vk_graphic.hpp
     render_vulkan/vk_imgui.cpp
-    render_vulkan/vk_imgui.hpp
     render_vulkan/vk_shader_util.cpp
     render_vulkan/vk_shader_util.hpp
     render_vulkan/present/anti_alias_pass.h
@@ -115,4 +114,5 @@ set(MODULE_FILES
     vulkan_common/device_utils.cppm
     vulkan_common/vulkan_wrapper.cppm
     vulkan_common/memory_allocator.cppm
+    render_vulkan/vk_imgui.cppm
 )

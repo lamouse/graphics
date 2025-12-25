@@ -6,7 +6,6 @@
 #include "render_core/render_vulkan/render_pass.hpp"
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/render_vulkan/buffer_cache.h"
-#include "render_core/render_vulkan/vk_imgui.hpp"
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
