@@ -1,16 +1,9 @@
-// SPDX-FileCopyrightText: Copyright 2024 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
-
-#pragma once
-
+module;
+#include<vulkan/vulkan.hpp>
+#include "render_core/render_vulkan/scheduler.hpp"
+export module render.vulkan.present.AntiAliasPass;
 import render.vulkan.common;
-namespace render::vulkan {
-
-namespace scheduler {
-class Scheduler;
-
-}
-
+export namespace render::vulkan{
 class AntiAliasPass {
     public:
         virtual ~AntiAliasPass() = default;
@@ -23,5 +16,4 @@ class NoAA final : public AntiAliasPass {
         void Draw(scheduler::Scheduler& scheduler, size_t image_index, vk::Image* inout_image,
                   vk::ImageView* inout_image_view) override {}
 };
-
-}  // namespace render::vulkan
+}

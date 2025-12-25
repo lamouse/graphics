@@ -1,7 +1,5 @@
-#include "layer.hpp"
+module;
 #include "common/scope_exit.h"
-#include "fsr.hpp"
-#include "anti_alias_pass.h"
 #include "present_push_constants.h"
 #include "render_vulkan/blit_screen.hpp"
 #include "render_vulkan/scheduler.hpp"
@@ -9,8 +7,11 @@
 #include "common/settings.hpp"
 
 #include "render_core/render_vulkan/vk_graphic.hpp"
+module render.vulkan.present.layer;
 import render.vulkan.common;
 import render.vulkan.utils;
+import render.vulkan.FSR;
+import render.vulkan.present.AntiAliasPass;
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
              scheduler::Scheduler& scheduler_, size_t image_count_, vk::Extent2D output_size,

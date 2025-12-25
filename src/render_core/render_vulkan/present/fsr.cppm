@@ -1,13 +1,12 @@
-#pragma once
+module;
 #include "common/math_util.h"
 #include "common/common_types.hpp"
 #include <vulkan/vulkan.hpp>
+#include "render_vulkan/scheduler.hpp"
+export module render.vulkan.FSR;
 import render.vulkan.common;
-namespace render::vulkan {
 
-namespace scheduler {
-class Scheduler;
-}
+export namespace render::vulkan {
 
 class FSR {
     public:

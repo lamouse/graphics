@@ -1,12 +1,14 @@
-#include "fsr.hpp"
+module;
 #include "render_vulkan/scheduler.hpp"
 #include "common/settings.hpp"
+#include "common/math_util.h"
 #include "render_core/fsr.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_easu_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_easu_fp32_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp32_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
+module render.vulkan.FSR;
 import render.vulkan.common;
 import render.vulkan.shader;
 import render.vulkan.utils;

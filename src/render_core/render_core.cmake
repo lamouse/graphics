@@ -64,16 +64,12 @@ set(sources
     render_vulkan/vk_graphic.cpp
     render_vulkan/vk_graphic.hpp
     render_vulkan/vk_imgui.cpp
-    render_vulkan/present/anti_alias_pass.h
     render_vulkan/present/filters.cpp
     render_vulkan/present/filters.hpp
     render_vulkan/present/fsr.cpp
-    render_vulkan/present/fsr.hpp
     render_vulkan/present/layer.cpp
-    render_vulkan/present/layer.hpp
     render_vulkan/present/present_push_constants.h
     render_vulkan/present/vulkan_utils.cpp
-    render_vulkan/present/vulkan_utils.hpp
     render_vulkan/present/window_adapt_pass.cpp
     render_vulkan/present/window_adapt_pass.hpp
     texture/formatter.cpp
@@ -115,4 +111,8 @@ set(MODULE_FILES
     render_vulkan/vk_imgui.cppm
     render_vulkan/vk_shader_util.cppm
     render_vulkan/present/vulkan_utils.cppm
+    render_vulkan/present/fsr.cppm
+    render_vulkan/present/layer.cppm
+    render_vulkan/present/vulkan_present.cppm
+    render_vulkan/present/anti_alias_pass.cppm
 )
