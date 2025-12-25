@@ -1,6 +1,7 @@
 #include "system/camera_system.hpp"
 #include "input/mouse.h"
 #include "input/input.hpp"
+#include "input/keyboard.hpp"
 namespace {
 
 void move_forward(ecs::CameraComponent &cam, float frameSpeed) {
@@ -95,27 +96,21 @@ void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem *input, 
         return;
     }
 
-    // 计算相机坐标系
-    // glm::vec3 forward = glm::normalize(cam.center() - cam.eye());
-    // glm::vec3 right = glm::normalize(glm::cross(cam.up(), forward));
-    // glm::vec3 up = glm::normalize(glm::cross(forward, right));
-
     float frameSpeed = cam.speed * deltaTime;
 
-    // 🚶 WASD 移动
-    // if (state.key == core::InputKey::W && state.key_down.Value()) {
-    //     move_forward(cam, frameSpeed);
-    // }
-    // if (state.key == core::InputKey::S && state.key_down.Value()) {
-    //     move_backward(cam, frameSpeed);
-    // }
-
-    // if (state.key == core::InputKey::A && state.key_down.Value()) {
-    //     move_left(cam, frameSpeed);
-    // }
-    // if (state.key == core::InputKey::D && state.key_down.Value()) {
-    //     move_right(cam, frameSpeed);
-    // }
+    auto *keyboard = input->GetKeyboard();
+    if (keyboard->IsPressed(input::NativeKeyboard::Keys::W)) {
+        move_forward(cam, frameSpeed);
+    }
+    if (keyboard->IsPressed(input::NativeKeyboard::Keys::S)) {
+        move_backward(cam, frameSpeed);
+    }
+    if (keyboard->IsPressed(input::NativeKeyboard::Keys::A)) {
+        move_left(cam, frameSpeed);
+    }
+    if (keyboard->IsPressed(input::NativeKeyboard::Keys::D)) {
+        move_right(cam, frameSpeed);
+    }
 
     // 🔁 右键旋转视角（如果你还需要旋转功能）
     auto *mouse = input->GetMouse();

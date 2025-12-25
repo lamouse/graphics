@@ -27,9 +27,7 @@ class RenderThread final : public QThread {
             should_run_.notify_one();
         }
 
-        auto IsRunning() -> bool {
-            return should_run_;
-        }
+        auto IsRunning() -> bool { return should_run_; }
         void ForceStop();
 
     private:
@@ -38,7 +36,6 @@ class RenderThread final : public QThread {
         std::stop_source stop_source_;
         std::atomic<bool> should_run_{true};
 };
-
 
 class QTWindow;
 
@@ -79,6 +76,9 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         void wheelEvent(QWheelEvent* event) override;
         void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
+
+        void keyPressEvent(QKeyEvent* event) override;
+        void keyReleaseEvent(QKeyEvent* event) override;
 
         [[nodiscard]] auto windowPixelRatio() const -> qreal;
         auto InitRenderTarget() -> bool;

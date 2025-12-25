@@ -6,6 +6,8 @@ set(sources
         input_engine.hpp
         input.hpp
         input.cpp
+        keyboard.hpp
+        keyboard.cpp
     )
 add_library(${LIB_NAME} STATIC ${sources})
 

@@ -2,9 +2,11 @@
 #include <memory>
 namespace graphics::input {
 class Mouse;
+class Keyboard;
 class InputSystem {
     public:
-        auto GetMouse() -> Mouse *;
+        auto GetMouse() -> Mouse*;
+        auto GetKeyboard() -> Keyboard*;
         InputSystem();
         /**
          * @brief 使用之前必须调用否则GetMouse()等将返回nullptr，

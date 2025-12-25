@@ -96,5 +96,8 @@ auto Mouse::popRelative() -> glm::vec2 {
     relative = glm::vec2{.0f};
     return tmp;
 }
-void Mouse::ReleaseAllButtons() { button_pressed_ = false; }
+void Mouse::ReleaseAllButtons() {
+    button_pressed_ = false;
+    ResetButtonState();
+}
 }  // namespace graphics::input

@@ -8,6 +8,7 @@
 #include "graphics/QT_common.hpp"
 #include "graphics/imgui_qt.hpp"
 #include "input/mouse.h"
+#include "input/keyboard.hpp"
 #include "input/input.hpp"
 #include <QWindow>
 #include <Qlayout>
@@ -44,9 +45,8 @@ struct VulkanRenderWidget : public RenderWidget {
 
 }  // namespace
 
-
-RenderThread::RenderThread(core::System& sys, std::shared_ptr<input::InputSystem> input_system) : system(sys), input_system_(std::move(input_system)) {
-}
+RenderThread::RenderThread(core::System& sys, std::shared_ptr<input::InputSystem> input_system)
+    : system(sys), input_system_(std::move(input_system)) {}
 
 RenderThread::~RenderThread() = default;
 
@@ -63,15 +63,16 @@ void RenderThread::run() {
     }
 }
 
- void RenderThread::ForceStop(){
+void RenderThread::ForceStop() {
     spdlog::warn("Force stopping Render Thread");
     stop_source_.request_stop();
- }
+}
 
 RenderWindow::RenderWindow(QTWindow* parent, std::shared_ptr<input::InputSystem> input_system)
     : QWidget(parent), input_system_(std::move(input_system)) {
     QWidget::setWindowTitle(QString("graphics"));
     setAttribute(Qt::WA_AcceptTouchEvents);
+    setFocusPolicy(Qt::StrongFocus);
     auto* layout = new QHBoxLayout(this);  // NOLINT
     layout->setContentsMargins(0, 0, 0, 0);
     this->setMouseTracking(true);
@@ -213,6 +214,18 @@ void RenderWindow::focusOutEvent(QFocusEvent* event) {
     imgui::qt::mouse_focus_out_event();
     QWidget::focusOutEvent(event);
     input_system_->GetMouse()->ResetButtonState();
+    input_system_->GetKeyboard()->ReleaseAllKeys();
+}
+
+void RenderWindow::keyPressEvent(QKeyEvent* event) {
+    auto modifiers = qt::KeyConvert(event->modifiers());
+    input_system_->GetKeyboard()->SetKeyboardModifiers(modifiers);
+    input_system_->GetKeyboard()->PressKey(qt::QtKeyToSwitchKey(Qt::Key(event->key())));
+}
+void RenderWindow::keyReleaseEvent(QKeyEvent* event) {
+    auto modifiers = qt::KeyConvert(event->modifiers());
+    input_system_->GetKeyboard()->SetKeyboardModifiers(modifiers);
+    input_system_->GetKeyboard()->ReleaseKey(qt::QtKeyToSwitchKey(Qt::Key(event->key())));
 }
 
 void RenderWindow::showEvent(QShowEvent* event) {
