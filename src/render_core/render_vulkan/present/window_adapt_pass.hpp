@@ -1,7 +1,7 @@
 #pragma once
 
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
-#include "render_core/framebufferConfig.hpp"
+#include "render_core/framebuffer_config.hpp"
 #include <list>
 #include "core/frontend/framebuffer_layout.hpp"
 namespace render::vulkan {

@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 #include <span>
-#include "framebufferConfig.hpp"
+#include "framebuffer_config.hpp"
 #include "core/frontend/window.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "render_core/graphic.hpp"
 #include "render_core/shader_notify.hpp"
 #include <functional>

@@ -1,4 +1,4 @@
-#include "framebufferConfig.hpp"
+#include "framebuffer_config.hpp"
 namespace render::frame {
 auto NormalizeCrop(const FramebufferConfig& framebuffer, u32 texture_width, u32 texture_height)
     -> common::Rectangle<f32> {

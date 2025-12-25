@@ -2,7 +2,7 @@
 
 #include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
-#include "render_core/framebufferConfig.hpp"
+#include "render_core/framebuffer_config.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include <list>
 #include <memory>

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "common/math_util.h"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
-#include "framebufferConfig.hpp"
+#include "framebuffer_config.hpp"
 #include "memory"
 namespace render::vulkan {
 class Device;

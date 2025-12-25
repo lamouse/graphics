@@ -3,7 +3,7 @@ set(sources
     pipeline_dynamic_state.hpp
     pipeline_state.cpp
     pipeline_state.h
-    framebufferConfig.hpp
+    framebuffer_config.hpp
     framebuffer_config.cpp
     fsr.cpp
     fsr.h

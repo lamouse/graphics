@@ -10,8 +10,8 @@
 #include "render_core/render_vulkan/vk_imgui.hpp"
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
-#include "common/common_funcs.hpp"
-#include "render_core/framebufferConfig.hpp"
+#include "common/class_traits.hpp"
+#include "render_core/framebuffer_config.hpp"
 namespace render::vulkan {
 using ModelId = common::SlotId;
 
