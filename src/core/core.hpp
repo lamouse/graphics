@@ -3,7 +3,9 @@
 #include "render_core/render_base.hpp"
 #include "resource/resource.hpp"
 #include <memory>
-
+namespace graphics::input{
+    class InputSystem;
+}
 namespace core {
 class System {
     public:
@@ -16,7 +18,7 @@ class System {
         auto ResourceManager() -> graphics::ResourceManager&;
         [[nodiscard]] auto ResourceManager() const -> graphics::ResourceManager&;
 
-        void run();
+        void run(std::shared_ptr<graphics::input::InputSystem> inputSystem);
         void load(core::frontend::BaseWindow& window);
         void shutdownMainProcess();
         void setShutdown(bool shutdown);

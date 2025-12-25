@@ -2,7 +2,7 @@
 set(LIB_CORE_NAME core)
 
 set(MODULE_FILES
-        # core.cppm # 模块接口文件
+        core.cppm # 模块接口文件
 )
 
 set (sources

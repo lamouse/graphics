@@ -1,11 +1,13 @@
 #pragma once
 #include <QMainWindow>
+#include <QTimer>
 #include <memory>
 #include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
+#include "core/core.hpp"
 class QQmlApplicationEngine;
-
 namespace graphics {
+class RenderThread;
 namespace input {
 class InputSystem;
 
@@ -17,7 +19,8 @@ class QTWindow : public QMainWindow {
     public:
         CLASS_NON_COPYABLE(QTWindow);
         CLASS_NON_MOVEABLE(QTWindow);
-        QTWindow(std::shared_ptr<input::InputSystem> input_system, int width, int height,
+        QTWindow(std::shared_ptr<input::InputSystem> input_system,
+                 std::shared_ptr<core::System>& system, int width, int height,
                  ::std::string_view title);
 
         auto initRenderWindow() -> core::frontend::BaseWindow*;
@@ -36,8 +39,22 @@ class QTWindow : public QMainWindow {
     private:
         RenderWindow* render_window_{nullptr};
         void InitializeWidgets();
+
+        void StartRender();
+        void EndRender();
         QQmlApplicationEngine* engine_{nullptr};
         std::shared_ptr<input::InputSystem> input_system_;
+        std::shared_ptr<core::System> system_;
+        std::unique_ptr<RenderThread> render_thread;
+
+        QTimer stop_timer_;
+        bool render_running_{false};
+
+        // NOLINTNEXTLINE
+    private slots:
+        auto OnShutdownBegin() -> bool;
+        void OnRenderStopped();
+        void OnEndRenderStopTimeExpired();
 };
 
 }  // namespace graphics

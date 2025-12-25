@@ -2,6 +2,7 @@
 #include <utility>
 #include "common/class_traits.hpp"
 #include "common/thread_worker.hpp"
+#include <spdlog/spdlog.h>
 #include "graphics/QT_render_widget.hpp"
 #include "graphics/QT_window.hpp"
 #include "graphics/QT_common.hpp"
@@ -44,7 +45,7 @@ struct VulkanRenderWidget : public RenderWidget {
 }  // namespace
 
 
-RenderThread::RenderThread(core::System& sys) : system(sys) {
+RenderThread::RenderThread(core::System& sys, std::shared_ptr<input::InputSystem> input_system) : system(sys), input_system_(std::move(input_system)) {
 }
 
 RenderThread::~RenderThread() = default;
@@ -54,13 +55,18 @@ void RenderThread::run() {
     auto stop_token = stop_source_.get_token();
     while (!stop_token.stop_requested()) {
         if (should_run_) {
-            system.run();
+            system.run(input_system_);
             should_run_.wait(false);
         } else {
             should_run_.wait(true);
         }
     }
 }
+
+ void RenderThread::ForceStop(){
+    spdlog::warn("Force stopping Render Thread");
+    stop_source_.request_stop();
+ }
 
 RenderWindow::RenderWindow(QTWindow* parent, std::shared_ptr<input::InputSystem> input_system)
     : QWidget(parent), input_system_(std::move(input_system)) {
@@ -124,7 +130,6 @@ auto RenderWindow::InitRenderTarget() -> bool {
     setMinimumSize(1, 1);
 
     input_system_->Init();
-    OnFramebufferResized();
     return true;
 }
 void RenderWindow::ReleaseRenderTarget() {

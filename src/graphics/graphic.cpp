@@ -25,7 +25,6 @@ auto createWindow(std::shared_ptr<input::InputSystem> input_system)
 }
 
 auto createRender(core::frontend::BaseWindow* window) -> std::unique_ptr<render::RenderBase> {
-    ui::init_imgui(window->getWindowSystemInfo().render_surface_scale);
     return render::createRender(window);
 }
 }  // namespace graphics

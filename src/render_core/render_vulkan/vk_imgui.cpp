@@ -14,6 +14,50 @@
 
 #include <vulkan/vk_enum_string_helper.h>
 
+namespace {
+void init_imgui(float scale) {
+    // 这里使用了imgui的一个分支docking
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platform
+    // io.DisplayFramebufferScale = ImVec2(scale, scale);
+    io.FontGlobalScale = scale;
+    // io.ConfigViewportsNoAutoMerge = true;
+    // io.ConfigViewportsNoTaskBarIcon = true;
+    //   Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsLight();
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look
+    // identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        style.WindowRounding = .0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        // style.Colors[ImGuiCol_WindowBg] = ImVec4(.0f, .0f, .0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBg] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+        //  style.Colors[ImGuiCol_DockingPreview] = ImVec4(.0f, .0f, 0.0f, 1.0f);
+    }
+
+    ImFontConfig fontConfig;
+    fontConfig.OversampleH = 2;  // 水平方向抗锯齿
+    fontConfig.OversampleV = 2;  // 垂直方向抗锯齿
+    io.Fonts->AddFontFromFileTTF("fonts/AlibabaPuHuiTi-3-55-Regular.otf", 18.0F, &fontConfig,
+                                 io.Fonts->GetGlyphRangesChineseFull());
+    ImFontConfig iconConfig;
+    iconConfig.MergeMode = true;
+    iconConfig.PixelSnapH = true;
+    io.Fonts->AddFontFromFileTTF("fonts/MesloLGS NF Regular.ttf", 18.0F, &iconConfig);
+}
+}  // namespace
+
 namespace render::vulkan {
 
 namespace {
@@ -55,6 +99,7 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
       window(window_),
       scheduler(scheduler_),
       is_render_finish(true) {
+        init_imgui(window_->getWindowSystemInfo().render_surface_scale);
     // Setup Platform/Renderer backends
     window->configGUI();
     ImGui_ImplVulkan_InitInfo init_info = {};

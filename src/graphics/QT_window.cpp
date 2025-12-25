@@ -17,13 +17,12 @@
 
 namespace graphics {
 
-QTWindow::QTWindow(std::shared_ptr<input::InputSystem> input_system, int width, int height,
+QTWindow::QTWindow(std::shared_ptr<input::InputSystem> input_system,
+                   std::shared_ptr<core::System>& system, int width, int height,
                    ::std::string_view title)
-    : input_system_(std::move(input_system)) {
-    core::frontend::BaseWindow::WindowConfig conf;
-    conf.extent.width = width;
-    conf.extent.height = height;
-    conf.fullscreen = false;
+    : input_system_(std::move(input_system)), system_(std::make_shared<core::System>()) {
+    // system = system_;
+    input_system_->Init();
     this->resize(static_cast<int>(width), static_cast<int>(height));
     QMainWindow::setWindowTitle(QString::fromStdString(std::string(title)));
 
@@ -39,6 +38,16 @@ QTWindow::QTWindow(std::shared_ptr<input::InputSystem> input_system, int width, 
     viewMenu->addAction(debugUIAction);
     connect(debugUIAction, &QAction::triggered, this, &QTWindow::setDebugUI);
     debugUIAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+
+    auto* runMenu = menuBar()->addMenu(tr("&Run"));
+    auto* run_start_action = new QAction(tr("Run"), this);
+    runMenu->addAction(run_start_action);
+    connect(run_start_action, &QAction::triggered, this, &QTWindow::StartRender);
+    run_start_action->setShortcut(Qt::Key_F5);
+
+    auto* render_stop_action = new QAction(tr("Stop"), this);
+    runMenu->addAction(render_stop_action);
+    connect(render_stop_action, &QAction::triggered, this, &QTWindow::EndRender);
 
     auto* configMenu = menuBar()->addMenu(tr("&Config"));
     auto* configAction = new QAction(tr("Toggle &config"), this);
@@ -99,7 +108,13 @@ QTWindow::~QTWindow() {
 }
 
 void QTWindow::closeEvent(QCloseEvent* event) {
+    if (render_thread) {
+        EndRender();
+    }
     render_window_->close();
+    if(engine_){
+        engine_->exit(0);
+    }
     QWidget::closeEvent(event);
 }
 
@@ -112,5 +127,56 @@ auto QTWindow::initRenderWindow() -> core::frontend::BaseWindow* {
     this->setCentralWidget(render_window_);
     render_window_->show();
     return render_window_;
+}
+void QTWindow::StartRender() {
+    if (render_thread && render_thread->IsRunning()) {
+        return;
+    }
+    system_->setShutdown(false);
+    auto* render_window = initRenderWindow();
+    system_->load(*render_window);
+    render_thread = std::make_unique<RenderThread>(*system_, input_system_);
+    render_thread->SetRunning(true);
+    render_thread->start();
+    render_running_ = true;
+}
+void QTWindow::EndRender() {
+    OnShutdownBegin();
+    OnEndRenderStopTimeExpired();
+    QTWindow::OnRenderStopped();
+}
+
+auto QTWindow::OnShutdownBegin() -> bool {
+    if(!render_running_){
+        return false;
+    }
+
+    if(system_->isShutdown()){
+        return false;
+    }
+
+    system_->setShutdown(true);
+    render_thread->disconnect();
+    render_thread->SetRunning(true);
+    int close_time{1000};
+    stop_timer_.setSingleShot(true);
+    stop_timer_.start(close_time);
+    connect(&stop_timer_, &QTimer::timeout, this, &QTWindow::OnEndRenderStopTimeExpired);
+    connect(render_thread.get(), &QThread::finished, this, &QTWindow::OnRenderStopped);
+    return true;
+}
+void QTWindow::OnEndRenderStopTimeExpired() {
+    if (render_thread) {
+        render_thread->ForceStop();
+    }
+}
+void QTWindow::OnRenderStopped() {
+    stop_timer_.stop();
+    if (render_thread) {
+        render_thread->disconnect();
+        render_thread->wait();
+        render_thread.reset();
+    }
+    render_window_->hide();
 }
 }  // namespace graphics

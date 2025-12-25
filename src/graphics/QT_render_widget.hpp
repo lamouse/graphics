@@ -16,7 +16,7 @@ class RenderThread final : public QThread {
         Q_OBJECT
 
     public:
-        explicit RenderThread(core::System& sys);
+        explicit RenderThread(core::System& sys, std::shared_ptr<input::InputSystem> input_system);
         ~RenderThread() override;
         CLASS_NON_COPYABLE(RenderThread);
         CLASS_NON_MOVEABLE(RenderThread);
@@ -27,12 +27,14 @@ class RenderThread final : public QThread {
             should_run_.notify_one();
         }
 
-        bool IsRunning() {
+        auto IsRunning() -> bool {
             return should_run_;
         }
+        void ForceStop();
 
     private:
         core::System& system;
+        std::shared_ptr<input::InputSystem> input_system_;
         std::stop_source stop_source_;
         std::atomic<bool> should_run_{true};
 };

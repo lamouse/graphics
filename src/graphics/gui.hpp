@@ -17,7 +17,6 @@ struct StatusBarData {
 };
 
 void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
-void init_imgui(float scale);
 // 递归绘制树节点
 void showOutliner(world::World& world, settings::MenuData& data);
 void show_menu(settings::MenuData& data);
