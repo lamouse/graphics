@@ -221,11 +221,13 @@ void RenderWindow::keyPressEvent(QKeyEvent* event) {
     auto modifiers = qt::KeyConvert(event->modifiers());
     input_system_->GetKeyboard()->SetKeyboardModifiers(modifiers);
     input_system_->GetKeyboard()->PressKey(qt::QtKeyToSwitchKey(Qt::Key(event->key())));
+    imgui::qt::key_press(event);
 }
 void RenderWindow::keyReleaseEvent(QKeyEvent* event) {
     auto modifiers = qt::KeyConvert(event->modifiers());
     input_system_->GetKeyboard()->SetKeyboardModifiers(modifiers);
     input_system_->GetKeyboard()->ReleaseKey(qt::QtKeyToSwitchKey(Qt::Key(event->key())));
+    imgui::qt::key_release(event);
 }
 
 void RenderWindow::showEvent(QShowEvent* event) {
