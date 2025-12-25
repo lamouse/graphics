@@ -4,7 +4,6 @@
 #include "anti_alias_pass.h"
 #include "present_push_constants.h"
 #include "render_vulkan/blit_screen.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
 #include "render_vulkan/scheduler.hpp"
 #include "filters.hpp"

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
 #include <span>
 import render.vulkan.common;

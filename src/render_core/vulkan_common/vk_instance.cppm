@@ -1,6 +1,6 @@
 module;
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/window.hpp"
+import render.vulkan.common.wrapper;
 export module render.vulkan.common.instance;
 
 export namespace render::vulkan {

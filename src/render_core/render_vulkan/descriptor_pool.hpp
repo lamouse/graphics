@@ -1,9 +1,9 @@
 #pragma once
 #include "render_core/render_vulkan/resource_pool.hpp"
 #include "common/common_funcs.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include <shared_mutex>
 #include "shader_tools/shader_info.h"
+#include <vulkan/vulkan.hpp>
 #include <memory>
 import render.vulkan.common;
 namespace render::vulkan {

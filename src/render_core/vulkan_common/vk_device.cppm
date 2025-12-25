@@ -2,12 +2,13 @@ module;
 #include "device_utils.hpp"
 #include <unordered_map>
 #include <set>
-#include "vulkan_wrapper.hpp"
 #include "render_core/surface.hpp"
 #include "vk_device_feature.hpp"
+#include "vma.hpp"
 
 export module render.vulkan.common.driver;
 
+import render.vulkan.common.wrapper;
 
 
 export namespace render::vulkan {

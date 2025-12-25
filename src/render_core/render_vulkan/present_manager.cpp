@@ -5,7 +5,6 @@
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
 #include "common/thread.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include <tracy/Tracy.hpp>
 import render.vulkan.common;
 #if defined min

@@ -3,7 +3,6 @@
 #include "render_core/buffer_cache/buffer_base.hpp"
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "common/slot_vector.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/render_vulkan/staging_buffer_pool.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"

@@ -1,6 +1,6 @@
 #pragma once
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 import render.vulkan.common;
+#include <vulkan/vulkan.hpp>
 namespace render::vulkan {
 
 namespace scheduler {

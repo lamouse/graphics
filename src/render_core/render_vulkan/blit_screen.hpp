@@ -3,9 +3,9 @@
 #include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
 #include "render_core/framebuffer_config.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include <list>
 #include <memory>
+#include <vulkan/vulkan.hpp>
 #include "core/frontend/framebuffer_layout.hpp"
 import render.vulkan.common;
 namespace render::vulkan {

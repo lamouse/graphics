@@ -115,4 +115,5 @@ set(MODULE_FILES
     vulkan_common/vk_common.cppm
     vulkan_common/vk_surface.cppm
     vulkan_common/vk_device.cppm
+    vulkan_common/vulkan_wrapper.cppm
 )

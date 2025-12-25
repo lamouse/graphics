@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "vulkan_common/vulkan_wrapper.hpp"
-
+import render.vulkan.common;
 namespace render::vulkan {
 
 namespace scheduler {

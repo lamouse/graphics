@@ -4,6 +4,7 @@
 #include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
 #include "common/common_funcs.hpp"
+#include "common/common_types.hpp"
 #include <array>
 #include <memory>
 #include <thread>

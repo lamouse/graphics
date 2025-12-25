@@ -1,9 +1,9 @@
 #pragma once
 
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include <list>
 #include "core/frontend/framebuffer_layout.hpp"
+#include <vulkan/vulkan.hpp>
 import render.vulkan.common;
 namespace render::vulkan {
 

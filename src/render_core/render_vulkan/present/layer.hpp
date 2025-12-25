@@ -2,10 +2,10 @@
 
 #include "common/math_util.h"
 #include "common/class_traits.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebuffer_config.hpp"
 #include "memory"
+#include <vulkan/vulkan.hpp>
 import render.vulkan.common;
 namespace render::vulkan {
 

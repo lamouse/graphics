@@ -1,5 +1,4 @@
 #include "command_pool.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "master_semaphore.hpp"
 import render.vulkan.common;
 namespace render::vulkan::resource {

@@ -10,7 +10,6 @@
 #include "common/common_funcs.hpp"
 #include "common/thread_worker.hpp"
 #include "shader_tools/shader_info.h"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"

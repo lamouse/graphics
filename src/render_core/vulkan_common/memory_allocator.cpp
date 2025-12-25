@@ -4,8 +4,8 @@
 #include <optional>
 #include <cassert>
 #include "common/literals.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "vma.hpp"
+import render.vulkan.common.wrapper;
 
 namespace render::vulkan {
 namespace {

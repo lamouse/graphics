@@ -1,9 +1,10 @@
-#pragma once
+module;
 #include "common/common_funcs.hpp"
 #include <vector>
 #include <type_traits>
 #include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
+#include "vma.hpp"
 #include <span>
 #include <utility>
 // #if defined(_WIN32)
@@ -13,8 +14,10 @@
 #pragma warning(disable : 26812)  // Disable prefer enum class over enum
 #endif
 
-VK_DEFINE_HANDLE(VmaAllocator)
-VK_DEFINE_HANDLE(VmaAllocation)
+
+export module render.vulkan.common.wrapper;
+
+
 namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
 struct NoOwner {
@@ -215,7 +218,7 @@ class PoolAllocations {
 
 }  // namespace render::vulkan::wrapper
 
-namespace render::vulkan {
+export namespace render::vulkan {
 
 namespace utils {
 class VulkanException final : public std::exception {

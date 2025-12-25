@@ -3,7 +3,6 @@ module;
 #include <spdlog/spdlog.h>
 #endif
 #include "vulkan_common.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/window.hpp"
 module render.vulkan.common.surface;
 namespace render::vulkan {

@@ -1,7 +1,6 @@
 #pragma once
 #include <boost/container/small_vector.hpp>
 #include "common/common_types.hpp"
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include "update_descriptor.hpp"
 #include "shader_tools/shader_info.h"
 #include <spdlog/spdlog.h>

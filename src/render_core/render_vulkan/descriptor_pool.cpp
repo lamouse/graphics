@@ -1,7 +1,6 @@
 #include "descriptor_pool.hpp"
 #include "render_vulkan/scheduler.hpp"
 #include <algorithm>
-#include "vulkan_common/vulkan_wrapper.hpp"
 #include <cstdlib>
 import render.vulkan.common;
 namespace render::vulkan::resource {

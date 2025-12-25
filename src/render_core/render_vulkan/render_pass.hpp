@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <mutex>
 #include "render_core/surface.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 import render.vulkan.common;
 namespace render::vulkan {
 

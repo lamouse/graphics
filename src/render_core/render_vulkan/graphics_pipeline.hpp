@@ -7,7 +7,6 @@
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "shader_tools/shader_info.h"
 #include <condition_variable>
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "common/thread_worker.hpp"
 #include "render_core/render_vulkan/texture_cache.hpp"
