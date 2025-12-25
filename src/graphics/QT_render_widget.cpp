@@ -12,7 +12,6 @@
 #include "input/input.hpp"
 #include <QWindow>
 #include <Qlayout>
-#include <QMouseEvent>
 
 namespace graphics {
 

@@ -124,8 +124,8 @@ struct System::Impl {
                     statusData.mouseY_ = mouse_axis.y;
                 }
 
-                auto imageId = graphics->getDrawImage();
                 auto ui_fun = [&]() -> void {
+                    auto imageId = graphics->getDrawImage();
                     graphics::ui::show_menu(settings::values.menu_data);
                     graphics::draw_setting(settings::values.menu_data.show_system_setting);
                     graphics::ui::showOutliner(*world_, settings::values.menu_data);

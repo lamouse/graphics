@@ -10,6 +10,7 @@ vcpkg_install/
 # MacOS Cache
 .DS_Store
 
+*.pdb
 .cache/
 .vs/
 .vscode
