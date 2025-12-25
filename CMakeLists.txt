@@ -59,7 +59,11 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
 
 if(USE_QT)
-        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets Quick QuickControls2 QuickControls2Basic QuickControls2Fusion QuickDialogs2 QuickEffects QuickControls2WindowsStyleImpl)
+        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets Quick QuickControls2
+                        QuickControls2Basic QuickControls2Fusion QuickDialogs2
+                        QuickEffects QuickControls2WindowsStyleImpl
+                        QuickLayouts
+        )
         set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate qmlls.ini for QML LS")
 endif()
 

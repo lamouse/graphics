@@ -21,7 +21,7 @@ QTWindow::QTWindow(std::shared_ptr<input::InputSystem> input_system,
                    std::shared_ptr<core::System>& system, int width, int height,
                    ::std::string_view title)
     : input_system_(std::move(input_system)), system_(std::make_shared<core::System>()) {
-    // system = system_;
+    system = system_;
     input_system_->Init();
     this->resize(static_cast<int>(width), static_cast<int>(height));
     QMainWindow::setWindowTitle(QString::fromStdString(std::string(title)));
@@ -54,7 +54,6 @@ QTWindow::QTWindow(std::shared_ptr<input::InputSystem> input_system,
     configMenu->addAction(configAction);
     connect(configAction, &QAction::triggered, this, &QTWindow::openRenderConfig);
     debugUIAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
-    // this->windowHandle()->create();
 
     this->show();
     InitializeWidgets();
@@ -87,6 +86,8 @@ void QTWindow::openRenderConfig() {
             spdlog::warn("Failed to load RenderConfig.qml");
             return;
         }
+        auto* renderCtrl = engine_->rootObjects().first();
+        QObject::connect(renderCtrl, ":renderStart()", this, SLOT(OnRenderStart()));
     }
 
     auto* qmlWindow = qobject_cast<QQuickWindow*>(engine_->rootObjects().first());
@@ -112,7 +113,7 @@ void QTWindow::closeEvent(QCloseEvent* event) {
         EndRender();
     }
     render_window_->close();
-    if(engine_){
+    if (engine_) {
         engine_->exit(0);
     }
     QWidget::closeEvent(event);
@@ -147,11 +148,11 @@ void QTWindow::EndRender() {
 }
 
 auto QTWindow::OnShutdownBegin() -> bool {
-    if(!render_running_){
+    if (!render_running_) {
         return false;
     }
 
-    if(system_->isShutdown()){
+    if (system_->isShutdown()) {
         return false;
     }
 
@@ -178,5 +179,11 @@ void QTWindow::OnRenderStopped() {
         render_thread.reset();
     }
     render_window_->hide();
+}
+void QTWindow::OnRenderStart() {
+    QObject* root = engine_->rootObjects().first();
+    QWindow* window = qobject_cast<QWindow*>(root);
+    window->close();
+    StartRender();
 }
 }  // namespace graphics

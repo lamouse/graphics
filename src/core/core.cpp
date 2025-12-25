@@ -86,7 +86,9 @@ struct System::Impl {
                 std::make_unique<graphics::ResourceManager>(render_base->getGraphics());
             world_ = std::make_unique<world::World>();
 
-            frame_config_ = {.width = 1920, .height = 1080, .stride = 1920};
+            frame_config_ = {.width = settings::values.resolution.weight,
+                             .height = settings::values.resolution.height,
+                             .stride = settings::values.resolution.weight};  // NOLINT
             frameClean.width = frame_config_.width;
             frameClean.hight = frame_config_.height;
             frameClean.framebuffer.color_formats.at(0) =

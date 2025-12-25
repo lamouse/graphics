@@ -5,6 +5,13 @@
 #undef min
 namespace settings {
 
+struct Resolution {
+        uint32_t weight{};
+        uint32_t height{};
+};
+
+constexpr auto DEFAULT_RESOLUTION = Resolution{.weight = 1920, .height = 1080};
+
 auto TranslateCategory(Category category) -> const char*;
 
 #define SETTING(TYPE, RANGED) extern template class Setting<TYPE, RANGED>
@@ -73,6 +80,7 @@ struct Values {
                                                              "astc_recompression", Category::core,
                                                              Specialization::List};
         Setting<bool, false> use_debug_ui{linkage, true, "use_debug_ui", Category::system};
+        Resolution resolution{DEFAULT_RESOLUTION};
 };
 
 extern Values values;  // NOLINT

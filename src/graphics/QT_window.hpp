@@ -55,6 +55,7 @@ class QTWindow : public QMainWindow {
         auto OnShutdownBegin() -> bool;
         void OnRenderStopped();
         void OnEndRenderStopTimeExpired();
+        void OnRenderStart();
 };
 
 }  // namespace graphics

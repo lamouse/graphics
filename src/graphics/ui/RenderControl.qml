@@ -1,19 +1,21 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
+
+//import Graphics
 
 Window {
     id: renderCtrl
     width: 800
     height: 600
     signal renderStart
-
     visible: true
     Rectangle {
         color: "lightgray"
         anchors.fill: parent
         focus: true
-        Keys.onPressed: {
-            renderCtrl.renderStart();
+        RenderController {
+            id: render_ctrl
         }
         // 布局容器：垂直排列 CheckBox 和 Button
         Column {
@@ -22,6 +24,18 @@ Window {
                 horizontalCenter: parent.horizontalCenter  // 水平居中
                 top: parent.top
                 topMargin: 60  // 距离顶部留空，避免和 Text 重叠
+            }
+            RowLayout {
+                id: resolutionRowId
+                Label {
+                    text: "分辨率："
+                    Layout.alignment: Qt.AlignVCenter
+                }
+                ComboBox {
+                    id: resolutionComboBox
+                    model: ResolutionModel {}
+                    onActivated: index => model.onItemSelected(index)
+                }
             }
 
             Switch {
