@@ -5,7 +5,6 @@ module;
 #include <unordered_set>
 #include "common/literals.hpp"
 #include "vma.hpp"
-#include "device_utils.hpp"
 #include "render_core/surface.hpp"
 #include "vk_device_feature.hpp"
 #include "vulkan_common.hpp"
@@ -15,6 +14,7 @@ module;
 
 module render.vulkan.common.driver;
 import render.vulkan.common.wrapper;
+import render.vulkan.common.device.utils;
 
 
 namespace render::vulkan {

@@ -1,10 +1,9 @@
-#pragma once
-
+module;
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
 #include <set>
-
-namespace render::vulkan::utils {
+export module render.vulkan.common.device.utils;
+export namespace render::vulkan::utils {
 auto GetFormatProperties(vk::PhysicalDevice physical)
     -> std::unordered_map<vk::Format, vk::FormatProperties>;
 enum class NvidiaArchitecture {
