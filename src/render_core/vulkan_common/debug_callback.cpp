@@ -1,7 +1,7 @@
 module;
 #include <spdlog/spdlog.h>
 #include "vulkan_wrapper.hpp"
-module render;
+module render.vulkan.common.DebugMessenger;
 
 namespace render::vulkan {
 namespace {

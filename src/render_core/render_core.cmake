@@ -114,4 +114,6 @@ set(sources
 
 set(MODULE_FILES
     vulkan_common/debug_callback.cppm
+    vulkan_common/vk_instance.cppm
+    vulkan_common/vk_common.cppm
 )

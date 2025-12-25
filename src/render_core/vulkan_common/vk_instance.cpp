@@ -1,7 +1,12 @@
-#include "vk_instance.hpp"
+module;
 #include <spdlog/spdlog.h>
 #include <vector>
 #include "vulkan_common.hpp"
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "core/frontend/window.hpp"
+
+module render.vulkan.common.instance;
+
 namespace render::vulkan {
 namespace instance {
 namespace {
