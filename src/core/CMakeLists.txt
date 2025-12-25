@@ -18,7 +18,7 @@ set (sources
 )
 
 add_library(${LIB_CORE_NAME} STATIC ${sources})
-# 添加模块文件 (CXX_MODULES) - 这是解决你错误的关键！
+
 target_sources(${LIB_CORE_NAME} PUBLIC
         FILE_SET CXX_MODULES
         FILES ${MODULE_FILES} # 这里传入 setting.cppm

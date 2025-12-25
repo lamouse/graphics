@@ -1,23 +1,6 @@
 #include "app.hpp"
 
-#include "graphic.hpp"
-#include "resource/mesh_instance.hpp"
-#include "effects/particle/particle.hpp"
-#include "effects/light/point_light.hpp"
-#include "effects/model/multi_mesh_model.hpp"
-#include "common/settings.hpp"
-#include "effects/cubemap/skybox.hpp"
-#include "system/setting_ui.hpp"
-#include "world/world.hpp"
-#include <qcoreapplication.h>
-#include <spdlog/spdlog.h>
-#include "gui.hpp"
 #include "input/input.hpp"
-#include "input/mouse.h"
-#include "system/pick_system.hpp"
-#include <QTimer>
-
-#include <tracy/Tracy.hpp>
 
 namespace graphics {
 

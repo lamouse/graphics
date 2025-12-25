@@ -14,6 +14,8 @@ set(sources
     file.cpp
     file.hpp
     literals.hpp
+    logger.hpp
+    logger.cpp
     make_unique_for_overwrite.h
     math_util.h
     polyfill_thread.hpp
@@ -31,4 +33,8 @@ set(sources
     thread.hpp
     thread.cpp
     unique_function.h
+)
+
+set(MODULE_FILES
+        logger.cppm # 模块接口文件
 )

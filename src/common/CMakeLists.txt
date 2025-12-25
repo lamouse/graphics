@@ -2,6 +2,11 @@ set(LIB_COMMON_NAME common)
 include(${CMAKE_CURRENT_SOURCE_DIR}/common.cmake)
 add_library(${LIB_COMMON_NAME} STATIC ${sources})
 
+target_sources(${LIB_COMMON_NAME} PUBLIC
+        FILE_SET CXX_MODULES
+        FILES ${MODULE_FILES} # 这里传入 setting.cppm
+)
+
 if(MSVC)
     target_compile_options(${LIB_COMMON_NAME} PRIVATE
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data
@@ -37,7 +42,7 @@ if(TRACY_ENABLE)
     target_link_libraries(${LIB_COMMON_NAME} INTERFACE Tracy::TracyClient)
 endif()
 
-target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog xxHash::xxhash)
+target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog xxHash::xxhash Imgui::Imgui system)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)

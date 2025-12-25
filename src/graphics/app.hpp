@@ -2,8 +2,6 @@
 #pragma once
 #include <memory>
 #include "common/class_traits.hpp"
-#include "system/logger_system.hpp"
-#include "world/world.hpp"
 #include "QT_window.hpp"
 #include <core/core.hpp>
 
@@ -20,7 +18,7 @@ class App {
         ~App();
 
     private:
-        sys::LoggerSystem logger;
+
         std::shared_ptr<input::InputSystem> input_system_;
         std::unique_ptr<QTWindow> qt_main_window;
 

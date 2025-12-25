@@ -16,6 +16,8 @@
 #include "system/setting_ui.hpp"
 #include "input/input.hpp"
 #include "input/mouse.h"
+#include "system/logger_system.hpp"
+import common;
 // module core;
 
 namespace core {
@@ -128,6 +130,7 @@ struct System::Impl {
                     render_status_bar(settings::values.menu_data, statusData);
                     graphics::ui::draw_texture(settings::values.menu_data, imageId,
                                                window->getAspectRatio());
+                    common::logger::getLogger()->drawUi(settings::values.menu_data.show_log);
                 };
                 Render()->composite(std::span{&frame_config_, 1}, ui_fun);
             } else {
