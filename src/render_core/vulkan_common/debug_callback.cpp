@@ -1,5 +1,8 @@
-#include "debug_callback.hpp"
+module;
 #include <spdlog/spdlog.h>
+#include "vulkan_wrapper.hpp"
+module render;
+
 namespace render::vulkan {
 namespace {
 

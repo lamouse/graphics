@@ -3,7 +3,10 @@ set(LIB_NAME render-core)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/render_core.cmake)
 add_library(${LIB_NAME} STATIC ${sources})
-
+target_sources(${LIB_NAME} PUBLIC
+        FILE_SET CXX_MODULES
+        FILES ${MODULE_FILES}
+)
 target_compile_definitions(${LIB_NAME} PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
 if(MSVC)

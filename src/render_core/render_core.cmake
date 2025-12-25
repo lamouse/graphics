@@ -95,7 +95,6 @@ set(sources
     texture_cache/utils.cpp
     texture_cache/utils.hpp
     vulkan_common/debug_callback.cpp
-    vulkan_common/debug_callback.hpp
     vulkan_common/device.cpp
     vulkan_common/device.hpp
     vulkan_common/device_utils.cpp
@@ -111,4 +110,8 @@ set(sources
     vulkan_common/vulkan_common.hpp
     vulkan_common/vulkan_wrapper.cpp
     vulkan_common/vulkan_wrapper.hpp
+)
+
+set(MODULE_FILES
+    vulkan_common/debug_callback.cppm
 )
