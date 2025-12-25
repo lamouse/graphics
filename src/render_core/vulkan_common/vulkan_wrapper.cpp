@@ -12,6 +12,7 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 #endif
 module render.vulkan.common.wrapper;
 
+
 namespace render::vulkan {
 
 namespace utils {

@@ -4,8 +4,9 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-#include "render_core/vulkan_common/memory_allocator.hpp"
 #include "common/common_funcs.hpp"
+#include <vulkan/vulkan.hpp>
+#include <span>
 import render.vulkan.common;
 namespace core::frontend {
 class BaseWindow;

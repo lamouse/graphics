@@ -10,7 +10,6 @@
 import render.vulkan.common;
 namespace render::vulkan {
 class PresentManager;
-class MemoryAllocator;
 class Layer;
 class VulkanGraphics;
 class Framebuffer;

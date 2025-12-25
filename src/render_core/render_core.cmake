@@ -100,13 +100,11 @@ set(sources
     vulkan_common/vk_instance.cpp
     vulkan_common/vk_device.cpp
     vulkan_common/memory_allocator.cpp
-    vulkan_common/memory_allocator.hpp
     vulkan_common/vk_surface.cpp
     vulkan_common/vma.cpp
     vulkan_common/vma.hpp
     vulkan_common/vulkan_common.hpp
     vulkan_common/vulkan_wrapper.cpp
-    vulkan_common/vulkan_wrapper.hpp
 )
 
 set(MODULE_FILES
@@ -116,4 +114,5 @@ set(MODULE_FILES
     vulkan_common/vk_surface.cppm
     vulkan_common/vk_device.cppm
     vulkan_common/vulkan_wrapper.cppm
+    vulkan_common/memory_allocator.cppm
 )

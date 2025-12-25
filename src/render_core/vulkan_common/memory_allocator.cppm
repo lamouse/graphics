@@ -1,5 +1,4 @@
-#pragma once
-
+module;
 #include <memory>
 #include <span>
 #include <vector>
@@ -7,10 +6,10 @@
 #include "common/common_funcs.hpp"
 #include <vulkan/vulkan.hpp>
 #include "vma.hpp"
-import render.vulkan.common;
-
-namespace render::vulkan {
-
+export module render.vulkan.common.MemoryAllocator;
+import render.vulkan.common.wrapper;
+import render.vulkan.common.driver;
+export namespace render::vulkan {
 class MemoryMap;
 class MemoryAllocation;
 /// Hints and requirements for the backing memory type of a commit
@@ -133,5 +132,4 @@ class MemoryAllocator {
                                                 // buffers and optimal images
         u32 valid_memory_types{~0u};
 };
-
 }  // namespace render::vulkan

@@ -10,7 +10,6 @@
 #include "render_core/pipeline_state.h"
 import render.vulkan.common;
 namespace render::vulkan {
-class MemoryAllocator;
 namespace scheduler {
 class Scheduler;
 }

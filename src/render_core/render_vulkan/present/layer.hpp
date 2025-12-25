@@ -10,7 +10,7 @@ import render.vulkan.common;
 namespace render::vulkan {
 
 class FSR;
-class MemoryAllocator;
+
 struct PresentPushConstants;
 class VulkanGraphics;
 class AntiAliasPass;

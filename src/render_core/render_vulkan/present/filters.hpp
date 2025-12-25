@@ -2,9 +2,9 @@
 
 #include "window_adapt_pass.hpp"
 #include <memory>
+import render.vulkan.common;
 namespace render::vulkan {
 
-class MemoryAllocator;
 
 auto MakeNearestNeighbor(const Device& device, vk::Format frame_format)
     -> std::unique_ptr<present::WindowAdaptPass>;

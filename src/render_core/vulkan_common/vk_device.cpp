@@ -12,9 +12,10 @@ module;
 #if defined(USE_TRACY)
 #include <tracy/Tracy.hpp>
 #endif
-import render.vulkan.common.wrapper;
 
 module render.vulkan.common.driver;
+import render.vulkan.common.wrapper;
+
 
 namespace render::vulkan {
 namespace {

@@ -1,5 +1,4 @@
 #include "render_core/render_base.hpp"
-#include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/render_vulkan/present_manager.hpp"
 #include "render_core/render_vulkan/swapchain.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"

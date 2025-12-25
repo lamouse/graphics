@@ -1,6 +1,7 @@
 #pragma once
-#include "vulkan_common/memory_allocator.hpp"
 #include "common/math_util.h"
+#include "common/common_types.hpp"
+#include <vulkan/vulkan.hpp>
 import render.vulkan.common;
 namespace render::vulkan {
 

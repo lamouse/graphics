@@ -4,3 +4,4 @@ export import render.vulkan.common.DebugMessenger;
 export import render.vulkan.common.surface;
 export import render.vulkan.common.driver;
 export import render.vulkan.common.wrapper;
+export import render.vulkan.common.MemoryAllocator;

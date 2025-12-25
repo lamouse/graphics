@@ -1,5 +1,4 @@
 #pragma once
-#include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/texture/image_info.hpp"
 #include "common/common_funcs.hpp"

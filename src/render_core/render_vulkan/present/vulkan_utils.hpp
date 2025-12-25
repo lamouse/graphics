@@ -1,7 +1,8 @@
 #pragma once
 
-#include "vulkan_common/memory_allocator.hpp"
 #include <span>
+#include <vulkan/vulkan.hpp>
+#include "common/common_types.hpp"
 import render.vulkan.common;
 namespace render::vulkan::present::utils {
 auto CreateWrappedDescriptorSetLayout(const Device& device,

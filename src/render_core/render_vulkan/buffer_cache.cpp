@@ -1,5 +1,4 @@
 #include "buffer_cache.h"
-#include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "update_descriptor.hpp"

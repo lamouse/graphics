@@ -1,10 +1,14 @@
-#include "memory_allocator.hpp"
+module;
 #include "common/alignment.h"
+#include "common/common_types.hpp"
+#include "common/class_traits.hpp"
 #include <spdlog/spdlog.h>
 #include <optional>
 #include <cassert>
 #include "common/literals.hpp"
+#include <vulkan/vulkan.hpp>
 #include "vma.hpp"
+module render.vulkan.common.MemoryAllocator;
 import render.vulkan.common.wrapper;
 
 namespace render::vulkan {

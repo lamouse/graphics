@@ -1,7 +1,7 @@
 module;
 #include "core/frontend/window.hpp"
-import render.vulkan.common.wrapper;
 export module render.vulkan.common.instance;
+import render.vulkan.common.wrapper;
 
 export namespace render::vulkan {
   [[nodiscard]] auto createInstance(
