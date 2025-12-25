@@ -7,10 +7,10 @@
 #include "render_vulkan/scheduler.hpp"
 #include "filters.hpp"
 #include "common/settings.hpp"
-#include "vulkan_utils.hpp"
+
 #include "render_core/render_vulkan/vk_graphic.hpp"
 import render.vulkan.common;
-
+import render.vulkan.utils;
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
              scheduler::Scheduler& scheduler_, size_t image_count_, vk::Extent2D output_size,

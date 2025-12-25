@@ -1,5 +1,4 @@
 #include "present_manager.hpp"
-#include "present/vulkan_utils.hpp"
 #include "swapchain.hpp"
 #include "scheduler.hpp"
 #include <spdlog/spdlog.h>
@@ -7,6 +6,7 @@
 #include "common/thread.hpp"
 #include <tracy/Tracy.hpp>
 import render.vulkan.common;
+import render.vulkan.utils;
 #if defined min
 #undef min
 #endif

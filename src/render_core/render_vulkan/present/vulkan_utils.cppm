@@ -1,10 +1,11 @@
-#pragma once
-
+module;
 #include <span>
 #include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
+export module render.vulkan.utils;
 import render.vulkan.common;
-namespace render::vulkan::present::utils {
+
+export namespace render::vulkan::present::utils {
 auto CreateWrappedDescriptorSetLayout(const Device& device,
                                       std::initializer_list<vk::DescriptorType> types)
     -> DescriptorSetLayout;

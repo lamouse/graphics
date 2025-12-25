@@ -114,4 +114,5 @@ set(MODULE_FILES
     vulkan_common/memory_allocator.cppm
     render_vulkan/vk_imgui.cppm
     render_vulkan/vk_shader_util.cppm
+    render_vulkan/present/vulkan_utils.cppm
 )
