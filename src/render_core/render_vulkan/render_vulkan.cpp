@@ -2,7 +2,6 @@
 #include "common/scope_exit.h"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
-#include "vulkan_common/vk_surface.hpp"
 #include <tracy/Tracy.hpp>
 
 import render.vulkan.common;

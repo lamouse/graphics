@@ -1,9 +1,11 @@
+module;
 #if defined(__linux__)
 #include <spdlog/spdlog.h>
 #endif
 #include "vulkan_common.hpp"
-#include "vk_surface.hpp"
-
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "core/frontend/window.hpp"
+module render.vulkan.common.surface;
 namespace render::vulkan {
 auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi)
     -> SurfaceKHR {

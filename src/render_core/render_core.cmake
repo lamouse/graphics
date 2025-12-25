@@ -100,11 +100,9 @@ set(sources
     vulkan_common/device_utils.cpp
     vulkan_common/device_utils.hpp
     vulkan_common/vk_instance.cpp
-    vulkan_common/vk_instance.hpp
     vulkan_common/memory_allocator.cpp
     vulkan_common/memory_allocator.hpp
     vulkan_common/vk_surface.cpp
-    vulkan_common/vk_surface.hpp
     vulkan_common/vma.cpp
     vulkan_common/vma.hpp
     vulkan_common/vulkan_common.hpp
@@ -116,4 +114,5 @@ set(MODULE_FILES
     vulkan_common/debug_callback.cppm
     vulkan_common/vk_instance.cppm
     vulkan_common/vk_common.cppm
+    vulkan_common/vk_surface.cppm
 )
