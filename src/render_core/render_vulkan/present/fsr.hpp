@@ -2,8 +2,9 @@
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "vulkan_common/memory_allocator.hpp"
 #include "common/math_util.h"
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 namespace scheduler {
 class Scheduler;
 }

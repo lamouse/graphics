@@ -10,10 +10,11 @@
 #include <mutex>
 #include <vector>
 #include <spdlog/spdlog.h>
+import render.vulkan.common;
 namespace render::vulkan {
 class TextureFramebuffer;
 class GraphicsPipeline;
-class Device;
+
 namespace resource {
 class CommandPool;
 }

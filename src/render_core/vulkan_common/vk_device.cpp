@@ -1,13 +1,21 @@
-#include "device.hpp"
+module;
+
 #include <spdlog/spdlog.h>
 #include <common/settings.hpp>
 #include <unordered_set>
 #include "common/literals.hpp"
 #include "vma.hpp"
-
+#include "device_utils.hpp"
+#include "vulkan_wrapper.hpp"
+#include "render_core/surface.hpp"
+#include "vk_device_feature.hpp"
+#include "vulkan_common.hpp"
 #if defined(USE_TRACY)
 #include <tracy/Tracy.hpp>
 #endif
+
+module render.vulkan.common.driver;
+
 namespace render::vulkan {
 namespace {
 #if defined(USE_TRACY)

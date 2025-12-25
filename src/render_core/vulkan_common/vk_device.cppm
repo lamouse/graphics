@@ -1,22 +1,23 @@
-#pragma once
+module;
 #include "device_utils.hpp"
 #include <unordered_map>
 #include <set>
 #include "vulkan_wrapper.hpp"
 #include "render_core/surface.hpp"
-/**
- * @brief vulkan device
- *
- */
-VK_DEFINE_HANDLE(VmaAllocator)
-namespace render::vulkan {
+#include "vk_device_feature.hpp"
+
+export module render.vulkan.common.driver;
+
+
+
+export namespace render::vulkan {
 struct FormatInfo {
         vk::Format format;
         bool attachable;
         bool storage;
 };
 /// Format usage descriptor.
-enum class FormatType { Linear, Optimal, Buffer };
+ enum class FormatType { Linear, Optimal, Buffer };
 
 /// Subgroup size of the guest emulated hardware (Nvidia has 32 threads per subgroup).
 const uint32_t GUEST_WARP_SIZE = 32;

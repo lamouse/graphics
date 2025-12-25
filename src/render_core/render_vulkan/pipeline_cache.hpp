@@ -8,6 +8,7 @@
 #include "render_core/render_vulkan/graphics_pipeline.hpp"
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/shader_cache.hpp"
+import render.vulkan.common;
 namespace render::vulkan {
 
 struct ComputePipelineCacheKey {
@@ -47,7 +48,6 @@ struct hash<render::vulkan::ComputePipelineCacheKey> {
 }  // namespace std
 
 namespace render::vulkan {
-class Device;
 class ComputePipeline;
 
 class RenderPassCache;

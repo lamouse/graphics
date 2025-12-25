@@ -7,9 +7,8 @@
 #include <list>
 #include <memory>
 #include "core/frontend/framebuffer_layout.hpp"
-
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
 class PresentManager;
 class MemoryAllocator;
 class Layer;

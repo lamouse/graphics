@@ -4,6 +4,9 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include "vulkan_common.hpp"
 #include "vk_mem_alloc.h"
+#ifdef CreateSemaphore
+#undef CreateSemaphore
+#endif
 #if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 #endif
@@ -95,21 +98,21 @@ auto DeviceMemory::getMemoryFdKHR() const -> int {
     return fd;
 }
 
-#ifdef _WIN32
-auto DeviceMemory::getMemoryWin32HandleKHR() const -> HANDLE {
-    auto fun = reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>(
-        owner.getProcAddr("vkGetMemoryWin32HandleKHR"));
-    const VkMemoryGetWin32HandleInfoKHR get_win32_handle_info{
-        .sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
-        .pNext = nullptr,
-        .memory = handle,
-        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR,
-    };
-    HANDLE win32_handle{};
-    utils::check(static_cast<vk::Result>(fun(owner, &get_win32_handle_info, &win32_handle)));
-    return win32_handle;
-}
-#endif
+// #ifdef _WIN32
+// auto DeviceMemory::getMemoryWin32HandleKHR() const -> HANDLE {
+//     auto fun = reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>(
+//         owner.getProcAddr("vkGetMemoryWin32HandleKHR"));
+//     const VkMemoryGetWin32HandleInfoKHR get_win32_handle_info{
+//         .sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
+//         .pNext = nullptr,
+//         .memory = handle,
+//         .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR,
+//     };
+//     HANDLE win32_handle{};
+//     utils::check(static_cast<vk::Result>(fun(owner, &get_win32_handle_info, &win32_handle)));
+//     return win32_handle;
+// }
+// #endif
 
 void DeviceMemory::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle.operator VkDeviceMemory(), vk::ObjectType::eDeviceMemory, name);

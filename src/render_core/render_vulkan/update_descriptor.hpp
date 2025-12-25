@@ -1,8 +1,8 @@
 #pragma once
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
-
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 namespace scheduler {
 class Scheduler;
 }

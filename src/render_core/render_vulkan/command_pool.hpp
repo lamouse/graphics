@@ -1,8 +1,8 @@
 #pragma once
 #include "resource_pool.hpp"
 #include <vulkan/vulkan.hpp>
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
 namespace semaphore {
 class MasterSemaphore;
 }

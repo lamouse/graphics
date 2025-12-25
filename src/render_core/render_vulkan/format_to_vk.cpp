@@ -2,10 +2,10 @@
 // Created by ziyu on 2025/9/20.
 //
 #include "render_core/render_vulkan/format_to_vk.hpp"
-#include "render_core/vulkan_common/device.hpp"
 #include "common/assert.hpp"
 #include <format>
 #include <spdlog/spdlog.h>
+import render.vulkan.common;
 namespace render::vulkan {
 auto VertexFormat(const Device& device, VertexAttribute::Type type, VertexAttribute::Size size)
     -> vk::Format {

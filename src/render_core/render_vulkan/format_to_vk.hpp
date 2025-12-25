@@ -8,9 +8,9 @@
 #include "render_core/vertex.hpp"
 #include "render_core/pipeline_state.h"
 #include <vulkan/vulkan.hpp>
-
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 auto VertexFormat(const Device& device, VertexAttribute::Type type, VertexAttribute::Size size)
     -> vk::Format;
 

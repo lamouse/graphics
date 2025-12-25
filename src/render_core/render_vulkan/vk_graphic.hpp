@@ -12,11 +12,11 @@
 #include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
 #include "render_core/framebuffer_config.hpp"
+import render.vulkan.common;
 namespace render::vulkan {
 using ModelId = common::SlotId;
 
 struct FramebufferTextureInfo;
-class Device;
 
 struct ModelResource {
         BufferId vertex_buffer_id{};

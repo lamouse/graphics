@@ -4,11 +4,10 @@
 #include <span>
 #include <vector>
 #include "common/common_types.hpp"
-#include "render_core/vulkan_common/device.hpp"
 #include "common/common_funcs.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
+import render.vulkan.common;
 
-VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {
 
 class MemoryMap;

@@ -5,9 +5,9 @@
 #include <shared_mutex>
 #include "shader_tools/shader_info.h"
 #include <memory>
-
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 namespace semaphore {
 class MasterSemaphore;
 }

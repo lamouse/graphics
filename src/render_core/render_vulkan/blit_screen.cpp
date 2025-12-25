@@ -1,7 +1,6 @@
 #include "blit_screen.hpp"
 #include <spdlog/spdlog.h>
 #include "present/filters.hpp"
-#include "vulkan_common/device.hpp"
 #include "vulkan_common/memory_allocator.hpp"
 #include "scheduler.hpp"
 #include "present_manager.hpp"
@@ -10,6 +9,8 @@
 #include "common/settings.hpp"
 
 #include "render_core/render_vulkan/vk_graphic.hpp"
+
+import render.vulkan.common;
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,
                        PresentManager& present_manager_, scheduler::Scheduler& scheduler_)

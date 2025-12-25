@@ -4,8 +4,8 @@
 #include <mutex>
 #include "render_core/surface.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
 
 struct RenderPassKey {
         auto operator==(const RenderPassKey& rhs) const noexcept -> bool = default;

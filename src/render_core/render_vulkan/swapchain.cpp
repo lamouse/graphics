@@ -1,12 +1,12 @@
 #include <algorithm>
 
 #include "swapchain.hpp"
-#include "vulkan_common/device.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 #include <vulkan/vk_enum_string_helper.h>
 #include "scheduler.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
+import render.vulkan.common;
 #if defined max
 #undef max
 #endif

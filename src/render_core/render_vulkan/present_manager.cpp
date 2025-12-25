@@ -1,7 +1,6 @@
 #include "present_manager.hpp"
 #include "present/vulkan_utils.hpp"
 #include "swapchain.hpp"
-#include "vulkan_common/device.hpp"
 #include "scheduler.hpp"
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"

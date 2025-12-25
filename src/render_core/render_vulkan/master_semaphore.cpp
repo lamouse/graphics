@@ -1,10 +1,10 @@
 #include "master_semaphore.hpp"
-#include "vulkan_common/device.hpp"
 #include <algorithm>
 #include <utility>
 #include "common/polyfill_thread.hpp"
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
+import render.vulkan.common;
 #undef max
 #undef min
 namespace render::vulkan::semaphore {

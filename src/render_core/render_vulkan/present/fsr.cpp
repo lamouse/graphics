@@ -1,5 +1,4 @@
 #include "fsr.hpp"
-#include "vulkan_common/device.hpp"
 #include "render_vulkan/scheduler.hpp"
 #include "render_vulkan/vk_shader_util.hpp"
 #include "vulkan_utils.hpp"
@@ -10,6 +9,7 @@
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp32_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
+import render.vulkan.common;
 
 namespace render::vulkan {
 using PushConstants = std::array<u32, 4 * 4>;  // NOLINT

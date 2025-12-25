@@ -11,11 +11,11 @@
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "common/thread_worker.hpp"
 #include "render_core/render_vulkan/texture_cache.hpp"
+import render.vulkan.common;
 namespace render {
 class ShaderNotify;
 }
 namespace render::vulkan {
-class Device;
 class RenderPassCache;
 namespace scheduler {
 class Scheduler;

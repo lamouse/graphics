@@ -4,8 +4,9 @@
 #include "render_core/framebuffer_config.hpp"
 #include <list>
 #include "core/frontend/framebuffer_layout.hpp"
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 struct Frame;
 class VulkanGraphics;
 class Layer;

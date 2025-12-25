@@ -95,11 +95,10 @@ set(sources
     texture_cache/utils.cpp
     texture_cache/utils.hpp
     vulkan_common/debug_callback.cpp
-    vulkan_common/device.cpp
-    vulkan_common/device.hpp
     vulkan_common/device_utils.cpp
     vulkan_common/device_utils.hpp
     vulkan_common/vk_instance.cpp
+    vulkan_common/vk_device.cpp
     vulkan_common/memory_allocator.cpp
     vulkan_common/memory_allocator.hpp
     vulkan_common/vk_surface.cpp
@@ -115,4 +114,5 @@ set(MODULE_FILES
     vulkan_common/vk_instance.cppm
     vulkan_common/vk_common.cppm
     vulkan_common/vk_surface.cppm
+    vulkan_common/vk_device.cppm
 )

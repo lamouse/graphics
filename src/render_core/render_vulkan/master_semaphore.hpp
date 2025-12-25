@@ -5,8 +5,9 @@
 #include <queue>
 #include "common/common_funcs.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
+import render.vulkan.common;
+
 namespace render::vulkan {
-class Device;
 namespace semaphore {
 class MasterSemaphore {
         using Waitable = std::pair<uint64_t, Fence>;

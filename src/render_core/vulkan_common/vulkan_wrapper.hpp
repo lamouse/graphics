@@ -1,18 +1,17 @@
 #pragma once
-#include <vulkan/vulkan.hpp>
 #include "common/common_funcs.hpp"
 #include <vector>
 #include <type_traits>
+#include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
 #include <span>
 #include <utility>
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+// #if defined(_WIN32)
+// #include <windows.h>
+// #endif
 #ifdef _MSC_VER
 #pragma warning(disable : 26812)  // Disable prefer enum class over enum
 #endif
-#undef max
 
 VK_DEFINE_HANDLE(VmaAllocator)
 VK_DEFINE_HANDLE(VmaAllocation)
@@ -347,9 +346,9 @@ class DeviceMemory : public wrapper::Handle<vk::DeviceMemory, vk::Device> {
     public:
         [[nodiscard]] auto getMemoryFdKHR() const -> int;
 
-#ifdef _WIN32
-        [[nodiscard]] auto getMemoryWin32HandleKHR() const -> HANDLE;
-#endif
+// #ifdef _WIN32
+//         [[nodiscard]] auto getMemoryWin32HandleKHR() const -> HANDLE;
+// #endif
 
         /// Set object name.
         void SetObjectNameEXT(const char* name) const;
@@ -609,7 +608,7 @@ class LogicDevice : public wrapper::Handle<vk::Device, wrapper::NoOwner> {
         [[nodiscard]] auto createFence(const vk::FenceCreateInfo& ci) const -> Fence;
 
         [[nodiscard]] auto createSemaphore() const -> Semaphore;
-        Semaphore CreateSemaphore(const vk::SemaphoreCreateInfo& ci) const;
+        auto CreateSemaphore(const vk::SemaphoreCreateInfo& ci) const -> Semaphore;
 
         [[nodiscard]] auto createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo&) const
             -> DescriptorSetLayout;

@@ -2,13 +2,13 @@
 #include <boost/container/small_vector.hpp>
 #include "common/common_types.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
-#include "vulkan_common/device.hpp"
 #include "update_descriptor.hpp"
 #include "shader_tools/shader_info.h"
 #include <spdlog/spdlog.h>
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include <unordered_set>
 #include <unordered_map>
+import render.vulkan.common;
 namespace render::vulkan::pipeline {
 class DescriptorLayoutBuilder {
     public:

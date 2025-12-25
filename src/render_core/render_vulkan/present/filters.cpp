@@ -6,9 +6,9 @@
 #include "render_core/host_shaders/vulkan_present_frag_spv.h"
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp32_frag_spv.h"
-#include "vulkan_common/device.hpp"
 #include "render_vulkan/vk_shader_util.hpp"
 #include "vulkan_utils.hpp"
+import render.vulkan.common;
 namespace render::vulkan {
 auto SelectScaleForceShader(const Device& device) -> ShaderModule {
     if (device.isFloat16Supported()) {

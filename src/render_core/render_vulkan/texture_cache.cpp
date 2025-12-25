@@ -1,11 +1,11 @@
 #include "texture_cache.hpp"
 #include <spdlog/spdlog.h>
-#include "vulkan_common/device.hpp"
 #include "scheduler.hpp"
 #include "staging_buffer_pool.hpp"
 #include "texture/formatter.h"
 #include "common/assert.hpp"
 #undef MemoryBarrier
+import render.vulkan.common;
 
 namespace render::vulkan {
 namespace {

@@ -1,6 +1,5 @@
 #include "graphics_pipeline.hpp"
 #include "format_to_vk.hpp"
-#include "vulkan_common/device.hpp"
 #include "descriptor_pool.hpp"
 #include "scheduler.hpp"
 #include "common/assert.hpp"
@@ -13,6 +12,7 @@
 #include "shader_tools/stage.h"
 #include <gsl/gsl>
 #include <xxhash.h>
+import render.vulkan.common;
 #if defined(_MSC_VER) && defined(NDEBUG)
 #define LAMBDA_FORCEINLINE [[msvc::forceinline]]
 #else

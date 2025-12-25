@@ -9,9 +9,8 @@
 #include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/pipeline_state.h"
-
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
 class MemoryAllocator;
 namespace scheduler {
 class Scheduler;

@@ -7,11 +7,12 @@
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
 #include "common/common_funcs.hpp"
+import render.vulkan.common;
 namespace core::frontend {
 class BaseWindow;
 }
 namespace render::vulkan {
-class Device;
+
 class Swapchain;
 namespace scheduler {
 class Scheduler;

@@ -12,9 +12,10 @@
 #include "render_core/texture/render_targets.h"
 #include "render_core/texture.hpp"
 #include "render_core/texture_cache/texture_cache.h"
+import render.vulkan.common;
 namespace render::vulkan {
 class BlitImageHelper;
-class Device;
+
 class StagingBufferPool;
 struct StagingBufferRef;
 class TextureImageView;

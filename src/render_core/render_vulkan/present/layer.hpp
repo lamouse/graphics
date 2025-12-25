@@ -6,8 +6,9 @@
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebuffer_config.hpp"
 #include "memory"
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 class FSR;
 class MemoryAllocator;
 struct PresentPushConstants;

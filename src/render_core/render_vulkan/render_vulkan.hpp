@@ -1,12 +1,11 @@
 #include "render_core/render_base.hpp"
-#include "render_core/vulkan_common/device.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/render_vulkan/present_manager.hpp"
 #include "render_core/render_vulkan/swapchain.hpp"
 #include "render_core/render_vulkan/scheduler.hpp"
 #include "render_core/render_vulkan/blit_screen.hpp"
 #include "render_core/render_vulkan/vk_graphic.hpp"
-
+import render.vulkan.common;
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
 

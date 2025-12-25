@@ -1,10 +1,10 @@
 #include "staging_buffer_pool.hpp"
 
 #include <algorithm>
-#include "vulkan_common/device.hpp"
 #include "scheduler.hpp"
 #include "common/literals.hpp"
 #include "common/bit_util.h"
+import render.vulkan.common;
 #undef min
 namespace render::vulkan {
 namespace {

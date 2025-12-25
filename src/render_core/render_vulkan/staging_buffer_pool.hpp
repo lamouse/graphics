@@ -3,9 +3,9 @@
 #include <vector>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
-
+import render.vulkan.common;
 namespace render::vulkan {
-class Device;
+
 namespace scheduler {
 class Scheduler;
 }

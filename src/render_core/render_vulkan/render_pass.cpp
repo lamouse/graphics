@@ -1,6 +1,6 @@
 #include "render_pass.hpp"
-#include "vulkan_common/device.hpp"
 #include <boost/container/static_vector.hpp>
+import render.vulkan.common;
 namespace render::vulkan {
 namespace {
 auto AttachmentDescription(const Device& device, surface::PixelFormat format,

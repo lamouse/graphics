@@ -3,12 +3,11 @@
 #include "master_semaphore.hpp"
 #include "command_pool.hpp"
 #include "common/polyfill_thread.hpp"
-#include "vulkan_common/device.hpp"
 #include "texture_cache.hpp"
 #include <boost/container/small_vector.hpp>
 #include <tracy/Tracy.hpp>
 #include "common/settings.hpp"
-
+import render.vulkan.common;
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif

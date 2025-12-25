@@ -17,10 +17,9 @@
 #include "render_core/render_vulkan/buffer_cache.h"
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/shader_notify.hpp"
-
+import render.vulkan.common;
 namespace render::vulkan {
 
-class Device;
 class PipelineStatistics;
 namespace scheduler {
 class Scheduler;

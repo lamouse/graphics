@@ -5,10 +5,11 @@
 #ifndef GRAPHICS_G_IMGUI_HPP
 #define GRAPHICS_G_IMGUI_HPP
 #pragma once
-#include "render_core/vulkan_common/device.hpp"
 #include "core/frontend/window.hpp"
 #include <functional>
 #include <atomic>
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+import render.vulkan.common;
 namespace render::vulkan {
 struct Frame;
 namespace scheduler {

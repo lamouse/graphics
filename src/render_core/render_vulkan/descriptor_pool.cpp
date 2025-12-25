@@ -1,9 +1,9 @@
 #include "descriptor_pool.hpp"
 #include "render_vulkan/scheduler.hpp"
-#include "vulkan_common/device.hpp"
 #include <algorithm>
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include <cstdlib>
+import render.vulkan.common;
 namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
 constexpr size_t SETS_GROW_RATE = 16;
