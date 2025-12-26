@@ -7,16 +7,13 @@ module;
 #include "memory"
 #include <vulkan/vulkan.hpp>
 #include "render_core/render_vulkan/vk_graphic.hpp"
-export module render.vulkan.present.layer;
+export module render.vulkan.present:layer;
 import render.vulkan.common;
-import render.vulkan.FSR;
-import render.vulkan.present.AntiAliasPass;
+import :FSR;
+import :AntiAliasPass;
+import :push_constants;
 
 export namespace render::vulkan {
-
-
-struct PresentPushConstants;
-
 
 class Layer final {
     public:

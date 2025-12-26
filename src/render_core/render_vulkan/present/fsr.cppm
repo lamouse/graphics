@@ -3,11 +3,10 @@ module;
 #include "common/common_types.hpp"
 #include <vulkan/vulkan.hpp>
 #include "render_vulkan/scheduler.hpp"
-export module render.vulkan.FSR;
+export module render.vulkan.present:FSR;
 import render.vulkan.common;
 
-export namespace render::vulkan {
-
+namespace render::vulkan {
 class FSR {
     public:
         explicit FSR(const Device& device, MemoryAllocator& memory_allocator, size_t image_count,
