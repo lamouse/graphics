@@ -1,5 +1,10 @@
-#include "resource_pool.hpp"
-#include "master_semaphore.hpp"
+module;
+#include <optional>
+
+module render.vulkan;
+import :master_semaphore;
+import render.vulkan.common;
+
 namespace render::vulkan::resource {
 ResourcePool::ResourcePool(semaphore::MasterSemaphore* master_semaphore, size_t grow_step)
     : master_semaphore_{master_semaphore}, grow_step_{grow_step} {}

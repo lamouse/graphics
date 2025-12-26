@@ -1,13 +1,15 @@
-#pragma once
+module;
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <queue>
 #include "common/common_funcs.hpp"
+#include "shader_tools/shader_compile.hpp"
 #include <vulkan/vulkan.hpp>
+export module render.vulkan:master_semaphore;
 import render.vulkan.common;
 
-namespace render::vulkan {
+export namespace render::vulkan {
 namespace semaphore {
 class MasterSemaphore {
         using Waitable = std::pair<uint64_t, Fence>;

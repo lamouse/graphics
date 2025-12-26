@@ -1,10 +1,11 @@
-#pragma once
-#include "common/common_funcs.hpp"
+module;
 #include <vector>
-namespace render::vulkan {
-namespace semaphore {
-class MasterSemaphore;
-}
+#include "common/class_traits.hpp"
+export module render.vulkan:resource_pool;
+import render.vulkan.common;
+import :master_semaphore;
+
+export namespace render::vulkan {
 namespace resource {
 class ResourcePool {
     public:
@@ -35,5 +36,4 @@ class ResourcePool {
         std::vector<uint64_t> ticks_;  ///< Ticks for each resource
 };
 }  // namespace resource
-
-}  // namespace render::vulkan
+}

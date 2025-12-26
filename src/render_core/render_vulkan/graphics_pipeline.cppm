@@ -1,25 +1,21 @@
-#pragma once
+module;
 #include <algorithm>
-#include "buffer_cache.h"
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
 #include "render_core/pipeline_state.h"
-#include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "shader_tools/shader_info.h"
+#include "render_core/shader_notify.hpp"
 #include <condition_variable>
-#include "render_core/render_vulkan/update_descriptor.hpp"
 #include "common/thread_worker.hpp"
-#include "render_core/render_vulkan/texture_cache.hpp"
+#include <vulkan/vulkan.hpp>
+export module render.vulkan:graphics_pipeline;
 import render.vulkan.common;
-namespace render {
-class ShaderNotify;
-}
-namespace render::vulkan {
-class RenderPassCache;
-namespace scheduler {
-class Scheduler;
-}  // namespace scheduler
+import :texture_cache;
+import render.vulkan.render_pass;
+import :buffer_cache;
+import :descriptor_pool;
 
+export namespace render::vulkan {
 struct GraphicsPipelineCacheKey {
         std::array<u64, 6> unique_hashes;
         FixedPipelineState state;
@@ -50,14 +46,10 @@ struct hash<render::vulkan::GraphicsPipelineCacheKey> {
         }
 };
 }  // namespace std
-namespace render::vulkan {
+export namespace render::vulkan {
 namespace scheduler {
 class Scheduler;
 }
-namespace resource {
-class DescriptorAllocator;
-class DescriptorPool;
-}  // namespace resource
 namespace pipeline {
 class PipelineStatistics;
 class RenderAreaPushConstant;

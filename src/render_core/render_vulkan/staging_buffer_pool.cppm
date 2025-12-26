@@ -1,12 +1,13 @@
-#pragma once
+module;
 #include <climits>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
+export module render.vulkan:staging_buffer_pool;
 import render.vulkan.common;
-namespace render::vulkan {
 
-namespace scheduler {
+export namespace render::vulkan {
+namespace scheduler{
 class Scheduler;
 }
 

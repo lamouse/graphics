@@ -3,15 +3,14 @@ module;
 #include <functional>
 #include <atomic>
 #include <vulkan/vulkan.hpp>
-#include "present_manager.hpp"
-
-export module render.vulkan.ImGui;
+export module render.vulkan:ImGui;
 import render.vulkan.common;
+import :scheduler;
+import render.vulkan.present.present_frame;
 
 export namespace render::vulkan {
 
 class ImguiCore {
-    private:
         const Device& device;
 
         VulkanDescriptorPool descriptorPool;

@@ -1,16 +1,15 @@
 module;
 #include "common/scope_exit.h"
-#include "render_vulkan/blit_screen.hpp"
-#include "render_vulkan/scheduler.hpp"
-#include "filters.hpp"
 #include "common/settings.hpp"
-
-#include "render_core/render_vulkan/vk_graphic.hpp"
-module render.vulkan.present;
+#include "core/frontend/framebuffer_layout.hpp"
+#include "render_core/framebuffer_config.hpp"
+#include <vulkan/vulkan.hpp>
+module render.vulkan;
 import render.vulkan.common;
 import render.vulkan.utils;
 import :FSR;
 import :AntiAliasPass;
+
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
              scheduler::Scheduler& scheduler_, size_t image_count_, vk::Extent2D output_size,

@@ -1,9 +1,11 @@
-#include "master_semaphore.hpp"
+module;
 #include <algorithm>
 #include <utility>
 #include "common/polyfill_thread.hpp"
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
+#include <vulkan/vulkan.hpp>
+module render.vulkan;
 import render.vulkan.common;
 #undef max
 #undef min

@@ -1,16 +1,16 @@
-#include "scheduler.hpp"
+module;
 #include <spdlog/spdlog.h>
-#include "master_semaphore.hpp"
-#include "command_pool.hpp"
 #include "common/polyfill_thread.hpp"
-#include "texture_cache.hpp"
 #include <boost/container/small_vector.hpp>
 #include <tracy/Tracy.hpp>
+#include <vulkan/vulkan.hpp>
 #include "common/settings.hpp"
-import render.vulkan.common;
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif
+module render.vulkan;
+import render.vulkan.common;
+import :scheduler;
 
 namespace render::vulkan::scheduler {
 

@@ -1,11 +1,10 @@
+module;
 #include <algorithm>
 
-#include "swapchain.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 #include <vulkan/vk_enum_string_helper.h>
-#include "scheduler.hpp"
-import render.vulkan.common;
+#include <vulkan/vulkan.hpp>
 #if defined max
 #undef max
 #endif
@@ -13,6 +12,10 @@ import render.vulkan.common;
 #if defined min
 #undef min
 #endif
+
+module render.vulkan;
+import render.vulkan.common;
+import :scheduler;
 
 namespace render::vulkan {
 namespace {

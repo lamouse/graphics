@@ -1,18 +1,22 @@
-#pragma once
-
+module;
 #include "render_core/buffer_cache/buffer_base.hpp"
 #include "render_core/buffer_cache/buffer_cache.h"
-#include "common/slot_vector.hpp"
 #include "render_core/surface.hpp"
-#include "render_core/render_vulkan/staging_buffer_pool.hpp"
-#include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/pipeline_state.h"
+#include <vulkan/vulkan.hpp>
+export module render.vulkan:buffer_cache;
 import render.vulkan.common;
-namespace render::vulkan {
+import :staging_buffer_pool;
+import :update_descriptor;
+
+
+export namespace render::vulkan {
+
 namespace scheduler {
 class Scheduler;
 }
+
 namespace resource {
 class DescriptorPool;
 }

@@ -1,16 +1,23 @@
-#include "buffer_cache.h"
-#include "render_core/render_vulkan/scheduler.hpp"
-#include "render_core/render_vulkan/descriptor_pool.hpp"
-#include "update_descriptor.hpp"
-#include "staging_buffer_pool.hpp"
+module;
+#include "pipeline_state.h"
 #include "common/alignment.h"
-import render.vulkan.common;
+#include "render_core/texture/types.hpp"
+#include "render_core/surface.hpp"
+#include "render_core/buffer_cache/buffer_base.hpp"
+#include "render_core/buffer_cache/buffer_cache.h"
+#include <boost/container/small_vector.hpp>
+#include <vulkan/vulkan.hpp>
+#include <spdlog/spdlog.h>
 
 #if defined(MemoryBarrier)
 #undef MemoryBarrier
 #undef min
 #undef max
 #endif
+
+module render.vulkan;
+import render.vulkan.common;
+import :scheduler;
 namespace render::vulkan {
 
 namespace {

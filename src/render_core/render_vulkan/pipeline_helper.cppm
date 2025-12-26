@@ -1,12 +1,14 @@
-#pragma once
+module;
 #include <boost/container/small_vector.hpp>
 #include "common/common_types.hpp"
-#include "update_descriptor.hpp"
+
 #include "shader_tools/shader_info.h"
 #include <spdlog/spdlog.h>
-#include "render_core/render_vulkan/texture_cache.hpp"
 #include <unordered_set>
 #include <unordered_map>
+#include <vulkan/vulkan.hpp>
+export module render.vulkan:pipeline_helper;
+import :texture_cache;
 import render.vulkan.common;
 namespace render::vulkan::pipeline {
 class DescriptorLayoutBuilder {

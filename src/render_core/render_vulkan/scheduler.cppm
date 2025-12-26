@@ -1,7 +1,5 @@
-#pragma once
+module;
 #include <vulkan/vulkan.hpp>
-#include "render_core/render_vulkan/master_semaphore.hpp"
-#include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
@@ -10,19 +8,18 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <queue>
 #include <spdlog/spdlog.h>
+export module render.vulkan:scheduler;
 import render.vulkan.common;
-namespace render::vulkan {
-class TextureFramebuffer;
-class GraphicsPipeline;
+import :master_semaphore;
+import :graphics_pipeline;
+import :command_pool;
 
-namespace resource {
-class CommandPool;
-}
-}  // namespace render::vulkan
+export namespace render::vulkan {
 
-namespace render::vulkan::scheduler {
 
+namespace scheduler {
 class Scheduler {
     public:
         explicit Scheduler(const Device& device);
@@ -167,19 +164,19 @@ class Scheduler {
         };
 
         struct State {
-                vk::RenderPass render_pass_;
-                vk::Framebuffer framebuffer_;
-                vk::Extent2D render_area_ = {0, 0};
-                GraphicsPipeline* graphics_pipeline_ = nullptr;
+            vk::RenderPass render_pass_;
+            vk::Framebuffer framebuffer_;
+            vk::Extent2D render_area_ = {0, 0};
+            GraphicsPipeline* graphics_pipeline_ = nullptr;
         };
 
         struct DynamicState {
-                std::array<vk::ImageView, 8> color_views;
-                vk::ImageView depth_view;
-                vk::Extent2D render_area_ = {0, 0};
-                GraphicsPipeline* graphics_pipeline_ = nullptr;
-                bool begin_rendering{false};
-                auto operator<=>(const DynamicState&) const = default;
+            std::array<vk::ImageView, 8> color_views;
+            vk::ImageView depth_view;
+            vk::Extent2D render_area_ = {0, 0};
+            GraphicsPipeline* graphics_pipeline_ = nullptr;
+            bool begin_rendering{false};
+            auto operator<=>(const DynamicState&) const = default;
         };
 
         const Device& device_;
@@ -228,4 +225,5 @@ class Scheduler {
         std::jthread worker_thread_;
         bool use_dynamic_rendering;
 };
-}  // namespace render::vulkan::scheduler
+}
+}

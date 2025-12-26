@@ -1,15 +1,17 @@
-#include "blit_screen.hpp"
+module;
 #include <spdlog/spdlog.h>
-#include "present/filters.hpp"
-#include "scheduler.hpp"
-#include "present_manager.hpp"
-#include "present/window_adapt_pass.hpp"
 #include "common/settings.hpp"
+#include "core/frontend/framebuffer_layout.hpp"
+#include "render_core/framebuffer_config.hpp"
+#include <vulkan/vulkan.hpp>
 
-#include "render_core/render_vulkan/vk_graphic.hpp"
 
+module render.vulkan;
+import render.vulkan.present.present_frame;
 import render.vulkan.common;
-import render.vulkan.present;
+import :present_manager;
+import :scheduler;
+import :filters;
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,
                        PresentManager& present_manager_, scheduler::Scheduler& scheduler_)

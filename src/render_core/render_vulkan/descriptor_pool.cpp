@@ -1,7 +1,13 @@
-#include "descriptor_pool.hpp"
-#include "render_vulkan/scheduler.hpp"
+module;
+#include "shader_tools/shader_info.h"
+
 #include <algorithm>
 #include <cstdlib>
+#include <span>
+#include <mutex>
+#include <shared_mutex>
+#include <vulkan/vulkan.hpp>
+module render.vulkan;
 import render.vulkan.common;
 namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines

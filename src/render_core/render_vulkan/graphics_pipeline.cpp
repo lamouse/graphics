@@ -1,23 +1,28 @@
-#include "graphics_pipeline.hpp"
-#include "format_to_vk.hpp"
-#include "descriptor_pool.hpp"
-#include "scheduler.hpp"
+module;
 #include "common/assert.hpp"
 #include "common/settings.hpp"
+#include "common/thread_worker.hpp"
 #include "shader_notify.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
-#include "render_pass.hpp"
-#include "pipeline_helper.hpp"
-#include "shader_tools/stage.h"
+#include "render_core/pipeline_state.h"
+#include "shader_tools/shader_info.h"
+#include "render_core/texture_cache/texture_cache.h"
 #include <gsl/gsl>
 #include <xxhash.h>
-import render.vulkan.common;
+#include <vulkan/vulkan.hpp>
+
+#include "shader_tools/stage.h"
 #if defined(_MSC_VER) && defined(NDEBUG)
 #define LAMBDA_FORCEINLINE [[msvc::forceinline]]
 #else
 #define LAMBDA_FORCEINLINE
 #endif
+module render.vulkan;
+import render.vulkan.common;
+import :pipeline_helper;
+import render.vulkan.format_utils;
+
 constexpr size_t MAX_IMAGE_ELEMENTS = 64;
 constexpr size_t NUM_RENDER_TARGETS = 8;
 namespace render::vulkan {

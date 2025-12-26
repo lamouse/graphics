@@ -1,11 +1,11 @@
-#pragma once
+module;
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
 #include <mutex>
 #include "render_core/surface.hpp"
+export module render.vulkan.render_pass;
 import render.vulkan.common;
-namespace render::vulkan {
-
+export namespace render::vulkan {
 struct RenderPassKey {
         auto operator==(const RenderPassKey& rhs) const noexcept -> bool = default;
 
@@ -31,7 +31,7 @@ struct hash<render::vulkan::RenderPassKey> {
 };
 }  // namespace std
 namespace render::vulkan {
-class RenderPassCache {
+export class RenderPassCache {
     public:
         explicit RenderPassCache(const Device& device_);
 

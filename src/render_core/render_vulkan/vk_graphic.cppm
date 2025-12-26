@@ -1,20 +1,20 @@
-#pragma once
-#include "render_core/render_vulkan/pipeline_cache.hpp"
-#include "render_core/render_vulkan/scheduler.hpp"
-#include "render_core/render_vulkan/descriptor_pool.hpp"
-#include "render_core/render_vulkan/staging_buffer_pool.hpp"
-#include "render_core/render_vulkan/render_pass.hpp"
-#include "render_core/render_vulkan/texture_cache.hpp"
-#include "render_core/render_vulkan/buffer_cache.h"
+module;
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
 #include "render_core/framebuffer_config.hpp"
+#include "render_core/shader_notify.hpp"
+
+#include <vulkan/vulkan.hpp>
+#include <boost/container/static_vector.hpp>
+export module render.vulkan:graphic;
 import render.vulkan.common;
-namespace render::vulkan {
+import render.vulkan.present.present_frame;
+import :scheduler;
+import :pipeline_cache;
+export namespace render::vulkan {
 using ModelId = common::SlotId;
 
-struct FramebufferTextureInfo;
 
 struct ModelResource {
         BufferId vertex_buffer_id{};

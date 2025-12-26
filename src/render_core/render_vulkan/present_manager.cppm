@@ -1,32 +1,22 @@
-#pragma once
+module;
 #include <stop_token>
 #include <queue>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <vulkan/vulkan.hpp>
-#include <span>
+#include "core/frontend/window.hpp"
+#include <spdlog/spdlog.h>
+
+export module render.vulkan:present_manager;
 import render.vulkan.common;
-namespace core::frontend {
-class BaseWindow;
-}
-namespace render::vulkan {
+import render.vulkan.present.present_frame;
 
-class Swapchain;
-namespace scheduler {
-class Scheduler;
-}
-struct Frame {
-        uint32_t width;
-        uint32_t height;
-        Image image;
-        ImageView image_view;
-        vk::CommandBuffer cmdbuf;
-        Semaphore render_ready;
-        Fence present_done;
-};
+import :swapchain;
+import :scheduler;
 
+export namespace render::vulkan {
 class PresentManager {
     public:
         PresentManager(const vk::Instance& instance, core::frontend::BaseWindow& render_window,
@@ -80,5 +70,4 @@ class PresentManager {
         bool use_present_thread_;
         std::size_t image_count_{};
 };
-
-}  // namespace render::vulkan
+}

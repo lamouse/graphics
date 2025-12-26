@@ -1,6 +1,8 @@
-#include "command_pool.hpp"
-#include "master_semaphore.hpp"
+module;
+#include <vulkan/vulkan.hpp>
+module render.vulkan;
 import render.vulkan.common;
+import :resource_pool;
 namespace render::vulkan::resource {
 namespace {
 constexpr size_t COMMAND_BUFFER_POOL_SIZE = 4;

@@ -1,4 +1,4 @@
-#pragma once
+module;
 
 #include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
@@ -7,30 +7,17 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 #include "core/frontend/framebuffer_layout.hpp"
+
+export module render.vulkan:blit_screen;
+
 import render.vulkan.common;
-namespace render::vulkan {
-class PresentManager;
-class Layer;
-class VulkanGraphics;
-class Framebuffer;
-namespace present {
-class WindowAdaptPass;
-}
+import render.vulkan.present.present_frame;
+import :present_manager;
+import :graphic;
+import :layer;
+import :window_adapt_pass;
 
-namespace scheduler {
-class Scheduler;
-}
-struct Frame;
-
-struct FramebufferTextureInfo {
-        vk::Image image;
-        vk::ImageView image_view;
-        u32 width{};
-        u32 height{};
-        u32 scaled_width{};
-        u32 scaled_height{};
-};
-
+export  namespace render::vulkan {
 class BlitScreen {
     public:
         explicit BlitScreen(const Device& device, MemoryAllocator& memory_allocator,
@@ -59,5 +46,4 @@ class BlitScreen {
         std::unique_ptr<present::WindowAdaptPass> window_adapt;
         std::list<Layer> layers;
 };
-
-}  // namespace render::vulkan
+}

@@ -1,11 +1,17 @@
+module;
 #include "common/assert.hpp"
 #include <boost/container/small_vector.hpp>
+#include "render_core/shader_notify.hpp"
+#include "common/thread_worker.hpp"
+#include "shader_tools/shader_info.h"
+#include <vulkan/vulkan.hpp>
 
-#include "render_core/render_vulkan/compute_pipeline.hpp"
-#include "render_core/render_vulkan/scheduler.hpp"
-#include "render_core/render_vulkan/descriptor_pool.hpp"
-#include "render_core/render_vulkan/pipeline_helper.hpp"
+module render.vulkan;
 import render.vulkan.common;
+import :pipeline_cache;
+import :update_descriptor;
+import :pipeline_cache;
+import :pipeline_helper;
 
 namespace render::vulkan {
 

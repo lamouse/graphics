@@ -1,18 +1,20 @@
-#pragma once
+module;
 
 #include "render_core/framebuffer_config.hpp"
-#include <list>
 #include "core/frontend/framebuffer_layout.hpp"
 #include <vulkan/vulkan.hpp>
-import render.vulkan.common;
-namespace render::vulkan {
+#include <span>
+#include <list>
 
-struct Frame;
-class VulkanGraphics;
-class Layer;
-namespace scheduler {
-class Scheduler;
-}
+
+export module render.vulkan:window_adapt_pass;
+
+import :layer;
+import render.vulkan.present.present_frame;
+import render.vulkan.common;
+
+export namespace render::vulkan {
+
 namespace present {
 class WindowAdaptPass final {
     public:

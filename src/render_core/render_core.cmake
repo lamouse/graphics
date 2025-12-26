@@ -25,52 +25,33 @@ set(sources
         buffer_cache/buffer_cache.h
         buffer_cache/buffer_cache_base.hpp
         render_vulkan/blit_screen.cpp
-        render_vulkan/blit_screen.hpp
         render_vulkan/buffer_cache.cpp
-        render_vulkan/buffer_cache.h
         render_vulkan/command_pool.cpp
-        render_vulkan/command_pool.hpp
         render_vulkan/compute_pipeline.cpp
-        render_vulkan/compute_pipeline.hpp
         render_vulkan/descriptor_pool.cpp
-        render_vulkan/descriptor_pool.hpp
         render_vulkan/format_to_vk.cpp
-        render_vulkan/format_to_vk.hpp
         render_vulkan/graphics_pipeline.cpp
-        render_vulkan/graphics_pipeline.hpp
         render_vulkan/master_semaphore.cpp
-        render_vulkan/master_semaphore.hpp
         render_vulkan/pipeline_cache.cpp
-        render_vulkan/pipeline_cache.hpp
-        render_vulkan/pipeline_helper.hpp
+        render_vulkan/pipeline_cache.cppm
         render_vulkan/present_manager.cpp
-        render_vulkan/present_manager.hpp
         render_vulkan/render_pass.cpp
-        render_vulkan/render_pass.hpp
+        render_vulkan/render_pass.cppm
         render_vulkan/render_vulkan.cpp
-        render_vulkan/render_vulkan.hpp
         render_vulkan/resource_pool.cpp
-        render_vulkan/resource_pool.hpp
         render_vulkan/scheduler.cpp
-        render_vulkan/scheduler.hpp
         render_vulkan/staging_buffer_pool.cpp
-        render_vulkan/staging_buffer_pool.hpp
         render_vulkan/swapchain.cpp
-        render_vulkan/swapchain.hpp
         render_vulkan/texture_cache.cpp
-        render_vulkan/texture_cache.hpp
         render_vulkan/update_descriptor.cpp
-        render_vulkan/update_descriptor.hpp
         render_vulkan/vk_graphic.cpp
-        render_vulkan/vk_graphic.hpp
+        render_vulkan/vk_graphic.cppm
         render_vulkan/vk_imgui.cpp
         render_vulkan/present/filters.cpp
-        render_vulkan/present/filters.hpp
         render_vulkan/present/fsr.cpp
 
         render_vulkan/present/vulkan_utils.cpp
         render_vulkan/present/window_adapt_pass.cpp
-        render_vulkan/present/window_adapt_pass.hpp
         texture/formatter.cpp
         texture/formatter.h
         texture/image_info.hpp
@@ -101,6 +82,9 @@ set(sources
 )
 
 set(MODULE_FILES
+
+        render_core.cppm
+
         vulkan_common/debug_callback.cppm
         vulkan_common/vk_instance.cppm
         vulkan_common/vk_common.cppm
@@ -113,9 +97,34 @@ set(MODULE_FILES
         render_vulkan/vk_shader_util.cppm
         render_vulkan/present/vulkan_utils.cppm
         render_vulkan/present/fsr.cppm
+        render_vulkan/present/present_frame.cppm
         render_vulkan/present/layer.cppm
         render_vulkan/present/present_push_constants.cppm
         render_vulkan/present/anti_alias_pass.cppm
-        render_vulkan/present/vulkan_present.cppm
+        render_vulkan/present/window_adapt_pass.cppm
+        render_vulkan/present/filters.cppm
+
+        render_vulkan/blit_screen.cppm
+        render_vulkan/buffer_cache.cppm
+        render_vulkan/command_pool.cppm
+        render_vulkan/compute_pipeline.cppm
+        render_vulkan/descriptor_pool.cppm
+        render_vulkan/format_to_vk.cppm
+        render_vulkan/master_semaphore.cppm
+        render_vulkan/graphics_pipeline.cppm
+        render_vulkan/pipeline_cache.cppm
+        render_vulkan/present_manager.cppm
+        render_vulkan/render_pass.cppm
+        render_vulkan/render_vulkan.cppm
+        render_vulkan/resource_pool.cppm
+        render_vulkan/pipeline_helper.cppm
+        render_vulkan/scheduler.cppm
+        render_vulkan/staging_buffer_pool.cppm
+        render_vulkan/swapchain.cppm
+        render_vulkan/texture_cache.cppm
+        render_vulkan/update_descriptor.cppm
+        render_vulkan/vk_render.cppm
+        render_vulkan/vk_graphic.cppm
+
 
 )

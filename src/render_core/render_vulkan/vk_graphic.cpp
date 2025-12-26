@@ -1,13 +1,30 @@
-#include "vk_graphic.hpp"
-#include "blit_screen.hpp"
-#include "render_core/render_vulkan/format_to_vk.hpp"
-#include "render_core/render_vulkan/compute_pipeline.hpp"
-#include <imgui_impl_vulkan.h>
+module;
 #include <algorithm>
+#include <boost/container/static_vector.hpp>
 #include <tracy/Tracy.hpp>
+#include <span>
+#include <vulkan/vulkan.hpp>
+#include "vertex.hpp"
+#include <imgui.h>
+#include <spdlog/spdlog.h>
+
+#include "imgui_impl_vulkan.h"
+#include "render_core/shader_notify.hpp"
+#include "common/assert.hpp"
+#include "render_core/graphic.hpp"
+#include "core/frontend/window.hpp"
+#include "render_core/texture_cache/texture_cache.h"
+#include "render_core/buffer_cache/buffer_cache.h"
+#include "shader_tools/shader_info.h"
+#include "render_core/framebuffer_config.hpp"
+
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif
+module render.vulkan;
+import :scheduler;
+import  render.vulkan.format_utils;
+import render.vulkan.present.present_frame;
 using IsInstance = bool;
 
 namespace {

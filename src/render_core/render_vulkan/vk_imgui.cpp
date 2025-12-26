@@ -4,13 +4,17 @@ module;
 
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
-#include "present_manager.hpp"
-#include "scheduler.hpp"
 #include "common/settings.hpp"
+#include "core/frontend/window.hpp"
+#include <vulkan/vulkan.hpp>
 
 #include <vulkan/vk_enum_string_helper.h>
-module render.vulkan.ImGui;
+module render.vulkan;
 import render.vulkan.common;
+import render.vulkan.present.present_frame;
+import :present_manager;
+import :scheduler;
+
 namespace {
 void init_imgui(float scale) {
     // 这里使用了imgui的一个分支docking

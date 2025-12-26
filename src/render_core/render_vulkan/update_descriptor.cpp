@@ -1,7 +1,8 @@
-#include "update_descriptor.hpp"
-#include "scheduler.hpp"
+module;
 #include <spdlog/spdlog.h>
+module render.vulkan;
 import render.vulkan.common;
+import :scheduler;
 namespace render::vulkan {
 UpdateDescriptorQueue::UpdateDescriptorQueue(const Device& device_,
                                              scheduler::Scheduler& scheduler_)

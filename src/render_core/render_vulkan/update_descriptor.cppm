@@ -1,11 +1,13 @@
-#pragma once
+module;
 #include <vulkan/vulkan.hpp>
+export module render.vulkan:update_descriptor;
 import render.vulkan.common;
-namespace render::vulkan {
 
+export namespace render::vulkan {
 namespace scheduler {
 class Scheduler;
 }
+
 struct DescriptorUpdateEntry {
         struct Empty {};
 
@@ -70,7 +72,6 @@ class UpdateDescriptorQueue final {
         std::array<DescriptorUpdateEntry, PAYLOAD_SIZE> payload;
 };
 
-// TODO: should these be separate classes instead?
 using GuestDescriptorQueue = UpdateDescriptorQueue;
 using ComputePassDescriptorQueue = UpdateDescriptorQueue;
 

@@ -1,17 +1,30 @@
-#pragma once
+module;
 #include "render_core/surface.hpp"
 #include "render_core/texture/image_info.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "render_core/texture/types.hpp"
-#include "render_core/render_vulkan/descriptor_pool.hpp"
-#include "render_core/render_vulkan/render_pass.hpp"
-#include "render_core/render_vulkan/update_descriptor.hpp"
 #include "render_core/texture/image_view_base.hpp"
 #include "render_core/texture/render_targets.h"
 #include "render_core/texture.hpp"
 #include "render_core/texture_cache/texture_cache.h"
+
+#include <vulkan/vulkan.hpp>
+
+#include "shader_tools/shader_info.h"
+export module render.vulkan:texture_cache;
 import render.vulkan.common;
-namespace render::vulkan {
+import render.vulkan.render_pass;
+import :update_descriptor;
+
+
+export namespace render::vulkan {
+namespace scheduler {
+class Scheduler;
+}
+
+namespace resource{
+class DescriptorPool;
+}
 class BlitImageHelper;
 
 class StagingBufferPool;
@@ -19,9 +32,6 @@ struct StagingBufferRef;
 class TextureImageView;
 class TextureFramebuffer;
 class TextureImage;
-namespace scheduler {
-class Scheduler;
-}
 
 class TextureCacheRuntime {
     public:

@@ -1,11 +1,11 @@
-#pragma once
-#include "resource_pool.hpp"
+module;
 #include <vulkan/vulkan.hpp>
+export module render.vulkan:command_pool;
 import render.vulkan.common;
-namespace render::vulkan {
-namespace semaphore {
-class MasterSemaphore;
-}
+import :resource_pool;
+
+export namespace render::vulkan {
+
 namespace resource {
 
 class CommandPool final : public ResourcePool {

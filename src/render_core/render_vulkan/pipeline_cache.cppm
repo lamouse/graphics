@@ -1,16 +1,23 @@
-#pragma once
+module;
 #include <array>
 #include <filesystem>
 #include <memory>
-#include "render_core/render_vulkan/buffer_cache.h"
-#include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
-#include "render_core/render_vulkan/graphics_pipeline.hpp"
-#include "render_core/render_vulkan/texture_cache.hpp"
-#include "render_core/shader_cache.hpp"
-import render.vulkan.common;
-namespace render::vulkan {
 
+#include "pipeline_state.h"
+#include "common/common_types.hpp"
+#include "common/class_traits.hpp"
+#include "common/thread_worker.hpp"
+#include "render_core//shader_notify.hpp"
+#include "render_core/shader_cache.hpp"
+export module render.vulkan:pipeline_cache;
+import render.vulkan.common;
+import :texture_cache;
+import :graphics_pipeline;
+import :compute_pipeline;
+import :buffer_cache;
+import :update_descriptor;
+import render.vulkan.render_pass;
+namespace render::vulkan {
 struct ComputePipelineCacheKey {
         u64 unique_hash;
         u32 shared_memory_size;
@@ -48,9 +55,6 @@ struct hash<render::vulkan::ComputePipelineCacheKey> {
 }  // namespace std
 
 namespace render::vulkan {
-class ComputePipeline;
-
-class RenderPassCache;
 namespace scheduler {
 class Scheduler;
 }

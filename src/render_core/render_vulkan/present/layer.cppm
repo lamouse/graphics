@@ -3,15 +3,15 @@ module;
 #include "common/class_traits.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebuffer_config.hpp"
-#include "render_vulkan/scheduler.hpp"
-#include "memory"
+#include <memory>
 #include <vulkan/vulkan.hpp>
-#include "render_core/render_vulkan/vk_graphic.hpp"
-export module render.vulkan.present:layer;
+export module render.vulkan:layer;
 import render.vulkan.common;
 import :FSR;
 import :AntiAliasPass;
 import :push_constants;
+import :graphic;
+import render.vulkan.present.present_frame;
 
 export namespace render::vulkan {
 

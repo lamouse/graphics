@@ -1,11 +1,11 @@
-#pragma once
-import render.vulkan.common;
+module;
 #include <vulkan/vulkan.hpp>
-namespace render::vulkan {
+export module render.vulkan:swapchain;
+import render.vulkan.common;
+import :scheduler;
+export namespace render::vulkan {
 
-namespace scheduler {
-class Scheduler;
-}
+
 class Swapchain {
     public:
         explicit Swapchain(vk::SurfaceKHR surface, const Device& device,

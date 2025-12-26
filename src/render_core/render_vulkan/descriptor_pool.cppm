@@ -1,19 +1,18 @@
-#pragma once
-#include "render_core/render_vulkan/resource_pool.hpp"
-#include "common/common_funcs.hpp"
+module;
+#include "common/class_traits.hpp"
 #include <shared_mutex>
 #include "shader_tools/shader_info.h"
 #include <vulkan/vulkan.hpp>
 #include <memory>
+export module render.vulkan:descriptor_pool;
 import render.vulkan.common;
+import :master_semaphore;
+import :resource_pool;
 namespace render::vulkan {
-
-namespace semaphore {
-class MasterSemaphore;
-}
 namespace scheduler {
 class Scheduler;
 }
+
 namespace resource {
 struct DescriptorBankInfo {
         [[nodiscard]] auto isSuperset(const DescriptorBankInfo& subset) const noexcept -> bool;

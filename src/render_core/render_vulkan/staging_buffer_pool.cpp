@@ -1,11 +1,15 @@
-#include "staging_buffer_pool.hpp"
-
+module;
 #include <algorithm>
-#include "scheduler.hpp"
 #include "common/literals.hpp"
 #include "common/bit_util.h"
-import render.vulkan.common;
+#include <vulkan/vulkan.hpp>
+
+#include "common/alignment.hpp"
 #undef min
+module render.vulkan;
+import render.vulkan.common;
+import :scheduler;
+
 namespace render::vulkan {
 namespace {
 using namespace common::literals;

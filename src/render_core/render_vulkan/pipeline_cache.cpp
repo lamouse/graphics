@@ -1,17 +1,25 @@
-#include "pipeline_cache.hpp"
-#include "descriptor_pool.hpp"
-#include "scheduler.hpp"
-#include "render_pass.hpp"
+module;
 #include "common/file.hpp"
 #include <fstream>
 #include <memory>
 #include <utility>
 #include "common/settings.hpp"
-#include "render_core/render_vulkan/compute_pipeline.hpp"
 #include "shader_tools/shader_compile.hpp"
+#include "render_core/shader_notify.hpp"
+#include "render_core/pipeline_state.h"
+#include "render_core/shader_cache.hpp"
+#include "common/thread_worker.hpp"
 #include <xxhash.h>
+#include <vulkan/vulkan.hpp>
+#include <spdlog/spdlog.h>
+module render.vulkan;
 import render.vulkan.common;
 import render.vulkan.shader;
+import :scheduler;
+import :texture_cache;
+import :graphics_pipeline;
+import :buffer_cache;
+import :update_descriptor;
 namespace render::vulkan {
 
 constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";

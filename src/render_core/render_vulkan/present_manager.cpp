@@ -1,15 +1,19 @@
-#include "present_manager.hpp"
-#include "swapchain.hpp"
-#include "scheduler.hpp"
+module;
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
 #include "common/thread.hpp"
+#include "core/frontend/window.hpp"
+#include <vulkan/vulkan.hpp>
 #include <tracy/Tracy.hpp>
-import render.vulkan.common;
-import render.vulkan.utils;
 #if defined min
 #undef min
 #endif
+module render.vulkan;
+import render.vulkan.common;
+import render.vulkan.utils;
+import :swapchain;
+import :scheduler;
+
 namespace render::vulkan {
 namespace {
 

@@ -1,8 +1,8 @@
 module;
 #include<vulkan/vulkan.hpp>
-#include "render_core/render_vulkan/scheduler.hpp"
-export module render.vulkan.present:AntiAliasPass;
+export module render.vulkan:AntiAliasPass;
 import render.vulkan.common;
+import :scheduler;
 namespace render::vulkan {
 class AntiAliasPass {
     public:

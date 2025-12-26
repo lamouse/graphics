@@ -1,10 +1,10 @@
-#pragma once
-
-#include "window_adapt_pass.hpp"
+module;
 #include <memory>
+#include <vulkan/vulkan.hpp>
+export module render.vulkan:filters;
 import render.vulkan.common;
-namespace render::vulkan {
-
+import :window_adapt_pass;
+export  namespace render::vulkan {
 
 auto MakeNearestNeighbor(const Device& device, vk::Format frame_format)
     -> std::unique_ptr<present::WindowAdaptPass>;

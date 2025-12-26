@@ -1,5 +1,9 @@
-#include "render_pass.hpp"
+module;
+#include "render_core/surface.hpp"
 #include <boost/container/static_vector.hpp>
+#include <vulkan/vulkan.hpp>
+#include <mutex>
+module render.vulkan.render_pass;
 import render.vulkan.common;
 namespace render::vulkan {
 namespace {

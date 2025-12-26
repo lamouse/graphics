@@ -1,8 +1,4 @@
-// SPDX-FileCopyrightText: Copyright 2019 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
-
-#pragma once
-
+module;
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -10,20 +6,16 @@
 #include "common/common_funcs.hpp"
 #include "common/thread_worker.hpp"
 #include "shader_tools/shader_info.h"
-#include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
-#include "render_core/render_vulkan/update_descriptor.hpp"
-#include "render_core/render_vulkan/buffer_cache.h"
-#include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/shader_notify.hpp"
+export module render.vulkan:compute_pipeline;
+
 import render.vulkan.common;
-namespace render::vulkan {
+import :descriptor_pool;
+import :scheduler;
+import :update_descriptor;
 
-class PipelineStatistics;
-namespace scheduler {
-class Scheduler;
-
-}
+export namespace render::vulkan {
 
 class ComputePipeline {
     public:

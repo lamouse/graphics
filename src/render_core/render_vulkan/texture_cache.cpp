@@ -1,11 +1,19 @@
-#include "texture_cache.hpp"
+module;
+#include <boost/container/small_vector.hpp>
 #include <spdlog/spdlog.h>
-#include "scheduler.hpp"
-#include "staging_buffer_pool.hpp"
+#include "texture.hpp"
 #include "texture/formatter.h"
 #include "common/assert.hpp"
+#include "shader_tools/shader_enums.hpp"
+#include "render_core/texture/types.hpp"
+#include "render_core/texture/image_view_base.hpp"
+#include "render_core/texture/render_targets.h"
+#include "render_core/texture.hpp"
+#include <vulkan/vulkan.hpp>
 #undef MemoryBarrier
+module render.vulkan;
 import render.vulkan.common;
+import :scheduler;
 
 namespace render::vulkan {
 namespace {
