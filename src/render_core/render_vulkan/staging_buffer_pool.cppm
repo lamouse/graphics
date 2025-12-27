@@ -3,7 +3,7 @@ module;
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include "common/common_types.hpp"
-export module render.vulkan:staging_buffer_pool;
+export module render.vulkan.staging_buffer_pool;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 

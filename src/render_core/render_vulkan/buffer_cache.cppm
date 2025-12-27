@@ -9,7 +9,7 @@ export module render.vulkan:buffer_cache;
 import render.vulkan.common;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
-import :staging_buffer_pool;
+import render.vulkan.staging_buffer_pool;
 import :update_descriptor;
 
 

@@ -16,6 +16,7 @@ import render.vulkan.common;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
+import render.vulkan.staging_buffer_pool;
 import :update_descriptor;
 
 
@@ -24,8 +25,6 @@ export namespace render::vulkan {
 
 class BlitImageHelper;
 
-class StagingBufferPool;
-struct StagingBufferRef;
 class TextureImageView;
 class TextureFramebuffer;
 class TextureImage;
