@@ -6,7 +6,6 @@ module;
 #include "resource/texture/image.hpp"
 #include <vulkan/vulkan.hpp>
 #include <boost/container/static_vector.hpp>
-#include "resource/obj/mesh.hpp"
 #include "resource/texture/image.hpp"
 #include <ktx.h>
 #include "resource/instance.hpp"
@@ -51,7 +50,7 @@ class VulkanGraphics : public render::Graphic {
         CLASS_NON_MOVEABLE(VulkanGraphics);
         void clean(const CleanValue& cleanValue) override;
         void dispatchCompute(const IComputeInstance& instance) override;
-        auto uploadModel(const graphics::IMeshData& instance) -> MeshId override;
+        auto uploadModel(const IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
         auto uploadTexture(ktxTexture* ktxTexture) -> TextureId override;
         void draw(const graphics::IMeshInstance& instance) override;

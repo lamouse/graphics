@@ -6,3 +6,4 @@ export import render.framebuffer_config;
 export import render.base;
 export import render.graphic;
 export import render.types;
+export import render.resource.mesh;

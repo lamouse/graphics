@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include "render_core/fsr.h"
+#include "common/bit_cast.h"
 
 namespace FSR {
 namespace {

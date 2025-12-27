@@ -13,7 +13,6 @@ module;
 #include "render_core/texture_cache/texture_cache.h"
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "common/settings.hpp"
-#include "resource/obj/mesh.hpp"
 #include "resource/texture/image.hpp"
 #include "resource/instance.hpp"
 
@@ -664,7 +663,7 @@ void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
-auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
+auto VulkanGraphics::uploadModel(const IMeshData& meshData) -> MeshId {
     ModelResource resource;
     auto mesh_data = meshData.getMesh();
     resource.vertex_size = static_cast<u32>(mesh_data.size() * sizeof(float));

@@ -7,6 +7,7 @@
 #include "core/frontend/window.hpp"
 #include "resource/id.hpp"
 #include "resource/resource.hpp"
+#include "render_core/mesh.hpp"
 
 #include "system/camera_system.hpp"
 #include "system/pick_system.hpp"

@@ -2,9 +2,9 @@
 
 #include <span>
 #include <vector>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "render_core/vertex.hpp"
-namespace graphics {
+namespace render {
 class IMeshData {
     public:
         IMeshData() = default;
@@ -20,4 +20,4 @@ class IMeshData {
         [[nodiscard]] virtual auto getVertexBinding() const
             -> std::vector<render::VertexBinding> = 0;
 };
-}  // namespace graphics
+}  // namespace render

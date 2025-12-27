@@ -6,7 +6,6 @@
 #include "render_core/graphic.hpp"
 #include "model_config.hpp"
 #include "image_config.hpp"
-#include "resource/obj/mesh.hpp"
 #include "resource/texture/image.hpp"
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
@@ -150,7 +149,7 @@ void ResourceManager::addMeshVertex(render::MeshId meshId, const std::vector<glm
     mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(indics);
 }
 
-auto ResourceManager::addMesh(std::string meshName, const IMeshData& meshData, add_mesh_func func)
+auto ResourceManager::addMesh(std::string meshName, const render::IMeshData& meshData, add_mesh_func func)
     -> render::MeshId {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func || graphic, "add_mesh_func is null");
