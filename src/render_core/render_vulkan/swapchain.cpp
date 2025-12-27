@@ -103,7 +103,7 @@ auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, uint32_t
 
 Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Scheduler& scheduler,
                      uint32_t width, uint32_t height)
-    : surface_(surface), device_(device), scheduler_(scheduler) {
+    : surface_(surface), scheduler_(scheduler), device_(device) {
     create(surface, width, height);
 }
 
