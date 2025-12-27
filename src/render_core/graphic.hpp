@@ -33,7 +33,7 @@ class Graphic {
         virtual ~Graphic() = default;
         virtual auto getDrawImage() -> unsigned long long = 0;
         virtual auto uploadModel(const IMeshData& instance) -> MeshId = 0;
-        virtual auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId = 0;
+        virtual auto uploadTexture(const ITexture& texture) -> TextureId = 0;
         virtual auto uploadTexture(ktxTexture* ktxTexture) -> TextureId = 0;
         virtual void draw(const IMeshInstance& instance) = 0;
         /**

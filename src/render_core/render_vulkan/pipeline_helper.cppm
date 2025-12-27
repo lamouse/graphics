@@ -1,7 +1,6 @@
 module;
 #include <boost/container/small_vector.hpp>
 
-#include "shader_tools/shader_info.h"
 #include <spdlog/spdlog.h>
 #include <unordered_set>
 #include <unordered_map>
@@ -10,6 +9,7 @@ export module render.vulkan.pipeline_helper;
 import render.vulkan.common;
 import render.vulkan.update_descriptor;
 import common.types;
+import shader;
 export namespace render::vulkan::pipeline {
 class DescriptorLayoutBuilder {
     public:

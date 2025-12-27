@@ -42,7 +42,7 @@ concept IsShaderHashStruct = std::same_as<T, ShaderHash>;
 template <typename T>
 concept IsUint64 = std::same_as<T, std::uint64_t>;
 
-using add_texture_func = std::function<render::TextureId(const resource::image::ITexture&)>;
+using add_texture_func = std::function<render::TextureId(const render::ITexture&)>;
 using add_mesh_func = std::function<render::TextureId(const render::IMeshData&)>;
 class ResourceManager {
     public:

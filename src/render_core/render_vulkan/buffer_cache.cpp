@@ -1,5 +1,4 @@
 module;
-#include "pipeline_state.h"
 #include "common/alignment.h"
 #include "render_core/texture/types.hpp"
 #include "render_core/surface.hpp"

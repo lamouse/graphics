@@ -2,25 +2,13 @@
 #include <cstdint>
 #include <string_view>
 #include <span>
+#include "render_core/mesh.hpp"
 
 namespace resource::image {
 
-class ITexture {
-    public:
-        auto getData() -> unsigned char*;
-        [[nodiscard]] virtual auto getWidth() const -> int = 0;
-        [[nodiscard]] virtual auto getHeight() const -> int = 0;
-        [[nodiscard]] virtual auto getMipLevels() const -> uint32_t = 0;
-        [[nodiscard]] virtual auto size() const -> unsigned long long = 0;
-        [[nodiscard]] virtual auto data() const -> std::span<unsigned char> = 0;
-        [[nodiscard]] auto count() const -> std::uint8_t { return image_count; };
-        virtual ~ITexture() = default;
 
-    protected:
-        std::uint8_t image_count{1};
-};
 
-class Image : public ITexture {
+class Image : public render::ITexture {
     private:
         unsigned char* data_{nullptr};
         std::span<unsigned char> map_data;

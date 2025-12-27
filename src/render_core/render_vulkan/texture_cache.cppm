@@ -1,5 +1,4 @@
 module;
-#include "render_core/surface.hpp"
 #include "render_core/texture/image_info.hpp"
 #include "common/class_traits.hpp"
 #include "render_core/texture/types.hpp"
@@ -18,6 +17,7 @@ import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
 import render.vulkan.staging_buffer_pool;
 import render.vulkan.update_descriptor;
+import render.surface.format;
 
 
 export namespace render::vulkan {

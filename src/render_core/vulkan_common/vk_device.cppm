@@ -1,7 +1,6 @@
 module;
 #include <unordered_map>
 #include <set>
-#include "render_core/surface.hpp"
 #include "vk_device_feature.hpp"
 #include <vulkan/vulkan.hpp>
 #include "vma.hpp"
@@ -10,6 +9,8 @@ export module render.vulkan.common.driver;
 
 import render.vulkan.common.wrapper;
 import render.vulkan.common.device.utils;
+import render.surface.format;
+import common;
 
 
 export namespace render::vulkan {

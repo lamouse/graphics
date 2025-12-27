@@ -2,7 +2,6 @@ module;
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
 #include "common/thread.hpp"
-#include "core/frontend/window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <tracy/Tracy.hpp>
 #if defined min
@@ -13,6 +12,7 @@ import render.vulkan.common;
 import render.vulkan.utils;
 import render.vulkan.scheduler;
 import render.vulkan.swapchain;
+import core;
 
 namespace render::vulkan {
 namespace {

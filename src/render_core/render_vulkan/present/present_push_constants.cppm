@@ -1,8 +1,7 @@
 module;
-#include "common/common_types.hpp"
-
+#include <array>
 export module render.vulkan.present.push_constants;
-
+import common;
 export namespace render::vulkan {
 
 struct ScreenRectVertex {

@@ -8,3 +8,4 @@ export import render.graphic;
 export import render.types;
 export import render.resource.mesh;
 export import render.pipeline_state;
+export import render.surface.format;

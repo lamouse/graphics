@@ -2,7 +2,6 @@ module;
 #include "shader_tools/shader_info.h"
 
 #include <algorithm>
-#include <cstdlib>
 #include <span>
 #include <mutex>
 #include <shared_mutex>

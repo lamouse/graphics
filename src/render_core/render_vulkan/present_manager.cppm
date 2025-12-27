@@ -6,7 +6,6 @@ module;
 #include <thread>
 #include "common/class_traits.hpp"
 #include <vulkan/vulkan.hpp>
-#include "core/frontend/window.hpp"
 #include <spdlog/spdlog.h>
 
 export module render.vulkan.present_manager;
@@ -14,6 +13,7 @@ import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import render.vulkan.scheduler;
 import render.vulkan.swapchain;
+import core;
 
 
 export namespace render::vulkan {

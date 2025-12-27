@@ -2,7 +2,6 @@ module;
 #include <vulkan/vulkan.hpp>
 #include "common/alignment.hpp"
 #include "common/common_funcs.hpp"
-#include "common/common_types.hpp"
 #include <array>
 #include <memory>
 #include <thread>
@@ -14,6 +13,7 @@ export module render.vulkan.scheduler;
 import render.vulkan.common;
 import render.vulkan.master_semaphore;
 import render.vulkan.command_pool;
+import common;
 
 export namespace render::vulkan::scheduler {
 

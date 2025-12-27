@@ -1,13 +1,13 @@
 module;
 #include "common/class_traits.hpp"
 #include <shared_mutex>
-#include "shader_tools/shader_info.h"
 #include <vulkan/vulkan.hpp>
 #include <memory>
 export module render.vulkan.descriptor_pool;
 import render.vulkan.common;
 import render.vulkan.master_semaphore;
 import render.vulkan.resource_pool;
+import shader;
 export namespace render::vulkan::resource {
 class DescriptorAllocator;
 struct DescriptorBankInfo;

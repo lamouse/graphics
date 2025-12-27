@@ -4,7 +4,6 @@ module;
 #include "common/thread_worker.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
-#include "render_core/pipeline_state.h"
 #include "render_core/texture_cache/texture_cache.h"
 #include <gsl/gsl>
 #include <xxhash.h>

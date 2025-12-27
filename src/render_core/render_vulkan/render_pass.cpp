@@ -1,10 +1,12 @@
 module;
-#include "render_core/surface.hpp"
+
 #include <boost/container/static_vector.hpp>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 module render.vulkan.render_pass;
 import render.vulkan.common;
+import render.surface.format;
+import common;
 namespace render::vulkan {
 namespace {
 auto AttachmentDescription(const Device& device, surface::PixelFormat format,

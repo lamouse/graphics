@@ -1,9 +1,7 @@
 module;
 #include "render_core/buffer_cache/buffer_base.hpp"
 #include "render_core/buffer_cache/buffer_cache.h"
-#include "render_core/surface.hpp"
 #include "render_core/texture/types.hpp"
-#include "render_core/pipeline_state.h"
 #include <vulkan/vulkan.hpp>
 export module render.vulkan.buffer_cache;
 import render.vulkan.common;
@@ -11,6 +9,7 @@ import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
 import render.vulkan.staging_buffer_pool;
 import render.vulkan.update_descriptor;
+import render.surface.format;
 
 
 export namespace render::vulkan {

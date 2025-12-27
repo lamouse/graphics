@@ -2,7 +2,6 @@ module;
 #include "common/class_traits.hpp"
 #include "common/slot_vector.hpp"
 
-#include "resource/texture/image.hpp"
 #include <vulkan/vulkan.hpp>
 #include <boost/container/static_vector.hpp>
 #include <unordered_map>
@@ -50,7 +49,7 @@ class VulkanGraphics : public render::Graphic {
         void clean(const CleanValue& cleanValue) override;
         void dispatchCompute(const IComputeInstance& instance) override;
         auto uploadModel(const IMeshData& instance) -> MeshId override;
-        auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
+        auto uploadTexture(const ITexture& texture) -> TextureId override;
         auto uploadTexture(ktxTexture* ktxTexture) -> TextureId override;
         void draw(const IMeshInstance& instance) override;
         auto getDrawImage() -> unsigned long long override;

@@ -1,9 +1,9 @@
 module;
 #include <span>
 #include <vulkan/vulkan.hpp>
-#include "common/common_types.hpp"
 export module render.vulkan.utils;
 import render.vulkan.common;
+import common;
 
 export namespace render::vulkan::present::utils {
 auto CreateWrappedDescriptorSetLayout(const Device& device,

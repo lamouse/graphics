@@ -1,12 +1,10 @@
 module;
 
 #include "common/settings_enums.hpp"
-#include "render_core/framebuffer_config.hpp"
 #include <list>
 #include <memory>
 #include <vulkan/vulkan.hpp>
 #include <functional>
-#include "core/frontend/framebuffer_layout.hpp"
 
 export module render.vulkan.blit_screen;
 
@@ -16,6 +14,8 @@ import render.vulkan.present_manager;
 import render.vulkan.present.layer;
 import render.vulkan.present.window_adapt_pass;
 import render.vulkan.scheduler;
+import core;
+import render;
 
 
 export  namespace render::vulkan {

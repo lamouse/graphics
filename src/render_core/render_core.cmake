@@ -94,6 +94,7 @@ set(MODULE_FILES
         shader_notify.cppm
         types.cppm
         texture.cppm
+        surface.cppm
 
         vulkan_common/debug_callback.cppm
         vulkan_common/vk_instance.cppm

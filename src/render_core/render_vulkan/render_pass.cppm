@@ -2,9 +2,9 @@ module;
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
 #include <mutex>
-#include "render_core/surface.hpp"
 export module render.vulkan.render_pass;
 import render.vulkan.common;
+import render.surface.format;
 export namespace render::vulkan {
 struct RenderPassKey {
         auto operator==(const RenderPassKey& rhs) const noexcept -> bool = default;

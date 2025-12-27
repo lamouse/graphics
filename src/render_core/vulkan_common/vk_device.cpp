@@ -5,7 +5,6 @@ module;
 #include <unordered_set>
 #include "common/literals.hpp"
 #include "vma.hpp"
-#include "render_core/surface.hpp"
 #include "vk_device_feature.hpp"
 #include "vulkan_common.hpp"
 #if defined(USE_TRACY)
@@ -15,6 +14,7 @@ module;
 module render.vulkan.common.driver;
 import render.vulkan.common.wrapper;
 import render.vulkan.common.device.utils;
+import render.surface.format;
 
 namespace render::vulkan {
 namespace {
@@ -163,7 +163,7 @@ struct FormatTuple {
     {.format = VK_FORMAT_D24_UNORM_S8_UINT, .usage = Attachable},   // S8_UINT_D24_UNORM (emulated)
     {.format = VK_FORMAT_D32_SFLOAT_S8_UINT, .usage = Attachable},  // D32_FLOAT_S8_UINT
 };
-static_assert(std::size(tex_format_tuples) == surface::MaxPixelFormat);
+static_assert(std::size(tex_format_tuples) == surface::MaxFormat);
 
 constexpr auto isZetaFormat(surface::PixelFormat pixel_format) -> bool {
     return pixel_format >= surface::PixelFormat::MaxColorFormat &&

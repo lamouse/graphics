@@ -4,7 +4,6 @@ module;
 #include <memory>
 #include <utility>
 #include "common/settings.hpp"
-#include "render_core/pipeline_state.h"
 #include "common/thread_worker.hpp"
 #include <xxhash.h>
 #include <vulkan/vulkan.hpp>

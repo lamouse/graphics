@@ -1,10 +1,11 @@
 module;
-#include "common/math_util.h"
 #include <vulkan/vulkan.hpp>
 export module render.vulkan.present.FSR;
 import common.types;
 import render.vulkan.common;
 import render.vulkan.scheduler;
+import core;
+import common;
 
 
 namespace render::vulkan {

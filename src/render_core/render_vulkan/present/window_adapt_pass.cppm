@@ -1,6 +1,5 @@
 module;
 
-#include "core/frontend/framebuffer_layout.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
 #include <list>
@@ -15,6 +14,7 @@ import render.vulkan.present.push_constants;
 import render.framebuffer_config;
 import render.vulkan.common;
 import render.vulkan.scheduler;
+import core;
 
 export namespace render::vulkan {
 

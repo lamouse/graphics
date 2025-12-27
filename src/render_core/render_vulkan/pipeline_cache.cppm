@@ -4,7 +4,6 @@ module;
 #include <memory>
 
 #include "pipeline_state.h"
-#include "common/common_types.hpp"
 #include "common/class_traits.hpp"
 #include "common/thread_worker.hpp"
 
@@ -19,6 +18,7 @@ import render.vulkan.update_descriptor;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
 import render;
+import common;
 export namespace render::vulkan {
 struct ComputePipelineCacheKey {
         u64 unique_hash;

@@ -8,7 +8,6 @@ module;
 #include "render_core/texture/types.hpp"
 #include "render_core/texture/image_view_base.hpp"
 #include "render_core/texture/render_targets.h"
-#include "render_core/texture.hpp"
 #include <vulkan/vulkan.hpp>
 #undef MemoryBarrier
 module render.vulkan.texture_cache;

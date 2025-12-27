@@ -5,7 +5,6 @@ module;
 
 #include "common/common_funcs.hpp"
 #include "common/thread_worker.hpp"
-#include "shader_tools/shader_info.h"
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
 export module render.vulkan.compute_pipeline;
 
@@ -15,6 +14,8 @@ import render.vulkan.scheduler;
 import render.vulkan.update_descriptor;
 import render.vulkan.buffer_cache;
 import render.shader_notify;
+import render;
+import shader;
 
 export namespace render::vulkan {
 

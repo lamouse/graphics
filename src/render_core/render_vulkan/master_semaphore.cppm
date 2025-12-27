@@ -3,11 +3,11 @@ module;
 #include <mutex>
 #include <condition_variable>
 #include <queue>
-#include "common/common_funcs.hpp"
-#include "shader_tools/shader_compile.hpp"
+#include "common/class_traits.hpp"
 #include <vulkan/vulkan.hpp>
 export module render.vulkan.master_semaphore;
 import render.vulkan.common;
+import shader;
 
 export namespace render::vulkan {
 namespace semaphore {

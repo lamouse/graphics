@@ -2,7 +2,6 @@ module;
 #include <cstdint>
 #include "render_core/host_shaders/vulkan_present_vert_spv.h"
 #include <vulkan/vulkan.hpp>
-#include "core/frontend/window.hpp"
 
 #include <list>
 #include <functional>
@@ -12,6 +11,7 @@ import render.vulkan.utils;
 import render.vulkan.present.push_constants;
 import common.types;
 import render.framebuffer_config;
+import core;
 namespace render::vulkan::present {
 
 namespace {}  // namespace

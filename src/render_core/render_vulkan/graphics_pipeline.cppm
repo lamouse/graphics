@@ -1,7 +1,6 @@
 module;
 #include <algorithm>
 #include "common/common_funcs.hpp"
-#include "common/common_types.hpp"
 #include "render_core/pipeline_state.h"
 #include <condition_variable>
 #include "common/thread_worker.hpp"
@@ -16,6 +15,7 @@ import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
 import render;
 import shader;
+import common;
 
 
 export namespace render::vulkan {

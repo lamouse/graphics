@@ -4,7 +4,6 @@ module;
 #include <tracy/Tracy.hpp>
 #include <span>
 #include <vulkan/vulkan.hpp>
-#include "vertex.hpp"
 #include <imgui.h>
 #include <spdlog/spdlog.h>
 
@@ -13,7 +12,6 @@ module;
 #include "render_core/texture_cache/texture_cache.h"
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "common/settings.hpp"
-#include "resource/texture/image.hpp"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
@@ -685,7 +683,7 @@ auto VulkanGraphics::uploadModel(const IMeshData& meshData) -> MeshId {
     return modelResource.insert(resource);
 }
 
-auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -> TextureId {
+auto VulkanGraphics::uploadTexture(const ITexture& texture) -> TextureId {
     return texture_cache.addTexture({.width = static_cast<u32>(texture.getWidth()),
                                      .height = static_cast<u32>(texture.getHeight())},
                                     texture.data(), texture.count());
