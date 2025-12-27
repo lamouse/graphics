@@ -54,7 +54,7 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
       device(createDevice(instance, *surface)),
       memory_allocator(device),
       scheduler(device),
-      swapchain(*surface, device, scheduler, window->getFramebufferLayout().width,
+      swapchain(*surface, device, window->getFramebufferLayout().width,
                 window->getFramebufferLayout().height),
       present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),

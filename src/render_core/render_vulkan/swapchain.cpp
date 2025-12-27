@@ -15,7 +15,6 @@ module;
 
 module render.vulkan.swapchain;
 import render.vulkan.common;
-import render.vulkan.scheduler;
 
 namespace render::vulkan {
 namespace {
@@ -101,9 +100,8 @@ auto chooseSwapExtent(const ::vk::SurfaceCapabilitiesKHR& capabilities, uint32_t
 
 }  // namespace
 
-Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, scheduler::Scheduler& scheduler,
-                     uint32_t width, uint32_t height)
-    : surface_(surface), scheduler_(scheduler), device_(device) {
+Swapchain::Swapchain(vk::SurfaceKHR surface, const Device& device, uint32_t width, uint32_t height)
+    : surface_(surface), device_(device) {
     create(surface, width, height);
 }
 

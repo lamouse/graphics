@@ -2,14 +2,12 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan.swapchain;
 import render.vulkan.common;
-import render.vulkan.scheduler;
 export namespace render::vulkan {
-
 
 class Swapchain {
     public:
-        explicit Swapchain(vk::SurfaceKHR surface, const Device& device,
-                           scheduler::Scheduler& scheduler, uint32_t width, uint32_t height);
+        explicit Swapchain(vk::SurfaceKHR surface, const Device& device, uint32_t width,
+                           uint32_t height);
         ~Swapchain() = default;
 
         /// Creates (or recreates) the swapchain with a given size.
@@ -62,7 +60,6 @@ class Swapchain {
     private:
         vk::SurfaceKHR surface_;
         const Device& device_;
-        scheduler::Scheduler& scheduler_;
         SwapchainKHR swapchain_;
 
         std::size_t image_count_{};
