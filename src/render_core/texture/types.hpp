@@ -1,6 +1,5 @@
 #pragma once
 #include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
 #include "common/slot_vector.hpp"
 namespace render::texture {
 
@@ -92,9 +91,9 @@ struct SubresourceRange {
 struct ImageCopy {
         SubresourceLayers src_subresource;
         SubresourceLayers dst_subresource;
-        Offset3D src_offset;
-        Offset3D dst_offset;
-        Extent3D extent;
+        Offset3D src_offset{};
+        Offset3D dst_offset{};
+        Extent3D extent{};
 };
 
 struct BufferImageCopy {
