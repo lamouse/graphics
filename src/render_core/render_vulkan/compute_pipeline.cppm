@@ -14,7 +14,7 @@ import render.vulkan.common;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
 import render.vulkan.update_descriptor;
-import :buffer_cache;
+import render.vulkan.buffer_cache;
 
 export namespace render::vulkan {
 

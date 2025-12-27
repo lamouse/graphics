@@ -5,7 +5,7 @@ module;
 #include "render_core/texture/types.hpp"
 #include "render_core/pipeline_state.h"
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:buffer_cache;
+export module render.vulkan.buffer_cache;
 import render.vulkan.common;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;

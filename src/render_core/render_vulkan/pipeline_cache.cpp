@@ -16,9 +16,10 @@ module render.vulkan;
 import render.vulkan.common;
 import render.vulkan.shader;
 import render.vulkan.scheduler;
-import :texture_cache;
+import render.vulkan.texture_cache;
+
 import :graphics_pipeline;
-import :buffer_cache;
+import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
 namespace render::vulkan {
 

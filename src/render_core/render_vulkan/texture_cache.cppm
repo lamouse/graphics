@@ -11,7 +11,7 @@ module;
 #include <vulkan/vulkan.hpp>
 
 #include "shader_tools/shader_info.h"
-export module render.vulkan:texture_cache;
+export module render.vulkan.texture_cache;
 import render.vulkan.common;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
@@ -21,9 +21,6 @@ import render.vulkan.update_descriptor;
 
 
 export namespace render::vulkan {
-
-
-class BlitImageHelper;
 
 class TextureImageView;
 class TextureFramebuffer;

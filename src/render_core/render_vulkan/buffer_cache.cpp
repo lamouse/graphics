@@ -15,7 +15,7 @@ module;
 #undef max
 #endif
 
-module render.vulkan;
+module render.vulkan.buffer_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 namespace render::vulkan {

@@ -8,8 +8,8 @@ module;
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:pipeline_helper;
-import :texture_cache;
 import render.vulkan.common;
+import render.vulkan.update_descriptor;
 namespace render::vulkan::pipeline {
 class DescriptorLayoutBuilder {
     public:

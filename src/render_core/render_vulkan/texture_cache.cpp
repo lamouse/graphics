@@ -11,7 +11,7 @@ module;
 #include "render_core/texture.hpp"
 #include <vulkan/vulkan.hpp>
 #undef MemoryBarrier
-module render.vulkan;
+module render.vulkan.texture_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 

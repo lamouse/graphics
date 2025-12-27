@@ -10,12 +10,12 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:graphics_pipeline;
 import render.vulkan.common;
-import :texture_cache;
+import render.vulkan.texture_cache;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
-import :buffer_cache;
-
+import render.vulkan.buffer_cache;
+import render.vulkan.update_descriptor;
 
 export namespace render::vulkan {
 struct GraphicsPipelineCacheKey {

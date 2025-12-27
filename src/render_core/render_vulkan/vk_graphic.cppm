@@ -12,6 +12,7 @@ import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
+import render.vulkan.staging_buffer_pool;
 import :pipeline_cache;
 
 
