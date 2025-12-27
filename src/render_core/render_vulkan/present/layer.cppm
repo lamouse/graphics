@@ -68,4 +68,5 @@ class Layer final {
         std::unique_ptr<FSR> fsr;
         std::vector<u64> resource_ticks;
 };
-}  // namespace render::vulkan
+
+}

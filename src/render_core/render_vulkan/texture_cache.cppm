@@ -200,6 +200,9 @@ class TextureFramebuffer {
 
         [[nodiscard]] auto IsRescaled() const noexcept -> bool { return is_rescaled; }
 
+        [[nodiscard]] auto getRenderingRequest()const  ->scheduler::RequestsRending;
+        [[nodiscard]] auto getRenderPassRequest()const  ->scheduler::RequestRenderPass;
+
     private:
         VulkanFramebuffer framebuffer;
         vk::RenderPass render_pass;

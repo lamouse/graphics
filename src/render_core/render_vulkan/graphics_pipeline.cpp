@@ -240,19 +240,12 @@ void GraphicsPipeline::Configure() {
 }
 
 void GraphicsPipeline::ConfigureDraw() {
-    auto* framebuffer = texture_cache.getFramebuffer();
-    auto render_area = framebuffer->RenderArea();
-    auto num_render_pass_images_ = framebuffer->NumImages();
-    const auto& render_pass_images_ = framebuffer->Images();
-    const auto& render_pass_image_ranges_ = framebuffer->ImageRanges();
+    const auto* framebuffer = texture_cache.getFramebuffer();
+
     if (use_dynamic_render) {
-        scheduler_.requestRendering(framebuffer->ImageViews(), framebuffer->DepthView(),
-                                    render_area, render_pass_images_, render_pass_image_ranges_,
-                                    num_render_pass_images_);
+        scheduler_.requestRender(framebuffer->getRenderingRequest());
     } else {
-        scheduler_.requestRender(framebuffer->RenderPass(), framebuffer->Handle(), render_area,
-                                 render_pass_images_, render_pass_image_ranges_,
-                                 num_render_pass_images_);
+        scheduler_.requestRender(framebuffer->getRenderPassRequest());
     }
 
     if (!is_built.load(std::memory_order::relaxed)) {

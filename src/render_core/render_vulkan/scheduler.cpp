@@ -275,105 +275,43 @@ void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphor
     wait(presubmit_tick);
 }
 
-// void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
-//     const vk::RenderPass render_pass = framebuffer->RenderPass();
-//     const vk::Framebuffer framebuffer_handle = framebuffer->Handle();
-//     const VkExtent2D render_area = framebuffer->RenderArea();
-//     if (render_pass == state_.render_pass_ && framebuffer_handle == state_.framebuffer_ &&
-//         render_area.width == state_.render_area_.width &&
-//         render_area.height == state_.render_area_.height) {
-//         return;
-//     }
-//     endRenderPass();
-//     state_.render_pass_ = render_pass;
-//     state_.framebuffer_ = framebuffer_handle;
-//     state_.render_area_ = render_area;
-//
-//     record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
-//         cmdbuf.beginRenderPass(
-//             vk::RenderPassBeginInfo()
-//                 .setRenderPass(render_pass)
-//                 .setFramebuffer(framebuffer_handle)
-//                 .setRenderArea(
-//                     vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area)),
-//             vk::SubpassContents::eInline);
-//     });
-//     num_render_pass_images_ = framebuffer->NumImages();
-//     render_pass_images_ = framebuffer->Images();
-//     render_pass_image_ranges_ = framebuffer->ImageRanges();
-// }
-//
-// void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
-//     if (dynamic_state.begin_rendering && framebuffer->DepthView() == dynamic_state.depth_view &&
-//         framebuffer->RenderArea() == dynamic_state.render_area_ &&
-//         dynamic_state.color_views == framebuffer->ImageViews()) {
-//         return;
-//     }
-//     endRendering();
-//     dynamic_state.color_views = framebuffer->ImageViews();
-//     dynamic_state.depth_view = framebuffer->DepthView();
-//     dynamic_state.render_area_ = framebuffer->RenderArea();
-//     dynamic_state.begin_rendering = true;
-//
-//     record([this](vk::CommandBuffer cmdbuf) {
-//         boost::container::small_vector<vk::RenderingAttachmentInfo, 8> colorAttachments;
-//         for (const auto& view : dynamic_state.color_views) {
-//             if (view) {
-//                 colorAttachments.push_back(
-//                     vk::RenderingAttachmentInfo()
-//                         .setImageView(view)
-//                         .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
-//                         .setLoadOp(vk::AttachmentLoadOp::eLoad)
-//                         .setStoreOp(vk::AttachmentStoreOp::eStore)
-//                         .setClearValue(vk::ClearValue().setColor({1.0f, 1.0f, 1.0f, 1.0f})));
-//             }
-//         }
-//
-//         vk::RenderingInfo renderingInfo =
-//             vk::RenderingInfo()
-//                 .setLayerCount(1)
-//                 .setRenderArea(vk::Rect2D().setExtent(dynamic_state.render_area_))
-//                 .setColorAttachments(colorAttachments);
-//         vk::RenderingAttachmentInfo depthAttachment;
-//         if (dynamic_state.depth_view) {
-//             depthAttachment = vk::RenderingAttachmentInfo()
-//                                   .setImageView(dynamic_state.depth_view)
-//                                   .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
-//                                   .setLoadOp(vk::AttachmentLoadOp::eLoad)
-//                                   .setStoreOp(vk::AttachmentStoreOp::eStore)
-//                                   .setClearValue(vk::ClearValue().setDepthStencil(
-//                                       vk::ClearDepthStencilValue().setDepth(1.f)));
-//             depthAttachment.sType = vk::StructureType::eRenderingAttachmentInfo;
-//             renderingInfo.setPDepthAttachment(&depthAttachment);
-//         }
-//         cmdbuf.beginRendering(&renderingInfo);
-//     });
-//     num_render_pass_images_ = framebuffer->NumImages();
-//     render_pass_images_ = framebuffer->Images();
-//     render_pass_image_ranges_ = framebuffer->ImageRanges();
-// }
+void Scheduler::requestRender(const RequestRenderPass& render) {
+    const vk::RenderPass render_pass = render.render_pass;
+    const vk::Framebuffer framebuffer_handle = render.framebuffer;
+    const vk::Extent2D render_area = render.render_area;
+    if (render_pass == state_.render_pass_ && framebuffer_handle == state_.framebuffer_ &&
+        render_area == state_.render_area_) {
+        return;
+    }
+    endRenderPass();
+    state_.render_pass_ = render_pass;
+    state_.framebuffer_ = framebuffer_handle;
+    state_.render_area_ = render_area;
 
-// void Scheduler::requestRender(const TextureFramebuffer* framebuffer) {
-//     if (use_dynamic_rendering) {
-//         requestRendering(framebuffer);
-//     } else {
-//         requestRenderPass(framebuffer);
-//     }
-// }
+    record([render_pass, framebuffer_handle, render_area](vk::CommandBuffer cmdbuf) {
+        cmdbuf.beginRenderPass(
+            vk::RenderPassBeginInfo()
+                .setRenderPass(render_pass)
+                .setFramebuffer(framebuffer_handle)
+                .setRenderArea(
+                    vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area)),
+            vk::SubpassContents::eInline);
+    });
+    num_render_pass_images_ = render.num_render_pass_images;
+    render_pass_images_ = render.render_pass_images;
+    render_pass_image_ranges_ = render.render_pass_image_ranges;
+}
 
-void Scheduler::requestRendering(
-    const std::array<vk::ImageView, 8>& color_views, vk::ImageView depth_view,
-    vk::Extent2D render_area_, const std::array<vk::Image, 9>& render_pass_images,
-    const std::array<vk::ImageSubresourceRange, 9>& render_pass_image_ranges,
-    uint32_t num_render_pass_images) {
-    if (dynamic_state.begin_rendering && depth_view == dynamic_state.depth_view &&
-        render_area_ == dynamic_state.render_area_ && dynamic_state.color_views == color_views) {
+void Scheduler::requestRender(const RequestsRending& render) {
+    if (dynamic_state.begin_rendering && render.depth_view == dynamic_state.depth_view &&
+        render.render_area == dynamic_state.render_area_ &&
+        dynamic_state.color_views == render.color_views) {
         return;
     }
     endRendering();
-    dynamic_state.color_views = color_views;
-    dynamic_state.depth_view = depth_view;
-    dynamic_state.render_area_ = render_area_;
+    dynamic_state.color_views = render.color_views;
+    dynamic_state.depth_view = render.depth_view;
+    dynamic_state.render_area_ = render.render_area;
     dynamic_state.begin_rendering = true;
 
     record([this](vk::CommandBuffer cmdbuf) {
@@ -409,37 +347,9 @@ void Scheduler::requestRendering(
         }
         cmdbuf.beginRendering(&renderingInfo);
     });
-    num_render_pass_images_ = num_render_pass_images;
-    render_pass_images_ = render_pass_images;
-    render_pass_image_ranges_ = render_pass_image_ranges;
-}
-
-void Scheduler::requestRender(
-    vk::RenderPass render_pass_, vk::Framebuffer framebuffer, vk::Extent2D render_area_,
-    const std::array<vk::Image, 9>& render_pass_images,
-    const std::array<vk::ImageSubresourceRange, 9>& render_pass_image_ranges,
-    uint32_t num_render_pass_images) {
-    if (render_pass_ == state_.render_pass_ && framebuffer == state_.framebuffer_ &&
-        render_area_ == state_.render_area_) {
-        return;
-    }
-    endRenderPass();
-    state_.render_pass_ = render_pass_;
-    state_.framebuffer_ = framebuffer;
-    state_.render_area_ = render_area_;
-
-    record([render_pass_, framebuffer, render_area_](vk::CommandBuffer cmdbuf) {
-        cmdbuf.beginRenderPass(
-            vk::RenderPassBeginInfo()
-                .setRenderPass(render_pass_)
-                .setFramebuffer(framebuffer)
-                .setRenderArea(
-                    vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area_)),
-            vk::SubpassContents::eInline);
-    });
-    num_render_pass_images_ = num_render_pass_images;
-    render_pass_images_ = render_pass_images;
-    render_pass_image_ranges_ = render_pass_image_ranges;
+    num_render_pass_images_ = render.num_render_pass_images;
+    render_pass_images_ = render.render_pass_images;
+    render_pass_image_ranges_ = render.render_pass_image_ranges;
 }
 
 void Scheduler::requestOutsideRenderOperationContext() {

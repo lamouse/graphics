@@ -49,6 +49,7 @@ auto buildVertexAttribute(const render::vulkan::Device& device,
 
 auto buildVertexBinding(std::span<render::VertexBinding> bindings)
     -> boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> {
+
     boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> vertex_bindings;
     for (auto binding : bindings) {
         vertex_bindings.push_back(vk::VertexInputBindingDescription2EXT()
@@ -91,7 +92,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
-      wfi_event(device.logical().createEvent()) {}
+      wfi_event(device.logical().createEvent()),use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;
 
@@ -111,14 +112,10 @@ void VulkanGraphics::clean(const CleanValue& cleanValue) {
     auto num_render_pass_images_ = framebuffer->NumImages();
     const auto& render_pass_images_ = framebuffer->Images();
     const auto& render_pass_image_ranges_ = framebuffer->ImageRanges();
-    if (settings::values.use_dynamic_rendering.GetValue()) {
-        scheduler.requestRendering(framebuffer->ImageViews(), framebuffer->DepthView(),
-                                    frame_render_area, render_pass_images_, render_pass_image_ranges_,
-                                    num_render_pass_images_);
+    if (use_dynamic_render) {
+        scheduler.requestRender(framebuffer->getRenderingRequest());
     } else {
-        scheduler.requestRender(framebuffer->RenderPass(), framebuffer->Handle(), frame_render_area,
-                                 render_pass_images_, render_pass_image_ranges_,
-                                 num_render_pass_images_);
+        scheduler.requestRender(framebuffer->getRenderPassRequest());
     }
 
     const vk::Extent2D render_area{cleanValue.width, cleanValue.hight};

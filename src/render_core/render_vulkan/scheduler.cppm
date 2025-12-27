@@ -16,6 +16,25 @@ import render.vulkan.master_semaphore;
 import render.vulkan.command_pool;
 
 export namespace render::vulkan::scheduler {
+
+struct RequestRenderPass {
+        vk::RenderPass render_pass;
+        vk::Framebuffer framebuffer;
+        vk::Extent2D render_area = {0, 0};
+        uint32_t num_render_pass_images = 0;
+        std::array<vk::Image, 9> render_pass_images{};
+        std::array<vk::ImageSubresourceRange, 9> render_pass_image_ranges{};
+};
+
+struct RequestsRending {
+        std::array<vk::ImageView, 8> color_views;
+        vk::ImageView depth_view;
+        vk::Extent2D render_area = {0, 0};
+        uint32_t num_render_pass_images = 0;
+        std::array<vk::Image, 9> render_pass_images{};
+        std::array<vk::ImageSubresourceRange, 9> render_pass_image_ranges{};
+};
+
 class Scheduler {
     public:
         explicit Scheduler(const Device& device);
@@ -74,16 +93,9 @@ class Scheduler {
         // Update the pipeline to the current execution context.
         auto updateGraphicsPipeline(vk::Pipeline pipeline) -> bool;
 
-        // void requestRender(const TextureFramebuffer* framebuffer);
-        void requestRender(vk::RenderPass render_pass_, vk::Framebuffer framebuffer, vk::Extent2D render_area_,
-            const std::array<vk::Image, 9>& render_pass_images, const std::array<vk::ImageSubresourceRange, 9>&
-            render_pass_image_ranges, uint32_t num_render_pass_images);
+        void requestRender(const RequestRenderPass& render);
+        void requestRender(const RequestsRending& render);
 
-        void requestRendering(const std::array<vk::ImageView, 8>& color_views,
-            vk::ImageView depth_view, vk::Extent2D render_area_,
-            const std::array<vk::Image, 9>& render_pass_images,
-            const std::array<vk::ImageSubresourceRange, 9>& render_pass_image_ranges,
-            uint32_t num_render_pass_images);
         void requestOutsideRenderOperationContext();
 
     private:
@@ -168,19 +180,19 @@ class Scheduler {
         };
 
         struct State {
-            vk::RenderPass render_pass_;
-            vk::Framebuffer framebuffer_;
-            vk::Extent2D render_area_ = {0, 0};
-            vk::Pipeline pipeline_{VK_NULL_HANDLE};
+                vk::RenderPass render_pass_;
+                vk::Framebuffer framebuffer_;
+                vk::Extent2D render_area_ = {0, 0};
+                vk::Pipeline pipeline_{VK_NULL_HANDLE};
         };
 
         struct DynamicState {
-            std::array<vk::ImageView, 8> color_views;
-            vk::ImageView depth_view;
-            vk::Extent2D render_area_ = {0, 0};
-            vk::Pipeline pipeline_{VK_NULL_HANDLE};
-            bool begin_rendering{false};
-            auto operator<=>(const DynamicState&) const = default;
+                std::array<vk::ImageView, 8> color_views;
+                vk::ImageView depth_view;
+                vk::Extent2D render_area_ = {0, 0};
+                vk::Pipeline pipeline_{VK_NULL_HANDLE};
+                bool begin_rendering{false};
+                auto operator<=>(const DynamicState&) const = default;
         };
 
         const Device& device_;
@@ -229,4 +241,4 @@ class Scheduler {
         std::jthread worker_thread_;
         bool use_dynamic_rendering;
 };
-}
+}  // namespace render::vulkan::scheduler
