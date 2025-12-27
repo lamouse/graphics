@@ -1,8 +1,8 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "common/common_types.hpp"
 export module render.vulkan.present.present_frame;
 import render.vulkan.common;
+import common.types;
 
 export namespace render::vulkan{
 struct Frame {

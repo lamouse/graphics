@@ -9,6 +9,7 @@ import render.vulkan.common;
 import render.vulkan.utils;
 import render.vulkan.present.FSR;
 import render.vulkan.present.AntiAliasPass;
+import render.framebuffer_config;
 
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,

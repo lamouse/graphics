@@ -82,8 +82,14 @@ set(sources
 )
 
 set(MODULE_FILES
-
+        compute_instance.cppm
+        render_base.cppm
         render_core.cppm
+        framebuffer_config.cppm
+        shader_cache.cppm
+        graphic.cppm
+        shader_notify.cppm
+        types.cppm
 
         vulkan_common/debug_callback.cppm
         vulkan_common/vk_instance.cppm

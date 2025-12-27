@@ -2,7 +2,6 @@ module;
 #include "common/assert.hpp"
 #include "common/settings.hpp"
 #include "common/thread_worker.hpp"
-#include "shader_notify.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
 #include "render_core/pipeline_state.h"
@@ -22,6 +21,7 @@ module render.vulkan.graphics_pipeline;
 import render.vulkan.common;
 import render.vulkan.pipeline_helper;
 import render.vulkan.format_utils;
+import render.shader_notify;
 
 constexpr size_t MAX_IMAGE_ELEMENTS = 64;
 constexpr size_t NUM_RENDER_TARGETS = 8;

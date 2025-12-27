@@ -1,8 +1,7 @@
 module;
-#include "common/math_util.h"
 #include "common/class_traits.hpp"
+
 #include "core/frontend/framebuffer_layout.hpp"
-#include "framebuffer_config.hpp"
 #include <memory>
 #include <vulkan/vulkan.hpp>
 #include <functional>
@@ -14,7 +13,7 @@ import render.vulkan.present.present_frame;
 import render.vulkan.present.FSR;
 import render.vulkan.present.AntiAliasPass;
 import render.vulkan.present.push_constants;
-
+import render.framebuffer_config;
 
 export namespace render::vulkan {
 

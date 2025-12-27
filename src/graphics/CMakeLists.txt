@@ -86,9 +86,6 @@ if(LINUX)
     )
 endif()
 
-# 添加生成的代码目录
-include_directories(${CMAKE_BINARY_DIR}/generated)
-
 if(MSVC)
     set_target_properties(${PROGRAM_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 elseif(MINGW)

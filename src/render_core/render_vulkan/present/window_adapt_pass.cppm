@@ -1,6 +1,5 @@
 module;
 
-#include "render_core/framebuffer_config.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
@@ -13,6 +12,7 @@ export module render.vulkan.present.window_adapt_pass;
 import render.vulkan.present.layer;
 import render.vulkan.present.present_frame;
 import render.vulkan.present.push_constants;
+import render.framebuffer_config;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 

@@ -8,7 +8,7 @@ module;
 #include "render_core/render_base.hpp"
 #include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
-module render;
+module render.impl.vulkan;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
 

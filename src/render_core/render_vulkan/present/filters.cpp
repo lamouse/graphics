@@ -1,9 +1,8 @@
 module;
-#include "common/common_types.hpp"
+#include <cstdint>
 #include "render_core/host_shaders/vulkan_present_frag_spv.h"
 #include "render_core/host_shaders/present_bicubic_frag_spv.h"
 #include "render_core/host_shaders/present_gaussian_frag_spv.h"
-#include "render_core/host_shaders/vulkan_present_frag_spv.h"
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp32_frag_spv.h"
 #include <vulkan/vulkan.hpp>
@@ -13,6 +12,7 @@ import render.vulkan.common;
 import render.vulkan.shader;
 import render.vulkan.utils;
 import render.vulkan.present.window_adapt_pass;
+import common.types;
 namespace render::vulkan {
 auto SelectScaleForceShader(const Device& device) -> ShaderModule {
     if (device.isFloat16Supported()) {

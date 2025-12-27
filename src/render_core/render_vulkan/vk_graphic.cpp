@@ -9,15 +9,15 @@ module;
 #include <spdlog/spdlog.h>
 
 #include "imgui_impl_vulkan.h"
-#include "render_core/shader_notify.hpp"
 #include "common/assert.hpp"
-#include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
 #include "render_core/texture_cache/texture_cache.h"
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "shader_tools/shader_info.h"
-#include "render_core/framebuffer_config.hpp"
 #include "common/settings.hpp"
+#include "resource/obj/mesh.hpp"
+#include "resource/texture/image.hpp"
+#include "resource/instance.hpp"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
@@ -28,6 +28,11 @@ import render.vulkan.present.present_frame;
 import render.vulkan.scheduler;
 import render.vulkan.pipeline_cache;
 import render.vulkan.graphics_pipeline;
+import render.shader_cache;
+import render.shader_notify;
+import render.framebuffer_config;
+import render.graphic;
+import render;
 using IsInstance = bool;
 
 namespace {

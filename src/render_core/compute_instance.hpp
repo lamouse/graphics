@@ -1,7 +1,7 @@
 #pragma once
 #include <span>
 #include "render_core/types.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 namespace render {
 class IComputeInstance {
     public:

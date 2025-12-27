@@ -1,8 +1,8 @@
 module;
 #include <span>
 #include <vulkan/vulkan.hpp>
-#include "common/common_types.hpp"
 module render.vulkan.utils;
+import common.types;
 namespace render::vulkan::present::utils {
 namespace {
 constexpr auto PIPELINE_COLOR_WRITE_MASK =

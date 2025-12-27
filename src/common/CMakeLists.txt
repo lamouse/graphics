@@ -1,10 +1,11 @@
 set(LIB_COMMON_NAME common)
 include(${CMAKE_CURRENT_SOURCE_DIR}/common.cmake)
-add_library(${LIB_COMMON_NAME} STATIC ${sources})
+add_library(${LIB_COMMON_NAME} STATIC)
 
 target_sources(${LIB_COMMON_NAME} PUBLIC
         FILE_SET CXX_MODULES
-        FILES ${MODULE_FILES} # 这里传入 setting.cppm
+        FILES ${MODULE_FILES}
+        PRIVATE ${sources}
 )
 
 if(MSVC)

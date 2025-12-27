@@ -2,7 +2,8 @@
 set(LIB_CORE_NAME core)
 
 set(MODULE_FILES
-        core.cppm # 模块接口文件
+        core.cppm
+        frontend/framebuffer_layout.cppm
 )
 
 set (sources
@@ -17,11 +18,12 @@ set (sources
     frame_info.hpp
 )
 
-add_library(${LIB_CORE_NAME} STATIC ${sources})
+add_library(${LIB_CORE_NAME} STATIC)
 
 target_sources(${LIB_CORE_NAME} PUBLIC
         FILE_SET CXX_MODULES
-        FILES ${MODULE_FILES} # 这里传入 setting.cppm
+        FILES ${MODULE_FILES}
+        PRIVATE ${sources}
 )
 if (MSVC)
     target_compile_options(${LIB_CORE_NAME} PRIVATE
@@ -41,7 +43,8 @@ else()
     )
 endif()
 
-target_link_libraries(${LIB_CORE_NAME} PUBLIC spdlog::spdlog glm::glm resource render-core)
+target_link_libraries(${LIB_CORE_NAME} PUBLIC spdlog::spdlog glm::glm )
+target_link_libraries(${LIB_CORE_NAME} PRIVATE render-core resource)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(${LIB_CORE_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)

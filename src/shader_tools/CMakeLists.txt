@@ -4,12 +4,20 @@ set(sources
     shader_enums.hpp
     shader_info.h
     stage.h
-    varying_state.hpp
+)
+
+set(MODULE_FILES
+    shader.cppm
 )
 
 set(LIB_NAME shader)
 
 add_library(${LIB_NAME} STATIC ${sources})
+
+target_sources(${LIB_NAME} PUBLIC
+        FILE_SET CXX_MODULES
+        FILES ${MODULE_FILES}
+)
 
 # add_library(core STATIC ${CORE_SRC})
 if(MSVC)

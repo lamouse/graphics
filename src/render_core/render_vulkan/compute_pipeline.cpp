@@ -1,7 +1,6 @@
 module;
 #include "common/assert.hpp"
 #include <boost/container/small_vector.hpp>
-#include "render_core/shader_notify.hpp"
 #include "common/thread_worker.hpp"
 #include "shader_tools/shader_info.h"
 #include <vulkan/vulkan.hpp>
@@ -10,6 +9,7 @@ module render.vulkan.compute_pipeline;
 import render.vulkan.common;
 import render.vulkan.update_descriptor;
 import render.vulkan.pipeline_helper;
+import render.shader_notify;
 
 namespace render::vulkan {
 
