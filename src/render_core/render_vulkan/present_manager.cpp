@@ -8,7 +8,7 @@ module;
 #if defined min
 #undef min
 #endif
-module render.vulkan;
+module render.vulkan.present_manager;
 import render.vulkan.common;
 import render.vulkan.utils;
 import render.vulkan.scheduler;

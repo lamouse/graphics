@@ -20,7 +20,7 @@ constexpr vk::DeviceSize MAX_STREAM_BUFFER_SIZE = 128_MiB;
 auto GetStreamBufferSize(const Device& device) -> size_t {
     vk::DeviceSize size{0};
     if (device.hasDebuggingToolAttached()) {
-        ForEachDeviceLocalHostVisibleHeap(device, [&size](size_t index, vk::MemoryHeap& heap) {
+        ForEachDeviceLocalHostVisibleHeap(device, [&size]([[maybe_unused]]size_t index, vk::MemoryHeap& heap) {
             size = std::max(size, heap.size);
         });
         // rebar Resizable Base Address Register

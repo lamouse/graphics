@@ -11,7 +11,7 @@ export module render.vulkan:blit_screen;
 
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
-import :present_manager;
+import render.vulkan.present_manager;
 import render.vulkan.present.layer;
 import render.vulkan.present.window_adapt_pass;
 import render.vulkan.scheduler;

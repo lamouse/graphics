@@ -9,7 +9,7 @@ module;
 #include "core/frontend/window.hpp"
 #include <spdlog/spdlog.h>
 
-export module render.vulkan:present_manager;
+export module render.vulkan.present_manager;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import render.vulkan.scheduler;

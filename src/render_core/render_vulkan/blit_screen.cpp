@@ -8,7 +8,7 @@ module;
 module render.vulkan;
 import render.vulkan.present.present_frame;
 import render.vulkan.common;
-import :present_manager;
+import render.vulkan.present_manager;
 import render.vulkan.scheduler;
 import render.vulkan.present.filters;
 namespace render::vulkan {
