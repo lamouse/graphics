@@ -5,9 +5,10 @@ module;
 #include <list>
 #include <memory>
 #include <vulkan/vulkan.hpp>
+#include <functional>
 #include "core/frontend/framebuffer_layout.hpp"
 
-export module render.vulkan:blit_screen;
+export module render.vulkan.blit_screen;
 
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
@@ -15,7 +16,6 @@ import render.vulkan.present_manager;
 import render.vulkan.present.layer;
 import render.vulkan.present.window_adapt_pass;
 import render.vulkan.scheduler;
-import :graphic;
 
 
 export  namespace render::vulkan {
@@ -25,7 +25,8 @@ class BlitScreen {
                             PresentManager& present_manager, scheduler::Scheduler& scheduler);
         ~BlitScreen();
 
-        void DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
+        void DrawToFrame(const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
+                               uint32_t stride)>& accelerateDisplay, Frame* frame,
                          const layout::FrameBufferLayout& layout,
                          std::span<const frame::FramebufferConfig> framebuffers,
                          size_t current_swapchain_image_count,

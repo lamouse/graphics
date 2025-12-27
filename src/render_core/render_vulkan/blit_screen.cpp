@@ -4,8 +4,9 @@ module;
 #include "core/frontend/framebuffer_layout.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include <vulkan/vulkan.hpp>
+#include <functional>
 
-module render.vulkan;
+module render.vulkan.blit_screen;
 import render.vulkan.present.present_frame;
 import render.vulkan.common;
 import render.vulkan.present_manager;
@@ -53,7 +54,8 @@ void BlitScreen::SetWindowAdaptPass() {
     }
 }
 
-void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
+void BlitScreen::DrawToFrame(const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
+                               uint32_t stride)>& accelerateDisplay, Frame* frame,
                              const layout::FrameBufferLayout& layout,
                              std::span<const frame::FramebufferConfig> framebuffers,
                              size_t current_swapchain_image_count,
@@ -107,9 +109,6 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
         layers.emplace_back(device, memory_allocator, scheduler, image_count, window_size,
                             window_adapt->getDescriptorSetLayout());
     }
-    auto accelerateDisplay = [&](const render::frame::FramebufferConfig & framebuffer, unsigned int stride){
-            return rasterizer.AccelerateDisplay(framebuffer,stride);
-        };
     // Perform the draw
     window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout, frame);
 
