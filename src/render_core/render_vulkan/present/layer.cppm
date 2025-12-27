@@ -5,15 +5,16 @@ module;
 #include "framebuffer_config.hpp"
 #include <memory>
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:layer;
+#include <functional>
+export module render.vulkan.present.layer;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 import render.vulkan.present.present_frame;
 
-import :FSR;
-import :AntiAliasPass;
-import :push_constants;
-import :graphic;
+import render.vulkan.present.FSR;
+import render.vulkan.present.AntiAliasPass;
+import render.vulkan.present.push_constants;
+
 
 export namespace render::vulkan {
 
@@ -25,7 +26,9 @@ class Layer final {
         ~Layer();
 
         void ConfigureDraw(PresentPushConstants* out_push_constants,
-                           vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
+                           vk::DescriptorSet* out_descriptor_set,
+                           const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
+                               uint32_t stride)>& accelerateDisplay,
                            vk::Sampler sampler, size_t image_index,
                            const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);

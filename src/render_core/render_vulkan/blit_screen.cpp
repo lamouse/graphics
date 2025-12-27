@@ -10,7 +10,7 @@ import render.vulkan.present.present_frame;
 import render.vulkan.common;
 import :present_manager;
 import render.vulkan.scheduler;
-import :filters;
+import render.vulkan.present.filters;
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,
                        PresentManager& present_manager_, scheduler::Scheduler& scheduler_)
@@ -107,9 +107,11 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
         layers.emplace_back(device, memory_allocator, scheduler, image_count, window_size,
                             window_adapt->getDescriptorSetLayout());
     }
-
+    auto accelerateDisplay = [&](const render::frame::FramebufferConfig & framebuffer, unsigned int stride){
+            return rasterizer.AccelerateDisplay(framebuffer,stride);
+        };
     // Perform the draw
-    window_adapt->Draw(rasterizer, scheduler, image_index, layers, framebuffers, layout, frame);
+    window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout, frame);
 
     // Advance to next image
     if (++image_index >= image_count) {

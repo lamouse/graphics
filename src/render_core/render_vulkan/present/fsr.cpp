@@ -8,7 +8,7 @@ module;
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp32_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_vert_spv.h"
 #include <vulkan/vulkan.hpp>
-module render.vulkan;
+module render.vulkan.present.FSR;
 import render.vulkan.common;
 import render.vulkan.shader;
 import render.vulkan.utils;

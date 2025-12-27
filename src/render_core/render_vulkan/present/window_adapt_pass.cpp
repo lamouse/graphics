@@ -7,9 +7,11 @@ module;
 #include "common/common_types.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include <list>
-module render.vulkan;
+#include <functional>
+module render.vulkan.present.window_adapt_pass;
 import render.vulkan.shader;
 import render.vulkan.utils;
+import render.vulkan.present.push_constants;
 namespace render::vulkan::present {
 
 namespace {}  // namespace
@@ -60,7 +62,8 @@ void WindowAdaptPass::CreatePipelines(vk::Format format) {
         device, format, pipeline_layout, std::tie(vertex_shader, fragment_shader));
 }
 
-void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler,
+void WindowAdaptPass::Draw(const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
+                               uint32_t stride)>& accelerateDisplay, scheduler::Scheduler& scheduler,
                            size_t image_index, std::list<Layer>& layers,
                            std::span<const frame::FramebufferConfig> configs,
                            const layout::FrameBufferLayout& layout, Frame* dst) {
@@ -91,7 +94,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 break;
         }
 
-        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,
+        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], accelerateDisplay, *sampler,
                                 image_index, configs[i], layout);
         layer_it++;
     }

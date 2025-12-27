@@ -2,13 +2,13 @@ module;
 #include "common/math_util.h"
 #include "common/common_types.hpp"
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:FSR;
+export module render.vulkan.present.FSR;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 
 namespace render::vulkan {
 
-class FSR {
+export class FSR {
     public:
         explicit FSR(const Device& device, MemoryAllocator& memory_allocator, size_t image_count,
                      vk::Extent2D extent);

@@ -5,13 +5,16 @@ module;
 #include <vulkan/vulkan.hpp>
 #include <span>
 #include <list>
+#include <functional>
 
 
-export module render.vulkan:window_adapt_pass;
+export module render.vulkan.present.window_adapt_pass;
 
-import :layer;
+import render.vulkan.present.layer;
 import render.vulkan.present.present_frame;
+import render.vulkan.present.push_constants;
 import render.vulkan.common;
+import render.vulkan.scheduler;
 
 export namespace render::vulkan {
 
@@ -23,7 +26,8 @@ class WindowAdaptPass final {
         ~WindowAdaptPass();
 
         auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
-        void Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
+        void Draw(const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
+                               uint32_t stride)>& accelerateDisplay, scheduler::Scheduler& scheduler, size_t image_index,
                   std::list<Layer>& layers, std::span<const frame::FramebufferConfig> configs,
                   const layout::FrameBufferLayout& layout, Frame* dst);
 

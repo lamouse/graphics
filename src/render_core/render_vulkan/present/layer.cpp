@@ -4,11 +4,11 @@ module;
 #include "core/frontend/framebuffer_layout.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include <vulkan/vulkan.hpp>
-module render.vulkan;
+module render.vulkan.present.layer;
 import render.vulkan.common;
 import render.vulkan.utils;
-import :FSR;
-import :AntiAliasPass;
+import render.vulkan.present.FSR;
+import render.vulkan.present.AntiAliasPass;
 
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
@@ -141,11 +141,13 @@ void Layer::UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, s
 }
 
 void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
-                          vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
+                          vk::DescriptorSet* out_descriptor_set,
+                          const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
+                               uint32_t stride)>& accelerateDisplay,
                           vk::Sampler sampler, size_t image_index,
                           const frame::FramebufferConfig& framebuffer,
                           const layout::FrameBufferLayout& layout) {
-    const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
+    const auto texture_info = accelerateDisplay(framebuffer, framebuffer.stride);
 
     const u32 texture_width = texture_info ? texture_info->width : framebuffer.width;
     const u32 texture_height = texture_info ? texture_info->height : framebuffer.height;

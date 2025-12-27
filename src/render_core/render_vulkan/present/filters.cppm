@@ -1,9 +1,9 @@
 module;
 #include <memory>
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:filters;
+export module render.vulkan.present.filters;
 import render.vulkan.common;
-import :window_adapt_pass;
+import render.vulkan.present.window_adapt_pass;
 export  namespace render::vulkan {
 
 auto MakeNearestNeighbor(const Device& device, vk::Format frame_format)

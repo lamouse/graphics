@@ -1,7 +1,7 @@
 module;
 #include "common/common_types.hpp"
 
-export module render.vulkan:push_constants;
+export module render.vulkan.present.push_constants;
 
 export namespace render::vulkan {
 

@@ -8,11 +8,11 @@ module;
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp32_frag_spv.h"
 #include <vulkan/vulkan.hpp>
 
-module render.vulkan;
+module render.vulkan.present.filters;
 import render.vulkan.common;
 import render.vulkan.shader;
 import render.vulkan.utils;
-import :window_adapt_pass;
+import render.vulkan.present.window_adapt_pass;
 namespace render::vulkan {
 auto SelectScaleForceShader(const Device& device) -> ShaderModule {
     if (device.isFloat16Supported()) {
