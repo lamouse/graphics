@@ -3,7 +3,7 @@ module;
 #include <functional>
 #include <atomic>
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:ImGui;
+export module render.vulkan.ImGui;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 import render.vulkan.present.present_frame;

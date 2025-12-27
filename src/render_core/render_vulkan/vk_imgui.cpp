@@ -9,7 +9,7 @@ module;
 #include <vulkan/vulkan.hpp>
 
 #include <vulkan/vk_enum_string_helper.h>
-module render.vulkan;
+module render.vulkan.ImGui;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import render.vulkan.present_manager;
