@@ -708,4 +708,19 @@ void TextureFramebuffer::CreateFramebuffer(
                                                                   .setLayers(num_layers));
 }
 
+[[nodiscard]] auto TextureFramebuffer::getRenderingRequest() const -> scheduler::RequestsRending {
+    return scheduler::RequestsRending {
+        .color_views = ImageViews(), .depth_view = DepthView(), .render_area = RenderArea(),
+        .num_render_pass_images = NumImages(), .render_pass_images = Images(),
+        .render_pass_image_ranges = ImageRanges()
+    };
+}
+[[nodiscard]] auto TextureFramebuffer::getRenderPassRequest() const  ->scheduler::RequestRenderPass{
+    return scheduler::RequestRenderPass {
+        .render_pass = RenderPass(), .framebuffer = Handle(), .render_area = RenderArea(),
+        .num_render_pass_images = NumImages(), .render_pass_images = Images(),
+        .render_pass_image_ranges = ImageRanges()
+    };
+}
+
 }  // namespace render::vulkan

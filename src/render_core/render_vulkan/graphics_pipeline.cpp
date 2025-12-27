@@ -235,7 +235,11 @@ void GraphicsPipeline::Configure() {
 }
 
 void GraphicsPipeline::ConfigureDraw() {
-    scheduler_.requestRender(texture_cache.getFramebuffer());
+    if (use_dynamic_render) {
+        scheduler_.requestRender(texture_cache.getFramebuffer()->getRenderingRequest());
+    } else {
+        scheduler_.requestRender(texture_cache.getFramebuffer()->getRenderPassRequest());
+    }
 
     if (!is_built.load(std::memory_order::relaxed)) {
         // Wait for the pipeline to be built
@@ -244,7 +248,7 @@ void GraphicsPipeline::ConfigureDraw() {
             build_condvar.wait(lock, [this] { return is_built.load(std::memory_order::relaxed); });
         });
     }
-    const bool bind_pipeline{scheduler_.updateGraphicsPipeline(this)};
+    const bool bind_pipeline{scheduler_.updateGraphicsPipeline(*pipeline)};
     const void* const descriptor_data{guest_descriptor_queue_.UpdateData()};
     const auto push = buffer_cache.GetPushConstants();
     scheduler_.record([this, push, descriptor_data, bind_pipeline](vk::CommandBuffer cmdbuf) {

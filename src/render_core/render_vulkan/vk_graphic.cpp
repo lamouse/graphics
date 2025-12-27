@@ -3,8 +3,8 @@
 #include "render_core/render_vulkan/format_to_vk.hpp"
 #include "render_core/render_vulkan/compute_pipeline.hpp"
 #include <imgui_impl_vulkan.h>
-#include <algorithm>
 #include <tracy/Tracy.hpp>
+#include "common/settings.hpp"
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif
@@ -71,7 +71,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
-      wfi_event(device.logical().createEvent()) {}
+      wfi_event(device.logical().createEvent()),use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;
 
@@ -87,7 +87,11 @@ void VulkanGraphics::clean(const CleanValue& cleanValue) {
         !framebuffer->HasAspectStencilBit()) {
         return;
     }
-    scheduler.requestRender(framebuffer);
+    if (use_dynamic_render) {
+        scheduler.requestRender(framebuffer->getRenderingRequest());
+    } else {
+        scheduler.requestRender(framebuffer->getRenderPassRequest());
+    }
 
     const vk::Extent2D render_area{cleanValue.width, cleanValue.hight};
     const vk::ClearRect clear_rect =

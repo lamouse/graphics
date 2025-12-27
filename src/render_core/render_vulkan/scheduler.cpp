@@ -147,7 +147,7 @@ void Scheduler::endPendingOperations() {
         endRenderPass();
     }
 }
-auto Scheduler::updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool {
+auto Scheduler::updateGraphicsPipeline(vk::Pipeline pipeline) -> bool {
     if (state_.graphics_pipeline_ == pipeline) {
         return false;
     }
@@ -225,7 +225,7 @@ void Scheduler::endRenderPass() {
     num_render_pass_images_ = 0;
 }
 
-void Scheduler::invalidateState() { state_.graphics_pipeline_ = nullptr; }
+void Scheduler::invalidateState() { state_.graphics_pipeline_ = VK_NULL_HANDLE; }
 
 /**
  * @brief 提交一个执行任务到调度器。
@@ -277,13 +277,12 @@ void Scheduler::finish(vk::Semaphore signal_semaphore, VkSemaphore wait_semaphor
     wait(presubmit_tick);
 }
 
-void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
-    const vk::RenderPass render_pass = framebuffer->RenderPass();
-    const vk::Framebuffer framebuffer_handle = framebuffer->Handle();
-    const VkExtent2D render_area = framebuffer->RenderArea();
+void Scheduler::requestRender(const RequestRenderPass& render) {
+    const vk::RenderPass render_pass = render.render_pass;
+    const vk::Framebuffer framebuffer_handle = render.framebuffer;
+    const vk::Extent2D render_area = render.render_area;
     if (render_pass == state_.render_pass_ && framebuffer_handle == state_.framebuffer_ &&
-        render_area.width == state_.render_area_.width &&
-        render_area.height == state_.render_area_.height) {
+        render_area == state_.render_area_) {
         return;
     }
     endRenderPass();
@@ -300,21 +299,21 @@ void Scheduler::requestRenderPass(const TextureFramebuffer* framebuffer) {
                     vk::Rect2D().setOffset(vk::Offset2D().setX(0).setY(0)).setExtent(render_area)),
             vk::SubpassContents::eInline);
     });
-    num_render_pass_images_ = framebuffer->NumImages();
-    render_pass_images_ = framebuffer->Images();
-    render_pass_image_ranges_ = framebuffer->ImageRanges();
+    num_render_pass_images_ = render.num_render_pass_images;
+    render_pass_images_ = render.render_pass_images;
+    render_pass_image_ranges_ = render.render_pass_image_ranges;
 }
 
-void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
-    if (dynamic_state.begin_rendering && framebuffer->DepthView() == dynamic_state.depth_view &&
-        framebuffer->RenderArea() == dynamic_state.render_area_ &&
-        dynamic_state.color_views == framebuffer->ImageViews()) {
+void Scheduler::requestRender(const RequestsRending& render) {
+    if (dynamic_state.begin_rendering && render.depth_view == dynamic_state.depth_view &&
+        render.render_area == dynamic_state.render_area_ &&
+        dynamic_state.color_views == render.color_views) {
         return;
     }
     endRendering();
-    dynamic_state.color_views = framebuffer->ImageViews();
-    dynamic_state.depth_view = framebuffer->DepthView();
-    dynamic_state.render_area_ = framebuffer->RenderArea();
+    dynamic_state.color_views = render.color_views;
+    dynamic_state.depth_view = render.depth_view;
+    dynamic_state.render_area_ = render.render_area;
     dynamic_state.begin_rendering = true;
 
     record([this](vk::CommandBuffer cmdbuf) {
@@ -350,18 +349,11 @@ void Scheduler::requestRendering(const TextureFramebuffer* framebuffer) {
         }
         cmdbuf.beginRendering(&renderingInfo);
     });
-    num_render_pass_images_ = framebuffer->NumImages();
-    render_pass_images_ = framebuffer->Images();
-    render_pass_image_ranges_ = framebuffer->ImageRanges();
+    num_render_pass_images_ = render.num_render_pass_images;
+    render_pass_images_ = render.render_pass_images;
+    render_pass_image_ranges_ = render.render_pass_image_ranges;
 }
 
-void Scheduler::requestRender(const TextureFramebuffer* framebuffer) {
-    if (use_dynamic_rendering) {
-        requestRendering(framebuffer);
-    } else {
-        requestRenderPass(framebuffer);
-    }
-}
 
 void Scheduler::requestOutsideRenderOperationContext() {
     if (use_dynamic_rendering) {

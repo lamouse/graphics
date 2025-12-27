@@ -3,7 +3,7 @@
 #include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/texture/image_info.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/render_vulkan/render_pass.hpp"
@@ -11,6 +11,7 @@
 #include "render_core/texture/image_view_base.hpp"
 #include "render_core/texture/render_targets.h"
 #include "render_core/texture.hpp"
+#include "render_core/render_vulkan/scheduler.hpp"
 #include "render_core/texture_cache/texture_cache.h"
 namespace render::vulkan {
 class BlitImageHelper;
@@ -20,9 +21,7 @@ struct StagingBufferRef;
 class TextureImageView;
 class TextureFramebuffer;
 class TextureImage;
-namespace scheduler {
-class Scheduler;
-}
+
 
 class TextureCacheRuntime {
     public:
@@ -197,6 +196,8 @@ class TextureFramebuffer {
         [[nodiscard]] auto HasAspectStencilBit() const noexcept -> bool { return has_stencil; }
 
         [[nodiscard]] auto IsRescaled() const noexcept -> bool { return is_rescaled; }
+        [[nodiscard]] auto getRenderingRequest()const  ->scheduler::RequestsRending;
+        [[nodiscard]] auto getRenderPassRequest()const  ->scheduler::RequestRenderPass;
 
     private:
         VulkanFramebuffer framebuffer;

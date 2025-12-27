@@ -3,7 +3,7 @@
 #include "render_core/render_vulkan/master_semaphore.hpp"
 #include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <array>
 #include <memory>
 #include <thread>
@@ -11,8 +11,6 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 namespace render::vulkan {
-class TextureFramebuffer;
-class GraphicsPipeline;
 class Device;
 namespace resource {
 class CommandPool;
@@ -20,6 +18,24 @@ class CommandPool;
 }  // namespace render::vulkan
 
 namespace render::vulkan::scheduler {
+
+struct RequestRenderPass {
+        vk::RenderPass render_pass;
+        vk::Framebuffer framebuffer;
+        vk::Extent2D render_area = {0, 0};
+        uint32_t num_render_pass_images = 0;
+        std::array<vk::Image, 9> render_pass_images{};
+        std::array<vk::ImageSubresourceRange, 9> render_pass_image_ranges{};
+};
+
+struct RequestsRending {
+        std::array<vk::ImageView, 8> color_views;
+        vk::ImageView depth_view;
+        vk::Extent2D render_area = {0, 0};
+        uint32_t num_render_pass_images = 0;
+        std::array<vk::Image, 9> render_pass_images{};
+        std::array<vk::ImageSubresourceRange, 9> render_pass_image_ranges{};
+};
 
 class Scheduler {
     public:
@@ -77,9 +93,10 @@ class Scheduler {
         }
 
         // Update the pipeline to the current execution context.
-        auto updateGraphicsPipeline(GraphicsPipeline* pipeline) -> bool;
+        auto updateGraphicsPipeline(vk::Pipeline pipeline) -> bool;
 
-        void requestRender(const TextureFramebuffer* framebuffer);
+        void requestRender(const RequestRenderPass& render);
+        void requestRender(const RequestsRending& render);
 
         void requestOutsideRenderOperationContext();
 
@@ -168,14 +185,14 @@ class Scheduler {
                 vk::RenderPass render_pass_;
                 vk::Framebuffer framebuffer_;
                 vk::Extent2D render_area_ = {0, 0};
-                GraphicsPipeline* graphics_pipeline_ = nullptr;
+                vk::Pipeline graphics_pipeline_{VK_NULL_HANDLE};
         };
 
         struct DynamicState {
                 std::array<vk::ImageView, 8> color_views;
                 vk::ImageView depth_view;
                 vk::Extent2D render_area_ = {0, 0};
-                GraphicsPipeline* graphics_pipeline_ = nullptr;
+                vk::Pipeline graphics_pipeline_{VK_NULL_HANDLE};
                 bool begin_rendering{false};
                 auto operator<=>(const DynamicState&) const = default;
         };
@@ -204,8 +221,6 @@ class Scheduler {
         void requestOutsideRenderPassOperationContext() { endRenderPass(); }
         void requestOutsideRenderingOperationContext() { endRendering(); }
 
-        void requestRenderPass(const TextureFramebuffer* framebuffer);
-        void requestRendering(const TextureFramebuffer* framebuffer);
         std::unique_ptr<semaphore::MasterSemaphore> master_semaphore_;
         std::unique_ptr<resource::CommandPool> command_pool_;
 

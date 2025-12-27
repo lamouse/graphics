@@ -115,6 +115,7 @@ class VulkanGraphics : public render::Graphic {
         PrimitiveTopology current_primitive_topology;
 
         bool is_begin_frame{true};
+        bool use_dynamic_render;
 };
 
 }  // namespace render::vulkan
