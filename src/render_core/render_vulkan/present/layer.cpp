@@ -2,14 +2,13 @@ module;
 #include "common/scope_exit.h"
 #include "common/settings.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
-#include "render_core/framebuffer_config.hpp"
 #include <vulkan/vulkan.hpp>
 module render.vulkan.present.layer;
 import render.vulkan.common;
 import render.vulkan.utils;
 import render.vulkan.present.FSR;
 import render.vulkan.present.AntiAliasPass;
-import render.framebuffer_config;
+import render;
 
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
