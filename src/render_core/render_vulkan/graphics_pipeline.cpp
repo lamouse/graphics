@@ -5,7 +5,6 @@ module;
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
 #include "render_core/pipeline_state.h"
-#include "shader_tools/shader_info.h"
 #include "render_core/texture_cache/texture_cache.h"
 #include <gsl/gsl>
 #include <xxhash.h>
@@ -21,7 +20,8 @@ module render.vulkan.graphics_pipeline;
 import render.vulkan.common;
 import render.vulkan.pipeline_helper;
 import render.vulkan.format_utils;
-import render.shader_notify;
+import render;
+import shader;
 
 constexpr size_t MAX_IMAGE_ELEMENTS = 64;
 constexpr size_t NUM_RENDER_TARGETS = 8;

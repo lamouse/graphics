@@ -2,15 +2,14 @@ module;
 #include "common/scope_exit.h"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
-#include "core/frontend/framebuffer_layout.hpp"
-#include "core/frontend/window.hpp"
-#include "render_core/framebuffer_config.hpp"
-#include "render_core/render_base.hpp"
+
 #include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
 module render.impl.vulkan;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
+import render;
+import core;
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {

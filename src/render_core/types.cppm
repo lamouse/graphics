@@ -1,8 +1,7 @@
 module;
 #include "render_core/types.hpp"
 export module render.types;
-
-#include "common/slot_vector.hpp"
+import common;
 
 export namespace render {
 using BufferId = common::SlotId;

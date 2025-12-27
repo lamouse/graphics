@@ -186,11 +186,11 @@ endif()
 
 
 add_subdirectory(common)
-add_subdirectory(core)
 add_subdirectory(input)
 add_subdirectory(effects)
-add_subdirectory(shader_tools)
 add_subdirectory(render_core)
+add_subdirectory(core)
+add_subdirectory(shader_tools)
 add_subdirectory(utils)
 add_subdirectory(graphics)
 add_subdirectory(world)

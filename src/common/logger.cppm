@@ -1,7 +1,7 @@
 module;
 #include "common/logger.hpp"
 
-export module common;
+export module common.logger;
 
 export namespace common::logger {
 using ::common::logger::init;

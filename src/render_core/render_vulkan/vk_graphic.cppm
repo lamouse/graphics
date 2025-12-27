@@ -1,7 +1,6 @@
 module;
 #include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
-#include "render_core/framebuffer_config.hpp"
 #include "common/slot_vector.hpp"
 
 #include "resource/texture/image.hpp"

@@ -13,7 +13,6 @@
 
 import common;
 
-using namespace std;
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #if defined(_WIN32)
     SetConsoleOutputCP(65001);

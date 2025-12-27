@@ -7,16 +7,20 @@ set(sources
 )
 
 set(MODULE_FILES
+    shader_compile.cppm
+    shader_info.cppm
     shader.cppm
+    stage.cppm
 )
 
 set(LIB_NAME shader)
 
-add_library(${LIB_NAME} STATIC ${sources})
+add_library(${LIB_NAME} STATIC)
 
-target_sources(${LIB_NAME} PUBLIC
+target_sources(shader PUBLIC
         FILE_SET CXX_MODULES
         FILES ${MODULE_FILES}
+        PRIVATE ${sources}
 )
 
 # add_library(core STATIC ${CORE_SRC})

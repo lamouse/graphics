@@ -3,7 +3,6 @@ module;
 #include "common/common_funcs.hpp"
 #include "common/common_types.hpp"
 #include "render_core/pipeline_state.h"
-#include "shader_tools/shader_info.h"
 #include <condition_variable>
 #include "common/thread_worker.hpp"
 #include <vulkan/vulkan.hpp>
@@ -15,7 +14,9 @@ import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
 import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
-import render.shader_notify;
+import render;
+import shader;
+
 
 export namespace render::vulkan {
 struct GraphicsPipelineCacheKey {

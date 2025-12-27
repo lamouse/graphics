@@ -1,6 +1,5 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
 export module render.impl.vulkan;
 import render.vulkan.common;
@@ -8,6 +7,7 @@ import render.vulkan;
 import render.base;
 import render.graphic;
 import render.framebuffer_config;
+import core;
 export namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
 

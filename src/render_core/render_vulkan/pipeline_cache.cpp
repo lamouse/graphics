@@ -4,9 +4,7 @@ module;
 #include <memory>
 #include <utility>
 #include "common/settings.hpp"
-#include "shader_tools/shader_compile.hpp"
 #include "render_core/pipeline_state.h"
-#include "render_core/shader_cache.hpp"
 #include "common/thread_worker.hpp"
 #include <xxhash.h>
 #include <vulkan/vulkan.hpp>
@@ -20,7 +18,8 @@ import render.vulkan.texture_cache;
 import render.vulkan.graphics_pipeline;
 import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
-import render.shader_notify;
+import render;
+import shader;
 namespace render::vulkan {
 
 constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";

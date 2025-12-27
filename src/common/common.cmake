@@ -36,8 +36,10 @@ set(sources
 )
 
 set(MODULE_FILES
+        common.cppm
         logger.cppm
         common_types.cppm
         math_util.cppm
         settings.cppm
+        slot_vector.cppm
 )

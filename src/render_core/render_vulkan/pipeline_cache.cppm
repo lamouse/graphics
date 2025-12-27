@@ -7,7 +7,7 @@ module;
 #include "common/common_types.hpp"
 #include "common/class_traits.hpp"
 #include "common/thread_worker.hpp"
-#include "render_core/shader_cache.hpp"
+
 export module render.vulkan.pipeline_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
@@ -18,7 +18,7 @@ import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
-import render.shader_notify;
+import render;
 export namespace render::vulkan {
 struct ComputePipelineCacheKey {
         u64 unique_hash;

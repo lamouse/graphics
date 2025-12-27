@@ -2,10 +2,9 @@ module;
 
 #include <spdlog/spdlog.h>
 
-#include "imgui.h"
-#include "imgui_impl_vulkan.h"
+#include <imgui.h>
+#include <imgui_impl_vulkan.h>
 #include "common/settings.hpp"
-#include "core/frontend/window.hpp"
 #include <vulkan/vulkan.hpp>
 
 #include <vulkan/vk_enum_string_helper.h>
@@ -14,6 +13,7 @@ import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import render.vulkan.present_manager;
 import render.vulkan.scheduler;
+import core;
 
 namespace {
 void init_imgui(float scale) {

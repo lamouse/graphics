@@ -4,6 +4,7 @@ set(LIB_CORE_NAME core)
 set(MODULE_FILES
         core.cppm
         frontend/framebuffer_layout.cppm
+        frontend/window.cppm
 )
 
 set (sources
