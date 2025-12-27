@@ -14,7 +14,6 @@ module;
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "common/settings.hpp"
 #include "resource/texture/image.hpp"
-#include "resource/instance.hpp"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
@@ -696,7 +695,7 @@ auto VulkanGraphics::uploadTexture(ktxTexture* ktxTexture) -> TextureId {
     return texture_cache.addTexture(ktxTexture);
 }
 
-void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
+void VulkanGraphics::draw(const IMeshInstance& instance) {
     ZoneScopedN("VulkanGraphics::draw()");
     if (is_begin_frame) {
         last_pipeline_state = instance.getPipelineState();

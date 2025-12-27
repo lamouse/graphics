@@ -86,6 +86,7 @@ set(MODULE_FILES
         fsr.cppm
         render_base.cppm
         render_core.cppm
+        pipeline_state.cppm
         framebuffer_config.cppm
         shader_cache.cppm
         mesh.cppm

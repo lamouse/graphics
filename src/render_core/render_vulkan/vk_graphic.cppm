@@ -1,14 +1,12 @@
 module;
-#include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
 #include "common/slot_vector.hpp"
 
 #include "resource/texture/image.hpp"
 #include <vulkan/vulkan.hpp>
 #include <boost/container/static_vector.hpp>
-#include "resource/texture/image.hpp"
+#include <unordered_map>
 #include <ktx.h>
-#include "resource/instance.hpp"
 export module render.vulkan:graphic;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
@@ -22,6 +20,7 @@ import render.vulkan.texture_cache;
 
 import render.vulkan.render_pass;
 import render;
+import core;
 
 export namespace render::vulkan {
 
@@ -53,7 +52,7 @@ class VulkanGraphics : public render::Graphic {
         auto uploadModel(const IMeshData& instance) -> MeshId override;
         auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId override;
         auto uploadTexture(ktxTexture* ktxTexture) -> TextureId override;
-        void draw(const graphics::IMeshInstance& instance) override;
+        void draw(const IMeshInstance& instance) override;
         auto getDrawImage() -> unsigned long long override;
         auto addShader(std::span<const u32> data, ShaderType type) -> u64 override {
             return pipeline_cache.addShader(data, type);

@@ -7,3 +7,4 @@ export import render.base;
 export import render.graphic;
 export import render.types;
 export import render.resource.mesh;
+export import render.pipeline_state;

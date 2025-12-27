@@ -36,7 +36,7 @@ struct ModelResourceName {
 template <typename PushConstants, render::PrimitiveTopology primitiveTopology, typename... UBO>
     requires ByteSpanConvertible<PushConstants> && std::is_trivially_copyable_v<PushConstants> &&
              (ByteSpanConvertible<UBO> && ...) && (std::is_trivially_copyable_v<UBO> && ...)
-class MeshInstance : public IMeshInstance {
+class MeshInstance : public render::IMeshInstance {
     public:
         using UBOs = std::tuple<UBO*...>;
 
@@ -88,7 +88,7 @@ class MeshInstance : public IMeshInstance {
                             shaderHash_.fragment),
               material_resource(material_resource_),
               materials({material_resource.ambientTextures, material_resource.diffuseTextures,
-                         material_resource.specularTextures, material_resource.normalTextures}) {
+                         material_resource.specularTextures, material_resource.normalTextures}),id(getCurrentId()) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));
@@ -101,7 +101,7 @@ class MeshInstance : public IMeshInstance {
         MeshInstance() = default;
         ecs::Entity entity_;
         ecs::RenderStateComponent* render_state;
-
+        [[nodiscard]] auto getId() const -> id_t { return id; }
     private:
         UBOs ubos{};
         PushConstants* push_constants{nullptr};
@@ -110,6 +110,7 @@ class MeshInstance : public IMeshInstance {
         std::vector<render::TextureId> materials;
         mutable std::vector<std::span<const std::byte>> ubosSpans{
             std::tuple_size_v<decltype(ubos)>};
+        id_t id;
 };
 
 }  // namespace graphics
