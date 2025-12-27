@@ -9,8 +9,7 @@ module;
 module render.vulkan;
 import render.vulkan.common;
 import :pipeline_cache;
-import :update_descriptor;
-import :pipeline_cache;
+import render.vulkan.update_descriptor;
 import :pipeline_helper;
 
 namespace render::vulkan {

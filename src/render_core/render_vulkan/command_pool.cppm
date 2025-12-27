@@ -5,9 +5,7 @@ import render.vulkan.common;
 import render.vulkan.resource_pool;
 import render.vulkan.master_semaphore;
 
-export namespace render::vulkan {
-
-namespace resource {
+export namespace render::vulkan::resource {
 
 class CommandPool final : public ResourcePool {
     public:
@@ -24,5 +22,4 @@ class CommandPool final : public ResourcePool {
         const Device& device_;
         std::vector<Pool> pools_;
 };
-}  // namespace resource
-}  // namespace render::vulkan
+} // namespace render::vulkan::resource

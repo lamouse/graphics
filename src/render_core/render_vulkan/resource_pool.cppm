@@ -5,8 +5,7 @@ export module render.vulkan.resource_pool;
 import render.vulkan.common;
 import render.vulkan.master_semaphore;
 
-export namespace render::vulkan {
-namespace resource {
+export namespace render::vulkan::resource {
 class ResourcePool {
     public:
         explicit ResourcePool() = default;
@@ -35,5 +34,4 @@ class ResourcePool {
         size_t hint_iterator_ = 0;  ///< Hint to where the next free resources is likely to be found
         std::vector<uint64_t> ticks_;  ///< Ticks for each resource
 };
-}  // namespace resource
-}
+} // namespace render::vulkan::resource

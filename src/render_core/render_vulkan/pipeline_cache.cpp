@@ -19,7 +19,7 @@ import render.vulkan.scheduler;
 import :texture_cache;
 import :graphics_pipeline;
 import :buffer_cache;
-import :update_descriptor;
+import render.vulkan.update_descriptor;
 namespace render::vulkan {
 
 constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";

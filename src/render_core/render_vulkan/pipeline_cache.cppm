@@ -16,7 +16,7 @@ import :texture_cache;
 import :graphics_pipeline;
 import :compute_pipeline;
 import :buffer_cache;
-import :update_descriptor;
+import render.vulkan.update_descriptor;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
 namespace render::vulkan {

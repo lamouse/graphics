@@ -13,7 +13,7 @@ export module render.vulkan:compute_pipeline;
 import render.vulkan.common;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
-import :update_descriptor;
+import render.vulkan.update_descriptor;
 import :buffer_cache;
 
 export namespace render::vulkan {

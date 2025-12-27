@@ -10,7 +10,7 @@ import render.vulkan.common;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
 import render.vulkan.staging_buffer_pool;
-import :update_descriptor;
+import render.vulkan.update_descriptor;
 
 
 export namespace render::vulkan {

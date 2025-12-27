@@ -1,6 +1,6 @@
 module;
 #include <spdlog/spdlog.h>
-module render.vulkan;
+module render.vulkan.update_descriptor;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 namespace render::vulkan {

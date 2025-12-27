@@ -1,6 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:update_descriptor;
+export module render.vulkan.update_descriptor;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 
