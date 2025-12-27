@@ -26,6 +26,8 @@ module render.vulkan;
 import render.vulkan.format_utils;
 import render.vulkan.present.present_frame;
 import render.vulkan.scheduler;
+import render.vulkan.pipeline_cache;
+import render.vulkan.graphics_pipeline;
 using IsInstance = bool;
 
 namespace {

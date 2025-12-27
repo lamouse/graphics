@@ -18,9 +18,9 @@ module;
 #else
 #define LAMBDA_FORCEINLINE
 #endif
-module render.vulkan;
+module render.vulkan.graphics_pipeline;
 import render.vulkan.common;
-import :pipeline_helper;
+import render.vulkan.pipeline_helper;
 import render.vulkan.format_utils;
 
 constexpr size_t MAX_IMAGE_ELEMENTS = 64;

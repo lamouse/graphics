@@ -4,16 +4,22 @@ module;
 #include "common/class_traits.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include "render_core/shader_notify.hpp"
+#include "render_core/shader_cache.hpp"
 #include "resource/texture/image.hpp"
 #include <vulkan/vulkan.hpp>
 #include <boost/container/static_vector.hpp>
 export module render.vulkan:graphic;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
+import render.vulkan.pipeline_cache;
 import render.vulkan.descriptor_pool;
 import render.vulkan.scheduler;
 import render.vulkan.staging_buffer_pool;
-import :pipeline_cache;
+import render.vulkan.update_descriptor;
+import render.vulkan.buffer_cache;
+import render.vulkan.texture_cache;
+
+import render.vulkan.render_pass;
 
 
 export namespace render::vulkan {

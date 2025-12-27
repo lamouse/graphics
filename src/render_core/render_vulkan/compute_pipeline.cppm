@@ -8,7 +8,7 @@ module;
 #include "shader_tools/shader_info.h"
 #include "render_core/buffer_cache/buffer_cache_base.hpp"
 #include "render_core/shader_notify.hpp"
-export module render.vulkan:compute_pipeline;
+export module render.vulkan.compute_pipeline;
 
 import render.vulkan.common;
 import render.vulkan.descriptor_pool;

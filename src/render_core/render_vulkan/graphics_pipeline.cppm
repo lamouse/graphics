@@ -8,7 +8,7 @@ module;
 #include <condition_variable>
 #include "common/thread_worker.hpp"
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:graphics_pipeline;
+export module render.vulkan.graphics_pipeline;
 import render.vulkan.common;
 import render.vulkan.texture_cache;
 import render.vulkan.render_pass;

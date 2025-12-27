@@ -6,11 +6,10 @@ module;
 #include "shader_tools/shader_info.h"
 #include <vulkan/vulkan.hpp>
 
-module render.vulkan;
+module render.vulkan.compute_pipeline;
 import render.vulkan.common;
-import :pipeline_cache;
 import render.vulkan.update_descriptor;
-import :pipeline_helper;
+import render.vulkan.pipeline_helper;
 
 namespace render::vulkan {
 

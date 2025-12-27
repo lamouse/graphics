@@ -12,13 +12,13 @@ module;
 #include <xxhash.h>
 #include <vulkan/vulkan.hpp>
 #include <spdlog/spdlog.h>
-module render.vulkan;
+module render.vulkan.pipeline_cache;
 import render.vulkan.common;
 import render.vulkan.shader;
 import render.vulkan.scheduler;
 import render.vulkan.texture_cache;
 
-import :graphics_pipeline;
+import render.vulkan.graphics_pipeline;
 import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
 namespace render::vulkan {

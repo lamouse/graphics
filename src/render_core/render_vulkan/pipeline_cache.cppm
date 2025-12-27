@@ -9,17 +9,17 @@ module;
 #include "common/thread_worker.hpp"
 #include "render_core//shader_notify.hpp"
 #include "render_core/shader_cache.hpp"
-export module render.vulkan:pipeline_cache;
+export module render.vulkan.pipeline_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
 import render.vulkan.texture_cache;
-import :graphics_pipeline;
-import :compute_pipeline;
+import render.vulkan.graphics_pipeline;
+import render.vulkan.compute_pipeline;
 import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
 import render.vulkan.render_pass;
 import render.vulkan.descriptor_pool;
-namespace render::vulkan {
+export namespace render::vulkan {
 struct ComputePipelineCacheKey {
         u64 unique_hash;
         u32 shared_memory_size;
@@ -56,7 +56,7 @@ struct hash<render::vulkan::ComputePipelineCacheKey> {
 
 }  // namespace std
 
-namespace render::vulkan {
+export namespace render::vulkan {
 
 
 class PipelineCache : public ShaderCache {

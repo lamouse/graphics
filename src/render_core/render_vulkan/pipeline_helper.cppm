@@ -7,10 +7,10 @@ module;
 #include <unordered_set>
 #include <unordered_map>
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:pipeline_helper;
+export module render.vulkan.pipeline_helper;
 import render.vulkan.common;
 import render.vulkan.update_descriptor;
-namespace render::vulkan::pipeline {
+export namespace render::vulkan::pipeline {
 class DescriptorLayoutBuilder {
     public:
         DescriptorLayoutBuilder(const Device& device_) : device{&device_} {}
