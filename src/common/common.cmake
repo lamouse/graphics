@@ -37,4 +37,5 @@ set(sources
 
 set(MODULE_FILES
         logger.cppm # 模块接口文件
+        common_types.cppm
 )
