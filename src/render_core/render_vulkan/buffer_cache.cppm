@@ -67,9 +67,6 @@ class BufferCacheRuntime {
         [[nodiscard]] auto DownloadStagingBuffer(size_t size, bool deferred = false)
             -> StagingBufferRef;
 
-        auto CanReorderUpload(const BaseBufferCache& buffer,
-                              std::span<const texture::BufferCopy> copies) -> bool;
-
         void FreeDeferredStagingBuffer(StagingBufferRef& ref);
 
         void CopyBuffer(vk::Buffer src_buffer, vk::Buffer dst_buffer,

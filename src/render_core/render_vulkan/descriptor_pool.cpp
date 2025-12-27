@@ -1,5 +1,4 @@
 module;
-#include "shader_tools/shader_info.h"
 
 #include <algorithm>
 #include <span>
@@ -8,6 +7,7 @@ module;
 #include <vulkan/vulkan.hpp>
 module render.vulkan.descriptor_pool;
 import render.vulkan.common;
+import shader;
 namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
 constexpr size_t SETS_GROW_RATE = 16;
