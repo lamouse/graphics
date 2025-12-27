@@ -13,9 +13,9 @@ module;
 #undef min
 #endif
 
-module render.vulkan;
+module render.vulkan.swapchain;
 import render.vulkan.common;
-import :scheduler;
+import render.vulkan.scheduler;
 
 namespace render::vulkan {
 namespace {

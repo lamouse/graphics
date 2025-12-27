@@ -7,19 +7,14 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:buffer_cache;
 import render.vulkan.common;
+import render.vulkan.descriptor_pool;
+import render.vulkan.scheduler;
 import :staging_buffer_pool;
 import :update_descriptor;
 
 
 export namespace render::vulkan {
 
-namespace scheduler {
-class Scheduler;
-}
-
-namespace resource {
-class DescriptorPool;
-}
 class BufferCacheRuntime;
 
 class BaseBufferCache : public buffer::BufferBase {
@@ -161,4 +156,5 @@ struct BufferCacheParams {
 };
 
 using BufferCache = render::buffer::BufferCache<BufferCacheParams>;
+
 }  // namespace render::vulkan

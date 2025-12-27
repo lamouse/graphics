@@ -1,9 +1,9 @@
 module;
 #include <vector>
 #include "common/class_traits.hpp"
-export module render.vulkan:resource_pool;
+export module render.vulkan.resource_pool;
 import render.vulkan.common;
-import :master_semaphore;
+import render.vulkan.master_semaphore;
 
 export namespace render::vulkan {
 namespace resource {

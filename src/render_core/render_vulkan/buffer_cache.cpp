@@ -17,7 +17,7 @@ module;
 
 module render.vulkan;
 import render.vulkan.common;
-import :scheduler;
+import render.vulkan.scheduler;
 namespace render::vulkan {
 
 namespace {

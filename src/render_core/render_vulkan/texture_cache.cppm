@@ -14,17 +14,14 @@ module;
 export module render.vulkan:texture_cache;
 import render.vulkan.common;
 import render.vulkan.render_pass;
+import render.vulkan.descriptor_pool;
+import render.vulkan.scheduler;
 import :update_descriptor;
 
 
 export namespace render::vulkan {
-namespace scheduler {
-class Scheduler;
-}
 
-namespace resource{
-class DescriptorPool;
-}
+
 class BlitImageHelper;
 
 class StagingBufferPool;

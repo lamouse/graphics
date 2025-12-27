@@ -7,11 +7,13 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:layer;
 import render.vulkan.common;
+import render.vulkan.scheduler;
+import render.vulkan.present.present_frame;
+
 import :FSR;
 import :AntiAliasPass;
 import :push_constants;
 import :graphic;
-import render.vulkan.present.present_frame;
 
 export namespace render::vulkan {
 

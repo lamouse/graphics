@@ -15,7 +15,7 @@ module;
 module render.vulkan;
 import render.vulkan.common;
 import render.vulkan.shader;
-import :scheduler;
+import render.vulkan.scheduler;
 import :texture_cache;
 import :graphics_pipeline;
 import :buffer_cache;

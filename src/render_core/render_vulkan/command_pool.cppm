@@ -1,8 +1,9 @@
 module;
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:command_pool;
+export module render.vulkan.command_pool;
 import render.vulkan.common;
-import :resource_pool;
+import render.vulkan.resource_pool;
+import render.vulkan.master_semaphore;
 
 export namespace render::vulkan {
 

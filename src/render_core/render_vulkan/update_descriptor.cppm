@@ -2,12 +2,9 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:update_descriptor;
 import render.vulkan.common;
+import render.vulkan.scheduler;
 
 export namespace render::vulkan {
-namespace scheduler {
-class Scheduler;
-}
-
 struct DescriptorUpdateEntry {
         struct Empty {};
 

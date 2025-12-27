@@ -6,7 +6,7 @@ module;
 #include "common/common_funcs.hpp"
 #include "shader_tools/shader_compile.hpp"
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:master_semaphore;
+export module render.vulkan.master_semaphore;
 import render.vulkan.common;
 
 export namespace render::vulkan {

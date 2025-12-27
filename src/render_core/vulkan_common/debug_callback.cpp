@@ -4,7 +4,6 @@ module;
 module render.vulkan.common.DebugMessenger;
 import render.vulkan.common.wrapper;
 
-
 namespace render::vulkan {
 namespace {
 

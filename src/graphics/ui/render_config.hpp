@@ -14,7 +14,7 @@ class RenderController : public QObject {
               render_debug_(settings::values.render_debug.GetValue()),
               use_debug_ui_(settings::values.use_debug_ui.GetValue()) {}
 
-    // NOLINTNEXTLINE
+        // NOLINTNEXTLINE
     public slots:
         void handleOptionRenderDebug(bool checked) {
             spdlog::info("render debug: {}", checked);
@@ -42,7 +42,9 @@ class ResolutionModel : public QAbstractListModel {
     public:
         enum Roles { TextRole = Qt::UserRole + 1 };
         ResolutionModel(QObject *parent = nullptr) : QAbstractListModel(parent) {
-            items = {QString("%1/%2").arg(settings::values.resolution.weight).arg(settings::values.resolution.height)};
+            items = {QString("%1/%2")
+                         .arg(settings::values.resolution.weight)
+                         .arg(settings::values.resolution.height)};
         }
         [[nodiscard]] auto rowCount(const QModelIndex &parent = QModelIndex()) const
             -> int override {
@@ -60,7 +62,7 @@ class ResolutionModel : public QAbstractListModel {
         [[nodiscard]] auto roleNames() const -> QHash<int, QByteArray> override {
             return {{TextRole, "text"}};
         }
-    // NOLINTNEXTLINE
+        // NOLINTNEXTLINE
     public slots:
         void onItemSelected(int index) {
             if (index >= 0 && index < items.size()) {

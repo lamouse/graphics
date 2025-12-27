@@ -13,7 +13,7 @@ module render.vulkan;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import :present_manager;
-import :scheduler;
+import render.vulkan.scheduler;
 
 namespace {
 void init_imgui(float scale) {
@@ -100,7 +100,7 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
       window(window_),
       scheduler(scheduler_),
       is_render_finish(true) {
-        init_imgui(window_->getWindowSystemInfo().render_surface_scale);
+    init_imgui(window_->getWindowSystemInfo().render_surface_scale);
     // Setup Platform/Renderer backends
     window->configGUI();
     ImGui_ImplVulkan_InitInfo init_info = {};

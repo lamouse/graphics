@@ -12,9 +12,9 @@ module;
 export module render.vulkan:present_manager;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
+import render.vulkan.scheduler;
+import render.vulkan.swapchain;
 
-import :swapchain;
-import :scheduler;
 
 export namespace render::vulkan {
 class PresentManager {

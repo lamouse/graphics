@@ -4,11 +4,9 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:FSR;
 import render.vulkan.common;
+import render.vulkan.scheduler;
 
 namespace render::vulkan {
-namespace scheduler {
-class Scheduler;
-}
 
 class FSR {
     public:

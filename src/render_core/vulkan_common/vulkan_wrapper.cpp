@@ -10,15 +10,12 @@ module;
 
 module render.vulkan.common.wrapper;
 
-
 namespace render::vulkan {
 
 namespace utils {
 auto VulkanException::what() const noexcept -> const char* {
     return string_VkResult(static_cast<VkResult>(result));
 }
-
-
 
 }  // namespace utils
 namespace {
@@ -159,9 +156,9 @@ auto Instance::Create(u32 version, std::span<const char*> layers, std::span<cons
     };
     vk::InstanceCreateInfo ci{ci_flags, &application_info, layers, extensions};
     vk::Instance instance = ::vk::createInstance(ci);
-    #if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
+#if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
     VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
-    #endif
+#endif
     return Instance(instance, wrapper::NoOwner{});
 }
 
@@ -249,9 +246,9 @@ auto LogicDevice::Create(vk::PhysicalDevice physical_device,
     vk::DeviceCreateInfo ci{};
     ci.setQueueCreateInfos(queues_ci).setPEnabledExtensionNames(enabled_extensions).setPNext(next);
     auto device = physical_device.createDevice(ci);
-    #if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
+#if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
     VULKAN_HPP_DEFAULT_DISPATCHER.init(device);
-    #endif
+#endif
     return LogicDevice(device, wrapper::NoOwner{});
 }
 

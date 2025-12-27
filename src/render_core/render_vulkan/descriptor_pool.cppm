@@ -4,16 +4,40 @@ module;
 #include "shader_tools/shader_info.h"
 #include <vulkan/vulkan.hpp>
 #include <memory>
-export module render.vulkan:descriptor_pool;
+export module render.vulkan.descriptor_pool;
 import render.vulkan.common;
-import :master_semaphore;
-import :resource_pool;
-namespace render::vulkan {
-namespace scheduler {
-class Scheduler;
-}
+import render.vulkan.master_semaphore;
+import render.vulkan.resource_pool;
+export namespace render::vulkan::resource {
+class DescriptorAllocator;
+struct DescriptorBankInfo;
+struct DescriptorBank;
 
-namespace resource {
+class DescriptorPool {
+    public:
+        explicit DescriptorPool(const Device& device, semaphore::MasterSemaphore& master_semaphore);
+        ~DescriptorPool() = default;
+        DescriptorPool() = delete;
+        CLASS_NON_COPYABLE(DescriptorPool);
+        CLASS_NON_MOVEABLE(DescriptorPool);
+        auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
+            -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info)
+            -> DescriptorAllocator;
+        auto allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info)
+            -> DescriptorAllocator;
+
+    private:
+        auto bank(const DescriptorBankInfo& reqs) -> DescriptorBank&;
+
+        const Device& device_;
+        semaphore::MasterSemaphore& master_semaphore_;
+
+        std::shared_mutex banks_mutex_;
+        std::vector<DescriptorBankInfo> bank_infos_;
+        std::vector<std::unique_ptr<DescriptorBank>> banks_;
+};
+
 struct DescriptorBankInfo {
         [[nodiscard]] auto isSuperset(const DescriptorBankInfo& subset) const noexcept -> bool;
 
@@ -58,30 +82,5 @@ class DescriptorAllocator final : public ResourcePool {
 
         std::vector<DescriptorSets> sets_;
 };
-class DescriptorPool {
-    public:
-        explicit DescriptorPool(const Device& device, scheduler::Scheduler& scheduler);
-        ~DescriptorPool() = default;
-        DescriptorPool() = delete;
-        CLASS_NON_COPYABLE(DescriptorPool);
-        CLASS_NON_MOVEABLE(DescriptorPool);
-        auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
-            -> DescriptorAllocator;
-        auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info)
-            -> DescriptorAllocator;
-        auto allocator(vk::DescriptorSetLayout layout, const DescriptorBankInfo& info)
-            -> DescriptorAllocator;
 
-    private:
-        auto bank(const DescriptorBankInfo& reqs) -> DescriptorBank&;
-
-        const Device& device_;
-        semaphore::MasterSemaphore& master_semaphore_;
-
-        std::shared_mutex banks_mutex_;
-        std::vector<DescriptorBankInfo> bank_infos_;
-        std::vector<std::unique_ptr<DescriptorBank>> banks_;
-};
-}  // namespace resource
-
-}  // namespace render::vulkan
+}  // namespace render::vulkan::resource

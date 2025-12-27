@@ -5,12 +5,11 @@ module;
 #include "render_core/framebuffer_config.hpp"
 #include <vulkan/vulkan.hpp>
 
-
 module render.vulkan;
 import render.vulkan.present.present_frame;
 import render.vulkan.common;
 import :present_manager;
-import :scheduler;
+import render.vulkan.scheduler;
 import :filters;
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,

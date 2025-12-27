@@ -5,7 +5,7 @@ module;
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
 #include <vulkan/vulkan.hpp>
-module render.vulkan;
+module render.vulkan.master_semaphore;
 import render.vulkan.common;
 #undef max
 #undef min

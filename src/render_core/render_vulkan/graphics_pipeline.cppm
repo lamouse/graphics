@@ -12,8 +12,10 @@ export module render.vulkan:graphics_pipeline;
 import render.vulkan.common;
 import :texture_cache;
 import render.vulkan.render_pass;
+import render.vulkan.descriptor_pool;
+import render.vulkan.scheduler;
 import :buffer_cache;
-import :descriptor_pool;
+
 
 export namespace render::vulkan {
 struct GraphicsPipelineCacheKey {
@@ -47,9 +49,7 @@ struct hash<render::vulkan::GraphicsPipelineCacheKey> {
 };
 }  // namespace std
 export namespace render::vulkan {
-namespace scheduler {
-class Scheduler;
-}
+
 namespace pipeline {
 class PipelineStatistics;
 class RenderAreaPushConstant;

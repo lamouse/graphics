@@ -5,7 +5,7 @@ module;
 #include <vulkan/vulkan.hpp>
 export module render.vulkan:ImGui;
 import render.vulkan.common;
-import :scheduler;
+import render.vulkan.scheduler;
 import render.vulkan.present.present_frame;
 
 export namespace render::vulkan {

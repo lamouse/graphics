@@ -18,7 +18,6 @@ class App {
         ~App();
 
     private:
-
         std::shared_ptr<input::InputSystem> input_system_;
         std::unique_ptr<QTWindow> qt_main_window;
 

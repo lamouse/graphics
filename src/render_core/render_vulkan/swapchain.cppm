@@ -1,8 +1,8 @@
 module;
 #include <vulkan/vulkan.hpp>
-export module render.vulkan:swapchain;
+export module render.vulkan.swapchain;
 import render.vulkan.common;
-import :scheduler;
+import render.vulkan.scheduler;
 export namespace render::vulkan {
 
 

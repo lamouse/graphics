@@ -7,7 +7,7 @@ module;
 #include <mutex>
 #include <shared_mutex>
 #include <vulkan/vulkan.hpp>
-module render.vulkan;
+module render.vulkan.descriptor_pool;
 import render.vulkan.common;
 namespace render::vulkan::resource {
 // Prefer small grow rates to avoid saturating the descriptor pool with barely used pipelines
@@ -89,8 +89,8 @@ auto DescriptorAllocator::allocateDescriptors(size_t count) -> DescriptorSets {
     return bank_->pools.back().Allocate(allocate_info);
 }
 
-DescriptorPool::DescriptorPool(const Device& device, scheduler::Scheduler& scheduler)
-    : device_{device}, master_semaphore_{scheduler.getMasterSemaphore()} {}
+DescriptorPool::DescriptorPool(const Device& device, semaphore::MasterSemaphore& master_semaphore)
+    : device_{device}, master_semaphore_{master_semaphore} {}
 auto DescriptorPool::allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
     -> DescriptorAllocator {
     return allocator(layout, makeBankInfo(infos));

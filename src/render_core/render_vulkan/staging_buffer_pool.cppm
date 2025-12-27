@@ -5,11 +5,10 @@ module;
 #include "common/common_types.hpp"
 export module render.vulkan:staging_buffer_pool;
 import render.vulkan.common;
+import render.vulkan.scheduler;
 
 export namespace render::vulkan {
-namespace scheduler{
-class Scheduler;
-}
+
 
 struct StagingBufferRef {
         vk::Buffer buffer;

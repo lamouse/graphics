@@ -16,7 +16,6 @@ module render.vulkan.common.driver;
 import render.vulkan.common.wrapper;
 import render.vulkan.common.device.utils;
 
-
 namespace render::vulkan {
 namespace {
 #if defined(USE_TRACY)

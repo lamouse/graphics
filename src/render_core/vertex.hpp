@@ -198,4 +198,3 @@ struct VertexAttribute {
 };
 static_assert(sizeof(VertexAttribute) == 0x4);
 }  // namespace render
-

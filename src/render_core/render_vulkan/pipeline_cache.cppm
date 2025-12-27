@@ -11,12 +11,14 @@ module;
 #include "render_core/shader_cache.hpp"
 export module render.vulkan:pipeline_cache;
 import render.vulkan.common;
+import render.vulkan.scheduler;
 import :texture_cache;
 import :graphics_pipeline;
 import :compute_pipeline;
 import :buffer_cache;
 import :update_descriptor;
 import render.vulkan.render_pass;
+import render.vulkan.descriptor_pool;
 namespace render::vulkan {
 struct ComputePipelineCacheKey {
         u64 unique_hash;
@@ -55,12 +57,7 @@ struct hash<render::vulkan::ComputePipelineCacheKey> {
 }  // namespace std
 
 namespace render::vulkan {
-namespace scheduler {
-class Scheduler;
-}
-namespace resource {
-class DescriptorPool;
-}
+
 
 class PipelineCache : public ShaderCache {
     public:

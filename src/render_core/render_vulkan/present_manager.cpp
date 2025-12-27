@@ -11,8 +11,8 @@ module;
 module render.vulkan;
 import render.vulkan.common;
 import render.vulkan.utils;
-import :swapchain;
-import :scheduler;
+import render.vulkan.scheduler;
+import render.vulkan.swapchain;
 
 namespace render::vulkan {
 namespace {

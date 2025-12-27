@@ -17,14 +17,15 @@ module;
 #include "render_core/buffer_cache/buffer_cache.h"
 #include "shader_tools/shader_info.h"
 #include "render_core/framebuffer_config.hpp"
+#include "common/settings.hpp"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif
 module render.vulkan;
-import :scheduler;
-import  render.vulkan.format_utils;
+import render.vulkan.format_utils;
 import render.vulkan.present.present_frame;
+import render.vulkan.scheduler;
 using IsInstance = bool;
 
 namespace {
@@ -70,7 +71,7 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       memory_allocator(memory_allocator_),
       scheduler(scheduler_),
       staging_pool(device, memory_allocator, scheduler),
-      descriptor_pool(device, scheduler),
+      descriptor_pool(device, scheduler.getMasterSemaphore()),
       guest_descriptor_queue(device, scheduler),
       compute_pass_descriptor_queue(device, scheduler),
       render_pass_cache(device),
@@ -104,7 +105,19 @@ void VulkanGraphics::clean(const CleanValue& cleanValue) {
         !framebuffer->HasAspectStencilBit()) {
         return;
     }
-    scheduler.requestRender(framebuffer);
+    auto frame_render_area = framebuffer->RenderArea();
+    auto num_render_pass_images_ = framebuffer->NumImages();
+    const auto& render_pass_images_ = framebuffer->Images();
+    const auto& render_pass_image_ranges_ = framebuffer->ImageRanges();
+    if (settings::values.use_dynamic_rendering.GetValue()) {
+        scheduler.requestRendering(framebuffer->ImageViews(), framebuffer->DepthView(),
+                                    frame_render_area, render_pass_images_, render_pass_image_ranges_,
+                                    num_render_pass_images_);
+    } else {
+        scheduler.requestRender(framebuffer->RenderPass(), framebuffer->Handle(), frame_render_area,
+                                 render_pass_images_, render_pass_image_ranges_,
+                                 num_render_pass_images_);
+    }
 
     const vk::Extent2D render_area{cleanValue.width, cleanValue.hight};
     const vk::ClearRect clear_rect =

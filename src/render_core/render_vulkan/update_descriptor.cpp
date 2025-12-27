@@ -2,7 +2,7 @@ module;
 #include <spdlog/spdlog.h>
 module render.vulkan;
 import render.vulkan.common;
-import :scheduler;
+import render.vulkan.scheduler;
 namespace render::vulkan {
 UpdateDescriptorQueue::UpdateDescriptorQueue(const Device& device_,
                                              scheduler::Scheduler& scheduler_)

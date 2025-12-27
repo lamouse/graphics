@@ -1,6 +1,5 @@
 module;
 
-#include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include <list>
@@ -13,9 +12,11 @@ export module render.vulkan:blit_screen;
 import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import :present_manager;
-import :graphic;
 import :layer;
 import :window_adapt_pass;
+import render.vulkan.scheduler;
+import :graphic;
+
 
 export  namespace render::vulkan {
 class BlitScreen {
