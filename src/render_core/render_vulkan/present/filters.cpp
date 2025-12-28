@@ -34,6 +34,7 @@ auto MakeBilinear(const Device& device, vk::Format frame_format)
     return std::make_unique<present::WindowAdaptPass>(
         device, frame_format, present::utils::CreateBilinearSampler(device),
         utils::buildShader(device.getLogical(), VULKAN_PRESENT_FRAG_SPV));
+
 }
 
 auto MakeBicubic(const Device& device, vk::Format frame_format)

@@ -19,7 +19,7 @@ import core;
 export namespace render::vulkan {
 class PresentManager {
     public:
-        PresentManager(const vk::Instance& instance, core::frontend::BaseWindow& render_window,
+        PresentManager(const Instance& instance, core::frontend::BaseWindow& render_window,
                        const Device& device, MemoryAllocator& memory_allocator,
                        scheduler::Scheduler& scheduler, Swapchain& swapchain, SurfaceKHR& surface);
         CLASS_NON_COPYABLE(PresentManager);
@@ -49,7 +49,7 @@ class PresentManager {
 
         void setImageCount();
 
-        const vk::Instance instance_;
+        const Instance& instance_;
         core::frontend::BaseWindow& render_window_;
         const Device& device_;
         MemoryAllocator& memory_allocator_;

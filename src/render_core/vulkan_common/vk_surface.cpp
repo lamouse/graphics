@@ -3,10 +3,10 @@ module;
 #include <spdlog/spdlog.h>
 #endif
 #include "vulkan_common.hpp"
-#include "core/frontend/window.hpp"
 module render.vulkan.common.surface;
+import core;
 namespace render::vulkan {
-auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi)
+auto createSurface(const Instance& instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi)
     -> SurfaceKHR {
     VkSurfaceKHR unsafe_surface = nullptr;
 
@@ -20,12 +20,12 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
             .hinstance = GetModuleHandle(nullptr),
             .hwnd = hWnd};
         const auto vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
-            instance.getProcAddr("vkCreateWin32SurfaceKHR"));
+            (*instance).getProcAddr("vkCreateWin32SurfaceKHR"));
         if (!vkCreateWin32SurfaceKHR ||
-            vkCreateWin32SurfaceKHR(instance, &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+            vkCreateWin32SurfaceKHR((*instance), &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
-        return SurfaceKHR{unsafe_surface, instance};
+        return SurfaceKHR{unsafe_surface, (*instance)};
     }
 #elif defined(__APPLE__)
     if (wsi.type == core::frontend::WindowSystemType::Cocoa) {
@@ -34,11 +34,11 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
             .pNext = nullptr,
             .pLayer = static_cast<const CAMetalLayer*>(wsi.get_surface),
         };
-        auto result = vkCreateMetalSurfaceEXT(instance, &macos_ci, nullptr, &unsafe_surface);
+        auto result = vkCreateMetalSurfaceEXT((*instance), &macos_ci, nullptr, &unsafe_surface);
         if (result != VK_SUCCESS) {
             throw std::runtime_error("Failed to create Metal surface");
         }
-        return SurfaceKHR{unsafe_surface, instance};
+        return SurfaceKHR{unsafe_surface, (*instance)};
     }
 #elif defined(__ANDROID__)
     if (window_info.type == Core::Frontend::WindowSystemType::Android) {
@@ -61,9 +61,9 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
                                                  static_cast<Display*>(wsi.display_connection),
                                                  reinterpret_cast<Window>(wsi.render_surface)};
         const auto vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
-            instance.getProcAddr("vkCreateXlibSurfaceKHR"));
+            (*instance).getProcAddr("vkCreateXlibSurfaceKHR"));
         if (!vkCreateXlibSurfaceKHR ||
-            vkCreateXlibSurfaceKHR(instance, &xlib_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+            vkCreateXlibSurfaceKHR((*instance), &xlib_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
             SPDLOG_ERROR("Failed to initialize Xlib surface");
             throw utils::VulkanException(VK_ERROR_INITIALIZATION_FAILED);
         }
@@ -74,15 +74,15 @@ auto createSurface(vk::Instance instance, const core::frontend::BaseWindow::Wind
             static_cast<wl_display*>(wsi.display_connection),
             static_cast<wl_surface*>(wsi.render_surface)};
         const auto vkCreateWaylandSurfaceKHR = reinterpret_cast<PFN_vkCreateWaylandSurfaceKHR>(
-            instance.getProcAddr("vkCreateWaylandSurfaceKHR"));
+            (*instance).getProcAddr("vkCreateWaylandSurfaceKHR"));
         if (!vkCreateWaylandSurfaceKHR ||
-            vkCreateWaylandSurfaceKHR(instance, &wayland_ci, nullptr, &unsafe_surface) !=
+            vkCreateWaylandSurfaceKHR((*instance), &wayland_ci, nullptr, &unsafe_surface) !=
                 VK_SUCCESS) {
             SPDLOG_ERROR("Failed to initialize Wayland surface");
             throw utils::VulkanException(VK_ERROR_INITIALIZATION_FAILED);
         }
     }
 #endif
-    return SurfaceKHR{unsafe_surface, instance};
+    return SurfaceKHR{unsafe_surface, (*instance)};
 }
 }  // namespace render::vulkan

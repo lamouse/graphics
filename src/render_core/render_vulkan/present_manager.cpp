@@ -53,11 +53,11 @@ auto canBlitToSwapchain(const vk::PhysicalDevice& physical_device, vk::Format fo
 }
 }  // namespace
 
-PresentManager::PresentManager(const vk::Instance& instance,
+PresentManager::PresentManager(const Instance& instance,
                                core::frontend::BaseWindow& render_window, const Device& device,
                                MemoryAllocator& memory_allocator, scheduler::Scheduler& scheduler_,
                                Swapchain& swapchain, SurfaceKHR& surface)
-    : instance_{instance},
+    : instance_(instance),
       render_window_{render_window},
       device_{device},
       memory_allocator_(memory_allocator),
@@ -136,8 +136,7 @@ void PresentManager::copyToSwapchain(Frame* frame) {
         try {
             // Recreate surface and swapchain if needed.
             if (requires_recreation) {
-                surface_ =
-                    render::vulkan::createSurface(instance_, render_window_.getWindowSystemInfo());
+                 surface_ = createSurface(instance_, render_window_.getWindowSystemInfo());
                 recreateSwapchain(frame);
             }
 

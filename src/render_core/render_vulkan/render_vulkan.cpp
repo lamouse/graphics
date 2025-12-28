@@ -49,13 +49,13 @@ RendererVulkan::RendererVulkan(core::frontend::BaseWindow* window) try
                               settings::values.render_debug.GetValue())),
       debug_messenger(settings::values.render_debug.GetValue() ? createDebugMessenger(*instance)
                                                                : DebugUtilsMessenger{}),
-      surface(createSurface(*instance, window->getWindowSystemInfo())),
+      surface(createSurface(instance, window->getWindowSystemInfo())),
       device(createDevice(instance, *surface)),
       memory_allocator(device),
       scheduler(device),
       swapchain(*surface, device, window->getFramebufferLayout().width,
                 window->getFramebufferLayout().height),
-      present_manager(*instance, *window, device, memory_allocator, scheduler, swapchain, surface),
+      present_manager(instance, *window, device, memory_allocator, scheduler, swapchain, surface),
       blit_swapchain(device, memory_allocator, present_manager, scheduler),
       imgui(settings::values.use_debug_ui.GetValue()
                 ? std::make_unique<ImguiCore>(window, device, scheduler, device.getPhysical(),
