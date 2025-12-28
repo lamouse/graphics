@@ -66,8 +66,8 @@ class World {
                 auto& render_state =
                     draw_able->getEntity().getComponent<ecs::RenderStateComponent>();
                 render_state.mouse_select = false;
-                render_state.select_id = std::numeric_limits<unsigned int>::max();
             }
+            pick_id = id_t{};
         };
 
         [[nodiscard]] auto getScene() -> ecs::Scene&;

@@ -233,6 +233,9 @@ void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float as
 }
 
 void draw_detail(settings::MenuData& data, ecs::Entity entity) {
+    if(!data.show_detail){
+        return;
+    }
     ImGui::Begin("Detail", &data.show_detail);
     if (entity.hasComponent<ecs::TagComponent>()) {
         auto& tag = entity.getComponent<ecs::TagComponent>();
@@ -275,10 +278,7 @@ void draw_detail(settings::MenuData& data, ecs::Entity entity) {
     ImGui::End();
 }
 
-// ======================================
-// 递归绘制树节点（专业级 Outliner 风格）
-// ======================================
-void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
+void DrawModelTreeNode(ecs::Entity entity) {
     ImGui::PushID(&entity);
     auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
     auto& tag = entity.getComponent<ecs::TagComponent>();
@@ -307,20 +307,9 @@ void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
     // 使用 Selectable 占满整行，允许重叠
     ImGui::Selectable(tag.tag.c_str(), render_state.is_select(),
                       ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
-    static unsigned int select_id = std::numeric_limits<unsigned int>::max();
-    if (render_state.is_select() && render_state.mouse_select) {
-        select_id = render_state.select_id;
-    }
+
     // 仅当点击了名称区域（非箭头/复选框）时才选中
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        select_id = render_state.id;
-    }
-    render_state.select_id = select_id;
-
-    if (render_state.is_select()) {
-        if (data.show_detail) {
-            draw_detail(data, entity);
-        }
     }
 
     ImGui::PopStyleVar();  // ItemInnerSpacing
@@ -328,6 +317,54 @@ void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
     ImGui::EndGroup();
     ImGui::PopStyleVar();  // ItemSpacing
 
+    ImGui::PopID();
+}
+
+void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
+    auto& tag = outliner.entity.getComponent<ecs::TagComponent>();
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    ImGui::PushID(id);  // 使用 entity 的唯一 id
+    static uint32_t select_id = std::numeric_limits<unsigned int>::max();
+    ;
+    bool open{};
+    // 判断点击事件
+    if (outliner.entity.hasComponent<ecs::RenderStateComponent>()) {
+        auto& render_state = outliner.entity.getComponent<ecs::RenderStateComponent>();
+
+        if (render_state.mouse_select) {
+            select_id = render_state.id;
+            render_state.select_id = select_id;
+        }
+        if (render_state.is_select()) {
+            flags |= ImGuiTreeNodeFlags_Selected;
+            draw_detail(settings::values.menu_data, outliner.entity);
+        }
+
+        ImGui::PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoTabStop, true);
+        ImGui::Checkbox(("##vis" + tag.tag).c_str(), &render_state.visible);
+        ImGui::PopItemFlag();
+        ImGui::SameLine();
+        open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen()) {
+            select_id = render_state.id;
+            render_state.select_id = select_id;
+            render_state.mouse_select = false;
+        }
+    } else {
+        open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
+    }
+
+    if (open) {
+        if (!outliner.children.empty()) {
+            // children with indent
+            ImGui::Indent();
+            for (const auto& childEntity : outliner.children) {
+                DrawModelTreeNode( childEntity);
+            }
+            ImGui::Unindent();
+        }
+        ImGui::TreePop();
+    }
     ImGui::PopID();
 }
 
@@ -354,28 +391,19 @@ void showOutliner(world::World& world, settings::MenuData& data) {
         static int push_id = 0;
         world.processOutlineres([&](ecs::Outliner&& outliner) {
             ecs::Outliner local = std::move(outliner);
-            auto& tag = local.entity.getComponent<ecs::TagComponent>();
-            ImGuiTreeNodeFlags flags =
-                ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-            ImGui::PushID(push_id++);  // 使用 entity 的唯一 id
-            bool open = ImGui::TreeNodeEx(&local.entity, flags, "%s", tag.tag.c_str());
-            // 只有展开时才绘制子节点
-            if (open) {
-                DrawModelTreeNode(data, local.entity);
-
-                if (!local.children.empty()) {
-                    // children with indent
-                    ImGui::Indent();
-                    for (auto& childEntity : local.children) {
-                        DrawModelTreeNode(data, childEntity);
-                    }
-                    ImGui::Unindent();
-                }
-                ImGui::TreePop();
-            }
-            ImGui::PopID();
+            DrawOutlinerTree(local, push_id++);
         });
 
+        // 在窗口任意位置右键弹出菜单
+        ImGui::InvisibleButton("outliner_bg", ImVec2(ImGui::GetContentRegionAvail().x,
+                                                     ImGui::GetContentRegionAvail().y));
+        if (ImGui::BeginPopupContextWindow("Outliner", ImGuiPopupFlags_MouseButtonRight)) {
+            if (ImGui::MenuItem("New")) { /* ... */
+            }
+            if (ImGui::MenuItem("Save")) { /* ... */
+            }
+            ImGui::EndPopup();
+        }
         ImGui::End();
         push_id = 0;
     }
@@ -436,7 +464,7 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     ImGui::Begin(
         "##status", nullptr,
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-    auto bar_color_text = [](ImVec4 color, const char* fmt, ...) -> void {//NOLINT
+    auto bar_color_text = [](ImVec4 color, const char* fmt, ...) -> void {  // NOLINT
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
@@ -445,7 +473,7 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
         ImGui::TextColoredV(color, fmt, args);
         va_end(args);
     };
-    auto bar_text = [](const char* fmt, ...) -> void {//NOLINT
+    auto bar_text = [](const char* fmt, ...) -> void {  // NOLINT
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
@@ -459,12 +487,11 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     bar_text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
     bar_text("Entities: %d", barData.registry_count);
     bar_text("device: %s", barData.device_name.c_str());
-    bar_text(
-        "scaling filter: %s",
-        settings::enums::CanonicalizeEnum(settings::values.scaling_filter.GetValue()).c_str());
+    bar_text("scaling filter: %s",
+             settings::enums::CanonicalizeEnum(settings::values.scaling_filter.GetValue()).c_str());
 
     if (barData.build_shaders > 0) {
-        bar_color_text({0.3f, .1f, 1.f,.0f}, "build shaders: %d", barData.build_shaders);
+        bar_color_text({0.3f, .1f, 1.f, .0f}, "build shaders: %d", barData.build_shaders);
     }
 
     ImGui::End();
