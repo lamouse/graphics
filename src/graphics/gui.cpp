@@ -9,6 +9,7 @@
 #include "ecs/ui/transformUI.hpp"
 #include "ecs/ui/cameraUI.hpp"
 #include "ecs/ui/lightUI.hpp"
+#include <string>
 
 #include <glm/gtc/quaternion.hpp>
 
@@ -435,28 +436,35 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     ImGui::Begin(
         "##status", nullptr,
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-
-    ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-    ImGui::Text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
-
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-    ImGui::Text("Entities: %d", barData.registry_count);
-
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-    ImGui::Text("device: %s", barData.device_name.c_str());
-
-    if (barData.build_shaders > 0) {
+    auto bar_color_text = [](ImVec4 color, const char* fmt, ...) -> void {//NOLINT
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
-        ImGui::Text("build shaders: %d", barData.build_shaders);
+        va_list args = nullptr;
+        va_start(args, fmt);
+        ImGui::TextColoredV(color, fmt, args);
+        va_end(args);
+    };
+    auto bar_text = [](const char* fmt, ...) -> void {//NOLINT
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+        va_list args = nullptr;
+        va_start(args, fmt);
+        ImGui::TextV(fmt, args);
+        va_end(args);
+    };
+
+    bar_color_text({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
+    bar_text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
+    bar_text("Entities: %d", barData.registry_count);
+    bar_text("device: %s", barData.device_name.c_str());
+    bar_text(
+        "scaling filter: %s",
+        settings::enums::CanonicalizeEnum(settings::values.scaling_filter.GetValue()).c_str());
+
+    if (barData.build_shaders > 0) {
+        bar_color_text({0.3f, .1f, 1.f,.0f}, "build shaders: %d", barData.build_shaders);
     }
 
     ImGui::End();
