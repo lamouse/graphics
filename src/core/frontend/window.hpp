@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 #include "framebuffer_layout.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else

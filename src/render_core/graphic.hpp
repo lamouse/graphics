@@ -4,9 +4,7 @@
 #include "render_core/compute_instance.hpp"
 #include "render_core/texture/types.hpp"
 #include "common/class_traits.hpp"
-#include "resource/instance.hpp"
-#include "resource/texture/image.hpp"
-#include "resource/obj/mesh.hpp"
+#include "render_core/mesh.hpp"
 #include <ktx.h>
 namespace render {
 using GraphicsId = common::SlotId;
@@ -32,10 +30,10 @@ class Graphic {
     public:
         virtual ~Graphic() = default;
         virtual auto getDrawImage() -> unsigned long long = 0;
-        virtual auto uploadModel(const graphics::IMeshData& instance) -> MeshId = 0;
-        virtual auto uploadTexture(const ::resource::image::ITexture& texture) -> TextureId = 0;
+        virtual auto uploadModel(const IMeshData& instance) -> MeshId = 0;
+        virtual auto uploadTexture(const ITexture& texture) -> TextureId = 0;
         virtual auto uploadTexture(ktxTexture* ktxTexture) -> TextureId = 0;
-        virtual void draw(const graphics::IMeshInstance& instance) = 0;
+        virtual void draw(const IMeshInstance& instance) = 0;
         /**
          * @brief 添加shader，返回shader的hash，同过设置IModelInstance设置shader hash
          * 确认使用的shader

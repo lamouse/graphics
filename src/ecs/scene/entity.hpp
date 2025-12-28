@@ -4,7 +4,7 @@
 
 #pragma once
 #include "ecs/scene/scene.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "common/assert.hpp"
 
 namespace ecs {

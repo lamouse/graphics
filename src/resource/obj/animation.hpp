@@ -1,7 +1,7 @@
 #pragma once
 #include "resource/obj/bone_info.hpp"
 #include "resource/obj/animation_model.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <resource/obj/bone.hpp>

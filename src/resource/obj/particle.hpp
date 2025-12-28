@@ -1,8 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "mesh.hpp"
+#include "render_core/mesh.hpp"
 namespace graphics {
-struct ParticleModel : public IMeshData {
+struct ParticleModel : public render::IMeshData {
         struct Vertex {
                 glm::vec2 position;
                 glm::vec2 velocity;

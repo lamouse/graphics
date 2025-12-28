@@ -1,6 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <vector>
 #include <type_traits>
 #include "common/common_types.hpp"

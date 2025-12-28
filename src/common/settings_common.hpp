@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <limits>
 #include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 namespace settings {
 enum class Category : u16 {
     core = 0,

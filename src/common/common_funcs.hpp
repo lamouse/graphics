@@ -1,6 +1,6 @@
 #pragma once
-#include "common/class_traits.hpp"
 #include <iterator>
+#include <span>
 #if !defined(ARCHITECTURE_x86_64)
 #include <cstdlib>  // for exit
 #endif

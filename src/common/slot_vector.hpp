@@ -8,7 +8,7 @@
 #include <cassert>
 
 #include "common_types.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 
 namespace common {
 struct SlotId {

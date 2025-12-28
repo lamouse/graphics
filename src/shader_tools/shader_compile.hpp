@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string_view>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <span>
 #include <vector>
 #include "shader_tools/shader_info.h"

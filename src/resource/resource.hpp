@@ -3,6 +3,7 @@
 #include "render_core/types.hpp"
 #include "render_core/shader_cache.hpp"
 #include "resource/obj/model_mesh.hpp"
+#include "render_core/mesh.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -41,8 +42,8 @@ concept IsShaderHashStruct = std::same_as<T, ShaderHash>;
 template <typename T>
 concept IsUint64 = std::same_as<T, std::uint64_t>;
 
-using add_texture_func = std::function<render::TextureId(const resource::image::ITexture&)>;
-using add_mesh_func = std::function<render::TextureId(const IMeshData&)>;
+using add_texture_func = std::function<render::TextureId(const render::ITexture&)>;
+using add_mesh_func = std::function<render::TextureId(const render::IMeshData&)>;
 class ResourceManager {
     public:
         ~ResourceManager() = default;
@@ -67,7 +68,7 @@ class ResourceManager {
         auto addModel(std::string_view path, add_mesh_func func = nullptr) -> render::MeshId;
 
         auto getModelConfig(std::string_view name) -> ModelConfig;
-        auto addMesh(std::string meshName, const IMeshData&, add_mesh_func func = nullptr)
+        auto addMesh(std::string meshName, const render::IMeshData&, add_mesh_func func = nullptr)
             -> render::MeshId;
 
         void addMeshVertex(render::MeshId meshId, const std::vector<glm::vec3>& vertexes,

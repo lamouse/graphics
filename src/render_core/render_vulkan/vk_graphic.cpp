@@ -634,7 +634,7 @@ void VulkanGraphics::UpdateLineWidth() {
     scheduler.record([](vk::CommandBuffer cmdbuf) { cmdbuf.setLineWidth(1); });
 }
 
-auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId {
+auto VulkanGraphics::uploadModel(const IMeshData& meshData) -> MeshId {
     ModelResource resource;
     auto mesh_data = meshData.getMesh();
     resource.vertex_size = static_cast<u32>(mesh_data.size() * sizeof(float));
@@ -657,7 +657,7 @@ auto VulkanGraphics::uploadModel(const graphics::IMeshData& meshData) -> MeshId 
     return modelResource.insert(resource);
 }
 
-auto VulkanGraphics::uploadTexture(const ::resource::image::ITexture& texture) -> TextureId {
+auto VulkanGraphics::uploadTexture(const ITexture& texture) -> TextureId {
     return texture_cache.addTexture({.width = static_cast<u32>(texture.getWidth()),
                                      .height = static_cast<u32>(texture.getHeight())},
                                     texture.data(), texture.count());
@@ -667,7 +667,7 @@ auto VulkanGraphics::uploadTexture(ktxTexture* ktxTexture) -> TextureId {
     return texture_cache.addTexture(ktxTexture);
 }
 
-void VulkanGraphics::draw(const graphics::IMeshInstance& instance) {
+void VulkanGraphics::draw(const IMeshInstance& instance) {
     ZoneScopedN("VulkanGraphics::draw()");
     if (is_begin_frame) {
         last_pipeline_state = instance.getPipelineState();

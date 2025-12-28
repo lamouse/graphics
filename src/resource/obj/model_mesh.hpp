@@ -3,7 +3,8 @@
 #include "resource/obj/mesh_material.hpp"
 #include "resource/obj/mesh_vertex.hpp"
 #include "render_core/pipeline_state.h"
-#include "mesh.hpp"
+#include "common/class_traits.hpp"
+#include "render_core/mesh.hpp"
 
 #include <vector>
 #include <string>
@@ -31,7 +32,7 @@ struct SubMesh {
         MeshMaterial material;  // 每个子网格有自己的材质
 };
 
-class Model : public IMeshData {
+class Model : public render::IMeshData {
     public:
         // 返回顶点坐标（仅 position），展平为 float 数组
         [[nodiscard]] auto getMesh() const -> std::span<const float> override;
@@ -68,7 +69,7 @@ class Model : public IMeshData {
 
 class MultiMeshModel {
     public:
-        struct Mesh : public IMeshData {
+        struct Mesh : public render::IMeshData {
                 std::vector<Vertex> vertices_;
                 std::vector<::glm::vec3> only_vertex;
                 std::vector<uint32_t> indices_;
