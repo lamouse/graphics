@@ -50,6 +50,13 @@ class Entity {
         }
         // NOLINTNEXTLINE(hicpp-explicit-conversions)
         operator bool() const { return handle_ != entt::null; }
+        auto operator==(const Entity& rhs) const noexcept -> bool {
+            return this->scene_ == rhs.scene_ && this->handle_ == rhs.handle_;
+        }
+
+        auto operator!=(const Entity& rhs) const noexcept -> bool {
+            return !*this == rhs;
+        }
 
     private:
         Entity(entt::entity handle, Scene* scene) : handle_(handle), scene_(scene) {};

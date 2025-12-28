@@ -30,6 +30,7 @@ void* GImGuiDemoMarkerCallbackUserData = NULL;
 namespace {
 constexpr float OUTLINER_WIDTH = 400.f;
 constexpr float RENDER_STATUS_BAR_HEIGHT = 45.f;
+ecs::Entity detail_entity;
 
 // Note that shortcuts are currently provided for display only
 // (future version will add explicit flags to BeginMenu() to request processing shortcuts)
@@ -233,7 +234,8 @@ void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float as
 }
 
 void draw_detail(settings::MenuData& data, ecs::Entity entity) {
-    if(!data.show_detail){
+
+    if (!data.show_detail || !entity) {
         return;
     }
     ImGui::Begin("Detail", &data.show_detail);
@@ -303,14 +305,37 @@ void DrawModelTreeNode(ecs::Entity entity) {
 
     // ===== 模型名称（可选择区域）=====
     ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    static uint32_t select = std::numeric_limits<uint32_t>::max();
 
     // 使用 Selectable 占满整行，允许重叠
     ImGui::Selectable(tag.tag.c_str(), render_state.is_select(),
                       ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
 
+    // 检查是否右键点击了该 Selectable，并弹出上下文菜单
+    auto popup_tag = std::string("##tag_context_menu") + std::to_string(render_state.id);
+    if (ImGui::BeginPopupContextItem(popup_tag.c_str(), ImGuiPopupFlags_MouseButtonRight)) {
+
+        if (ImGui::MenuItem("编辑")) {
+            detail_entity = entity;
+            select = render_state.id;
+        }
+        if (ImGui::MenuItem("删除")) {
+            // 处理“删除”操作
+        }
+        // 可以添加更多菜单项
+        ImGui::EndPopup();
+    }
+
     // 仅当点击了名称区域（非箭头/复选框）时才选中
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+        if (render_state.is_select()) {
+            select = std::numeric_limits<uint32_t>::max();
+            detail_entity = {};
+        } else {
+            select = render_state.id;
+        }
     }
+    render_state.select_id = select;
 
     ImGui::PopStyleVar();  // ItemInnerSpacing
 
@@ -325,19 +350,21 @@ void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
     ImGui::PushID(id);  // 使用 entity 的唯一 id
     static uint32_t select_id = std::numeric_limits<unsigned int>::max();
-    ;
+    auto find_detail_child = std::ranges::find(outliner.children.begin(), outliner.children.end(), detail_entity) != outliner.children.end();
+
     bool open{};
     // 判断点击事件
     if (outliner.entity.hasComponent<ecs::RenderStateComponent>()) {
         auto& render_state = outliner.entity.getComponent<ecs::RenderStateComponent>();
-
+        if(find_detail_child){
+            select_id = render_state.id;
+        }
         if (render_state.mouse_select) {
             select_id = render_state.id;
             render_state.select_id = select_id;
         }
         if (render_state.is_select()) {
             flags |= ImGuiTreeNodeFlags_Selected;
-            draw_detail(settings::values.menu_data, outliner.entity);
         }
 
         ImGui::PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoTabStop, true);
@@ -345,11 +372,28 @@ void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
         ImGui::PopItemFlag();
         ImGui::SameLine();
         open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen()) {
-            select_id = render_state.id;
-            render_state.select_id = select_id;
-            render_state.mouse_select = false;
+        auto popup_tag = std::string("##tag_context_menu") + std::to_string(render_state.id);
+        if (ImGui::BeginPopupContextItem(popup_tag.c_str(), ImGuiPopupFlags_MouseButtonRight)) {
+            if (ImGui::MenuItem("编辑")) {
+                detail_entity = outliner.entity;
+                select_id = render_state.id;
+            }
+            if (ImGui::MenuItem("删除")) {
+                // 处理“删除”操作
+            }
+            // 可以添加更多菜单项
+            ImGui::EndPopup();
         }
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen()) {
+            if (render_state.is_select()) {
+                select_id = std::numeric_limits<unsigned int>::max();
+                detail_entity = {};
+            } else {
+                select_id = render_state.id;
+                render_state.mouse_select = false;
+            }
+        }
+        render_state.select_id = select_id;
     } else {
         open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
     }
@@ -359,7 +403,7 @@ void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
             // children with indent
             ImGui::Indent();
             for (const auto& childEntity : outliner.children) {
-                DrawModelTreeNode( childEntity);
+                DrawModelTreeNode(childEntity);
             }
             ImGui::Unindent();
         }
@@ -397,13 +441,15 @@ void showOutliner(world::World& world, settings::MenuData& data) {
         // 在窗口任意位置右键弹出菜单
         ImGui::InvisibleButton("outliner_bg", ImVec2(ImGui::GetContentRegionAvail().x,
                                                      ImGui::GetContentRegionAvail().y));
-        if (ImGui::BeginPopupContextWindow("Outliner", ImGuiPopupFlags_MouseButtonRight)) {
+        if (ImGui::BeginPopupContextWindow(
+                "Outliner", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
             if (ImGui::MenuItem("New")) { /* ... */
             }
             if (ImGui::MenuItem("Save")) { /* ... */
             }
             ImGui::EndPopup();
         }
+        draw_detail(settings::values.menu_data, detail_entity);
         ImGui::End();
         push_id = 0;
     }
