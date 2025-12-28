@@ -3,10 +3,10 @@ module;
 #include <utility>
 #include "common/polyfill_thread.hpp"
 #include <spdlog/spdlog.h>
-#include "common/settings.hpp"
 #include <vulkan/vulkan.hpp>
 module render.vulkan.master_semaphore;
 import render.vulkan.common;
+import common;
 #undef max
 #undef min
 namespace render::vulkan::semaphore {

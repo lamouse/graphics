@@ -1,7 +1,7 @@
 module;
 #include "common/scope_exit.h"
-#include "common/settings.hpp"
 #include <vulkan/vulkan.hpp>
+#include <functional>
 module render.vulkan.present.layer;
 import render.vulkan.common;
 import render.vulkan.utils;
@@ -9,6 +9,7 @@ import render.vulkan.present.FSR;
 import render.vulkan.present.AntiAliasPass;
 import render;
 import core;
+import common;
 
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,

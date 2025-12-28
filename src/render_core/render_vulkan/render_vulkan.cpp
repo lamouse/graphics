@@ -1,6 +1,5 @@
 module;
 #include "common/scope_exit.h"
-#include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 
 #include <tracy/Tracy.hpp>
@@ -10,6 +9,7 @@ import render.vulkan.common;
 import render.vulkan.present.present_frame;
 import render;
 import core;
+import common;
 
 namespace render::vulkan {
 auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device {

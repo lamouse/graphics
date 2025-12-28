@@ -1,6 +1,5 @@
 module;
 #include <spdlog/spdlog.h>
-#include "common/settings.hpp"
 #include <vulkan/vulkan.hpp>
 #include <functional>
 
@@ -12,6 +11,7 @@ import render.vulkan.scheduler;
 import render.vulkan.present.filters;
 import render.framebuffer_config;
 import core;
+import common;
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,
                        PresentManager& present_manager_, scheduler::Scheduler& scheduler_)

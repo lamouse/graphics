@@ -3,7 +3,6 @@ module;
 #include <fstream>
 #include <memory>
 #include <utility>
-#include "common/settings.hpp"
 #include "common/thread_worker.hpp"
 #include <xxhash.h>
 #include <vulkan/vulkan.hpp>
@@ -19,6 +18,7 @@ import render.vulkan.buffer_cache;
 import render.vulkan.update_descriptor;
 import render;
 import shader;
+import common;
 namespace render::vulkan {
 
 constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";

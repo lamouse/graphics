@@ -4,12 +4,12 @@ module;
 #include <boost/container/small_vector.hpp>
 #include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
-#include "common/settings.hpp"
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif
 module render.vulkan.scheduler;
 import render.vulkan.common;
+import common;
 
 namespace render::vulkan::scheduler {
 

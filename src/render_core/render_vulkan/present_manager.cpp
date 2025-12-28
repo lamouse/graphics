@@ -1,6 +1,5 @@
 module;
 #include <spdlog/spdlog.h>
-#include "common/settings.hpp"
 #include "common/thread.hpp"
 #include <vulkan/vulkan.hpp>
 #include <tracy/Tracy.hpp>
@@ -13,6 +12,7 @@ import render.vulkan.utils;
 import render.vulkan.scheduler;
 import render.vulkan.swapchain;
 import core;
+import common;
 
 namespace render::vulkan {
 namespace {

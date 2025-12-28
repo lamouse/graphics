@@ -4,7 +4,6 @@ module;
 
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
-#include "common/settings.hpp"
 #include <vulkan/vulkan.hpp>
 
 #include <vulkan/vk_enum_string_helper.h>
@@ -14,6 +13,7 @@ import render.vulkan.present.present_frame;
 import render.vulkan.present_manager;
 import render.vulkan.scheduler;
 import core;
+import common;
 
 namespace {
 void init_imgui(float scale) {

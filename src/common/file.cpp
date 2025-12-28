@@ -1,6 +1,5 @@
 #include "file.hpp"
 #include <xxhash.h>
-#include <cstddef>
 #include <fstream>
 #include <vector>
 #include <filesystem>

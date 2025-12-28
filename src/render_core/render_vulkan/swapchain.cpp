@@ -1,7 +1,6 @@
 module;
 #include <algorithm>
 
-#include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan.hpp>
@@ -15,6 +14,7 @@ module;
 
 module render.vulkan.swapchain;
 import render.vulkan.common;
+import common;
 
 namespace render::vulkan {
 namespace {

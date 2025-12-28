@@ -11,7 +11,6 @@ module;
 #include "common/assert.hpp"
 #include "render_core/texture_cache/texture_cache.h"
 #include "render_core/buffer_cache/buffer_cache.h"
-#include "common/settings.hpp"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
@@ -29,6 +28,7 @@ import render.graphic;
 import render;
 import shader;
 import core;
+import common;
 using IsInstance = bool;
 
 namespace {

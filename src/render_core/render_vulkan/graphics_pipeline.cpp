@@ -1,6 +1,5 @@
 module;
 #include "common/assert.hpp"
-#include "common/settings.hpp"
 #include "common/thread_worker.hpp"
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
@@ -21,6 +20,7 @@ import render.vulkan.pipeline_helper;
 import render.vulkan.format_utils;
 import render;
 import shader;
+import common;
 
 constexpr size_t MAX_IMAGE_ELEMENTS = 64;
 constexpr size_t NUM_RENDER_TARGETS = 8;
