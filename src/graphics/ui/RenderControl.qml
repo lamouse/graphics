@@ -14,6 +14,9 @@ Window {
         color: "lightgray"
         anchors.fill: parent
         focus: true
+        Keys.onReturnPressed: {
+            renderCtrl.renderStart();
+        }
         RenderController {
             id: render_ctrl
         }
