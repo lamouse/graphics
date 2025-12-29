@@ -1,5 +1,5 @@
 module;
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <vector>
 #include <type_traits>
 #include <vulkan/vulkan.hpp>
@@ -7,16 +7,17 @@ module;
 #include "vma.hpp"
 #include <span>
 #include <utility>
-// #if defined(_WIN32)
-// #include <windows.h>
-// #endif
+#if defined(_WIN32)
+#include <windows.h>
+#ifdef CreateSemaphore
+#undef CreateSemaphore
+#endif
+#endif
 #ifdef _MSC_VER
 #pragma warning(disable : 26812)  // Disable prefer enum class over enum
 #endif
 
-
 export module render.vulkan.common.wrapper;
-
 
 namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
@@ -32,41 +33,44 @@ struct NoOwner {
         // auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
         operator bool() const { return false; }  // NOLINT
 };
-inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Image handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::DeviceMemory handle) noexcept { owner.free(handle); }
-inline void destroy(vk::Device owner, vk::CommandPool handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::ImageView handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::BufferView handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Framebuffer handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Event handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::SwapchainKHR handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::ShaderModule handle) noexcept { owner.destroy(handle); }
-inline void destroy(NoOwner /*unused*/, vk::Device handle) noexcept { handle.destroy(); }
-inline void destroy(vk::Device owner, vk::Pipeline handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::PipelineLayout handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::PipelineCache handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::RenderPass handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Sampler handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Semaphore handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::QueryPool handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::DescriptorPool handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Buffer handle) noexcept { owner.destroy(handle); }
 
-inline void destroy(vk::Device owner, vk::DescriptorSetLayout handle) noexcept {
-    owner.destroy(handle);
-}
-inline void destroy(vk::Device owner, vk::DescriptorUpdateTemplate handle) noexcept {
-    owner.destroy(handle);
-}
+template<typename Owner, typename Handle>
+struct DestroyTraits{
+    static void destroy(Owner owner, Handle handle){
+        owner.destroy(handle);
+    }
+};
 
-inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.destroy(val); }
-inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
-inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
-    owner.destroyDebugUtilsMessengerEXT(handle, nullptr);
-}
-inline void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle) noexcept {
-    owner.destroyDebugReportCallbackEXT(handle, nullptr);
+template<typename HANDLE>
+struct DestroyTraits<NoOwner, HANDLE>{
+    static void destroy(NoOwner  /*unused*/, HANDLE handle){
+        handle.destroy();
+    }
+};
+template<>
+struct DestroyTraits<vk::Device, vk::DeviceMemory>{
+    static void destroy(vk::Device owner, vk::DeviceMemory handle){
+        owner.free(handle);
+    }
+};
+
+template<>
+struct DestroyTraits<vk::Instance, vk::DebugUtilsMessengerEXT>{
+    static void destroy(vk::Instance owner, vk::DebugUtilsMessengerEXT handle){
+        owner.destroyDebugUtilsMessengerEXT(handle);
+    }
+};
+
+template<>
+struct DestroyTraits<vk::Instance, vk::DebugReportCallbackEXT>{
+    static void destroy(vk::Instance owner, vk::DebugReportCallbackEXT handle){
+        owner.destroyDebugReportCallbackEXT(handle);
+    }
+};
+
+template<typename Owner, typename Handle>
+inline void destroy(Owner owner, Handle handle) noexcept {
+    DestroyTraits<Owner, Handle>::destroy(owner, handle);
 }
 
 template <typename Type, typename OwnerType>
@@ -349,9 +353,9 @@ class DeviceMemory : public wrapper::Handle<vk::DeviceMemory, vk::Device> {
     public:
         [[nodiscard]] auto getMemoryFdKHR() const -> int;
 
-// #ifdef _WIN32
-//         [[nodiscard]] auto getMemoryWin32HandleKHR() const -> HANDLE;
-// #endif
+#ifdef _WIN32
+        [[nodiscard]] auto getMemoryWin32HandleKHR() const -> HANDLE;
+#endif
 
         /// Set object name.
         void SetObjectNameEXT(const char* name) const;
