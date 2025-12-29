@@ -7,13 +7,6 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include "scheduler.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
-#if defined max
-#undef max
-#endif
-
-#if defined min
-#undef min
-#endif
 
 namespace render::vulkan {
 namespace {

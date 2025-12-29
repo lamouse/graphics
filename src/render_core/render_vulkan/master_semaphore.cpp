@@ -5,8 +5,6 @@
 #include "common/polyfill_thread.hpp"
 #include <spdlog/spdlog.h>
 #include "common/settings.hpp"
-#undef max
-#undef min
 namespace render::vulkan::semaphore {
 constexpr uint64_t FENCE_RESERVE_SIZE = 8;
 MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
