@@ -1,8 +1,6 @@
 set(sources
     app.hpp
     app.cpp
-    graphic.hpp
-    graphic.cpp
     gui.hpp
     gui.cpp
     main.cpp
