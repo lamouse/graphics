@@ -55,7 +55,6 @@ ApplicationWindow {
     Component {
         id: gameList
         RenderControl{
-            anchors.centerIn: parent
             onRenderStart:{
                 console.log("render start")
                 mainWindow.close()
