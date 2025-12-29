@@ -9,8 +9,6 @@
 
 #if defined(MemoryBarrier)
 #undef MemoryBarrier
-#undef min
-#undef max
 #endif
 namespace render::vulkan {
 
