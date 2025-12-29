@@ -1,5 +1,6 @@
 #pragma once
 #include "core/camera/camera.hpp"
+#include "core/frontend/framebuffer_layout.hpp"
 #include <chrono>
 
 namespace graphics {
@@ -40,7 +41,6 @@ struct FrameInfo {
         graphics::ResourceManager* resource_manager{};
         Camera* camera{};
         FrameTimeData frame_time{};
-        int window_width{};
-        int window_hight{};
+        layout::FrameBufferLayout frame_layout;
 };
 }  // namespace core

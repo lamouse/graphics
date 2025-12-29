@@ -49,7 +49,7 @@ class World {
             }
         }
 
-        void pick(id_t id) {
+        void pick(id_t id, id_t childId) {
             pick_id = id;
             auto* draw_able = render_registry_.getDrawableById(id);
             if (draw_able) {
@@ -57,6 +57,18 @@ class World {
                     draw_able->getEntity().getComponent<ecs::RenderStateComponent>();
                 render_state.mouse_select = true;
                 render_state.select_id = id;
+                auto childs = draw_able->getChildren();
+                for (auto& child : childs) {
+                    if (child.hasComponent<ecs::RenderStateComponent>()) {
+                        auto& child_state = child.getComponent<ecs::RenderStateComponent>();
+                        if (child_state.id == childId) {
+                            child_state.mouse_select = true;
+                        } else {
+                            child_state.mouse_select = false;
+                        }
+                        child_state.select_id = childId;
+                    }
+                }
             }
         }
 

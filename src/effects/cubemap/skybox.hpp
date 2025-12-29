@@ -1,4 +1,5 @@
 #pragma once
+#include "render_core/graphic.hpp"
 #include "resource/mesh_instance.hpp"
 #include "common/common_funcs.hpp"
 #include "core/frame_info.hpp"
