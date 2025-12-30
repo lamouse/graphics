@@ -50,24 +50,12 @@ struct System::Impl {
             graphics::ModelResourceName names{.shader_name = model_shader_name,
                                               .mesh_name = viking_obj_path};
 
-            std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
-                                       glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
-                                       glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
-                                       glm::vec3{1.f, 1.f, 1.f}};
-            for (auto& light_color : light_colors) {
-                auto point_light = std::make_shared<graphics::effects::PointLightEffect>(
-                    *resourceManager, 1.f, .04f, light_color);
-                world_->addDrawable(point_light);
-            }
-
             auto delta_particle = std::make_shared<graphics::effects::DeltaParticle>(
                 *resourceManager, frame_layout, PARTICLE_COUNT);
             auto light_model = std::make_shared<graphics::effects::ModelForMultiMesh>(
                 *resourceManager, names, "model");
             world_->addDrawable(light_model);
-            auto sky_box =
-                std::make_shared<graphics::effects::SkyBox>(*resourceManager);
-            world_->addDrawable(sky_box);
+
             graphics::PickingSystem::commit();
         }
 
@@ -129,7 +117,7 @@ struct System::Impl {
                     auto imageId = graphics->getDrawImage();
                     graphics::ui::show_menu(settings::values.menu_data);
                     graphics::draw_setting(settings::values.menu_data.show_system_setting);
-                    graphics::ui::showOutliner(*world_, settings::values.menu_data);
+                    graphics::ui::showOutliner(*world_, *resource_manager, settings::values.menu_data);
                     render_status_bar(settings::values.menu_data, statusData);
                     graphics::ui::draw_texture(settings::values.menu_data, imageId,
                                                window->getAspectRatio());
@@ -139,8 +127,6 @@ struct System::Impl {
             } else {
                 Render()->composite(std::span{&frame_config_, 1});
             }
-
-            world_->cleanLight();
         }
 };
 System::System() : impl_(std::make_unique<System::Impl>()) {}

@@ -1,11 +1,12 @@
 #pragma once
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "world/render_registry.hpp"
 #include "resource/id.hpp"
 #include "ecs/scene/scene.hpp"
 #include "ecs/component.hpp"
 #include <vector>
 #include <functional>
+#include <unordered_map>
 
 namespace core {
 class FrameTime;
@@ -28,6 +29,7 @@ enum class WorldEntityType : std::uint8_t { CAMERA };
 
 class World {
         struct LightInfo {
+                id_t id;
                 ecs::LightComponent* light;
                 ecs::TransformComponent* transform;
         };
@@ -35,7 +37,15 @@ class World {
     public:
         World();
         [[nodiscard]] auto getEntity(WorldEntityType entityType) const -> ecs::Entity;
-        void addLight(const LightInfo& info) { lights_.push_back(info); }
+        void addLight(const LightInfo& info) {
+            const auto& [pair, is_new] = light_index.try_emplace(info.id);
+            if (is_new) {
+                lights_.push_back(info);
+                pair->second = static_cast<uint32_t>(lights_.size()) - 1;
+            } else {
+                lights_[pair->second] = info;
+            }
+        }
         void update(core::frontend::BaseWindow& window, graphics::ResourceManager& resourceManager,
                     graphics::input::InputSystem& input_system);
         void draw(render::Graphic* gfx);
@@ -87,9 +97,12 @@ class World {
         CLASS_DEFAULT_MOVEABLE(World);
         CLASS_NON_COPYABLE(World);
 
-        void cleanLight() {
-            lights_.clear();
-            lights_.push_back({.light = dir_light, .transform = nullptr});
+        void remove_light(id_t id) {
+            auto light_iterator = light_index.find(id);
+            if(light_iterator != light_index.end()){
+                lights_.erase(lights_.begin() + light_iterator->second);
+                light_index.erase(light_iterator);
+            }
         }
 
         void processOutlineres(const std::function<void(ecs::Outliner&&)>& func) {
@@ -116,5 +129,6 @@ class World {
         std::vector<ecs::Entity> child_entitys_;
         RenderRegistry render_registry_;
         std::unique_ptr<core::FrameTime> frame_time_;
+        std::unordered_map<id_t, uint32_t> light_index;
 };
 }  // namespace world

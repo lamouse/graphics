@@ -9,6 +9,8 @@
 #include "ecs/ui/transformUI.hpp"
 #include "ecs/ui/cameraUI.hpp"
 #include "ecs/ui/lightUI.hpp"
+#include "effects/light/point_light.hpp"
+#include "effects/cubemap/skybox.hpp"
 #include <string>
 
 #include <glm/gtc/quaternion.hpp>
@@ -179,6 +181,11 @@ void pipeline_state(render::DynamicPipelineState& state) {
     ImGui::Text("blend color");
     ImGui::ColorEdit4("color", &state.blendColor.r);  // NOLINT
 }
+struct OutLinerMenuData {
+        bool add_point_light_window{};
+        bool add_sky_box_window{};
+        bool has_sky_box{};
+};
 }  // namespace
 namespace graphics::ui {
 
@@ -234,7 +241,6 @@ void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float as
 }
 
 void draw_detail(settings::MenuData& data, ecs::Entity entity) {
-
     if (!data.show_detail || !entity) {
         return;
     }
@@ -314,7 +320,6 @@ void DrawModelTreeNode(ecs::Entity entity) {
     // 检查是否右键点击了该 Selectable，并弹出上下文菜单
     auto popup_tag = std::string("##tag_context_menu") + std::to_string(render_state.id);
     if (ImGui::BeginPopupContextItem(popup_tag.c_str(), ImGuiPopupFlags_MouseButtonRight)) {
-
         if (ImGui::MenuItem("编辑")) {
             detail_entity = entity;
             select = render_state.id;
@@ -350,13 +355,14 @@ void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
     ImGui::PushID(id);  // 使用 entity 的唯一 id
     static uint32_t select_id = std::numeric_limits<unsigned int>::max();
-    auto find_detail_child = std::ranges::find(outliner.children.begin(), outliner.children.end(), detail_entity) != outliner.children.end();
+    auto find_detail_child = std::ranges::find(outliner.children.begin(), outliner.children.end(),
+                                               detail_entity) != outliner.children.end();
 
     bool open{};
     // 判断点击事件
     if (outliner.entity.hasComponent<ecs::RenderStateComponent>()) {
         auto& render_state = outliner.entity.getComponent<ecs::RenderStateComponent>();
-        if(find_detail_child){
+        if (find_detail_child) {
             select_id = render_state.id;
         }
         if (render_state.mouse_select) {
@@ -412,7 +418,56 @@ void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
     ImGui::PopID();
 }
 
-void showOutliner(world::World& world, settings::MenuData& data) {
+void add_point_light(world::World& world, ResourceManager& resourceManager, bool* open) {
+    ImGui::Begin("点光源", open);
+
+    static glm::vec3 color{1.f};
+    static float intensity{10.f};
+    static float radius{.04f};
+    ImGui::ColorEdit3("颜色", glm::value_ptr(color));
+    ImGui::SliderFloat("强度", &intensity, 10, 100);
+    ImGui::SliderFloat("半径", &radius, 0.02f, 0.40f);
+    if (ImGui::Button("确认")) {
+        auto point_light = std::make_shared<graphics::effects::PointLightEffect>(resourceManager,
+                                                                                 intensity, radius, color);
+        world.addDrawable(point_light);
+        color = glm::vec3{1.f};
+        intensity = 10.f;
+        radius = .04f;
+        (*open) = false;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("取消")) {
+        *open = false;
+    }
+
+    ImGui::End();
+}
+
+auto add_sky_box_window(world::World& world, ResourceManager& resourceManager, bool* open) -> bool {
+    ImGui::Begin("sky box", open);
+
+    if (ImGui::Button("确认")) {
+        auto sky_box = std::make_shared<graphics::effects::SkyBox>(resourceManager);
+        world.addDrawable(sky_box);
+        (*open) = false;
+        ImGui::End();
+        return true;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("取消")) {
+        *open = false;
+    }
+
+    ImGui::End();
+    return false;
+}
+
+void showOutliner(world::World& world, ResourceManager& resourceManager, settings::MenuData& data) {
+    static OutLinerMenuData outLinerMenuData;
+
     if (data.show_out_liner) {
         // 设置窗口标志
         ImGuiWindowFlags window_flags =
@@ -437,21 +492,33 @@ void showOutliner(world::World& world, settings::MenuData& data) {
             ecs::Outliner local = std::move(outliner);
             DrawOutlinerTree(local, push_id++);
         });
-
-        // 在窗口任意位置右键弹出菜单
-        ImGui::InvisibleButton("outliner_bg", ImVec2(ImGui::GetContentRegionAvail().x,
-                                                     ImGui::GetContentRegionAvail().y));
+        draw_detail(settings::values.menu_data, detail_entity);
         if (ImGui::BeginPopupContextWindow(
                 "Outliner", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
-            if (ImGui::MenuItem("New")) { /* ... */
+            if (ImGui::BeginMenu("添加")) {
+                if (ImGui::BeginMenu("光源")) {
+                    ImGui::MenuItem("点光源", nullptr, &outLinerMenuData.add_point_light_window);
+                    ImGui::EndMenu();
+                }
+                ImGui::BeginDisabled(outLinerMenuData.has_sky_box);
+                ImGui::MenuItem("天空盒子", nullptr, &outLinerMenuData.add_sky_box_window);
+                ImGui::EndDisabled();
+                ImGui::EndMenu();
             }
             if (ImGui::MenuItem("Save")) { /* ... */
             }
             ImGui::EndPopup();
         }
-        draw_detail(settings::values.menu_data, detail_entity);
         ImGui::End();
         push_id = 0;
+    }
+
+    if (outLinerMenuData.add_point_light_window) {
+        add_point_light(world, resourceManager, &outLinerMenuData.add_point_light_window);
+    }
+    if (outLinerMenuData.add_sky_box_window) {
+        outLinerMenuData.has_sky_box =
+            add_sky_box_window(world, resourceManager, &outLinerMenuData.add_sky_box_window);
     }
 }
 
