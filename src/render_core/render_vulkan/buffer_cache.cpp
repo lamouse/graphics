@@ -14,11 +14,10 @@ namespace render::vulkan {
 
 namespace {
 auto MakeBufferCopy(const texture::BufferCopy& copy) -> vk::BufferCopy {
-    return vk::BufferCopy{
-        copy.src_offset,
-        copy.dst_offset,
-        copy.size,
-    };
+    return vk::BufferCopy()
+        .setSrcOffset(copy.src_offset)
+        .setDstOffset(copy.dst_offset)
+        .setSize(copy.size);
 }
 
 auto ToIndexFormat(IndexFormat index_format) -> vk::IndexType {
