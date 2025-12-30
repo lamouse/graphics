@@ -19,7 +19,6 @@ set(sources
     math_util.h
     polyfill_thread.hpp
     scope_exit.h
-    scratch_buffer.h
     settings_common.hpp
     settings_common.cpp
     settings_setting.hpp

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "common/scratch_buffer.h"
 #include "common/slot_vector.hpp"
-#include "common/thread_worker.hpp"
 #include "common/literals.hpp"
 #include "render_core/texture.hpp"
 
@@ -10,8 +8,6 @@
 #include "render_core/texture/types.hpp"
 #include "render_core/texture/image_info.hpp"
 #include "render_core/texture/render_targets.h"
-#include <unordered_set>
-#include "common/common_funcs.hpp"
 #include <ktx.h>
 namespace render::texture {
 // 定义 key

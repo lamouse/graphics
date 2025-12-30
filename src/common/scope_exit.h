@@ -4,7 +4,7 @@
 #pragma once
 
 #include <utility>
-#include "common_funcs.hpp"
+#include "common/class_traits.hpp"
 
 namespace detail {
 template <class F>
