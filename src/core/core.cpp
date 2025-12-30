@@ -109,10 +109,9 @@ struct System::Impl {
 
             world_->draw(graphics);
 
-            auto& shader_notify = Render()->getShaderNotify();
-            const int shaders_building = shader_notify.ShadersBuilding();
-
             if (settings::values.use_debug_ui.GetValue()) {
+                auto& shader_notify = Render()->getShaderNotify();
+                const int shaders_building = shader_notify.ShadersBuilding();
                 if (shaders_building > 0) {
                     statusData.build_shaders = shaders_building;
                 } else {

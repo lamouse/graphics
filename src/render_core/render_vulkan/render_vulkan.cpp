@@ -82,7 +82,7 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
-    if (imgui && func) {
+    if (settings::values.use_debug_ui && imgui && func) {
         imgui->draw(func, frame);
     }
     scheduler.flush(*frame->render_ready);
