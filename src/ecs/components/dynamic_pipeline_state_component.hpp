@@ -5,8 +5,8 @@
 
 namespace ecs {
 struct DynamicPipeStateComponenet {
-        render::DynamicPipelineState state{};
-        DynamicPipeStateComponenet(const layout::FrameBufferLayout& layout) {
+        render::DynamicPipelineState state;
+        DynamicPipeStateComponenet() {
             state.viewport.width = static_cast<float>(settings::values.resolution.weight);
             state.viewport.height = static_cast<float>(settings::values.resolution.height);
             state.scissors.width = static_cast<int>(settings::values.resolution.weight);

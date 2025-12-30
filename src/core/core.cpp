@@ -54,17 +54,17 @@ struct System::Impl {
                                        glm::vec3{1.f, 1.f, 1.f}};
             for (auto& light_color : light_colors) {
                 auto point_light = std::make_shared<graphics::effects::PointLightEffect>(
-                    *resourceManager, frame_layout, 1.f, .04f, light_color);
+                    *resourceManager, 1.f, .04f, light_color);
                 world_->addDrawable(point_light);
             }
 
             auto delta_particle = std::make_shared<graphics::effects::DeltaParticle>(
                 *resourceManager, frame_layout, PARTICLE_COUNT);
             auto light_model = std::make_shared<graphics::effects::ModelForMultiMesh>(
-                *resourceManager, frame_layout, names, "model");
+                *resourceManager, names, "model");
             world_->addDrawable(light_model);
             auto sky_box =
-                std::make_shared<graphics::effects::SkyBox>(*resourceManager, frame_layout);
+                std::make_shared<graphics::effects::SkyBox>(*resourceManager);
             world_->addDrawable(sky_box);
             graphics::PickingSystem::commit();
         }

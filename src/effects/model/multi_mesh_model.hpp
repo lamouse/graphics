@@ -5,7 +5,7 @@
 namespace graphics::effects {
 class ModelForMultiMesh {
     public:
-        ModelForMultiMesh(ResourceManager& manager, const layout::FrameBufferLayout& layout,
+        ModelForMultiMesh(ResourceManager& manager,
                           const ModelResourceName& names, const std::string& name);
         ecs::Entity entity_;
         void draw(render::Graphic* graphic) {
