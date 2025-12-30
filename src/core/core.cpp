@@ -38,9 +38,11 @@ struct System::Impl {
             std::string particle_shader = "particle";
             std::string point_light_shader_name = "point_light";
             auto* resourceManager = resource_manager.get();
-            resourceManager->addGraphShader(model_shader_name);
-            resourceManager->addGraphShader(particle_shader);
-            resourceManager->addGraphShader(point_light_shader_name);
+
+            std::vector<std::string> shader_names{model_shader_name, particle_shader, point_light_shader_name};
+            for(auto& shader_name : shader_names){
+                resourceManager->addGraphShader(shader_name);
+            }
             resourceManager->addComputeShader(particle_shader);
             auto* window = render_base->GetRenderWindow();
             auto frame_layout = window->getFramebufferLayout();
