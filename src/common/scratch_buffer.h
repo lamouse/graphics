@@ -4,8 +4,7 @@
 #pragma once
 
 #include <iterator>
-
-#include "common/make_unique_for_overwrite.h"
+#include <memory>
 
 namespace common {
 
@@ -36,11 +35,11 @@ class ScratchBuffer {
         explicit ScratchBuffer(size_type initial_capacity)
             : last_requested_size{initial_capacity},
               buffer_capacity{initial_capacity},
-              buffer{common::make_unique_for_overwrite<T[]>(initial_capacity)} {}
+              buffer{std::make_unique_for_overwrite<T[]>(initial_capacity)} {}
 
         ~ScratchBuffer() = default;
         ScratchBuffer(const ScratchBuffer&) = delete;
-        ScratchBuffer& operator=(const ScratchBuffer&) = delete;
+        auto operator=(const ScratchBuffer&) -> ScratchBuffer& = delete;
 
         ScratchBuffer(ScratchBuffer&& other) noexcept {
             swap(other);
@@ -61,7 +60,7 @@ class ScratchBuffer {
         /// The previously held data will remain intact.
         void resize(size_type size) {
             if (size > buffer_capacity) {
-                auto new_buffer = common::make_unique_for_overwrite<T[]>(size);
+                auto new_buffer = std::make_unique_for_overwrite<T[]>(size);
                 std::move(buffer.get(), buffer.get() + buffer_capacity, new_buffer.get());
                 buffer = std::move(new_buffer);
                 buffer_capacity = size;
@@ -74,7 +73,7 @@ class ScratchBuffer {
         void resize_destructive(size_type size) {
             if (size > buffer_capacity) {
                 buffer_capacity = size;
-                buffer = common::make_unique_for_overwrite<T[]>(buffer_capacity);
+                buffer = std::make_unique_for_overwrite<T[]>(buffer_capacity);
             }
             last_requested_size = size;
         }
