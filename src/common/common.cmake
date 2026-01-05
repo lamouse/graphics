@@ -42,4 +42,5 @@ set(MODULE_FILES
         math_util.cppm
         settings.cppm
         slot_vector.cppm
+        thread.cppm
 )
