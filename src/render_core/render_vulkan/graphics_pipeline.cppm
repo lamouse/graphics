@@ -1,8 +1,6 @@
 module;
 #include <algorithm>
-#include "common/class_traits.hpp"
 #include <condition_variable>
-#include "common/thread_worker.hpp"
 #include <vulkan/vulkan.hpp>
 export module render.vulkan.graphics_pipeline;
 import render.vulkan.common;
@@ -69,8 +67,10 @@ class GraphicsPipeline {
             BufferCache& buffer_cache, std::array<ShaderModule, NUM_STAGES> stages,
             const std::array<const shader::Info*, NUM_STAGES>& infos, DynamicFeatures dynamic);
 
-        CLASS_NON_COPYABLE(GraphicsPipeline);
-        CLASS_NON_MOVEABLE(GraphicsPipeline);
+        GraphicsPipeline(const GraphicsPipeline&) = delete;
+        GraphicsPipeline(GraphicsPipeline&&) noexcept = delete;
+        auto operator=(const GraphicsPipeline&) -> GraphicsPipeline& = delete;
+        auto operator=(GraphicsPipeline&&) noexcept -> GraphicsPipeline& = delete;
         void AddTransition(GraphicsPipeline* transition);
         void Configure();
         auto HasDynamicVertexInput() const noexcept -> bool {

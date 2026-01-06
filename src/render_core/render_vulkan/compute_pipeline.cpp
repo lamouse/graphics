@@ -1,7 +1,6 @@
 module;
 #include "common/assert.hpp"
 #include <boost/container/small_vector.hpp>
-#include "common/thread_worker.hpp"
 #include <vulkan/vulkan.hpp>
 
 module render.vulkan.compute_pipeline;
@@ -10,6 +9,7 @@ import render.vulkan.update_descriptor;
 import render.vulkan.pipeline_helper;
 import render.shader_notify;
 import shader;
+import common;
 
 namespace render::vulkan {
 

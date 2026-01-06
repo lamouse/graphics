@@ -3,10 +3,6 @@ module;
 #include <filesystem>
 #include <memory>
 
-#include "pipeline_state.h"
-#include "common/class_traits.hpp"
-#include "common/thread_worker.hpp"
-
 export module render.vulkan.pipeline_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
@@ -67,8 +63,10 @@ class PipelineCache : public ShaderCache {
                       RenderPassCache& render_pass_cache, BufferCache& buffer_cache,
                       TextureCache& texture_cache, ShaderNotify& shader_notify);
         ~PipelineCache();
-        CLASS_NON_COPYABLE(PipelineCache);
-        CLASS_NON_MOVEABLE(PipelineCache);
+        PipelineCache(const PipelineCache&) = delete;
+        PipelineCache(PipelineCache&&) noexcept = delete;
+        auto operator=(const PipelineCache&) -> PipelineCache& = delete;
+        auto operator=(PipelineCache&&) -> PipelineCache& = delete;
         [[nodiscard]] auto currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline*;
         [[nodiscard]] auto currentComputePipeline(const std::array<u32, 3>& workgroupSize)
             -> ComputePipeline*;

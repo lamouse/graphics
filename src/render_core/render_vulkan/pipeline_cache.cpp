@@ -3,7 +3,6 @@ module;
 #include <fstream>
 #include <memory>
 #include <utility>
-#include "common/thread_worker.hpp"
 #include <xxhash.h>
 #include <vulkan/vulkan.hpp>
 #include <spdlog/spdlog.h>

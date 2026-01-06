@@ -1,9 +1,7 @@
 module;
-#include "common/class_traits.hpp"
 #include <vector>
 #include <type_traits>
 #include <vulkan/vulkan.hpp>
-#include "common/common_types.hpp"
 #include "vma.hpp"
 #include <span>
 #include <utility>
@@ -18,13 +16,16 @@ module;
 #endif
 
 export module render.vulkan.common.wrapper;
+import common.types;
 
 namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
 struct NoOwner {
         NoOwner() = default;
-        CLASS_DEFAULT_COPYABLE(NoOwner);
-        CLASS_DEFAULT_MOVEABLE(NoOwner);
+        NoOwner(const NoOwner&) = default;
+        NoOwner(NoOwner&&) noexcept = default;
+        auto operator=(const NoOwner&) -> NoOwner& = default;
+        auto operator=(NoOwner&&) noexcept -> NoOwner& = default;
         ~NoOwner() = default;
         // NOLINTNEXTLINE
         NoOwner(std::nullptr_t) {}
@@ -145,7 +146,9 @@ class PoolAllocations {
         /// Construct an empty allocation.
         PoolAllocations() = default;
         ~PoolAllocations() = default;
-        CLASS_NON_COPYABLE(PoolAllocations);
+        PoolAllocations(const PoolAllocations&) = delete;
+        auto operator=(const PoolAllocations&) ->PoolAllocations& = delete;
+
         /// Construct an allocation. Errors are reported through IsOutOfPoolMemory().
         explicit PoolAllocations(std::vector<AllocationType> allocations_, vk::Device device_,
                                  PoolType pool) noexcept
@@ -229,8 +232,10 @@ class VulkanException final : public std::exception {
     public:
         /// Construct the exception with a result.
         /// @pre result != VK_SUCCESS
-        CLASS_DEFAULT_COPYABLE(VulkanException);
-        CLASS_DEFAULT_MOVEABLE(VulkanException);
+        VulkanException(const VulkanException&) = default;
+        VulkanException(VulkanException&&) noexcept = default;
+        auto operator=(const VulkanException&) -> VulkanException& = default;
+        auto operator=(VulkanException&&) noexcept -> VulkanException& = default;
         explicit VulkanException(vk::Result result_) : result{result_} {}
         explicit VulkanException(VkResult result_) : result{static_cast<vk::Result>(result_)} {}
         ~VulkanException() override = default;
@@ -304,7 +309,8 @@ class Image {
               allocation{allocation_} {}
         Image() = default;
 
-        CLASS_NON_COPYABLE(Image);
+        Image(const Image&) = delete;
+        auto operator=(const Image*) -> Image& = delete;
 
         Image(Image&& rhs) noexcept
             : handle{std::exchange(rhs.handle, nullptr)},
@@ -356,7 +362,6 @@ class DeviceMemory : public wrapper::Handle<vk::DeviceMemory, vk::Device> {
 #ifdef _WIN32
         [[nodiscard]] auto getMemoryWin32HandleKHR() const -> HANDLE;
 #endif
-
         /// Set object name.
         void SetObjectNameEXT(const char* name) const;
 
@@ -381,7 +386,8 @@ class Buffer {
               is_coherent{is_coherent_} {}
         Buffer() = default;
 
-        CLASS_NON_COPYABLE(Buffer);
+        Buffer(const Buffer&) = delete;
+        auto operator=(const Buffer&) -> Buffer& = delete;
 
         Buffer(Buffer&& rhs) noexcept
             : handle{std::exchange(rhs.handle, nullptr)},

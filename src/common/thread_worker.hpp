@@ -24,7 +24,7 @@ class StatefulThreadWorker {
         static constexpr bool with_state = !std::is_same_v<StateType, void>;
 
         struct DummyCallable {
-                int operator()() const noexcept { return 0; }
+                auto operator()() const noexcept -> int { return 0; }
         };
 
         using Task =
@@ -71,11 +71,13 @@ class StatefulThreadWorker {
             }
         }
 
-        StatefulThreadWorker& operator=(const StatefulThreadWorker&) = delete;
+        auto operator=(const StatefulThreadWorker&) -> StatefulThreadWorker& = delete;
         StatefulThreadWorker(const StatefulThreadWorker&) = delete;
 
-        StatefulThreadWorker& operator=(StatefulThreadWorker&&) = delete;
+        auto operator=(StatefulThreadWorker&&) -> StatefulThreadWorker& = delete;
         StatefulThreadWorker(StatefulThreadWorker&&) = delete;
+
+        ~StatefulThreadWorker() = default;
 
         void QueueWork(Task work) {
             {
