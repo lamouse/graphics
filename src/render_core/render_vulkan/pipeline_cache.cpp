@@ -91,7 +91,6 @@ void PipelineCache::loadPipelineCacheFromDisk() {
                           sizeof(pipe_line_cache_header));
                 if (file.gcount() != sizeof(pipe_line_cache_header)) {
                     file.close();
-                    throw std::runtime_error("file header error");
                 }
 
                 if (pipe_line_cache_header.magic != PipelineCacheHeader::MAGIC ||

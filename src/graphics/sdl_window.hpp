@@ -1,13 +1,19 @@
 #pragma once
 #include "core/frontend/window.hpp"
-#include "common/common_funcs.hpp"
 #include <SDL3/SDL.h>
+#include <memory>
 namespace graphics {
+namespace input {
+class InputSystem;
+
+}
 class SDLWindow : public core::frontend::BaseWindow {
     public:
-        SDLWindow(int width, int height, ::std::string_view title);
-        CLASS_NON_COPYABLE(SDLWindow);
-        CLASS_NON_MOVEABLE(SDLWindow);
+        SDLWindow(std::shared_ptr<input::InputSystem> input_system, int width, int height, ::std::string_view title);
+        SDLWindow(const SDLWindow&) = delete;
+        SDLWindow(SDLWindow&&) noexcept = delete;
+        auto operator=(const SDLWindow&) -> SDLWindow& = delete;
+        auto operator=(SDLWindow&&) noexcept -> SDLWindow& = delete;
         ~SDLWindow() override;
         [[nodiscard]] auto IsShown() const -> bool override;
         [[nodiscard]] auto IsMinimized() const -> bool override;
@@ -27,6 +33,6 @@ class SDLWindow : public core::frontend::BaseWindow {
     private:
         SDL_Window* window_ = nullptr;
         bool should_close_ = false;
-        SDL_GPUDevice* gpu_device;
+        std::shared_ptr<input::InputSystem> input_system_;
 };
 }  // namespace graphics

@@ -64,6 +64,9 @@ struct System::Impl {
         auto isSisShutdown() -> bool { return is_shut_down_.load(); }
         void set_shutdown(bool shutdown) { is_shut_down_ = shutdown; }
         void shutdown_main_process() {
+            if(render_base){
+                Render()->composite(std::span{&frame_config_, 1});
+            }
             world_.reset();
             resource_manager.reset();
             render_base.reset();
@@ -136,13 +139,14 @@ auto System::Render() -> render::RenderBase& { return *impl_->Render(); }
 [[nodiscard]] auto System::Render() const -> render::RenderBase& { return *impl_->Render(); }
 void System::setShutdown(bool shutdown) { impl_->set_shutdown(shutdown); }
 auto System::isShutdown() -> bool { return impl_->isSisShutdown(); }
-void System::shutdownMainProcess() {}
+void System::shutdownMainProcess() {impl_->shutdown_main_process();}
 auto System::ResourceManager() -> graphics::ResourceManager& { return *impl_->ResourceManager(); }
 auto System::ResourceManager() const -> graphics::ResourceManager& {
     return *impl_->ResourceManager();
 }
 
 void System::run(std::shared_ptr<graphics::input::InputSystem> inputSystem) {
+
     impl_->run(std::move(inputSystem));
 }
 }  // namespace core
