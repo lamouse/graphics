@@ -5,11 +5,11 @@ module;
 #include <spdlog/spdlog.h>
 #include <optional>
 #include <cassert>
-#include "common/literals.hpp"
 #include <vulkan/vulkan.hpp>
 #include "vma.hpp"
 module render.vulkan.common.MemoryAllocator;
 import render.vulkan.common.wrapper;
+import common.literals;
 
 namespace render::vulkan {
 namespace {

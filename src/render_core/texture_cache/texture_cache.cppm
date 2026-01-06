@@ -1,6 +1,5 @@
 module;
 
-#include "common/literals.hpp"
 
 #include <ktx.h>
 #include <span>

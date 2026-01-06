@@ -3,7 +3,6 @@ module;
 #include <spdlog/spdlog.h>
 #include <common/settings.hpp>
 #include <unordered_set>
-#include "common/literals.hpp"
 #include "vma.hpp"
 #include "vk_device_feature.hpp"
 #include "vulkan_common.hpp"
@@ -15,6 +14,7 @@ module render.vulkan.common.driver;
 import render.vulkan.common.wrapper;
 import render.vulkan.common.device.utils;
 import render.surface.format;
+import common.literals;
 
 namespace render::vulkan {
 namespace {

@@ -1,6 +1,5 @@
 module;
 #include <algorithm>
-#include "common/literals.hpp"
 #include "common/bit_util.h"
 #include <vulkan/vulkan.hpp>
 
@@ -9,6 +8,7 @@ module;
 module render.vulkan.staging_buffer_pool;
 import render.vulkan.common;
 import render.vulkan.scheduler;
+import common.literals;
 
 namespace render::vulkan {
 namespace {

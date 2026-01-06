@@ -35,6 +35,7 @@ set(sources
 
 set(MODULE_FILES
         common.cppm
+        literals.cppm
         logger.cppm
         common_types.cppm
         math_util.cppm
