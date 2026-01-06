@@ -1,5 +1,5 @@
 module;
-#include "common/settings.hpp"
+#include <cstdint>
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_easu_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_easu_fp32_frag_spv.h"
 #include "render_core/host_shaders/vulkan_fidelityfx_fsr_rcas_fp16_frag_spv.h"
@@ -12,6 +12,7 @@ import render.vulkan.shader;
 import render.vulkan.utils;
 import render.fsr;
 import core;
+import common.settings;
 
 namespace render::vulkan {
 using PushConstants = std::array<u32, 4 * 4>;  // NOLINT

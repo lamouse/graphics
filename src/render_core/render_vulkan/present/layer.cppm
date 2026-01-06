@@ -1,5 +1,4 @@
 module;
-#include "common/class_traits.hpp"
 
 #include <memory>
 #include <vulkan/vulkan.hpp>
@@ -32,8 +31,10 @@ class Layer final {
                            vk::Sampler sampler, size_t image_index,
                            const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);
-        CLASS_NON_COPYABLE(Layer);
-        CLASS_NON_MOVEABLE(Layer);
+        Layer(const Layer&) = delete;
+        Layer(const Layer&&) noexcept = delete;
+        auto operator=(const Layer&) -> Layer& = delete;
+        auto operator=(const Layer&&) noexcept -> Layer& = delete;
 
     private:
         void CreateDescriptorPool();

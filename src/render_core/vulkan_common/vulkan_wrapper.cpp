@@ -1,6 +1,5 @@
 module;
 #include <vulkan/vulkan.hpp>
-#include "common/common_types.hpp"
 #include <vulkan/vk_enum_string_helper.h>
 #include "vulkan_common.hpp"
 #include "vma.hpp"
@@ -9,6 +8,7 @@ module;
 #endif
 
 module render.vulkan.common.wrapper;
+import common.types;
 
 namespace render::vulkan {
 
