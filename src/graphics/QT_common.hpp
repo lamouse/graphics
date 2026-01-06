@@ -15,7 +15,7 @@ auto get_window_system_info(QWindow* window) -> core::frontend::BaseWindow::Wind
 
 auto QtButtonToMouseButton(Qt::MouseButton button) -> input::MouseButton;
 
-auto KeyConvert(Qt::KeyboardModifiers qt_modifiers)-> input::NativeKeyboard::Modifiers;
+auto KeyConvert(Qt::KeyboardModifiers qt_modifiers) -> input::NativeKeyboard::Modifiers;
 
 auto QtKeyToSwitchKey(Qt::Key qt_key) -> input::NativeKeyboard::Keys;
 

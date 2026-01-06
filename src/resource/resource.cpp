@@ -149,8 +149,8 @@ void ResourceManager::addMeshVertex(render::MeshId meshId, const std::vector<glm
     mesh_indics[meshId] = std::make_unique<std::vector<uint32_t>>(indics);
 }
 
-auto ResourceManager::addMesh(std::string meshName, const render::IMeshData& meshData, add_mesh_func func)
-    -> render::MeshId {
+auto ResourceManager::addMesh(std::string meshName, const render::IMeshData& meshData,
+                              add_mesh_func func) -> render::MeshId {
     ASSERT_MSG(!meshName.empty(), "meshName is null");
     ASSERT_MSG(func || graphic, "add_mesh_func is null");
     render::MeshId meshId;

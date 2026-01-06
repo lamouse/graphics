@@ -354,7 +354,6 @@ void Scheduler::requestRender(const RequestsRending& render) {
     render_pass_image_ranges_ = render.render_pass_image_ranges;
 }
 
-
 void Scheduler::requestOutsideRenderOperationContext() {
     if (use_dynamic_rendering) {
         endRendering();

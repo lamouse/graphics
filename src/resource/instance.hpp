@@ -33,5 +33,4 @@ struct MeshMaterialResource {
         render::TextureId normalTextures{};
 };
 
-
 }  // namespace graphics

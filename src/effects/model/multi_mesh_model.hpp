@@ -5,8 +5,8 @@
 namespace graphics::effects {
 class ModelForMultiMesh {
     public:
-        ModelForMultiMesh(ResourceManager& manager,
-                          const ModelResourceName& names, const std::string& name);
+        ModelForMultiMesh(ResourceManager& manager, const ModelResourceName& names,
+                          const std::string& name);
         ecs::Entity entity_;
         void draw(render::Graphic* graphic) {
             ZoneScopedNC("model::draw", 210);

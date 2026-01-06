@@ -12,15 +12,7 @@
 namespace core::frontend {
 /// Information for the Graphics Backends signifying what type of screen pointer is in
 /// WindowInformation
-enum class WindowSystemType : uint8_t {
-    Headless,
-    Windows,
-    X11,
-    Wayland,
-    Cocoa,
-    Android,
-    Xcb
-};
+enum class WindowSystemType : uint8_t { Headless, Windows, X11, Wayland, Cocoa, Android, Xcb };
 class EXPORT BaseWindow {
     public:
         struct Extent {

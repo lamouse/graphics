@@ -99,7 +99,7 @@ class World {
 
         void remove_light(id_t id) {
             auto light_iterator = light_index.find(id);
-            if(light_iterator != light_index.end()){
+            if (light_iterator != light_index.end()) {
                 lights_.erase(lights_.begin() + light_iterator->second);
                 light_index.erase(light_iterator);
             }

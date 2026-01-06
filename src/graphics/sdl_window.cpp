@@ -159,13 +159,13 @@ void SDLWindow::pullEvents() {
                 break;
             }
             case SDL_EVENT_KEY_UP: {
-                auto *key_board = input_system_->GetKeyboard();
+                auto* key_board = input_system_->GetKeyboard();
                 key_board->SetKeyboardModifiers(FromSDLKeymod(e.key.mod));
                 key_board->ReleaseKey(FromSDLKeycode(e.key.key));
                 break;
             }
-            case SDL_EVENT_KEY_DOWN:{
-                        auto *key_board = input_system_->GetKeyboard();
+            case SDL_EVENT_KEY_DOWN: {
+                auto* key_board = input_system_->GetKeyboard();
                 key_board->SetKeyboardModifiers(FromSDLKeymod(e.key.mod));
                 key_board->PressKey(FromSDLKeycode(e.key.key));
                 break;
@@ -176,7 +176,8 @@ void SDLWindow::pullEvents() {
                 int w{}, h{};
                 SDL_GetWindowSize(window_, &w, &h);
 
-                mouse->Move(static_cast<int>(e.motion.x), static_cast<int>(e.motion.y), w/2, h/2);
+                mouse->Move(static_cast<int>(e.motion.x), static_cast<int>(e.motion.y), w / 2,
+                            h / 2);
                 break;
             }
             case SDL_EVENT_MOUSE_BUTTON_UP: {
@@ -195,7 +196,7 @@ void SDLWindow::pullEvents() {
             }
             case SDL_EVENT_MOUSE_WHEEL: {
                 auto* mouse = input_system_->GetMouse();
-                mouse->Scroll(glm::vec2(e.wheel.x,e.wheel.y));
+                mouse->Scroll(glm::vec2(e.wheel.x, e.wheel.y));
                 break;
             }
         }

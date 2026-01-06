@@ -9,7 +9,8 @@ class InputSystem;
 }
 class SDLWindow : public core::frontend::BaseWindow {
     public:
-        SDLWindow(std::shared_ptr<input::InputSystem> input_system, int width, int height, ::std::string_view title);
+        SDLWindow(std::shared_ptr<input::InputSystem> input_system, int width, int height,
+                  ::std::string_view title);
         SDLWindow(const SDLWindow&) = delete;
         SDLWindow(SDLWindow&&) noexcept = delete;
         auto operator=(const SDLWindow&) -> SDLWindow& = delete;

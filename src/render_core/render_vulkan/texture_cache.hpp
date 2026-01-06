@@ -22,7 +22,6 @@ class TextureImageView;
 class TextureFramebuffer;
 class TextureImage;
 
-
 class TextureCacheRuntime {
     public:
         explicit TextureCacheRuntime(const Device& device_, scheduler::Scheduler& scheduler_,
@@ -196,8 +195,8 @@ class TextureFramebuffer {
         [[nodiscard]] auto HasAspectStencilBit() const noexcept -> bool { return has_stencil; }
 
         [[nodiscard]] auto IsRescaled() const noexcept -> bool { return is_rescaled; }
-        [[nodiscard]] auto getRenderingRequest()const  ->scheduler::RequestsRending;
-        [[nodiscard]] auto getRenderPassRequest()const  ->scheduler::RequestRenderPass;
+        [[nodiscard]] auto getRenderingRequest() const -> scheduler::RequestsRending;
+        [[nodiscard]] auto getRenderPassRequest() const -> scheduler::RequestRenderPass;
 
     private:
         VulkanFramebuffer framebuffer;

@@ -185,6 +185,7 @@ struct OutLinerMenuData {
         bool add_point_light_window{};
         bool add_sky_box_window{};
         bool has_sky_box{};
+        bool add_model{};
 };
 }  // namespace
 namespace graphics::ui {
@@ -428,8 +429,8 @@ void add_point_light(world::World& world, ResourceManager& resourceManager, bool
     ImGui::SliderFloat("强度", &intensity, 10, 100);
     ImGui::SliderFloat("半径", &radius, 0.02f, 0.40f);
     if (ImGui::Button("确认")) {
-        auto point_light = std::make_shared<graphics::effects::PointLightEffect>(resourceManager,
-                                                                                 intensity, radius, color);
+        auto point_light = std::make_shared<graphics::effects::PointLightEffect>(
+            resourceManager, intensity, radius, color);
         world.addDrawable(point_light);
         color = glm::vec3{1.f};
         intensity = 10.f;
@@ -502,6 +503,7 @@ void showOutliner(world::World& world, ResourceManager& resourceManager, setting
                 }
                 ImGui::BeginDisabled(outLinerMenuData.has_sky_box);
                 ImGui::MenuItem("天空盒子", nullptr, &outLinerMenuData.add_sky_box_window);
+                ImGui::MenuItem("模型", nullptr, &outLinerMenuData.add_model);
                 ImGui::EndDisabled();
                 ImGui::EndMenu();
             }
@@ -519,6 +521,8 @@ void showOutliner(world::World& world, ResourceManager& resourceManager, setting
     if (outLinerMenuData.add_sky_box_window) {
         outLinerMenuData.has_sky_box =
             add_sky_box_window(world, resourceManager, &outLinerMenuData.add_sky_box_window);
+    }
+    if (outLinerMenuData.add_model) {
     }
 }
 

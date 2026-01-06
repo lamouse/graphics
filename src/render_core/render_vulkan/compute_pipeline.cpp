@@ -7,7 +7,6 @@
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/render_vulkan/pipeline_helper.hpp"
 
-
 namespace render::vulkan {
 
 ComputePipeline::ComputePipeline(const Device& device_, VulkanPipelineCache& pipeline_cache_,

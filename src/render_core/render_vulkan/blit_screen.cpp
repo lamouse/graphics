@@ -108,7 +108,8 @@ void BlitScreen::DrawToFrame(
     }
 
     // Perform the draw
-    window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout, frame);
+    window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout,
+                       frame);
 
     // Advance to next image
     if (++image_index >= image_count) {

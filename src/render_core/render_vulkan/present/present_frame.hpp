@@ -5,7 +5,7 @@
 
 namespace render::vulkan::present {
 
-    struct FramebufferTextureInfo {
+struct FramebufferTextureInfo {
         vk::Image image;
         vk::ImageView image_view;
         u32 width{};
@@ -24,4 +24,4 @@ struct Frame {
         Fence present_done;
 };
 
-}
+}  // namespace render::vulkan::present

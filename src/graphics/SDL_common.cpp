@@ -395,7 +395,6 @@ auto FromSDLKeycode(SDL_Keycode code) -> input::NativeKeyboard::Keys {
         case SDLK_SLEEP:
             return Keys::MediaSleep;
 
-
         default:
             return Keys::None;
     }

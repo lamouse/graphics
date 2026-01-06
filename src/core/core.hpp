@@ -3,8 +3,8 @@
 #include "render_core/render_base.hpp"
 #include "resource/resource.hpp"
 #include <memory>
-namespace graphics::input{
-    class InputSystem;
+namespace graphics::input {
+class InputSystem;
 }
 namespace core {
 class System {
@@ -28,4 +28,4 @@ class System {
         struct Impl;
         std::unique_ptr<Impl> impl_;
 };
-}
+}  // namespace core

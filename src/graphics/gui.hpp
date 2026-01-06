@@ -13,8 +13,6 @@ struct StatusBarData {
         std::string device_name;
 };
 
-
-
 void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float aspectRatio);
 // 递归绘制树节点
 void showOutliner(world::World& world, ResourceManager& resourceManager, settings::MenuData& data);

@@ -32,7 +32,5 @@ void InputSystem::Shutdown() { impl_->ShutDown(); }
 InputSystem::~InputSystem() = default;
 auto InputSystem::GetMouse() -> Mouse* { return impl_->mouse.get(); }
 
-auto InputSystem::GetKeyboard() -> Keyboard*{
-    return impl_->keyboard_.get();
-}
+auto InputSystem::GetKeyboard() -> Keyboard* { return impl_->keyboard_.get(); }
 }  // namespace graphics::input

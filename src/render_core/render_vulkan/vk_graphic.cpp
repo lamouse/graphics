@@ -71,7 +71,8 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
-      wfi_event(device.logical().createEvent()),use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {}
+      wfi_event(device.logical().createEvent()),
+      use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;
 

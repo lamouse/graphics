@@ -89,8 +89,8 @@ void WindowAdaptPass::Draw(
                 break;
         }
 
-        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], accelerateDisplay, *sampler,
-                                image_index, configs[i], layout);
+        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], accelerateDisplay,
+                                *sampler, image_index, configs[i], layout);
         layer_it++;
     }
     scheduler.record([=](vk::CommandBuffer cmdbuf) -> void {
