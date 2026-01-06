@@ -3,7 +3,6 @@ module;
 #include <span>
 #include <vector>
 #include "common/common_types.hpp"
-#include "common/class_traits.hpp"
 #include <vulkan/vulkan.hpp>
 #include "vma.hpp"
 export module render.vulkan.common.MemoryAllocator;
@@ -85,7 +84,10 @@ class MemoryAllocator {
         explicit MemoryAllocator(const Device& device_);
         ~MemoryAllocator();
 
-        CLASS_NON_COPYABLE(MemoryAllocator);
+        MemoryAllocator(const MemoryAllocator&) = delete;
+        MemoryAllocator(MemoryAllocator&&) noexcept = delete;
+        auto operator=(const MemoryAllocator&) -> MemoryAllocator & = delete;
+        auto operator=(MemoryAllocator&&) noexcept ->MemoryAllocator & = delete;
 
         [[nodiscard]] auto createImage(const VkImageCreateInfo& ci) const -> Image;
 

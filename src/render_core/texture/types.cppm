@@ -2,18 +2,16 @@ module;
 #include "render_core/texture/types.hpp"
 export module render.texture.types;
 
-import common;
-
 export namespace render::texture {
 
 using render::texture::NUM_RT;
 using render::texture::MAX_MIP_LEVELS;
 using render::texture:: CORRUPT_ID;
-using ImageId = common::SlotId;
-using ImageMapId = common::SlotId;
-using ImageViewId = common::SlotId;
-using SamplerId = common::SlotId;
-using FramebufferId = common::SlotId;
+using ImageId = render::texture::ImageId;
+using ImageMapId = render::texture::ImageMapId;
+using ImageViewId = render::texture::ImageViewId;
+using SamplerId = render::texture::SamplerId;
+using FramebufferId = render::texture::FramebufferId;
 
 /// Fake image ID for null image views
 using render::texture:: NULL_IMAGE_ID;

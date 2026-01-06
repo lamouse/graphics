@@ -13,9 +13,7 @@ import render.texture.render_targets;
 import render.texture.types;
 import render.surface.format;
 import render.texture_enum;
-import render.texture.image_view_base;
-import render.texture.image_view_info;
-import render.texture.image;
+import render.texture;
 import render;
 import common;
 export namespace render::texture {

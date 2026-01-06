@@ -57,7 +57,6 @@ set(sources
         texture/image_view_info.cpp
         texture/image_view_info.hpp
         texture_cache/utils.cpp
-        texture_cache/utils.hpp
         vulkan_common/debug_callback.cpp
         vulkan_common/device_utils.cpp
         vulkan_common/vk_instance.cpp
@@ -100,6 +99,7 @@ set(MODULE_FILES
         texture/texture.cppm
 
         texture_cache/texture_cache.cppm
+        texture_cache/utils.cppm
 
         vulkan_common/debug_callback.cppm
         vulkan_common/vk_instance.cppm

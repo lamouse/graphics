@@ -9,5 +9,6 @@ using render::surface::IsPixelFormatBCn;
 using render::surface::GetFormatType;
 using render::surface::SurfaceType;
 using render::surface::MaxPixelFormat;
+using render::surface::BytesPerBlock;
 constexpr std::size_t MaxFormat = render::surface::MaxPixelFormat;
 }

@@ -1,15 +1,14 @@
 module;
 #include "render_core/types.hpp"
 export module render.types;
-import common;
 
 export namespace render {
-using BufferId = common::SlotId;
-using VertexAttributeId = common::SlotId;
-using VertexBindingsId = common::SlotId;
-using ComputeBindingId = common::SlotId;
-using MeshId = common::SlotId;
-using TextureId = common::SlotId;
+using BufferId = render::BufferId;
+using VertexAttributeId = render::VertexAttributeId;
+using VertexBindingsId = render::VertexBindingsId;
+using ComputeBindingId = render::ComputeBindingId;
+using MeshId = render::MeshId;
+using TextureId = render::TextureId;
 
 using RenderCommand = render::RenderCommand;
 }  //

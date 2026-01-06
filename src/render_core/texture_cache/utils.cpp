@@ -1,4 +1,6 @@
-#include "utils.hpp"
+module;
+#include <boost/container/small_vector.hpp>
+module render.texture_cache.utils;
 import render.texture.sample.helper;
 namespace render::texture::utils {
 namespace {
@@ -14,7 +16,7 @@ namespace {
     };
 }
 
-[[nodiscard]] Extent3D AdjustSamplesSize(Extent3D size, s32 num_samples) {
+[[nodiscard]] auto AdjustSamplesSize(Extent3D size, s32 num_samples) -> Extent3D {
     const auto [samples_x, samples_y] = SamplesLog2(num_samples);
     return Extent3D{
         .width = size.width >> samples_x,

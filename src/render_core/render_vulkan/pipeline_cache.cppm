@@ -2,6 +2,7 @@ module;
 #include <array>
 #include <filesystem>
 #include <memory>
+#include <unordered_map>
 
 export module render.vulkan.pipeline_cache;
 import render.vulkan.common;

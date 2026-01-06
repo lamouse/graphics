@@ -250,7 +250,6 @@ struct fmt::formatter<render::texture::Extent3D> {
         }
 };
 
-
 namespace render::texture {
 
 auto Name(const ImageInfo& image) -> std::string {

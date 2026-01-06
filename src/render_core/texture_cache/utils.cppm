@@ -1,11 +1,12 @@
+module;
 #include <cstddef>
-
-#include "render_core/surface.hpp"
-#include "common/common_types.hpp"
-#include "render_core/texture/image_info.hpp"
 #include <boost/container/small_vector.hpp>
-import render.texture.types;
-namespace render::texture::utils {
+export module render.texture_cache.utils;
+import render.surface.format;
+import common.types;
+import render.texture;
+
+export namespace render::texture::utils {
 inline auto CalculateGuestSizeInBytes(const texture::ImageInfo& info) -> size_t {
     auto size = static_cast<size_t>(info.size.width) * static_cast<size_t>(info.size.height) *
                 static_cast<size_t>(info.size.depth);
