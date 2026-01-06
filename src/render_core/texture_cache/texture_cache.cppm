@@ -94,9 +94,9 @@ class TextureCache {
     public:
         explicit TextureCache(Runtime& runtime);
         TextureCache(const TextureCache&) = delete;
-        TextureCache(const TextureCache&&) noexcept = delete;
+        TextureCache(TextureCache&&) noexcept = delete;
         auto operator=(const TextureCache&) -> TextureCache& = delete;
-        auto operator=(const TextureCache&&) noexcept -> TextureCache& = delete;
+        auto operator=(TextureCache&&) noexcept -> TextureCache& = delete;
         ~TextureCache() = default;
         /// Notify the cache that a new frame has been queued
         void TickFrame();

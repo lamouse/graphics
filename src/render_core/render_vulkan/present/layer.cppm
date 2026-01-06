@@ -32,9 +32,9 @@ class Layer final {
                            const frame::FramebufferConfig& framebuffer,
                            const layout::FrameBufferLayout& layout);
         Layer(const Layer&) = delete;
-        Layer(const Layer&&) noexcept = delete;
+        Layer(Layer&&) noexcept = delete;
         auto operator=(const Layer&) -> Layer& = delete;
-        auto operator=(const Layer&&) noexcept -> Layer& = delete;
+        auto operator=(Layer&&) noexcept -> Layer& = delete;
 
     private:
         void CreateDescriptorPool();

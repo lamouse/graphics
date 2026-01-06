@@ -1,5 +1,4 @@
 module;
-#include "common/class_traits.hpp"
 #include <shared_mutex>
 #include <vulkan/vulkan.hpp>
 #include <memory>
@@ -18,8 +17,10 @@ class DescriptorPool {
         explicit DescriptorPool(const Device& device, semaphore::MasterSemaphore& master_semaphore);
         ~DescriptorPool() = default;
         DescriptorPool() = delete;
-        CLASS_NON_COPYABLE(DescriptorPool);
-        CLASS_NON_MOVEABLE(DescriptorPool);
+        DescriptorPool(const DescriptorPool&) = delete;
+        DescriptorPool(DescriptorPool&&) noexcept = delete;
+        auto operator=(const DescriptorPool&) -> DescriptorPool& = delete;
+        auto operator=(DescriptorPool&&) noexcept -> DescriptorPool& = delete;
         auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
             -> DescriptorAllocator;
         auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info)
@@ -63,7 +64,8 @@ class DescriptorAllocator final : public ResourcePool {
 
         auto operator=(DescriptorAllocator&&) noexcept -> DescriptorAllocator& = default;
         DescriptorAllocator(DescriptorAllocator&&) noexcept = default;
-        CLASS_NON_COPYABLE(DescriptorAllocator);
+        DescriptorAllocator(const DescriptorAllocator&) = delete;
+        auto operator=(const DescriptorAllocator&) -> DescriptorAllocator& = delete;
 
         auto commit() -> vk::DescriptorSet;
 
