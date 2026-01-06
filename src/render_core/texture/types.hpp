@@ -135,16 +135,16 @@ enum class MsaaMode : std::uint8_t {
 
 }  // namespace render::texture
 
-// 在全局命名空间或 std 内（推荐在 std 中特化）
-namespace std {
-template <>
-struct hash<render::texture::Extent3D> {
-        auto operator()(const render::texture::Extent3D& ext) const noexcept -> size_t {
-            // 使用哈希组合算法（推荐 FNV-1a 风格）
-            size_t h1 = std::hash<u32>{}(ext.width);
-            size_t h2 = std::hash<u32>{}(ext.height);
-            size_t h3 = std::hash<u32>{}(ext.depth);
-            return h1 ^ (h2 << 1U) ^ (h3 << 2U);
-        }
-};
-}  // namespace std
+// // 在全局命名空间或 std 内（推荐在 std 中特化）
+// namespace std {
+// template <>
+// struct hash<render::texture::Extent3D> {
+//         auto operator()(const render::texture::Extent3D& ext) const noexcept -> size_t {
+//             // 使用哈希组合算法（推荐 FNV-1a 风格）
+//             size_t h1 = std::hash<u32>{}(ext.width);
+//             size_t h2 = std::hash<u32>{}(ext.height);
+//             size_t h3 = std::hash<u32>{}(ext.depth);
+//             return h1 ^ (h2 << 1U) ^ (h3 << 2U);
+//         }
+// };
+// }  // namespace std

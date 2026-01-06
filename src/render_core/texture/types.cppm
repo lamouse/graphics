@@ -46,4 +46,15 @@ using MsaaMode = render::texture::MsaaMode;
 
 }  // namespace render::texture
 
-export using std::hash;
+namespace std {
+template <>
+struct hash<render::texture::Extent3D> {
+    auto operator()(const render::texture::Extent3D& ext) const noexcept -> size_t {
+        // 使用哈希组合算法（推荐 FNV-1a 风格）
+        size_t h1 = std::hash<u32>{}(ext.width);
+        size_t h2 = std::hash<u32>{}(ext.height);
+        size_t h3 = std::hash<u32>{}(ext.depth);
+        return h1 ^ (h2 << 1U) ^ (h3 << 2U);
+    }
+};
+}  // namespace std

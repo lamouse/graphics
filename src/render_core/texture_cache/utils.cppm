@@ -1,5 +1,4 @@
 module;
-#include <cstddef>
 #include <boost/container/small_vector.hpp>
 export module render.texture_cache.utils;
 import render.surface.format;
