@@ -27,7 +27,7 @@ struct ModelPushConstantData {
 
 class LightModel {
     public:
-        LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
+        LightModel(graphics::ResourceManager& manager,
                    const ModelResourceName& names, const std::string& name);
 
         void update(const core::FrameInfo& frameInfo, world::World& world);

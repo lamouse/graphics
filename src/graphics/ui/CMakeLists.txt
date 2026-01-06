@@ -14,6 +14,7 @@ qt_add_qml_module(${LIB_NAME}
     SOURCES
     render_config.hpp
     render_config.cpp
+    scaling_filter.hpp
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/RenderCtrl"
 )
 target_link_libraries(${LIB_NAME} PRIVATE common Imgui::Imgui)

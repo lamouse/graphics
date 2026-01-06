@@ -3,7 +3,7 @@ module;
 #include <span>
 #include <vector>
 #include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <vulkan/vulkan.hpp>
 #include "vma.hpp"
 export module render.vulkan.common.MemoryAllocator;

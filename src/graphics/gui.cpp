@@ -9,6 +9,9 @@
 #include "ecs/ui/transformUI.hpp"
 #include "ecs/ui/cameraUI.hpp"
 #include "ecs/ui/lightUI.hpp"
+#include "effects/light/point_light.hpp"
+#include "effects/cubemap/skybox.hpp"
+#include <string>
 
 #include <glm/gtc/quaternion.hpp>
 
@@ -29,6 +32,7 @@ void* GImGuiDemoMarkerCallbackUserData = NULL;
 namespace {
 constexpr float OUTLINER_WIDTH = 400.f;
 constexpr float RENDER_STATUS_BAR_HEIGHT = 45.f;
+ecs::Entity detail_entity;
 
 // Note that shortcuts are currently provided for display only
 // (future version will add explicit flags to BeginMenu() to request processing shortcuts)
@@ -177,6 +181,11 @@ void pipeline_state(render::DynamicPipelineState& state) {
     ImGui::Text("blend color");
     ImGui::ColorEdit4("color", &state.blendColor.r);  // NOLINT
 }
+struct OutLinerMenuData {
+        bool add_point_light_window{};
+        bool add_sky_box_window{};
+        bool has_sky_box{};
+};
 }  // namespace
 namespace graphics::ui {
 
@@ -232,6 +241,9 @@ void draw_texture(settings::MenuData& data, ImTextureID imguiTextureID, float as
 }
 
 void draw_detail(settings::MenuData& data, ecs::Entity entity) {
+    if (!data.show_detail || !entity) {
+        return;
+    }
     ImGui::Begin("Detail", &data.show_detail);
     if (entity.hasComponent<ecs::TagComponent>()) {
         auto& tag = entity.getComponent<ecs::TagComponent>();
@@ -274,10 +286,7 @@ void draw_detail(settings::MenuData& data, ecs::Entity entity) {
     ImGui::End();
 }
 
-// ======================================
-// 递归绘制树节点（专业级 Outliner 风格）
-// ======================================
-void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
+void DrawModelTreeNode(ecs::Entity entity) {
     ImGui::PushID(&entity);
     auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
     auto& tag = entity.getComponent<ecs::TagComponent>();
@@ -302,25 +311,36 @@ void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
 
     // ===== 模型名称（可选择区域）=====
     ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    static uint32_t select = std::numeric_limits<uint32_t>::max();
 
     // 使用 Selectable 占满整行，允许重叠
     ImGui::Selectable(tag.tag.c_str(), render_state.is_select(),
                       ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap);
-    static unsigned int select_id = std::numeric_limits<unsigned int>::max();
-    if (render_state.is_select() && render_state.mouse_select) {
-        select_id = render_state.select_id;
+
+    // 检查是否右键点击了该 Selectable，并弹出上下文菜单
+    auto popup_tag = std::string("##tag_context_menu") + std::to_string(render_state.id);
+    if (ImGui::BeginPopupContextItem(popup_tag.c_str(), ImGuiPopupFlags_MouseButtonRight)) {
+        if (ImGui::MenuItem("编辑")) {
+            detail_entity = entity;
+            select = render_state.id;
+        }
+        if (ImGui::MenuItem("删除")) {
+            // 处理“删除”操作
+        }
+        // 可以添加更多菜单项
+        ImGui::EndPopup();
     }
+
     // 仅当点击了名称区域（非箭头/复选框）时才选中
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        select_id = render_state.id;
-    }
-    render_state.select_id = select_id;
-
-    if (render_state.is_select()) {
-        if (data.show_detail) {
-            draw_detail(data, entity);
+        if (render_state.is_select()) {
+            select = std::numeric_limits<uint32_t>::max();
+            detail_entity = {};
+        } else {
+            select = render_state.id;
         }
     }
+    render_state.select_id = select;
 
     ImGui::PopStyleVar();  // ItemInnerSpacing
 
@@ -330,7 +350,124 @@ void DrawModelTreeNode(settings::MenuData& data, ecs::Entity entity) {
     ImGui::PopID();
 }
 
-void showOutliner(world::World& world, settings::MenuData& data) {
+void DrawOutlinerTree(const ecs::Outliner& outliner, int id) {
+    auto& tag = outliner.entity.getComponent<ecs::TagComponent>();
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    ImGui::PushID(id);  // 使用 entity 的唯一 id
+    static uint32_t select_id = std::numeric_limits<unsigned int>::max();
+    auto find_detail_child = std::ranges::find(outliner.children.begin(), outliner.children.end(),
+                                               detail_entity) != outliner.children.end();
+
+    bool open{};
+    // 判断点击事件
+    if (outliner.entity.hasComponent<ecs::RenderStateComponent>()) {
+        auto& render_state = outliner.entity.getComponent<ecs::RenderStateComponent>();
+        if (find_detail_child) {
+            select_id = render_state.id;
+        }
+        if (render_state.mouse_select) {
+            select_id = render_state.id;
+            render_state.select_id = select_id;
+        }
+        if (render_state.is_select()) {
+            flags |= ImGuiTreeNodeFlags_Selected;
+        }
+
+        ImGui::PushItemFlag(ImGuiItemFlags_NoNav | ImGuiItemFlags_NoTabStop, true);
+        ImGui::Checkbox(("##vis" + tag.tag).c_str(), &render_state.visible);
+        ImGui::PopItemFlag();
+        ImGui::SameLine();
+        open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
+        auto popup_tag = std::string("##tag_context_menu") + std::to_string(render_state.id);
+        if (ImGui::BeginPopupContextItem(popup_tag.c_str(), ImGuiPopupFlags_MouseButtonRight)) {
+            if (ImGui::MenuItem("编辑")) {
+                detail_entity = outliner.entity;
+                select_id = render_state.id;
+            }
+            if (ImGui::MenuItem("删除")) {
+                // 处理“删除”操作
+            }
+            // 可以添加更多菜单项
+            ImGui::EndPopup();
+        }
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen()) {
+            if (render_state.is_select()) {
+                select_id = std::numeric_limits<unsigned int>::max();
+                detail_entity = {};
+            } else {
+                select_id = render_state.id;
+                render_state.mouse_select = false;
+            }
+        }
+        render_state.select_id = select_id;
+    } else {
+        open = ImGui::TreeNodeEx(&outliner.entity, flags, "%s", tag.tag.c_str());
+    }
+
+    if (open) {
+        if (!outliner.children.empty()) {
+            // children with indent
+            ImGui::Indent();
+            for (const auto& childEntity : outliner.children) {
+                DrawModelTreeNode(childEntity);
+            }
+            ImGui::Unindent();
+        }
+        ImGui::TreePop();
+    }
+    ImGui::PopID();
+}
+
+void add_point_light(world::World& world, ResourceManager& resourceManager, bool* open) {
+    ImGui::Begin("点光源", open);
+
+    static glm::vec3 color{1.f};
+    static float intensity{10.f};
+    static float radius{.04f};
+    ImGui::ColorEdit3("颜色", glm::value_ptr(color));
+    ImGui::SliderFloat("强度", &intensity, 10, 100);
+    ImGui::SliderFloat("半径", &radius, 0.02f, 0.40f);
+    if (ImGui::Button("确认")) {
+        auto point_light = std::make_shared<graphics::effects::PointLightEffect>(resourceManager,
+                                                                                 intensity, radius, color);
+        world.addDrawable(point_light);
+        color = glm::vec3{1.f};
+        intensity = 10.f;
+        radius = .04f;
+        (*open) = false;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("取消")) {
+        *open = false;
+    }
+
+    ImGui::End();
+}
+
+auto add_sky_box_window(world::World& world, ResourceManager& resourceManager, bool* open) -> bool {
+    ImGui::Begin("sky box", open);
+
+    if (ImGui::Button("确认")) {
+        auto sky_box = std::make_shared<graphics::effects::SkyBox>(resourceManager);
+        world.addDrawable(sky_box);
+        (*open) = false;
+        ImGui::End();
+        return true;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("取消")) {
+        *open = false;
+    }
+
+    ImGui::End();
+    return false;
+}
+
+void showOutliner(world::World& world, ResourceManager& resourceManager, settings::MenuData& data) {
+    static OutLinerMenuData outLinerMenuData;
+
     if (data.show_out_liner) {
         // 设置窗口标志
         ImGuiWindowFlags window_flags =
@@ -353,30 +490,35 @@ void showOutliner(world::World& world, settings::MenuData& data) {
         static int push_id = 0;
         world.processOutlineres([&](ecs::Outliner&& outliner) {
             ecs::Outliner local = std::move(outliner);
-            auto& tag = local.entity.getComponent<ecs::TagComponent>();
-            ImGuiTreeNodeFlags flags =
-                ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-            ImGui::PushID(push_id++);  // 使用 entity 的唯一 id
-            bool open = ImGui::TreeNodeEx(&local.entity, flags, "%s", tag.tag.c_str());
-            // 只有展开时才绘制子节点
-            if (open) {
-                DrawModelTreeNode(data, local.entity);
-
-                if (!local.children.empty()) {
-                    // children with indent
-                    ImGui::Indent();
-                    for (auto& childEntity : local.children) {
-                        DrawModelTreeNode(data, childEntity);
-                    }
-                    ImGui::Unindent();
-                }
-                ImGui::TreePop();
-            }
-            ImGui::PopID();
+            DrawOutlinerTree(local, push_id++);
         });
-
+        draw_detail(settings::values.menu_data, detail_entity);
+        if (ImGui::BeginPopupContextWindow(
+                "Outliner", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
+            if (ImGui::BeginMenu("添加")) {
+                if (ImGui::BeginMenu("光源")) {
+                    ImGui::MenuItem("点光源", nullptr, &outLinerMenuData.add_point_light_window);
+                    ImGui::EndMenu();
+                }
+                ImGui::BeginDisabled(outLinerMenuData.has_sky_box);
+                ImGui::MenuItem("天空盒子", nullptr, &outLinerMenuData.add_sky_box_window);
+                ImGui::EndDisabled();
+                ImGui::EndMenu();
+            }
+            if (ImGui::MenuItem("Save")) { /* ... */
+            }
+            ImGui::EndPopup();
+        }
         ImGui::End();
         push_id = 0;
+    }
+
+    if (outLinerMenuData.add_point_light_window) {
+        add_point_light(world, resourceManager, &outLinerMenuData.add_point_light_window);
+    }
+    if (outLinerMenuData.add_sky_box_window) {
+        outLinerMenuData.has_sky_box =
+            add_sky_box_window(world, resourceManager, &outLinerMenuData.add_sky_box_window);
     }
 }
 
@@ -435,28 +577,34 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     ImGui::Begin(
         "##status", nullptr,
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
-
-    ImGui::TextColored({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-    ImGui::Text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
-
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-    ImGui::Text("Entities: %d", barData.registry_count);
-
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-    ImGui::Text("device: %s", barData.device_name.c_str());
-
-    if (barData.build_shaders > 0) {
+    auto bar_color_text = [](ImVec4 color, const char* fmt, ...) -> void {  // NOLINT
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
-        ImGui::Text("build shaders: %d", barData.build_shaders);
+        va_list args = nullptr;
+        va_start(args, fmt);
+        ImGui::TextColoredV(color, fmt, args);
+        va_end(args);
+    };
+    auto bar_text = [](const char* fmt, ...) -> void {  // NOLINT
+        ImGui::SameLine();
+        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ImGui::SameLine();
+        va_list args = nullptr;
+        va_start(args, fmt);
+        ImGui::TextV(fmt, args);
+        va_end(args);
+    };
+
+    bar_color_text({0.0F, 1.0F, 0.0F, 1.0F}, "FPS: %.1f ", io.Framerate);
+    bar_text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
+    bar_text("Entities: %d", barData.registry_count);
+    bar_text("device: %s", barData.device_name.c_str());
+    bar_text("scaling filter: %s",
+             settings::enums::CanonicalizeEnum(settings::values.scaling_filter.GetValue()).c_str());
+
+    if (barData.build_shaders > 0) {
+        bar_color_text({0.3f, .1f, 1.f, .0f}, "build shaders: %d", barData.build_shaders);
     }
 
     ImGui::End();

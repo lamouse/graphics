@@ -44,8 +44,7 @@ else()
     )
 endif()
 
-target_link_libraries(${LIB_CORE_NAME} PUBLIC spdlog::spdlog glm::glm )
-target_link_libraries(${LIB_CORE_NAME} PRIVATE render-core resource)
+target_link_libraries(${LIB_CORE_NAME} PUBLIC spdlog::spdlog glm::glm resource render-core ecs)
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set_target_properties(${LIB_CORE_NAME} PROPERTIES VERSION 0.0.1 SOVERSION 0)

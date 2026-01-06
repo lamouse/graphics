@@ -3,7 +3,7 @@ module;
 #include <condition_variable>
 #include <mutex>
 
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "common/thread_worker.hpp"
 export module render.vulkan.compute_pipeline;
 

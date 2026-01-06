@@ -1,6 +1,6 @@
 module;
 #include <algorithm>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "render_core/pipeline_state.h"
 #include <condition_variable>
 #include "common/thread_worker.hpp"

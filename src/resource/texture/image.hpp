@@ -6,8 +6,6 @@
 
 namespace resource::image {
 
-
-
 class Image : public render::ITexture {
     private:
         unsigned char* data_{nullptr};

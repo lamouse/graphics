@@ -14,6 +14,9 @@ Window {
         color: "lightgray"
         anchors.fill: parent
         focus: true
+        Keys.onReturnPressed: {
+            renderCtrl.renderStart();
+        }
         RenderController {
             id: render_ctrl
         }
@@ -25,8 +28,10 @@ Window {
                 top: parent.top
                 topMargin: 60  // 距离顶部留空，避免和 Text 重叠
             }
-            RowLayout {
-                id: resolutionRowId
+            GridLayout {
+                id: scalingFilterRowId
+                uniformCellWidths: true
+                columns: 2
                 Label {
                     text: "分辨率："
                     Layout.alignment: Qt.AlignVCenter
@@ -35,6 +40,26 @@ Window {
                     id: resolutionComboBox
                     model: ResolutionModel {}
                     onActivated: index => model.onItemSelected(index)
+                    Layout.fillWidth: true
+                }
+                Label {
+                    text: "scaling filter: "
+                    Layout.alignment: Qt.AlignVCenter
+                }
+                ComboBox {
+                    id: scalingFilterComboBox
+                    model: ScalingFilterModel {}
+                    onActivated: index => model.onItemSelected(index)
+                    Layout.fillWidth: true
+
+                    delegate: ItemDelegate {
+                        required property var modelData
+                        text: modelData
+                        width: parent.width
+                        // 鼠标悬停时显示提示
+                        ToolTip.visible: hovered
+                        ToolTip.text: modelData
+                    }
                 }
             }
 

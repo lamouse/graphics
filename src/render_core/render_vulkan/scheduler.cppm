@@ -1,7 +1,7 @@
 module;
 #include <vulkan/vulkan.hpp>
 #include "common/alignment.hpp"
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <array>
 #include <memory>
 #include <thread>

@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>  // for inverse
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 namespace ecs {
 struct TransformComponent {
         ::glm::vec3 translation{};  // position offset

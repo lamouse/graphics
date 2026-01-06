@@ -38,9 +38,11 @@ struct System::Impl {
             std::string particle_shader = "particle";
             std::string point_light_shader_name = "point_light";
             auto* resourceManager = resource_manager.get();
-            resourceManager->addGraphShader(model_shader_name);
-            resourceManager->addGraphShader(particle_shader);
-            resourceManager->addGraphShader(point_light_shader_name);
+
+            std::vector<std::string> shader_names{model_shader_name, particle_shader, point_light_shader_name};
+            for(auto& shader_name : shader_names){
+                resourceManager->addGraphShader(shader_name);
+            }
             resourceManager->addComputeShader(particle_shader);
             auto* window = render_base->GetRenderWindow();
             auto frame_layout = window->getFramebufferLayout();
@@ -48,24 +50,12 @@ struct System::Impl {
             graphics::ModelResourceName names{.shader_name = model_shader_name,
                                               .mesh_name = viking_obj_path};
 
-            std::array light_colors = {glm::vec3{1.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f},
-                                       glm::vec3{0.f, 0.f, 1.f}, glm::vec3{1.f, 1.f, 0.f},
-                                       glm::vec3{1.f, 0.f, 1.f}, glm::vec3{0.f, 1.f, 1.f},
-                                       glm::vec3{1.f, 1.f, 1.f}};
-            for (auto& light_color : light_colors) {
-                auto point_light = std::make_shared<graphics::effects::PointLightEffect>(
-                    *resourceManager, frame_layout, 1.f, .04f, light_color);
-                world_->addDrawable(point_light);
-            }
-
             auto delta_particle = std::make_shared<graphics::effects::DeltaParticle>(
                 *resourceManager, frame_layout, PARTICLE_COUNT);
             auto light_model = std::make_shared<graphics::effects::ModelForMultiMesh>(
-                *resourceManager, frame_layout, names, "model");
+                *resourceManager, names, "model");
             world_->addDrawable(light_model);
-            auto sky_box =
-                std::make_shared<graphics::effects::SkyBox>(*resourceManager, frame_layout);
-            world_->addDrawable(sky_box);
+
             graphics::PickingSystem::commit();
         }
 
@@ -109,10 +99,9 @@ struct System::Impl {
 
             world_->draw(graphics);
 
-            auto& shader_notify = Render()->getShaderNotify();
-            const int shaders_building = shader_notify.ShadersBuilding();
-
             if (settings::values.use_debug_ui.GetValue()) {
+                auto& shader_notify = Render()->getShaderNotify();
+                const int shaders_building = shader_notify.ShadersBuilding();
                 if (shaders_building > 0) {
                     statusData.build_shaders = shaders_building;
                 } else {
@@ -128,7 +117,7 @@ struct System::Impl {
                     auto imageId = graphics->getDrawImage();
                     graphics::ui::show_menu(settings::values.menu_data);
                     graphics::draw_setting(settings::values.menu_data.show_system_setting);
-                    graphics::ui::showOutliner(*world_, settings::values.menu_data);
+                    graphics::ui::showOutliner(*world_, *resource_manager, settings::values.menu_data);
                     render_status_bar(settings::values.menu_data, statusData);
                     graphics::ui::draw_texture(settings::values.menu_data, imageId,
                                                window->getAspectRatio());
@@ -138,8 +127,6 @@ struct System::Impl {
             } else {
                 Render()->composite(std::span{&frame_config_, 1});
             }
-
-            world_->cleanLight();
         }
 };
 System::System() : impl_(std::make_unique<System::Impl>()) {}

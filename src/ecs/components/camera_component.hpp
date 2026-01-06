@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include "core/camera/camera.hpp"
 namespace ecs {
 constexpr auto DEFAULT_FOVY = 45.F;

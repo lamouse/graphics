@@ -3,7 +3,6 @@
 #include "resource/obj/model_mesh.hpp"
 namespace graphics::effects {
 ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
-                                     const layout::FrameBufferLayout& layout,
                                      const ModelResourceName& names, const std::string& name)
     : id(getCurrentId()) {
     auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
@@ -24,7 +23,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
                 .indexOffset = 0,
                 .indexCount = static_cast<uint32_t>(mesh.indices_.size()),
             },
-            shader_hash, layout, name + "mesh", mesh_id, materialResource);
+            shader_hash, name + "mesh", mesh_id, materialResource);
         meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
         meshes.back().setPushConstant(&push_constant);

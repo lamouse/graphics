@@ -51,7 +51,6 @@ set(sources
         render_vulkan/present/vulkan_utils.cpp
         render_vulkan/present/window_adapt_pass.cpp
         texture/formatter.cpp
-        texture/formatter.h
         texture/image_info.hpp
         texture/image_view_base.cpp
         texture/image_view_base.hpp

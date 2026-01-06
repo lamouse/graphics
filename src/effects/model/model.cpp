@@ -46,7 +46,7 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
     return {materialResource, materialUBO};
 }
 
-LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout,
+LightModel::LightModel(graphics::ResourceManager& manager,
                        const ModelResourceName& names, const std::string& name)
     : id(getCurrentId()) {
     auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
@@ -63,7 +63,7 @@ LightModel::LightModel(graphics::ResourceManager& manager, const layout::FrameBu
                 .indexOffset = mesh.indexOffset,
                 .indexCount = mesh.indexCount,
             },
-            shader_hash, layout, name + "mesh", mesh_id, materialResource);
+            shader_hash, name + "mesh", mesh_id, materialResource);
         meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
         meshes.back().setPushConstant(&push_constant);

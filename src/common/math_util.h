@@ -6,12 +6,13 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <numbers>
 #include <type_traits>
 #undef max
 #undef min
 namespace common {
 
-constexpr float PI = 3.1415926535f;
+constexpr float PI = std::numbers::pi_v<float>;
 
 template <class T>
 struct Rectangle {

@@ -81,8 +81,7 @@ class MeshInstance : public render::IMeshInstance {
 
         void setPushConstant(PushConstants* push) { push_constants = push; }
 
-        MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
-                     const layout::FrameBufferLayout& layout, const std::string& meshName = "",
+        MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,  const std::string& meshName = "",
                      render::MeshId meshId_ = {}, MeshMaterialResource material_resource_ = {})
             : IMeshInstance(primitiveTopology, render_command_, meshId_, shaderHash_.vertex,
                             shaderHash_.fragment),
@@ -93,7 +92,7 @@ class MeshInstance : public render::IMeshInstance {
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
-            entity_.addComponent<ecs::DynamicPipeStateComponenet>(layout);
+            entity_.addComponent<ecs::DynamicPipeStateComponenet>();
             pipeline_state =                                                     // NOLINT
                 &entity_.getComponent<ecs::DynamicPipeStateComponenet>().state;  // NOLINT
             render_state = &entity_.getComponent<ecs::RenderStateComponent>();   // NOLINT

@@ -57,6 +57,7 @@ QTWindow::QTWindow(std::shared_ptr<input::InputSystem> input_system,
 
     this->show();
     InitializeWidgets();
+    openRenderConfig();
 }
 void QTWindow::OnExit() { spdlog::debug("Received exit signal from render widget."); }
 

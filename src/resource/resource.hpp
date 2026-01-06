@@ -4,6 +4,7 @@
 #include "render_core/shader_cache.hpp"
 #include "render_core/mesh.hpp"
 #include "resource/obj/model_mesh.hpp"
+#include "render_core/mesh.hpp"
 
 #include <unordered_map>
 #include <string>

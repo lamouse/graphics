@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <ktx.h>
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 
 namespace resource::image {
 class KtxImage {

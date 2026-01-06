@@ -46,9 +46,9 @@ class Particle : public render::IComputeInstance {
 
             auto shader_hash = manager.getShaderHash<ShaderHash>(particle_shader_name);
             // NOLINTNEXTLINE
-            in = DeltaParticleInstance({}, shader_hash, layout, "particle", in_mesh);
+            in = DeltaParticleInstance({}, shader_hash, "particle", in_mesh);
             // NOLINTNEXTLINE
-            out = DeltaParticleInstance({}, shader_hash, layout, "particle", out_mesh);
+            out = DeltaParticleInstance({}, shader_hash, "particle", out_mesh);
             compute_mesh.at(0) = out.getMeshId();
             compute_mesh.at(1) = in.getMeshId();
             mesh_ids = compute_mesh;

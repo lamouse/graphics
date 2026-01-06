@@ -48,7 +48,7 @@ class ResolutionModel : public QAbstractListModel {
         }
         [[nodiscard]] auto rowCount(const QModelIndex &parent = QModelIndex()) const
             -> int override {
-            return items.size();
+            return static_cast<int>(items.size());
         }
         [[nodiscard]] auto data(const QModelIndex &index, int role) const -> QVariant override {
             if (!index.isValid()) {

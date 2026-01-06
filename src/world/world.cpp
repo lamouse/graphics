@@ -52,10 +52,7 @@ void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager
                    graphics::input::InputSystem& input_system) {
     cameraComponent_->setAspect(window.getAspectRatio());
     core::FrameInfo frameInfo;
-    auto extent = window.getActiveConfig().extent;
-    auto layout = window.getFramebufferLayout();
-    frameInfo.window_width = layout.width;
-    frameInfo.window_hight = layout.height;
+    frameInfo.frame_layout = window.getFramebufferLayout();
     frameInfo.frame_time = frame_time_->get();
     frameInfo.resource_manager = &resourceManager;
     auto& camera = cameraComponent_->getCamera();
@@ -74,10 +71,10 @@ void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mou
         if (!is_pick) {
             auto origin = mouse->GetMouseOrigin();
             auto pick_result = graphics::PickingSystem::pick(
-                *frameInfo.camera, origin.x, origin.y, static_cast<float>(frameInfo.window_width),
-                static_cast<float>(frameInfo.window_hight));
+                *frameInfo.camera, origin.x, origin.y, static_cast<float>(frameInfo.frame_layout.screen.GetWidth()),
+                static_cast<float>(frameInfo.frame_layout.screen.GetHeight()));
             if (pick_result) {
-                this->pick(pick_result->model_id);
+                this->pick(pick_result->model_id, pick_result->id);
             }
             is_pick = true;
         } else {

@@ -1,5 +1,5 @@
 #pragma once
-#include "common/common_funcs.hpp"
+#include "common/class_traits.hpp"
 #include <entt/entt.hpp>
 
 namespace ecs {

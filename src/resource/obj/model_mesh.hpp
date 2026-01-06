@@ -3,6 +3,7 @@
 #include "resource/obj/mesh_material.hpp"
 #include "resource/obj/mesh_vertex.hpp"
 #include "render_core/pipeline_state.h"
+#include "common/class_traits.hpp"
 #include "render_core/mesh.hpp"
 
 #include <vector>

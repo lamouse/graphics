@@ -1,7 +1,7 @@
 #pragma once
+#include "common/class_traits.hpp"
 #include "common/common_funcs.hpp"
 #include <glm/glm.hpp>
-#include <span>
 namespace world {
 class World;
 }

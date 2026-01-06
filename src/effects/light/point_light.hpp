@@ -19,14 +19,46 @@ struct PointLightPushConstants {
         AS_BYTE_SPAN
 };
 
+struct PiintLightCreateInfo {
+        ShaderHash hash;
+        glm::vec3 position;
+        float intensity;
+        float radius;
+        glm::vec3 color;
+};
+
 class PointLightEffect {
     public:
-        PointLightEffect(graphics::ResourceManager& manager,
-                         const layout::FrameBufferLayout& layout, float intensity = 10.f,
+        PointLightEffect(PiintLightCreateInfo& createInfo)
+            : point_light(PointLightInstance{{}, createInfo.hash, "PointLightInstance"}),
+              id(getCurrentId()) {
+            auto rotateLight =
+                glm::rotate(glm::mat4(1.f), (static_cast<float>(id) * glm::two_pi<float>()) / 7,
+                            {0.f, -1.f, 0.f});
+            point_light.setVertexCount(6);
+            entity_ = getEffectsScene().createEntity("PointLight: " + std::to_string(id));
+            entity_.addComponent<ecs::RenderStateComponent>(id);
+            render_state = &entity_.getComponent<ecs::RenderStateComponent>();  // NOLINT
+            ecs::TransformComponent transformComponent{};
+            transformComponent.translation =
+                glm::vec3(rotateLight * glm::vec4(-2.f, .0f, -1.f, 1.f));
+            entity_.addComponent<ecs::TransformComponent>(transformComponent);
+            transform = &entity_.getComponent<ecs::TransformComponent>();  // NOLINT
+            ecs::LightComponent default_lightComponent{};
+            default_lightComponent.color = createInfo.color;
+            default_lightComponent.intensity = createInfo.intensity;
+            default_lightComponent.range = createInfo.radius;
+            entity_.addComponent<ecs::LightComponent>(default_lightComponent);
+            lightComponent = &entity_.getComponent<ecs::LightComponent>();  // NOLINT
+            point_light.setUBO<LightUBO>(&light_ubo);
+            point_light.setPushConstant(&push_constants);
+        }
+        ~PointLightEffect() = default;
+        PointLightEffect(graphics::ResourceManager& manager, float intensity = 10.f,
                          float radius = .02f, glm::vec3 color_ = glm::vec3(1.f, 1.f, 1.f))
             : id(getCurrentId()) {
             auto hash = manager.getShaderHash<ShaderHash>("point_light");
-            point_light = PointLightInstance{{}, hash, layout, "PointLightInstance"};
+            point_light = PointLightInstance{{}, hash, "PointLightInstance"};
             auto rotateLight =
                 glm::rotate(glm::mat4(1.f), (static_cast<float>(id) * glm::two_pi<float>()) / 7,
                             {0.f, -1.f, 0.f});
@@ -62,7 +94,7 @@ class PointLightEffect {
             light_ubo.projection = frameInfo.camera->getProjection();
             light_ubo.view = frameInfo.camera->getView();
 
-            world.addLight({.light = lightComponent, .transform = transform});
+            world.addLight({.id = id, .light = lightComponent, .transform = transform});
         }
         void draw(render::Graphic* graphic) {
             push_constants.position = glm::vec4(transform->translation, 1.f);

@@ -59,7 +59,6 @@ darwin-*,
 cppcoreguidelines-avoid-capturing-lambda-coroutines,
 cppcoreguidelines-avoid-do-while,
 cppcoreguidelines-avoid-goto,
-cppcoreguidelines-avoid-non-const-global-variables,
 cppcoreguidelines-avoid-reference-coroutine-parameters,
 cppcoreguidelines-init-variables,
 cppcoreguidelines-interfaces-global-init,
@@ -166,6 +165,7 @@ bugprone-virtual-near-miss,
   -hicpp-explicit-conversions,
   -cert-err58-cpp,
   -performance-enum-size,
+  -cppcoreguidelines-avoid-non-const-global-variables,
 '
 
 

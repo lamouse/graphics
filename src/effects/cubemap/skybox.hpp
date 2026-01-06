@@ -1,4 +1,5 @@
 #pragma once
+#include "render_core/graphic.hpp"
 #include "resource/mesh_instance.hpp"
 #include "common/common_funcs.hpp"
 #include "core/frame_info.hpp"
@@ -15,7 +16,7 @@ class SkyBox {
         CLASS_DEFAULT_MOVEABLE(SkyBox);
         CLASS_NON_COPYABLE(SkyBox);
         ~SkyBox() = default;
-        SkyBox(graphics::ResourceManager& manager, const layout::FrameBufferLayout& layout)
+        SkyBox(graphics::ResourceManager& manager)
             : id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
@@ -33,7 +34,6 @@ class SkyBox {
             sky_box = SkyBoxInstance{render::RenderCommand{.indexOffset = sub_mesh[0].indexOffset,
                                                            .indexCount = sub_mesh[0].indexCount},
                                      shader_hash,
-                                     layout,
                                      "sky box instance",
                                      mesh_id,
                                      material_resource};

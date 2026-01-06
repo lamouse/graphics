@@ -16,11 +16,9 @@ set(sources
     literals.hpp
     logger.hpp
     logger.cpp
-    make_unique_for_overwrite.h
     math_util.h
     polyfill_thread.hpp
     scope_exit.h
-    scratch_buffer.h
     settings_common.hpp
     settings_common.cpp
     settings_setting.hpp
