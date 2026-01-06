@@ -114,8 +114,9 @@ void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem *input, 
 
     // 🔁 右键旋转视角（如果你还需要旋转功能）
     auto *mouse = input->GetMouse();
+    auto relative = mouse->popRelative();
     if (mouse->IsPressed(input::MouseButton::Right)) {
-        rotating(cam, mouse->GetRelative().x, mouse->GetRelative().y);
+        rotating(cam, relative.x, relative.y);
     }
 
     // 🧮 缩放
