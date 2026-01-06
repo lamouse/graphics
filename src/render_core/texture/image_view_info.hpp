@@ -1,8 +1,8 @@
 #pragma once
 
 #include "render_core/surface.hpp"
-#include "render_core/texture/types.hpp"
 #include "render_core/texture/image_info.hpp"
+#include "render_core/texture/types.hpp"
 
 namespace render::texture {
 

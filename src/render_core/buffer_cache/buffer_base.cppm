@@ -1,6 +1,7 @@
-#pragma once
-#include "common/common_types.hpp"
-namespace render::buffer {
+export module render.buffer.cache_base;
+import common.types;
+
+export namespace render::buffer {
 
 /// Tag for creating null buffers with no storage or size
 struct NullBufferParams {};

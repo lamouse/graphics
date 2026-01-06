@@ -1,14 +1,11 @@
-// SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
-
-#pragma once
-
+module;
 #include <utility>
 
 #include <cassert>
-#include "types.hpp"
+export module render.texture.sample.helper;
+import render.texture.types;
 
-namespace render::texture {
+export namespace render::texture {
 
 [[nodiscard]] inline auto SamplesLog2(int num_samples) -> std::pair<std::uint8_t, std::uint8_t> {
     switch (num_samples) {
@@ -28,7 +25,7 @@ namespace render::texture {
     }
 }
 
-[[nodiscard]] inline int NumSamples(MsaaMode msaa_mode) {
+[[nodiscard]] inline auto NumSamples(MsaaMode msaa_mode) -> int {
     switch (msaa_mode) {
         case MsaaMode::Msaa1x1:
             return 1;
@@ -51,7 +48,7 @@ namespace render::texture {
     return 1;
 }
 
-[[nodiscard]] inline int NumSamplesX(MsaaMode msaa_mode) {
+[[nodiscard]] inline auto NumSamplesX(MsaaMode msaa_mode) -> int {
     switch (msaa_mode) {
         case MsaaMode::Msaa1x1:
             return 1;

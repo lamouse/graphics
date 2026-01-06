@@ -1,17 +1,10 @@
-// SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
-
-#pragma once
-
+module;
 #include <string>
-
-
-namespace render::texture {
-
-struct ImageInfo;
-struct ImageViewBase;
-struct RenderTargets;
-
+export module render.texture.formatter;
+import render.texture.image;
+import render.texture.image_view_base;
+import render.texture.render_targets;
+export namespace render::texture {
 [[nodiscard]] auto Name(const ImageInfo& image) -> std::string;
 
 [[nodiscard]] auto Name(const ImageViewBase& image_view) -> std::string;
@@ -19,3 +12,5 @@ struct RenderTargets;
 [[nodiscard]] auto Name(const RenderTargets& render_targets) -> std::string;
 
 }  // namespace render::texture
+
+

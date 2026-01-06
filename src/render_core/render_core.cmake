@@ -21,9 +21,7 @@ set(sources
         texture.hpp
         types.hpp
         vertex.hpp
-        buffer_cache/buffer_base.hpp
-        buffer_cache/buffer_cache.h
-        buffer_cache/buffer_cache_base.hpp
+
         render_vulkan/blit_screen.cpp
         render_vulkan/buffer_cache.cpp
         render_vulkan/command_pool.cpp
@@ -59,12 +57,6 @@ set(sources
         texture/image_view_base.hpp
         texture/image_view_info.cpp
         texture/image_view_info.hpp
-        texture/render_targets.h
-        texture/samples_helper.h
-        texture/texture.hpp
-        texture/types.hpp
-        texture_cache/texture_cache.h
-        texture_cache/texture_cache_base.hpp
         texture_cache/utils.cpp
         texture_cache/utils.hpp
         vulkan_common/debug_callback.cpp
@@ -95,6 +87,20 @@ set(MODULE_FILES
         types.cppm
         texture.cppm
         surface.cppm
+
+        buffer_cache/buffer_base.cppm
+        buffer_cache/buffer_cache.cppm
+
+        texture/formatter.cppm
+        texture/types.cppm
+        texture/samples_helper.cppm
+        texture/image_info.cppm
+        texture/render_targets.cppm
+        texture/image_view_info.cppm
+        texture/image_view_base.cppm
+        texture/texture.cppm
+
+        texture_cache/texture_cache.cppm
 
         vulkan_common/debug_callback.cppm
         vulkan_common/vk_instance.cppm

@@ -1,9 +1,7 @@
 module;
 #include "common/alignment.h"
-#include "render_core/texture/types.hpp"
-#include "render_core/surface.hpp"
-#include "render_core/buffer_cache/buffer_base.hpp"
-#include "render_core/buffer_cache/buffer_cache.h"
+
+
 #include <boost/container/small_vector.hpp>
 #include <vulkan/vulkan.hpp>
 #include <spdlog/spdlog.h>
@@ -17,6 +15,10 @@ module;
 module render.vulkan.buffer_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
+import render.texture.types;
+import render.buffer.cache;
+import render.buffer.cache_base;
+import render.surface.format;
 namespace render::vulkan {
 
 namespace {

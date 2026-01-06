@@ -1,5 +1,5 @@
 #include "utils.hpp"
-#include "texture/samples_helper.h"
+import render.texture.sample.helper;
 namespace render::texture::utils {
 namespace {
 [[nodiscard]] constexpr auto AdjustMipSize(u32 size, u32 level) -> u32 {

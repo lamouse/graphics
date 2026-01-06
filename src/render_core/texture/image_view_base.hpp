@@ -1,7 +1,7 @@
 #pragma once
 #include "render_core/surface.hpp"
-#include "render_core/texture/types.hpp"
 #include "render_core/texture/image_view_info.hpp"
+#include "render_core/texture/types.hpp"
 
 namespace render::texture {
 struct ImageViewInfo;

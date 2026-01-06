@@ -2,17 +2,16 @@ module;
 #include <boost/container/small_vector.hpp>
 #include <spdlog/spdlog.h>
 #include "texture.hpp"
-#include "texture/formatter.h"
 #include "common/assert.hpp"
 #include "shader_tools/shader_enums.hpp"
-#include "render_core/texture/types.hpp"
 #include "render_core/texture/image_view_base.hpp"
-#include "render_core/texture/render_targets.h"
 #include <vulkan/vulkan.hpp>
 #undef MemoryBarrier
 module render.vulkan.texture_cache;
 import render.vulkan.common;
 import render.vulkan.scheduler;
+import render.texture;
+
 
 namespace render::vulkan {
 namespace {

@@ -1,16 +1,16 @@
-// SPDX-FileCopyrightText: Copyright 2020 yuzu Emulator Project
-// SPDX-License-Identifier: GPL-2.0-or-later
-
+module;
 #include <algorithm>
 #include <string>
 
-#include "image_info.hpp"
-#include "formatter.h"
-#include "image_view_base.hpp"
-#include "render_targets.h"
-#include "samples_helper.h"
 #include <fmt/format.h>
-
+module render.texture.formatter;
+import render.texture.types;
+import render.texture.render_targets;
+import render.texture.sample.helper;
+import render.texture.image;
+import render.texture.image_view_base;
+import render.surface.format;
+import common;
 
 template <>
 struct fmt::formatter<render::surface::PixelFormat> : fmt::formatter<fmt::string_view> {

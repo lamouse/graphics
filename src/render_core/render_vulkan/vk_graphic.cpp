@@ -1,16 +1,14 @@
 module;
-#include <algorithm>
 #include <boost/container/static_vector.hpp>
 #include <tracy/Tracy.hpp>
 #include <span>
 #include <vulkan/vulkan.hpp>
 #include <imgui.h>
 #include <spdlog/spdlog.h>
+#include <ktx.h>
 
 #include "imgui_impl_vulkan.h"
 #include "common/assert.hpp"
-#include "render_core/texture_cache/texture_cache.h"
-#include "render_core/buffer_cache/buffer_cache.h"
 
 #ifdef MemoryBarrier
 #undef MemoryBarrier
@@ -24,7 +22,9 @@ import render.vulkan.graphics_pipeline;
 import render.shader_cache;
 import render.shader_notify;
 import render.framebuffer_config;
+import render.buffer.cache;
 import render.graphic;
+import render.texture.texture_cache;
 import render;
 import shader;
 import core;

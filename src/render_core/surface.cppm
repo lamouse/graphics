@@ -6,5 +6,7 @@ using PixelFormat = render::surface::PixelFormat;
 using render::surface::IsPixelFormatASTC;
 using render::surface::IsPixelFormatSRGB;
 using render::surface::IsPixelFormatBCn;
+using render::surface::GetFormatType;
+using render::surface::SurfaceType;
 constexpr std::size_t MaxFormat = render::surface::MaxPixelFormat;
 }
