@@ -18,7 +18,4 @@ qt_add_qml_module(${LIB_NAME}
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/RenderCtrl"
 )
 target_link_libraries(${LIB_NAME} PRIVATE common Imgui::Imgui)
-target_link_libraries(${LIB_NAME} PUBLIC
-    Qt6::Quick Qt6::QuickControls2 Qt6::QuickControls2Basic Qt6::QuickControls2Fusion Qt6::QuickDialogs2 Qt6::QuickEffects
-    Qt6::QuickControls2WindowsStyleImpl Qt6::QuickLayouts
-)
+target_link_libraries(${LIB_NAME} PUBLIC Qt6::Quick)
