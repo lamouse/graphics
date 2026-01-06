@@ -9,7 +9,6 @@
 #include "present/window_adapt_pass.hpp"
 #include "common/settings.hpp"
 
-#include "render_core/render_vulkan/vk_graphic.hpp"
 namespace render::vulkan {
 BlitScreen::BlitScreen(const Device& device_, MemoryAllocator& memory_allocator_,
                        PresentManager& present_manager_, scheduler::Scheduler& scheduler_)
@@ -52,11 +51,12 @@ void BlitScreen::SetWindowAdaptPass() {
     }
 }
 
-void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
-                             const layout::FrameBufferLayout& layout,
-                             std::span<const frame::FramebufferConfig> framebuffers,
-                             size_t current_swapchain_image_count,
-                             vk::Format current_swapchain_view_format) {
+void BlitScreen::DrawToFrame(
+    const std::function<std::optional<present::FramebufferTextureInfo>(
+        const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+    present::Frame* frame, const layout::FrameBufferLayout& layout,
+    std::span<const frame::FramebufferConfig> framebuffers, size_t current_swapchain_image_count,
+    vk::Format current_swapchain_view_format) {
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
@@ -108,7 +108,7 @@ void BlitScreen::DrawToFrame(VulkanGraphics& rasterizer, Frame* frame,
     }
 
     // Perform the draw
-    window_adapt->Draw(rasterizer, scheduler, image_index, layers, framebuffers, layout, frame);
+    window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout, frame);
 
     // Advance to next image
     if (++image_index >= image_count) {

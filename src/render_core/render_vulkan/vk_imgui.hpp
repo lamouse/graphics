@@ -9,8 +9,8 @@
 #include "core/frontend/window.hpp"
 #include <functional>
 #include <atomic>
+#include "render_core/render_vulkan/present/present_frame.hpp"
 namespace render::vulkan {
-struct Frame;
 namespace scheduler {
 class Scheduler;
 }
@@ -25,7 +25,7 @@ class ImguiCore {
         std::atomic_bool is_render_finish;
 
     public:
-        void draw(const std::function<void()>& draw_func, Frame* frame);
+        void draw(const std::function<void()>& draw_func, present::Frame* frame);
         explicit ImguiCore(core::frontend::BaseWindow* window, const Device& device,
                            scheduler::Scheduler& scheduler, vk::PhysicalDevice physical,
                            vk::Instance instance);

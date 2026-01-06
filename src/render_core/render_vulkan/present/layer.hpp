@@ -5,13 +5,14 @@
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebuffer_config.hpp"
-#include "memory"
+#include <memory>
+#include <functional>
+#include "render_core/render_vulkan/present/present_frame.hpp"
 namespace render::vulkan {
 class Device;
 class FSR;
 class MemoryAllocator;
 struct PresentPushConstants;
-class VulkanGraphics;
 class AntiAliasPass;
 
 namespace scheduler {
@@ -25,11 +26,12 @@ class Layer final {
                        vk::Extent2D output_size, vk::DescriptorSetLayout layout);
         ~Layer();
 
-        void ConfigureDraw(PresentPushConstants* out_push_constants,
-                           vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
-                           vk::Sampler sampler, size_t image_index,
-                           const frame::FramebufferConfig& framebuffer,
-                           const layout::FrameBufferLayout& layout);
+        void ConfigureDraw(
+            PresentPushConstants* out_push_constants, vk::DescriptorSet* out_descriptor_set,
+            const std::function<std::optional<present::FramebufferTextureInfo>(
+                const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+            vk::Sampler sampler, size_t image_index, const frame::FramebufferConfig& framebuffer,
+            const layout::FrameBufferLayout& layout);
         CLASS_NON_COPYABLE(Layer);
         CLASS_NON_MOVEABLE(Layer);
 

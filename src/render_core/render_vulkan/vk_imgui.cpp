@@ -133,7 +133,7 @@ ImguiCore::ImguiCore(core::frontend::BaseWindow* window_, const Device& device_,
     ImGui_ImplVulkan_Init(&init_info);
 }
 
-void ImguiCore::draw(const std::function<void()>& draw_func, Frame* frame) {
+void ImguiCore::draw(const std::function<void()>& draw_func, present::Frame* frame) {
     if (!draw_func) {
         return;
     }

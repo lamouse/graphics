@@ -77,9 +77,12 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
         return;
     }
 
-    Frame* frame = present_manager.getRenderFrame();
-
-    blit_swapchain.DrawToFrame(vulkan_graphics, frame, window_->getFramebufferLayout(),
+    present::Frame* frame = present_manager.getRenderFrame();
+    auto accelerateDisplay = [&](const render::frame::FramebufferConfig& framebuffer,
+                                 unsigned int stride) {
+        return vulkan_graphics.AccelerateDisplay(framebuffer, stride);
+    };
+    blit_swapchain.DrawToFrame(accelerateDisplay, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
     if (settings::values.use_debug_ui && imgui && func) {

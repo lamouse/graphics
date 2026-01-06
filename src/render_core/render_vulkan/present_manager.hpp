@@ -6,7 +6,9 @@
 #include <thread>
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
-#include "common/common_funcs.hpp"
+#include "render_core/render_vulkan/present/present_frame.hpp"
+#include "common/class_traits.hpp"
+
 namespace core::frontend {
 class BaseWindow;
 }
@@ -16,15 +18,6 @@ class Swapchain;
 namespace scheduler {
 class Scheduler;
 }
-struct Frame {
-        uint32_t width;
-        uint32_t height;
-        Image image;
-        ImageView image_view;
-        vk::CommandBuffer cmdbuf;
-        Semaphore render_ready;
-        Fence present_done;
-};
 
 class PresentManager {
     public:
@@ -35,13 +28,13 @@ class PresentManager {
         CLASS_NON_MOVEABLE(PresentManager);
         ~PresentManager() = default;
         /// Returns the last used presentation frame
-        auto getRenderFrame() -> Frame*;
+        auto getRenderFrame() -> present::Frame*;
 
         /// Pushes a frame for presentation
-        void present(Frame* frame);
+        void present(present::Frame* frame);
 
         /// Recreates the present frame to match the provided parameters
-        void recreateFrame(Frame* frame, uint32_t width, uint32_t height,
+        void recreateFrame(present::Frame* frame, uint32_t width, uint32_t height,
                            vk::Format image_view_format);
 
         /// Waits for the present thread to finish presenting all queued frames.
@@ -50,11 +43,11 @@ class PresentManager {
     private:
         void presentThread(std::stop_token token);
 
-        void copyToSwapchain(Frame* frame);
+        void copyToSwapchain(present::Frame* frame);
 
-        void copyToSwapchainImpl(Frame* frame);
+        void copyToSwapchainImpl(present::Frame* frame);
 
-        void recreateSwapchain(Frame* frame);
+        void recreateSwapchain(present::Frame* frame);
 
         void setImageCount();
 
@@ -66,9 +59,9 @@ class PresentManager {
         Swapchain& swapchain_;
         SurfaceKHR& surface_;
         VulkanCommandPool cmdpool_;
-        std::vector<Frame> frames_;
-        std::queue<Frame*> present_queue_;
-        std::queue<Frame*> free_queue_;
+        std::vector<present::Frame> frames_;
+        std::queue<present::Frame*> present_queue_;
+        std::queue<present::Frame*> free_queue_;
         std::condition_variable_any frame_cv_;
         std::condition_variable free_cv_;
         std::mutex swapchain_mutex_;

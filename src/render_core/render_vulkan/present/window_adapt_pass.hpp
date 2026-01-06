@@ -4,10 +4,11 @@
 #include "render_core/framebuffer_config.hpp"
 #include <list>
 #include "core/frontend/framebuffer_layout.hpp"
+#include "render_core/render_vulkan/present/present_frame.hpp"
+#include <functional>
 namespace render::vulkan {
 class Device;
 struct Frame;
-class VulkanGraphics;
 class Layer;
 namespace scheduler {
 class Scheduler;
@@ -20,9 +21,12 @@ class WindowAdaptPass final {
         ~WindowAdaptPass();
 
         auto getDescriptorSetLayout() -> vk::DescriptorSetLayout;
-        void Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler, size_t image_index,
-                  std::list<Layer>& layers, std::span<const frame::FramebufferConfig> configs,
-                  const layout::FrameBufferLayout& layout, Frame* dst);
+        void Draw(
+            const std::function<std::optional<present::FramebufferTextureInfo>(
+                const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+            scheduler::Scheduler& scheduler, size_t image_index, std::list<Layer>& layers,
+            std::span<const frame::FramebufferConfig> configs,
+            const layout::FrameBufferLayout& layout, Frame* dst);
 
     private:
         void CreateDescriptorSetLayout();

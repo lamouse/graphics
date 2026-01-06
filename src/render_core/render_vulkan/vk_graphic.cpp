@@ -524,11 +524,11 @@ void VulkanGraphics::UpdateScissorsState() {
 }
 
 auto VulkanGraphics::AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
-    -> std::optional<FramebufferTextureInfo> {
+    -> std::optional<present::FramebufferTextureInfo> {
     std::scoped_lock lock{texture_cache.mutex};
     const auto& image_view = texture_cache.TryFindFramebufferImageView();
 
-    FramebufferTextureInfo info{};
+    present::FramebufferTextureInfo info{};
     info.image = image_view.first->ImageHandle();
     info.image_view = image_view.first->RenderTarget();
     info.width = image_view.first->size.width;

@@ -12,10 +12,10 @@
 #include "core/frontend/window.hpp"
 #include "common/class_traits.hpp"
 #include "render_core/framebuffer_config.hpp"
+#include "render_core/render_vulkan/present/present_frame.hpp"
 namespace render::vulkan {
 using ModelId = common::SlotId;
 
-struct FramebufferTextureInfo;
 class Device;
 
 struct ModelResource {
@@ -51,7 +51,7 @@ class VulkanGraphics : public render::Graphic {
         ~VulkanGraphics() override;
 
         auto AccelerateDisplay(const frame::FramebufferConfig& config, u32 pixel_stride)
-            -> std::optional<FramebufferTextureInfo>;
+            -> std::optional<present::FramebufferTextureInfo>;
         void TickFrame();
 
     private:

@@ -73,7 +73,7 @@ PresentManager::PresentManager(const vk::Instance& instance,
 
     frames_.resize(image_count_);
     for (uint32_t i = 0; i < frames_.size(); i++) {
-        Frame& frame = frames_[i];
+        present::Frame& frame = frames_[i];
         frame.cmdbuf = vk::CommandBuffer{cmdbuffers[i]};
         frame.render_ready = device_.logical().createSemaphore();
 
@@ -105,7 +105,7 @@ void PresentManager::presentThread(std::stop_token token) {  // NOLINT
         }
 
         // Take the frame and notify anyone waiting
-        Frame* frame = present_queue_.front();
+        present::Frame* frame = present_queue_.front();
         present_queue_.pop();
         frame_cv_.notify_one();
 
@@ -123,11 +123,11 @@ void PresentManager::presentThread(std::stop_token token) {  // NOLINT
     }
 }
 
-void PresentManager::recreateSwapchain(Frame* frame) {
+void PresentManager::recreateSwapchain(present::Frame* frame) {
     swapchain_.create(*surface_, frame->width, frame->height);
     setImageCount();
 }
-void PresentManager::copyToSwapchain(Frame* frame) {
+void PresentManager::copyToSwapchain(present::Frame* frame) {
     bool requires_recreation = false;
 
     while (true) {
@@ -151,7 +151,7 @@ void PresentManager::copyToSwapchain(Frame* frame) {
     }
 }
 
-void PresentManager::copyToSwapchainImpl(Frame* frame) {
+void PresentManager::copyToSwapchainImpl(present::Frame* frame) {
     ZoneScopedN("PresentManager::copyToSwapchainImpl()");
     // If the size of the incoming frames has changed, recreate the swapchain
     // to account for that.
@@ -283,14 +283,14 @@ void PresentManager::copyToSwapchainImpl(Frame* frame) {
     swapchain_.present(render_semaphore);
 }
 
-auto PresentManager::getRenderFrame() -> Frame* {
+auto PresentManager::getRenderFrame() -> present::Frame* {
     ZoneScopedN("PresentManager::getRenderFrame()");
     // Wait for free presentation frames
     std::unique_lock lock{free_mutex_};
     free_cv_.wait(lock, [this] { return !free_queue_.empty(); });
 
     // Take the frame from the queue
-    Frame* frame = free_queue_.front();
+    present::Frame* frame = free_queue_.front();
     free_queue_.pop();
 
     // Wait for the presentation to be finished so all frame resources are free
@@ -304,7 +304,7 @@ auto PresentManager::getRenderFrame() -> Frame* {
     return frame;
 }
 
-void PresentManager::present(Frame* frame) {
+void PresentManager::present(present::Frame* frame) {
     if (!use_present_thread_) {
         scheduler_.waitWorker();
         copyToSwapchain(frame);
@@ -336,7 +336,7 @@ void PresentManager::waitPresent() {
     std::scoped_lock swapchain_lock{swapchain_mutex_};
 }
 
-void PresentManager::recreateFrame(Frame* frame, u32 width, u32 height,
+void PresentManager::recreateFrame(present::Frame* frame, u32 width, u32 height,
                                    vk::Format image_view_format) {
     frame->width = width;
     frame->height = height;

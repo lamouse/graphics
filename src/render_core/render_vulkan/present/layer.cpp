@@ -11,7 +11,6 @@
 #include "filters.hpp"
 #include "common/settings.hpp"
 #include "vulkan_utils.hpp"
-#include "render_core/render_vulkan/vk_graphic.hpp"
 
 namespace render::vulkan {
 Layer::Layer(const Device& device_, MemoryAllocator& memory_allocator_,
@@ -143,12 +142,13 @@ void Layer::UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, s
     device.getLogical().updateDescriptorSets(write, {});
 }
 
-void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
-                          vk::DescriptorSet* out_descriptor_set, VulkanGraphics& rasterizer,
-                          vk::Sampler sampler, size_t image_index,
-                          const frame::FramebufferConfig& framebuffer,
-                          const layout::FrameBufferLayout& layout) {
-    const auto texture_info = rasterizer.AccelerateDisplay(framebuffer, framebuffer.stride);
+void Layer::ConfigureDraw(
+    PresentPushConstants* out_push_constants, vk::DescriptorSet* out_descriptor_set,
+    const std::function<std::optional<present::FramebufferTextureInfo>(
+        const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+    vk::Sampler sampler, size_t image_index, const frame::FramebufferConfig& framebuffer,
+    const layout::FrameBufferLayout& layout) {
+    const auto texture_info = accelerateDisplay(framebuffer, framebuffer.stride);
 
     const u32 texture_width = texture_info ? texture_info->width : framebuffer.width;
     const u32 texture_height = texture_info ? texture_info->height : framebuffer.height;

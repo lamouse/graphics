@@ -1,5 +1,4 @@
 #include "window_adapt_pass.hpp"
-#include "render_core/render_vulkan/vk_graphic.hpp"
 #include "present_push_constants.h"
 #include "render_core/host_shaders/vulkan_present_vert_spv.h"
 #include "render_vulkan/vk_shader_util.hpp"
@@ -57,10 +56,12 @@ void WindowAdaptPass::CreatePipelines(vk::Format format) {
         device, format, pipeline_layout, std::tie(vertex_shader, fragment_shader));
 }
 
-void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& scheduler,
-                           size_t image_index, std::list<Layer>& layers,
-                           std::span<const frame::FramebufferConfig> configs,
-                           const layout::FrameBufferLayout& layout, Frame* dst) {
+void WindowAdaptPass::Draw(
+    const std::function<std::optional<present::FramebufferTextureInfo>(
+        const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+    scheduler::Scheduler& scheduler, size_t image_index, std::list<Layer>& layers,
+    std::span<const frame::FramebufferConfig> configs, const layout::FrameBufferLayout& layout,
+    Frame* dst) {
     const vk::PipelineLayout graphics_pipeline_layout{*pipeline_layout};
     const vk::ImageView image_view{*dst->image_view};
     const vk::Extent2D render_area{
@@ -88,7 +89,7 @@ void WindowAdaptPass::Draw(VulkanGraphics& rasterizer, scheduler::Scheduler& sch
                 break;
         }
 
-        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], rasterizer, *sampler,
+        layer_it->ConfigureDraw(&push_constants[i], &descriptor_sets[i], accelerateDisplay, *sampler,
                                 image_index, configs[i], layout);
         layer_it++;
     }
