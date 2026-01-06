@@ -45,7 +45,7 @@ if(USE_QT)
             --include-soft-plugins
             --qmldir ${CMAKE_CURRENT_SOURCE_DIR}
             --no-translations
-            --no-libraries
+            # --no-libraries
             --skip-plugin-types networkinformation,imageformats,iconengines,qmltooling,styles,tls,generic
             "$<TARGET_FILE_DIR:${PROGRAM_NAME}>"
             COMMENT "windeployqt running..."

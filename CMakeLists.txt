@@ -32,7 +32,7 @@ set(BUILD_TESTING ON)
 
 # need vcpkg start
 find_package(assimp CONFIG REQUIRED)
-find_package(Boost REQUIRED COMPONENTS container lockfree)
+find_package(Boost REQUIRED COMPONENTS container)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
@@ -59,11 +59,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
 
 if(USE_QT)
-        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets Quick QuickControls2
-                        QuickControls2Basic QuickControls2Fusion QuickDialogs2
-                        QuickEffects QuickControls2WindowsStyleImpl
-                        QuickLayouts
-        )
+        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets Quick)
         set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate qmlls.ini for QML LS")
 endif()
 
