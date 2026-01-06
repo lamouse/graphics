@@ -7,7 +7,6 @@ module;
 #include <xxhash.h>
 #include <vulkan/vulkan.hpp>
 
-#include "shader_tools/stage.h"
 #if defined(_MSC_VER) && defined(NDEBUG)
 #define LAMBDA_FORCEINLINE [[msvc::forceinline]]
 #else

@@ -1,7 +1,6 @@
 module;
 #include <algorithm>
 #include "common/class_traits.hpp"
-#include "render_core/pipeline_state.h"
 #include <condition_variable>
 #include "common/thread_worker.hpp"
 #include <vulkan/vulkan.hpp>
@@ -16,6 +15,7 @@ import render.vulkan.update_descriptor;
 import render;
 import shader;
 import common;
+import render;
 
 
 export namespace render::vulkan {
