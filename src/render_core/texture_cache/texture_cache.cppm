@@ -1,8 +1,6 @@
 module;
 
 #include "common/literals.hpp"
-#include "common/class_traits.hpp"
-
 
 #include <ktx.h>
 #include <span>
@@ -95,9 +93,11 @@ class TextureCache {
         using BufferType = typename P::BufferType;
 
     public:
-        explicit TextureCache(Runtime&);
-        CLASS_NON_COPYABLE(TextureCache);
-        CLASS_NON_MOVEABLE(TextureCache);
+        explicit TextureCache(Runtime& runtime);
+        TextureCache(const TextureCache&) = delete;
+        TextureCache(const TextureCache&&) noexcept = delete;
+        auto operator=(const TextureCache&) -> TextureCache& = delete;
+        auto operator=(const TextureCache&&) noexcept -> TextureCache& = delete;
         ~TextureCache() = default;
         /// Notify the cache that a new frame has been queued
         void TickFrame();
@@ -149,7 +149,7 @@ TextureCache<P>::TextureCache(Runtime& runtime_) : runtime{runtime_} {
     // This way the null resource becomes a compile time constant
     void(slot_images.insert());
     void(slot_image_views.insert(runtime_, NullImageViewParams{}));
-    void(slot_samplers.insert(runtime_, SamplerReduction::WeightedAverage, 1.F));
+    void(slot_samplers.insert(runtime_, SamplerReduction::WeightedAverage, 1));
 }
 template <class P>
 void TextureCache<P>::TickFrame() {

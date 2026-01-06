@@ -7,7 +7,7 @@
 #include <boost/container/static_vector.hpp>
 namespace shader {
 
-constexpr uint8_t NUM_TEXTURE_TYPES = 9;
+inline constexpr uint8_t NUM_TEXTURE_TYPES = 9;
 
 struct UniformBufferDescriptor {
         uint32_t binding;

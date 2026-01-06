@@ -1,6 +1,4 @@
 module;
-#include "common/class_traits.hpp"
-#include "common/slot_vector.hpp"
 
 #include <vulkan/vulkan.hpp>
 #include <boost/container/static_vector.hpp>
@@ -20,6 +18,7 @@ import render.vulkan.texture_cache;
 import render.vulkan.render_pass;
 import render;
 import core;
+import common;
 
 export namespace render::vulkan {
 
@@ -44,8 +43,10 @@ class VulkanGraphics : public render::Graphic {
                                 MemoryAllocator& memory_allocator_,
                                 scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_);
 
-        CLASS_NON_COPYABLE(VulkanGraphics);
-        CLASS_NON_MOVEABLE(VulkanGraphics);
+        VulkanGraphics(const VulkanGraphics&) = delete;
+        auto operator=(const VulkanGraphics&) -> VulkanGraphics& = delete;
+        VulkanGraphics(VulkanGraphics&&) noexcept = delete;
+        auto operator=(VulkanGraphics&&) noexcept -> VulkanGraphics& = delete;
         void clean(const CleanValue& cleanValue) override;
         void dispatchCompute(const IComputeInstance& instance) override;
         auto uploadModel(const IMeshData& instance) -> MeshId override;

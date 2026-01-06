@@ -124,7 +124,7 @@ enum class PixelFormat {
     Max = MaxDepthStencilFormat,
     Invalid = 255,
 };
-constexpr std::size_t MaxPixelFormat = static_cast<std::size_t>(PixelFormat::Max);
+inline constexpr std::size_t MaxPixelFormat = static_cast<std::size_t>(PixelFormat::Max);
 
 enum class SurfaceType {
     ColorTexture = 0,

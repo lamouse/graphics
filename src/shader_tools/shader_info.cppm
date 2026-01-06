@@ -6,4 +6,5 @@ export namespace shader{
 using Info = shader::Info;
 using shader::NumDescriptors;
 using TextureType = shader::TextureType;
+using shader::NUM_TEXTURE_TYPES;
 }

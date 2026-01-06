@@ -1,12 +1,8 @@
 module;
-#include "render_core/texture/image_info.hpp"
 #include "common/class_traits.hpp"
-#include "render_core/texture/image_view_base.hpp"
-#include "render_core/texture.hpp"
 
 #include <vulkan/vulkan.hpp>
 
-#include "shader_tools/shader_info.h"
 export module render.vulkan.texture_cache;
 import render.vulkan.common;
 import render.vulkan.render_pass;
@@ -15,9 +11,11 @@ import render.vulkan.scheduler;
 import render.vulkan.staging_buffer_pool;
 import render.vulkan.update_descriptor;
 import render.surface.format;
-import render.texture.types;
-import render.texture.render_targets;
+import render.texture;
+import render.texture_enum;
 import render.texture.texture_cache;
+import shader;
+import common;
 
 
 export namespace render::vulkan {
