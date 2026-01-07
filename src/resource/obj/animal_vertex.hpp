@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "render_core/vertex.hpp"
+#include <vector>
 namespace graphics::animation {
 constexpr int MAX_BONE_INFLUENCE = 4;
 struct Vertex {
