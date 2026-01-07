@@ -16,6 +16,7 @@ struct TransformComponent {
             transform = ::glm::scale(transform, scale);
             return transform;
         }
+        TransformComponent()=default;
         explicit TransformComponent(const glm::vec3& translation_,
                                     const ::glm::vec3& scale_ = ::glm::vec3(1.F),
                                     const ::glm::vec3& rotation_ = ::glm::vec3(.0f))
