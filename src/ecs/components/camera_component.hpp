@@ -1,6 +1,5 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "common/class_traits.hpp"
 #include "core/camera/camera.hpp"
 namespace ecs {
 constexpr auto DEFAULT_FOVY = 45.F;
@@ -30,10 +29,6 @@ struct CameraComponent {
     public:
         float speed{DEFAULT_SPEED};
         float sensitivity{DEFAULT_SENSITIVITY};
-        CameraComponent() = default;
-        ~CameraComponent() = default;
-        CLASS_DEFAULT_COPYABLE(CameraComponent);
-        CLASS_DEFAULT_MOVEABLE(CameraComponent);
         [[nodiscard]] auto eye() const -> glm::vec3 { return eye_; }
         [[nodiscard]] auto center() const -> glm::vec3 { return center_; }
         [[nodiscard]] auto up() const -> glm::vec3 { return up_; }

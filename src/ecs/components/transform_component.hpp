@@ -2,7 +2,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>  // for inverse
-#include "common/class_traits.hpp"
 namespace ecs {
 struct TransformComponent {
         ::glm::vec3 translation{};  // position offset
@@ -17,10 +16,6 @@ struct TransformComponent {
             transform = ::glm::scale(transform, scale);
             return transform;
         }
-        TransformComponent() = default;
-        ~TransformComponent() = default;
-        CLASS_DEFAULT_COPYABLE(TransformComponent);
-        CLASS_DEFAULT_MOVEABLE(TransformComponent);
         explicit TransformComponent(const glm::vec3& translation_,
                                     const ::glm::vec3& scale_ = ::glm::vec3(1.F),
                                     const ::glm::vec3& rotation_ = ::glm::vec3(.0f))

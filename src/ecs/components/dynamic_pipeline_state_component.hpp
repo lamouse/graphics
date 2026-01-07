@@ -1,6 +1,5 @@
 #pragma once
 #include "render_core/pipeline_state.h"
-#include "core/frontend/framebuffer_layout.hpp"
 #include "common/settings.hpp"
 
 namespace ecs {
