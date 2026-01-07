@@ -1,3 +1,5 @@
+module;
+#include <cstddef>
 export module render.buffer.cache_base;
 import common.types;
 
@@ -18,10 +20,10 @@ class BufferBase {
         auto operator=(BufferBase&&) -> BufferBase& = default;
         BufferBase(BufferBase&&) = default;
         virtual ~BufferBase() = default;
-        [[nodiscard]] auto sizeBytes() const -> size_t { return size_bytes; }
+        [[nodiscard]] auto sizeBytes() const -> std::size_t { return size_bytes; }
 
     private:
-        size_t size_bytes = 0;
+        std::size_t size_bytes = 0;
 };
 
 }  // namespace render::buffer
