@@ -181,6 +181,11 @@ void VulkanBufferView::SetObjectNameEXT(const char* name) const {
 void ImageView::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle.operator VkImageView(), vk::ObjectType::eImageView, name);
 }
+
+void Fence::SetObjectNameEXT(const char* name) const {
+    SetObjectName(owner, handle.operator VkFence(), vk::ObjectType::eFence, name);
+}
+
 void VulkanFramebuffer::SetObjectNameEXT(const char* name) const {
     SetObjectName(owner, handle.operator VkFramebuffer(), vk::ObjectType::eFramebuffer, name);
 }
