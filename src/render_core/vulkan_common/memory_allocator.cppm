@@ -2,12 +2,12 @@ module;
 #include <memory>
 #include <span>
 #include <vector>
-#include "common/common_types.hpp"
 #include <vulkan/vulkan.hpp>
 #include "vma.hpp"
 export module render.vulkan.common.MemoryAllocator;
 import render.vulkan.common.wrapper;
 import render.vulkan.common.driver;
+import common;
 export namespace render::vulkan {
 class MemoryMap;
 class MemoryAllocation;
@@ -105,7 +105,7 @@ class MemoryAllocator {
         auto commit(const vk::MemoryRequirements& requirements, MemoryUsage usage) -> MemoryCommit;
 
         /// Commits memory required by the buffer and binds it.
-        auto commit(const vk::Buffer& buffer, MemoryUsage usage) -> MemoryCommit;
+        //auto commit(const vk::Buffer& buffer, MemoryUsage usage) -> MemoryCommit;
 
     private:
         /// Tries to allocate a chunk of memory.

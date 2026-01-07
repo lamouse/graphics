@@ -18,7 +18,7 @@ module;
 export module render.vulkan.common.wrapper;
 import common.types;
 
-namespace render::vulkan::wrapper {
+export namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
 struct NoOwner {
         NoOwner() = default;

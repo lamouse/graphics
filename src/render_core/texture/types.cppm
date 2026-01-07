@@ -7,11 +7,11 @@ export namespace render::texture {
 using render::texture::NUM_RT;
 using render::texture::MAX_MIP_LEVELS;
 using render::texture:: CORRUPT_ID;
-using ImageId = render::texture::ImageId;
-using ImageMapId = render::texture::ImageMapId;
-using ImageViewId = render::texture::ImageViewId;
-using SamplerId = render::texture::SamplerId;
-using FramebufferId = render::texture::FramebufferId;
+using render::texture::ImageId;
+using render::texture::ImageMapId;
+using render::texture::ImageViewId;
+using render::texture::SamplerId;
+using render::texture::FramebufferId;
 
 /// Fake image ID for null image views
 using render::texture:: NULL_IMAGE_ID;
@@ -21,9 +21,9 @@ using render::texture::NULL_IMAGE_VIEW_ID;
 using render::texture::NULL_SAMPLER_ID;
 
 
-using ImageType = render::texture::ImageType;
+using render::texture::ImageType;
 
-using ImageViewType = render::texture::ImageViewType;
+using render::texture::ImageViewType;
 using render::texture::NUM_IMAGE_VIEW_TYPES;
 
 
@@ -31,9 +31,9 @@ using Offset2D = render::texture::Offset2D;
 
 using Offset3D = render::texture::Offset3D;
 
-using Region2D = render::texture::Region2D;
-using Extent2D = render::texture::Extent2D;
-using Extent3D = render::texture::Extent3D;
+using render::texture::Region2D;
+using render::texture::Extent2D;
+using render::texture::Extent3D;
 using SubresourceLayers = render::texture::SubresourceLayers;
 using SubresourceBase = render::texture::SubresourceBase;
 using SubresourceExtent = render::texture::SubresourceExtent;

@@ -6,7 +6,7 @@ module;
 #include "common/bit_cast.h"
 export module render.texture.render_targets;
 import render.texture.types;
-import common;
+import common.types;
 
 export namespace render::texture {
 
@@ -30,7 +30,7 @@ struct RenderTargets {
 
 }  // namespace render::texture
 
-export namespace std {
+namespace std {
 
 template <>
 struct hash<render::texture::RenderTargets> {

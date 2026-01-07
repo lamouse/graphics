@@ -7,3 +7,5 @@ export {
     using common::SlotVector;
 }
 }  // namespace common
+
+export using std::hash;

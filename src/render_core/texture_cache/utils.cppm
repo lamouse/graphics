@@ -3,7 +3,8 @@ module;
 export module render.texture_cache.utils;
 import render.surface.format;
 import common.types;
-import render.texture;
+import render.texture.image;
+import render.texture.types;
 
 export namespace render::texture::utils {
 inline auto CalculateGuestSizeInBytes(const texture::ImageInfo& info) -> size_t {

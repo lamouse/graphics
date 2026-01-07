@@ -14,7 +14,7 @@ module render.vulkan.common.driver;
 import render.vulkan.common.wrapper;
 import render.vulkan.common.device.utils;
 import render.surface.format;
-import common.literals;
+import common;
 
 namespace render::vulkan {
 namespace {
