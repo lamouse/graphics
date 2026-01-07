@@ -16,8 +16,7 @@ class SkyBox {
         CLASS_DEFAULT_MOVEABLE(SkyBox);
         CLASS_NON_COPYABLE(SkyBox);
         ~SkyBox() = default;
-        SkyBox(graphics::ResourceManager& manager)
-            : id(getCurrentId()) {
+        SkyBox(graphics::ResourceManager& manager) : id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));
             entity_.addComponent<ecs::RenderStateComponent>(id);
             render_state = &entity_.getComponent<ecs::RenderStateComponent>();  // NOLINT
@@ -33,10 +32,7 @@ class SkyBox {
             material_resource.diffuseTextures = ret_id;
             sky_box = SkyBoxInstance{render::RenderCommand{.indexOffset = sub_mesh[0].indexOffset,
                                                            .indexCount = sub_mesh[0].indexCount},
-                                     shader_hash,
-                                     "sky box instance",
-                                     mesh_id,
-                                     material_resource};
+                                     shader_hash, "sky box instance", mesh_id, material_resource};
             auto& pipeline_state = sky_box.entity_.getComponent<ecs::DynamicPipeStateComponenet>();
             pipeline_state.state.depthTestEnable = 1;
             pipeline_state.state.depthWriteEnable = 0;

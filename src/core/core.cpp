@@ -39,8 +39,9 @@ struct System::Impl {
             std::string point_light_shader_name = "point_light";
             auto* resourceManager = resource_manager.get();
 
-            std::vector<std::string> shader_names{model_shader_name, particle_shader, point_light_shader_name};
-            for(auto& shader_name : shader_names){
+            std::vector<std::string> shader_names{model_shader_name, particle_shader,
+                                                  point_light_shader_name};
+            for (auto& shader_name : shader_names) {
                 resourceManager->addGraphShader(shader_name);
             }
             resourceManager->addComputeShader(particle_shader);
@@ -64,6 +65,9 @@ struct System::Impl {
         auto isSisShutdown() -> bool { return is_shut_down_.load(); }
         void set_shutdown(bool shutdown) { is_shut_down_ = shutdown; }
         void shutdown_main_process() {
+            if (render_base) {
+                Render()->composite(std::span{&frame_config_, 1});
+            }
             world_.reset();
             resource_manager.reset();
             render_base.reset();
@@ -117,7 +121,8 @@ struct System::Impl {
                     auto imageId = graphics->getDrawImage();
                     graphics::ui::show_menu(settings::values.menu_data);
                     graphics::draw_setting(settings::values.menu_data.show_system_setting);
-                    graphics::ui::showOutliner(*world_, *resource_manager, settings::values.menu_data);
+                    graphics::ui::showOutliner(*world_, *resource_manager,
+                                               settings::values.menu_data);
                     render_status_bar(settings::values.menu_data, statusData);
                     graphics::ui::draw_texture(settings::values.menu_data, imageId,
                                                window->getAspectRatio());
@@ -136,7 +141,7 @@ auto System::Render() -> render::RenderBase& { return *impl_->Render(); }
 [[nodiscard]] auto System::Render() const -> render::RenderBase& { return *impl_->Render(); }
 void System::setShutdown(bool shutdown) { impl_->set_shutdown(shutdown); }
 auto System::isShutdown() -> bool { return impl_->isSisShutdown(); }
-void System::shutdownMainProcess() {}
+void System::shutdownMainProcess() { impl_->shutdown_main_process(); }
 auto System::ResourceManager() -> graphics::ResourceManager& { return *impl_->ResourceManager(); }
 auto System::ResourceManager() const -> graphics::ResourceManager& {
     return *impl_->ResourceManager();

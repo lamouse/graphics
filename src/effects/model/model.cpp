@@ -46,8 +46,8 @@ auto uploadMeshMaterialResource(graphics::ResourceManager& manager, const SubMes
     return {materialResource, materialUBO};
 }
 
-LightModel::LightModel(graphics::ResourceManager& manager,
-                       const ModelResourceName& names, const std::string& name)
+LightModel::LightModel(graphics::ResourceManager& manager, const ModelResourceName& names,
+                       const std::string& name)
     : id(getCurrentId()) {
     auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
 

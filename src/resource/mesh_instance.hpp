@@ -81,13 +81,15 @@ class MeshInstance : public render::IMeshInstance {
 
         void setPushConstant(PushConstants* push) { push_constants = push; }
 
-        MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,  const std::string& meshName = "",
-                     render::MeshId meshId_ = {}, MeshMaterialResource material_resource_ = {})
+        MeshInstance(render::RenderCommand render_command_, ShaderHash shaderHash_,
+                     const std::string& meshName = "", render::MeshId meshId_ = {},
+                     MeshMaterialResource material_resource_ = {})
             : IMeshInstance(primitiveTopology, render_command_, meshId_, shaderHash_.vertex,
                             shaderHash_.fragment),
               material_resource(material_resource_),
               materials({material_resource.ambientTextures, material_resource.diffuseTextures,
-                         material_resource.specularTextures, material_resource.normalTextures}),id(getCurrentId()) {
+                         material_resource.specularTextures, material_resource.normalTextures}),
+              id(getCurrentId()) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
                                                        : meshName + " " + std::to_string(id));

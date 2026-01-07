@@ -71,7 +71,8 @@ void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mou
         if (!is_pick) {
             auto origin = mouse->GetMouseOrigin();
             auto pick_result = graphics::PickingSystem::pick(
-                *frameInfo.camera, origin.x, origin.y, static_cast<float>(frameInfo.frame_layout.screen.GetWidth()),
+                *frameInfo.camera, origin.x, origin.y,
+                static_cast<float>(frameInfo.frame_layout.screen.GetWidth()),
                 static_cast<float>(frameInfo.frame_layout.screen.GetHeight()));
             if (pick_result) {
                 this->pick(pick_result->model_id, pick_result->id);

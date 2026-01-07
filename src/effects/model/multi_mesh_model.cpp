@@ -2,8 +2,8 @@
 #include "system/pick_system.hpp"
 #include "resource/obj/model_mesh.hpp"
 namespace graphics::effects {
-ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager,
-                                     const ModelResourceName& names, const std::string& name)
+ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager, const ModelResourceName& names,
+                                     const std::string& name)
     : id(getCurrentId()) {
     auto shader_hash = manager.getShaderHash<ShaderHash>(names.shader_name);
     auto model_config = manager.getModelConfig(names.mesh_name);

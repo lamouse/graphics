@@ -36,12 +36,12 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
         // 设置全局默认字体为中文字体
         QApplication::setFont(QFont(chineseFamily, 10));
 
-        graphics::App g_app;
-        QApplication::exec();
-
 #endif
-        // graphics::App g_app;
-        // g_app.run();
+        graphics::App g_app;
+
+#ifdef USE_QT
+        QApplication::exec();
+#endif
     } catch (const ::std::exception& e) {
         ::spdlog::error(e.what());
         return EXIT_FAILURE;

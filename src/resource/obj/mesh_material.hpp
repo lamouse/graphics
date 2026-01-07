@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <ostream>
+#include <vector>
 namespace graphics {
 struct MeshMaterial {
         std::string name = "default";
