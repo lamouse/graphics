@@ -1,7 +1,7 @@
 
 #include <utility>
 #include "common/class_traits.hpp"
-#include "common/thread_worker.hpp"
+#include "common/thread.hpp"
 #include <spdlog/spdlog.h>
 #include "graphics/QT_render_widget.hpp"
 #include "graphics/QT_window.hpp"
@@ -28,7 +28,7 @@ class RenderWidget : public QWidget {
             }
         }
 
-        virtual ~RenderWidget() = default;
+        ~RenderWidget() override = default;
 
         [[nodiscard]] auto paintEngine() const -> QPaintEngine* override { return nullptr; }
 };
@@ -97,7 +97,7 @@ void RenderWindow::pullEvents() { QCoreApplication::processEvents(); }
 
 void RenderWindow::newFrame() {
     QSize logicalSize = this->size();
-    imgui::qt::new_frame(logicalSize.width(), logicalSize.height());
+    imgui::qt::new_frame(static_cast<float>(logicalSize.width()), static_cast<float>(logicalSize.height()));
 }
 
 void RenderWindow::closeEvent(QCloseEvent* event) {
@@ -155,7 +155,7 @@ void RenderWindow::OnFramebufferResized() {
     const auto width = static_cast<std::uint32_t>(child_widget_->width() * pixel_ratio);
     const auto height = static_cast<std::uint32_t>(child_widget_->height() * pixel_ratio);
     QSize logicalSize = this->size();
-    imgui::qt::new_frame(logicalSize.width(), logicalSize.height());
+    imgui::qt::new_frame(static_cast<float>(logicalSize.width()), static_cast<float>(logicalSize.height()));
     UpdateCurrentFramebufferLayout(width, height);
 }
 
@@ -186,7 +186,7 @@ void RenderWindow::mouseMoveEvent(QMouseEvent* event) {
     const int center_y = height() / 2;
 
     input_system_->GetMouse()->MouseMove(glm::vec2{pos.x(), pos.y()});
-    input_system_->GetMouse()->Move(pos.x(), pos.y(), center_x, center_y);
+    input_system_->GetMouse()->Move(static_cast<int>(pos.x()), static_cast<int>(pos.y()), center_x, center_y);
 }
 void RenderWindow::mouseReleaseEvent(QMouseEvent* event) {
     imgui::qt::mouse_release_event(event);
