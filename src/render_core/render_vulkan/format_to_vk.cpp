@@ -16,7 +16,7 @@ auto VertexFormat(const Device& device, VertexAttribute::Type type, VertexAttrib
             type = VertexAttribute::Type::UInt;
         }
     }
-    const vk::Format format{([&]() {
+    const VkFormat format{([&]() {
         switch (type) {
             case VertexAttribute::Type::UnusedEnumDoNotUseBecauseItWillGoAway:
                 ASSERT_MSG(false, "Invalid vertex attribute type!");
@@ -226,11 +226,12 @@ auto VertexFormat(const Device& device, VertexAttribute::Type type, VertexAttrib
         }
         return VK_FORMAT_UNDEFINED;
     })()};
-    if (format == vk::Format::eUndefined) {
+    auto cpp_format = static_cast<vk::Format>(format);
+    if (cpp_format == vk::Format::eUndefined) {
         UNIMPLEMENTED_MSG(std::format("Unimplemented vertex format of type={} and size={}",
                                       static_cast<u32>(type), static_cast<u32>(size)));
     }
-    return device.getSupportedFormat(format, vk::FormatFeatureFlagBits::eVertexBuffer,
+    return device.getSupportedFormat(cpp_format, vk::FormatFeatureFlagBits::eVertexBuffer,
                                      FormatType::Buffer);
 }
 
