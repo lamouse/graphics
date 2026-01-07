@@ -7,7 +7,7 @@ module;
 #include <mutex>
 #include <algorithm>
 #include <array>
-
+#include <vector>
 export module render.texture.texture_cache;
 import render.texture.render_targets;
 import render.texture.types;
