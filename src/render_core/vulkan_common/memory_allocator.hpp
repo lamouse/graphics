@@ -7,6 +7,7 @@
 #include "render_core/vulkan_common/device.hpp"
 #include "common/common_funcs.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "vma.hpp"
 
 VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {
@@ -40,6 +41,8 @@ class MemoryCommit {
         explicit MemoryCommit() noexcept = default;
         explicit MemoryCommit(MemoryAllocation* allocation_, vk::DeviceMemory memory_, u64 begin_,
                               u64 end_) noexcept;
+        MemoryCommit(VmaAllocator allocator, VmaAllocation allocation,
+                     const VmaAllocationInfo &info);
         ~MemoryCommit();
 
         auto operator=(MemoryCommit&&) noexcept -> MemoryCommit&;
@@ -64,10 +67,13 @@ class MemoryCommit {
         void release();
 
         MemoryAllocation* allocation_{};  ///< Pointer to the large memory allocation.
+        VmaAllocator allocator{};   ///< VMA allocator
+        VmaAllocation allocation{};  ///< VMA allocation handle
         vk::DeviceMemory memory_;         ///< Vulkan device memory handler.
         u64 begin_{};                     ///< Beginning offset in bytes to where the commit exists.
         u64 end_{};                       ///< Offset in bytes where the commit ends.
         std::span<u8> span_;  ///< Host visible memory span. Empty if not queried before.
+        void *mapped_ptr{};  ///< Optional persistent mapped pointer
 };
 
 /// Memory allocator container.

@@ -5,7 +5,6 @@
 #include <cassert>
 #include "common/literals.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
-#include "vma.hpp"
 
 namespace render::vulkan {
 namespace {
@@ -170,6 +169,15 @@ class MemoryAllocation {
 MemoryCommit::MemoryCommit(MemoryAllocation* allocation, vk::DeviceMemory memory, u64 begin,
                            u64 end) noexcept
     : allocation_{allocation}, memory_{memory}, begin_{begin}, end_{end} {}
+
+MemoryCommit::MemoryCommit(VmaAllocator alloc, VmaAllocation a,
+                           const VmaAllocationInfo& info) noexcept
+    : allocator{alloc},
+      allocation{a},
+      memory_{info.deviceMemory},
+      begin_{info.offset},
+      end_{info.size},
+      mapped_ptr{info.pMappedData} {}
 
 MemoryCommit::~MemoryCommit() { release(); }
 auto MemoryCommit::operator=(MemoryCommit&& rhs) noexcept -> MemoryCommit& {
@@ -372,6 +380,44 @@ auto MemoryAllocator::findType(vk::MemoryPropertyFlags flags, u32 type_mask) con
     }
     // Failed to find index
     return std::nullopt;
+}
+
+auto MemoryAllocator::commit(const vk::Buffer& buffer, MemoryUsage usage) -> MemoryCommit {
+    // Allocate memory appropriate for this buffer automatically
+    const auto vma_usage = memoryUsageVma(usage);
+
+    VmaAllocationCreateInfo ci{};
+    ci.flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT | memoryUsageVmaFlags(usage);
+    ci.usage = vma_usage;
+    ci.requiredFlags = 0;
+    ci.preferredFlags = static_cast<VkMemoryPropertyFlags>(memoryUsagePreferredVmaFlags(usage));
+    ci.pool = VK_NULL_HANDLE;
+    ci.pUserData = nullptr;
+    ci.priority = 0.0f;
+
+    const VkBuffer raw = buffer.operator VkBuffer();
+
+    VmaAllocation a{};
+    VmaAllocationInfo info{};
+
+    // Let VMA infer memory requirements from the buffer
+    VkResult res = vmaAllocateMemoryForBuffer(allocator, raw, &ci, &a, &info);
+
+    if (res != VK_SUCCESS) {
+        auto ci2 = ci;
+        ci2.flags &= ~VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
+        res = vmaAllocateMemoryForBuffer(allocator, raw, &ci2, &a, &info);
+
+        if (res != VK_SUCCESS && (ci.preferredFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+            auto ci3 = ci2;
+            ci3.preferredFlags &= ~VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+            res = vmaAllocateMemoryForBuffer(allocator, raw, &ci3, &a, &info);
+        }
+    }
+
+    utils::check(res);
+    utils::check(vmaBindBufferMemory2(allocator, a, 0, raw, nullptr));
+    return MemoryCommit(allocator, a, info);
 }
 
 }  // namespace render::vulkan
