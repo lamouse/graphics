@@ -3,12 +3,12 @@ module;
 export module render.types;
 
 export namespace render {
-using BufferId = render::BufferId;
-using VertexAttributeId = render::VertexAttributeId;
-using VertexBindingsId = render::VertexBindingsId;
-using ComputeBindingId = render::ComputeBindingId;
-using MeshId = render::MeshId;
-using TextureId = render::TextureId;
+using render::BufferId;
+using render::VertexAttributeId;
+using render::VertexBindingsId;
+using render::ComputeBindingId;
+using render::MeshId;
+using render::TextureId;
 
-using RenderCommand = render::RenderCommand;
+using render::RenderCommand;
 }  //

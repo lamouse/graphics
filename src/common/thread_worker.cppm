@@ -3,6 +3,6 @@ module;
 export module common.thread_worker;
 namespace common {
 export {
-    using ThreadWorker = StatefulThreadWorker<>;
+    using common::ThreadWorker;
 }
 }  // namespace common
