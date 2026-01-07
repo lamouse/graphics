@@ -585,7 +585,7 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
-        va_list args = nullptr;
+        va_list args;
         va_start(args, fmt);
         ImGui::TextColoredV(color, fmt, args);
         va_end(args);
@@ -594,7 +594,7 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
-        va_list args = nullptr;
+        va_list args;
         va_start(args, fmt);
         ImGui::TextV(fmt, args);
         va_end(args);
