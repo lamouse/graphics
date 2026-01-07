@@ -3,10 +3,10 @@ module;
 export module render.graphic;
 
 export namespace render {
-using GraphicsId = common::SlotId;
+using render::GraphicsId;
 
-using  Framebuffer = render::Framebuffer;
-using CleanValue = render::CleanValue;
+using render::Framebuffer;
+using render::CleanValue;
 using render::Graphic;
 
 }  // namespace render
