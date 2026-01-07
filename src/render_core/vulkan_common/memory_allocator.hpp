@@ -1,21 +1,13 @@
 #pragma once
 
 #include "common/common_types.hpp"
-#include "render_core/vulkan_common/device.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
+#include "render_core/vulkan_common/device.hpp"
+
 #include "vma.hpp"
 
 VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {
-
-/// Hints and requirements for the backing memory type of a commit
-enum class MemoryUsage {
-    DeviceLocal,  ///< Requests device local host visible buffer, falling back to device local
-                  ///< memory.
-    Upload,       ///< Requires a host visible memory type optimized for CPU to GPU uploads
-    Download,     ///< Requires a host visible memory type optimized for GPU to CPU readbacks
-    Stream        ///< Requests device local host visible buffer, falling back host memory.
-};
 template <typename F>
 void ForEachDeviceLocalHostVisibleHeap(const Device& device, F&& f) {
     auto memory_props = device.getPhysical().getMemoryProperties2().memoryProperties;
@@ -27,6 +19,15 @@ void ForEachDeviceLocalHostVisibleHeap(const Device& device, F&& f) {
         }
     }
 }
+
+/// Hints and requirements for the backing memory type of a commit
+enum class MemoryUsage {
+    DeviceLocal,  ///< Requests device local host visible buffer, falling back to device local
+                  ///< memory.
+    Upload,       ///< Requires a host visible memory type optimized for CPU to GPU uploads
+    Download,     ///< Requires a host visible memory type optimized for GPU to CPU readbacks
+    Stream        ///< Requests device local host visible buffer, falling back host memory.
+};
 
 /// Memory allocator container.
 /// Allocates and releases memory allocations on demand.

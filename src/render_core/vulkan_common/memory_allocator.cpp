@@ -1,54 +1,11 @@
 #include "memory_allocator.hpp"
-#include "common/alignment.h"
 #include <spdlog/spdlog.h>
-#include <algorithm>
-#include <optional>
 #include <cassert>
 #include "common/literals.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 
 namespace render::vulkan {
 namespace {
-
-struct Range {
-        u64 begin;
-        u64 end;
-
-        [[nodiscard]] auto contains(u64 iterator, u64 size) const noexcept -> bool {
-            return iterator < end && begin < iterator + size;
-        }
-};
-
-[[nodiscard]] auto allocationChunkSize(u64 required_size) -> u64 {
-    static constexpr std::array sizes{
-        0x1000ULL << 10,  0x1400ULL << 10,  0x1800ULL << 10,  0x1c00ULL << 10, 0x2000ULL << 10,
-        0x3200ULL << 10,  0x4000ULL << 10,  0x6000ULL << 10,  0x8000ULL << 10, 0xA000ULL << 10,
-        0x10000ULL << 10, 0x18000ULL << 10, 0x20000ULL << 10,
-    };
-    static_assert(std::ranges::is_sorted(sizes));
-
-    const auto it = std::ranges::lower_bound(sizes, required_size);
-    return it != sizes.end() ? *it : common::AlignUp(required_size, 4ULL << 20);
-}
-[[nodiscard]] auto memoryUsagePropertyFlags(MemoryUsage usage) -> vk::MemoryPropertyFlags {
-    switch (usage) {
-        case MemoryUsage::DeviceLocal:
-            return vk::MemoryPropertyFlagBits::eDeviceLocal;
-        case MemoryUsage::Upload:
-            return vk::MemoryPropertyFlagBits::eHostVisible |
-                   vk::MemoryPropertyFlagBits::eHostCoherent;
-        case MemoryUsage::Download:
-            return vk::MemoryPropertyFlagBits::eHostVisible |
-                   vk::MemoryPropertyFlagBits::eHostCoherent |
-                   vk::MemoryPropertyFlagBits::eHostCached;
-        case MemoryUsage::Stream:
-            return vk::MemoryPropertyFlagBits::eDeviceLocal |
-                   vk::MemoryPropertyFlagBits::eHostVisible |
-                   vk::MemoryPropertyFlagBits::eHostCoherent;
-    }
-    SPDLOG_ERROR("Invalid memory usage={}", static_cast<int>(usage));
-    return vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-}
 
 [[nodiscard]] auto memoryUsagePreferredVmaFlags(MemoryUsage usage) -> vk::MemoryPropertyFlags {
     return usage != MemoryUsage::DeviceLocal ? vk::MemoryPropertyFlagBits::eHostVisible
