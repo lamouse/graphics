@@ -5,6 +5,7 @@ module;
 #include <mutex>
 #include <span>
 #include <vector>
+#include <memory>
 
 export module render.buffer.cache;
 import common;
