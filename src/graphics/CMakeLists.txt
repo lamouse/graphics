@@ -67,12 +67,14 @@ target_link_libraries(${PROGRAM_NAME} PRIVATE SDL3::SDL3 world system Imgui::Img
 
 target_link_directories(${PROGRAM_NAME} PRIVATE ${CMAKE_BINARY_DIR}/lib)
 
+if(WIN32)
 add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     $<TARGET_RUNTIME_DLLS:${PROGRAM_NAME}>
     $<TARGET_FILE_DIR:${PROGRAM_NAME}>
     COMMAND_EXPAND_LISTS
 )
+endif()
 
 if(LINUX)
     target_link_libraries(
