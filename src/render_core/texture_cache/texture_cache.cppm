@@ -8,6 +8,8 @@ module;
 #include <algorithm>
 #include <array>
 #include <vector>
+#include <stdexcept>
+#include <cstring>
 export module render.texture.texture_cache;
 import render.texture.render_targets;
 import render.texture.types;
