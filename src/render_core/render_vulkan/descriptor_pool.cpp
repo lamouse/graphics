@@ -4,6 +4,7 @@ module;
 #include <span>
 #include <mutex>
 #include <shared_mutex>
+#include <memory>
 #include <vulkan/vulkan.hpp>
 module render.vulkan.descriptor_pool;
 import render.vulkan.common;
