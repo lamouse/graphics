@@ -2,6 +2,9 @@
 #include <cstring>
 #ifdef __linux__
 #include <X11/Xlib.h>
+#ifdef None
+#undef None
+#endif
 #endif
 namespace graphics {
 auto get_window_system_info() -> core::frontend::WindowSystemType {
@@ -78,7 +81,7 @@ auto get_window_info(SDL_Window *window) -> core::frontend::BaseWindow::WindowSy
     window_info.type = get_window_system_info();
     window_info.render_surface = get_windows_handles(window);
 #ifdef __linux__
-    window_info.display_connection = get_windows_display(window_);
+    window_info.display_connection = get_windows_display(window);
 #endif
     return window_info;
 }
