@@ -1,6 +1,6 @@
 module;
 #include <utility>
-
+#include <cstdint>
 #include <cassert>
 export module render.texture.sample.helper;
 import render.texture.types;
