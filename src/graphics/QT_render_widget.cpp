@@ -11,7 +11,7 @@
 #include "input/keyboard.hpp"
 #include "input/input.hpp"
 #include <QWindow>
-#include <Qlayout>
+#include <QLayout>
 
 namespace graphics {
 
