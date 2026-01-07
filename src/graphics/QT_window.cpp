@@ -3,7 +3,7 @@
 #include "graphics/ui/render_config.hpp"
 #include "input/input.hpp"
 #include "common/settings.hpp"
-#include <Qscreen>
+#include <QScreen>
 #include <QResizeEvent>
 #include <QFileDialog>
 #include <QMenuBar>
