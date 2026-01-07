@@ -1,6 +1,6 @@
 module;
 #include <vector>
-#include "common/class_traits.hpp"
+#include <cstdint>
 export module render.vulkan.resource_pool;
 import render.vulkan.common;
 import render.vulkan.master_semaphore;
@@ -12,9 +12,11 @@ class ResourcePool {
         explicit ResourcePool(semaphore::MasterSemaphore* master_semaphore, size_t grow_step);
 
         virtual ~ResourcePool() = default;
+        ResourcePool(const ResourcePool&) = default;
+        ResourcePool(ResourcePool&&) noexcept = default;
+        auto operator=(const ResourcePool&) -> ResourcePool& = default;
+        auto operator=(ResourcePool&&) noexcept -> ResourcePool& = default;
 
-        CLASS_DEFAULT_COPYABLE(ResourcePool);
-        CLASS_DEFAULT_MOVEABLE(ResourcePool);
 
     protected:
         auto commitResource() -> size_t;
@@ -32,6 +34,6 @@ class ResourcePool {
         semaphore::MasterSemaphore* master_semaphore_{};
         size_t grow_step_ = 0;      ///< Number of new resources created after an overflow
         size_t hint_iterator_ = 0;  ///< Hint to where the next free resources is likely to be found
-        std::vector<uint64_t> ticks_;  ///< Ticks for each resource
+        std::vector<std::uint64_t> ticks_;  ///< Ticks for each resource
 };
 } // namespace render::vulkan::resource
