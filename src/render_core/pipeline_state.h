@@ -8,6 +8,7 @@
 
 #include <array>
 #include <type_traits>
+#include <functional>
 #include "common/bit_field.hpp"
 #include "common/common_types.hpp"
 #include "render_core/surface.hpp"

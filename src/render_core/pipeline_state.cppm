@@ -12,3 +12,4 @@ using ComparisonOp = render::ComparisonOp;
 using StencilOp = render::StencilOp;
 using CullFace = render::CullFace;
 }
+export using std::hash;

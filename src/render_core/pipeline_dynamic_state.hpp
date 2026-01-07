@@ -35,7 +35,7 @@ enum class CullFace : u32 {
     Back = 2,
     FrontAndBack = 3,
 };
-constexpr auto DEFAULT_STENCIL_OP = StencilOp{.fail = StencilOp::Op::Keep,
+inline constexpr auto DEFAULT_STENCIL_OP = StencilOp{.fail = StencilOp::Op::Keep,
                                               .pass = StencilOp::Op::Keep,
                                               .depthFail = StencilOp::Op::Keep,
                                               .compare = ComparisonOp::Always};

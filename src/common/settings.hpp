@@ -10,7 +10,7 @@ struct Resolution {
         uint32_t height{};
 };
 
-constexpr auto DEFAULT_RESOLUTION = Resolution{.weight = 1920, .height = 1080};
+inline constexpr auto DEFAULT_RESOLUTION = Resolution{.weight = 1920, .height = 1080};
 
 auto TranslateCategory(Category category) -> const char*;
 
