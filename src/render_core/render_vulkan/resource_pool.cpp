@@ -1,6 +1,6 @@
 module;
 #include <optional>
-
+#include <cstdint>
 module render.vulkan.resource_pool;
 import render.vulkan.master_semaphore;
 import render.vulkan.common;
