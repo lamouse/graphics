@@ -5,16 +5,9 @@ export module render.vulkan.common.MemoryAllocator;
 import render.vulkan.common.wrapper;
 import render.vulkan.common.driver;
 import common;
-export namespace render::vulkan {
-/// Hints and requirements for the backing memory type of a commit
-enum class MemoryUsage {
-    DeviceLocal,  ///< Requests device local host visible buffer, falling back to device local
-                  ///< memory.
-    Upload,       ///< Requires a host visible memory type optimized for CPU to GPU uploads
-    Download,     ///< Requires a host visible memory type optimized for GPU to CPU readbacks
-    Stream        ///< Requests device local host visible buffer, falling back host memory.
-};
-template <typename F>
+namespace render::vulkan {
+
+export template <typename F>
 void ForEachDeviceLocalHostVisibleHeap(const Device& device, F&& f) {
     auto memory_props = device.getPhysical().getMemoryProperties2().memoryProperties;
     for (size_t i = 0; i < memory_props.memoryTypeCount; i++) {
@@ -26,7 +19,16 @@ void ForEachDeviceLocalHostVisibleHeap(const Device& device, F&& f) {
     }
 }
 
-class MemoryAllocator {
+/// Hints and requirements for the backing memory type of a commit
+export enum class MemoryUsage {
+    DeviceLocal,  ///< Requests device local host visible buffer, falling back to device local
+    ///< memory.
+    Upload,       ///< Requires a host visible memory type optimized for CPU to GPU uploads
+    Download,     ///< Requires a host visible memory type optimized for GPU to CPU readbacks
+    Stream        ///< Requests device local host visible buffer, falling back host memory.
+};
+
+export class MemoryAllocator {
     friend class MemoryAllocation;
 
     public:
