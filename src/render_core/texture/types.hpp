@@ -22,7 +22,7 @@ inline constexpr SamplerId NULL_SAMPLER_ID{0};
 enum class ImageType : std::uint8_t { e2D, e3D };
 
 enum class ImageViewType : std::uint8_t { e2D, Cube, e3D, e2DArray, CubeArray };
-constexpr size_t NUM_IMAGE_VIEW_TYPES = 5;
+inline constexpr size_t NUM_IMAGE_VIEW_TYPES = 5;
 
 struct Offset2D {
         constexpr auto operator<=>(const Offset2D&) const noexcept = default;

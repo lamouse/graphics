@@ -110,12 +110,13 @@ else()
 
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang) # Clang or AppleClang
         add_compile_options(
-            -Wno-braced-scalar-init
-            -Wno-unused-private-field
-            -Wno-nullability-completeness
-            -Werror=shadow-uncaptured-local
-            -Werror=implicit-fallthrough
-            -Werror=type-limits
+                -Wno-braced-scalar-init
+                -Wno-unused-private-field
+                -Wno-nullability-completeness
+                -Werror=shadow-uncaptured-local
+                -Werror=implicit-fallthrough
+                -Werror=type-limits
+                -fexperimental-modules-reduced-bmi
         )
     endif()
 

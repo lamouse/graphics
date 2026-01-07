@@ -24,7 +24,7 @@ using render::texture::NULL_SAMPLER_ID;
 using ImageType = render::texture::ImageType;
 
 using ImageViewType = render::texture::ImageViewType;
-// using render::texture::NUM_IMAGE_VIEW_TYPES;
+using render::texture::NUM_IMAGE_VIEW_TYPES;
 
 
 using Offset2D = render::texture::Offset2D;
