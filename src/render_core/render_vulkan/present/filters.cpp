@@ -6,7 +6,7 @@ module;
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp16_frag_spv.h"
 #include "render_core/host_shaders/vulkan_present_scaleforce_fp32_frag_spv.h"
 #include <vulkan/vulkan.hpp>
-
+#include <memory>
 module render.vulkan.present.filters;
 import render.vulkan.common;
 import render.vulkan.shader;

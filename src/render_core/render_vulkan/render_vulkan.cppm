@@ -1,5 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include <memory>
 export module render.impl.vulkan;
 import render.vulkan.common;
 import render.vulkan;

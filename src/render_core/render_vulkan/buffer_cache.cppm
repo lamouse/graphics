@@ -1,5 +1,6 @@
 module;
 #include <vulkan/vulkan.hpp>
+#include <memory>
 export module render.vulkan.buffer_cache;
 import render.vulkan.common;
 import render.vulkan.descriptor_pool;

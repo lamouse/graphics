@@ -2,6 +2,7 @@ module;
 #include "common/scope_exit.h"
 #include <vulkan/vulkan.hpp>
 #include <functional>
+#include <memory>
 module render.vulkan.present.layer;
 import render.vulkan.common;
 import render.vulkan.utils;
