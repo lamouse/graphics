@@ -348,7 +348,7 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_HEIGHT_TABLE = {{
     1,   // D32_FLOAT_S8_UINT
 }};
 
-constexpr auto DefaultBlockHeight(PixelFormat format) -> u32 {
+inline constexpr auto DefaultBlockHeight(PixelFormat format) -> u32 {
     assert(static_cast<std::size_t>(format) < BLOCK_HEIGHT_TABLE.size());
     return BLOCK_HEIGHT_TABLE[static_cast<std::size_t>(format)];
 }
@@ -452,13 +452,13 @@ constexpr std::array<u8, MaxPixelFormat> BITS_PER_BLOCK_TABLE = {{
     64,   // D32_FLOAT_S8_UINT
 }};
 
-constexpr auto BitsPerBlock(PixelFormat format) -> u32 {
+inline constexpr auto BitsPerBlock(PixelFormat format) -> u32 {
     assert(static_cast<std::size_t>(format) < BITS_PER_BLOCK_TABLE.size());
     return BITS_PER_BLOCK_TABLE[static_cast<std::size_t>(format)];
 }
 
 /// Returns the sizer in bytes of the specified pixel format
-constexpr auto BytesPerBlock(PixelFormat pixel_format) -> u32 {
+inline constexpr auto BytesPerBlock(PixelFormat pixel_format) -> u32 {
     return BitsPerBlock(pixel_format) / CHAR_BIT;
 }
 
