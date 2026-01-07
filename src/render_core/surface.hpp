@@ -244,7 +244,7 @@ constexpr std::array<u8, MaxPixelFormat> BLOCK_WIDTH_TABLE = {{
     1,   // D32_FLOAT_S8_UINT
 }};
 
-constexpr auto DefaultBlockWidth(PixelFormat format) -> u32 {
+inline constexpr auto DefaultBlockWidth(PixelFormat format) -> u32 {
     assert(static_cast<std::size_t>(format) < BLOCK_WIDTH_TABLE.size());
     return BLOCK_WIDTH_TABLE[static_cast<std::size_t>(format)];
 }
