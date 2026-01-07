@@ -9,10 +9,10 @@ class KtxImage {
         CLASS_NON_COPYABLE(KtxImage);
         CLASS_NON_MOVEABLE(KtxImage);
         KtxImage(const std::string& path);
-        auto getKtxTexture() { return ktxTexture; }
+        auto getKtxTexture() { return handle; }
         ~KtxImage();
 
     private:
-        ktxTexture* ktxTexture = nullptr;
+        ktxTexture* handle = nullptr;
 };
 }  // namespace resource::image
