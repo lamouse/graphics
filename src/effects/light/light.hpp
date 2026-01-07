@@ -1,5 +1,4 @@
 #pragma once
-#include "common/class_traits.hpp"
 #include "common/common_funcs.hpp"
 #include <glm/glm.hpp>
 namespace world {
@@ -16,10 +15,6 @@ constexpr auto MAX_LIGHTS = 10;
 struct PointLight {
         glm::vec4 position{};  // ignore w
         glm::vec4 color{};     // w is intensity
-        CLASS_DEFAULT_COPYABLE(PointLight);
-        CLASS_DEFAULT_MOVEABLE(PointLight);
-        PointLight() = default;
-        ~PointLight() = default;
 };
 
 struct DirLight {
