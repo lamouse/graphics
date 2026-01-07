@@ -7,8 +7,6 @@
 #include "resource/resource.hpp"
 #include "world/world.hpp"
 #include "effects/particle/particle.hpp"
-#include "effects/light/point_light.hpp"
-#include "effects/cubemap/skybox.hpp"
 #include "effects/model/multi_mesh_model.hpp"
 #include "graphics/gui.hpp"
 #include "resource/mesh_instance.hpp"
