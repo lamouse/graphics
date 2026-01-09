@@ -14,7 +14,10 @@
 #include "system/setting_ui.hpp"
 #include "input/input.hpp"
 #include "input/mouse.h"
+#include "input/drop.hpp"
 #include "system/logger_system.hpp"
+#include <spdlog/spdlog.h>
+#include "common/file.hpp"
 import common;
 // module core;
 
@@ -94,6 +97,13 @@ struct System::Impl {
 
         void run(std::shared_ptr<graphics::input::InputSystem> input_system) {
             auto input_system_ = std::move(input_system);
+            auto* file_drop = input_system_->GetFileDrop();
+            while (!file_drop->empty()) {
+                auto drop_file = file_drop->pop();
+                spdlog::debug("drop file: {}, type: {}", drop_file,
+                              common::to_string(common::getFileType(drop_file)));
+            }
+
             auto* window = Render()->GetRenderWindow();
             auto* graphics = Render()->getGraphics();
             graphics->clean(frameClean);

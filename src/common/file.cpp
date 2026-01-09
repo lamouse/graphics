@@ -1,10 +1,57 @@
 #include "file.hpp"
 #include <xxhash.h>
+#include <algorithm>
 #include <cstddef>
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <assimp/Importer.hpp>
+#include <assimp/DefaultLogger.hpp>
 namespace common {
+
+namespace {
+auto is_model_file(const std::string& filepath) -> bool {
+    namespace fs = std::filesystem;
+    Assimp::Importer importer;
+    auto path = fs::path(filepath);
+    if (path.has_extension()) {
+        auto extension = path.extension().string();
+        if (importer.IsExtensionSupported(path.extension().string())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+auto is_image_file(const std::string& filepath){
+        namespace fs = std::filesystem;
+    Assimp::Importer importer;
+    auto path = fs::path(filepath);
+    if (path.has_extension()) {
+        auto extension = path.extension().string();
+        std::ranges::transform(extension, extension.begin(), [](unsigned char c){ return std::tolower(c); });
+        if(extension == ".png" || extension == ".jpg"){
+            return true;
+        }
+    }
+    return false;
+}
+
+auto is_ktx_image_file(const std::string& filepath){
+        namespace fs = std::filesystem;
+    Assimp::Importer importer;
+    auto path = fs::path(filepath);
+    if (path.has_extension()) {
+        auto extension = path.extension().string();
+        std::ranges::transform(extension, extension.begin(), [](unsigned char c){ return std::tolower(c); });
+        if(extension == ".ktx" || extension == ".ktx2"){
+            return true;
+        }
+    }
+    return false;
+}
+
+}  // namespace
 
 auto file_hash(const std::string& filepath) -> std::optional<std::uint64_t> {
     std::ifstream file(filepath, std::ios::binary);
@@ -51,4 +98,30 @@ auto create_dir(const std::string& dirPath) -> bool {
     return false;
 }
 
+auto getFileType(const std::string& filepath) -> FileType {
+    if (is_model_file(filepath)) {
+        return FileType::Model;
+    }
+    if(is_image_file(filepath)){
+        return FileType::Image;
+    }
+    if(is_ktx_image_file(filepath)){
+        return FileType::KtxImage;
+    }
+
+    return FileType::UnSupper;
+}
+
+auto to_string(FileType fileType) -> std::string {
+    switch (fileType) {
+        case common::FileType::Model:
+            return "model";
+        case common::FileType::Image:
+            return "image";
+        case common::FileType::KtxImage:
+            return "ktx image";
+        case common::FileType::UnSupper:
+            return "Un super";
+    }
+}
 }  // namespace common

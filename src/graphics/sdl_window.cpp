@@ -7,6 +7,7 @@
 #include "input/input.hpp"
 #include "input/keyboard.hpp"
 #include "input/mouse.h"
+#include "input/drop.hpp"
 #include <imgui.h>
 
 namespace graphics {
@@ -197,6 +198,12 @@ void SDLWindow::pullEvents() {
             case SDL_EVENT_MOUSE_WHEEL: {
                 auto* mouse = input_system_->GetMouse();
                 mouse->Scroll(glm::vec2(e.wheel.x, e.wheel.y));
+                break;
+            }
+            case SDL_EVENT_DROP_FILE:{
+                const char* fileName = e.drop.data;
+                auto* file_drop = input_system_->GetFileDrop();
+                file_drop->push(fileName);
                 break;
             }
         }
