@@ -18,6 +18,7 @@
 #include "system/logger_system.hpp"
 #include <spdlog/spdlog.h>
 #include "common/file.hpp"
+#include <filesystem>
 import common;
 // module core;
 
@@ -102,6 +103,31 @@ struct System::Impl {
                 auto drop_file = file_drop->pop();
                 spdlog::debug("drop file: {}, type: {}", drop_file,
                               common::to_string(common::getFileType(drop_file)));
+
+                if (common::getFileType(drop_file) == common::FileType::Model) {
+                    try {
+                        std::filesystem::path model_path(drop_file);
+                        common::copy_file(drop_file, common::get_current_path() + "/models/" +
+                                                         model_path.filename().string());
+
+                        auto mtl_file_path = common::model_mtl_file_path(drop_file);
+                        if (!mtl_file_path.empty()) {
+                            auto dst_mtl_path = model_path;
+                            dst_mtl_path.replace_extension(".mtl");
+                            common::copy_file(mtl_file_path, common::get_current_path() +
+                                                                 "/models/" +
+                                                                 dst_mtl_path.filename().string());
+                        }
+                        auto* resourceManager = resource_manager.get();
+                        graphics::ModelResourceName names{
+                            .shader_name = "model", .mesh_name = model_path.filename().string()};
+                        auto light_model = std::make_shared<graphics::effects::ModelForMultiMesh>(
+                            *resourceManager, names, "model");
+                        world_->addDrawable(light_model);
+                    } catch (std::filesystem::filesystem_error& e) {
+                        spdlog::error("file system error {}", e.what());
+                    }
+                }
             }
 
             auto* window = Render()->GetRenderWindow();

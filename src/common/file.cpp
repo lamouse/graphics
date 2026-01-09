@@ -23,28 +23,30 @@ auto is_model_file(const std::string& filepath) -> bool {
     return false;
 }
 
-auto is_image_file(const std::string& filepath){
-        namespace fs = std::filesystem;
+auto is_image_file(const std::string& filepath) {
+    namespace fs = std::filesystem;
     Assimp::Importer importer;
     auto path = fs::path(filepath);
     if (path.has_extension()) {
         auto extension = path.extension().string();
-        std::ranges::transform(extension, extension.begin(), [](unsigned char c){ return std::tolower(c); });
-        if(extension == ".png" || extension == ".jpg"){
+        std::ranges::transform(extension, extension.begin(),
+                               [](unsigned char c) { return std::tolower(c); });
+        if (extension == ".png" || extension == ".jpg") {
             return true;
         }
     }
     return false;
 }
 
-auto is_ktx_image_file(const std::string& filepath){
-        namespace fs = std::filesystem;
+auto is_ktx_image_file(const std::string& filepath) {
+    namespace fs = std::filesystem;
     Assimp::Importer importer;
     auto path = fs::path(filepath);
     if (path.has_extension()) {
         auto extension = path.extension().string();
-        std::ranges::transform(extension, extension.begin(), [](unsigned char c){ return std::tolower(c); });
-        if(extension == ".ktx" || extension == ".ktx2"){
+        std::ranges::transform(extension, extension.begin(),
+                               [](unsigned char c) { return std::tolower(c); });
+        if (extension == ".ktx" || extension == ".ktx2") {
             return true;
         }
     }
@@ -98,14 +100,34 @@ auto create_dir(const std::string& dirPath) -> bool {
     return false;
 }
 
+void copy_file(const std::string& src, const std::string& dst) {
+    fs::path src_path(src);
+    fs::path dst_path(dst);
+    fs::copy(src_path, dst_path, fs::copy_options::update_existing);
+}
+
+auto model_mtl_file_path(const std::string& filepath) -> std::string {
+    fs::path path(filepath);
+    path.replace_extension(".mtl");
+    if(fs::exists(path)){
+        return path.string();
+    }
+    return "";
+}
+
+auto get_current_path() -> std::string {
+    auto current_path = fs::current_path();
+    return current_path.string();
+}
+
 auto getFileType(const std::string& filepath) -> FileType {
     if (is_model_file(filepath)) {
         return FileType::Model;
     }
-    if(is_image_file(filepath)){
+    if (is_image_file(filepath)) {
         return FileType::Image;
     }
-    if(is_ktx_image_file(filepath)){
+    if (is_ktx_image_file(filepath)) {
         return FileType::KtxImage;
     }
 
