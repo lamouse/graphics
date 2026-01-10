@@ -48,17 +48,6 @@ struct System::Impl {
                 resourceManager->addGraphShader(shader_name);
             }
             resourceManager->addComputeShader(particle_shader);
-            auto* window = render_base->GetRenderWindow();
-            auto frame_layout = window->getFramebufferLayout();
-
-            graphics::ModelResourceName names{.shader_name = model_shader_name,
-                                              .mesh_name = viking_obj_path};
-
-            auto delta_particle = std::make_shared<graphics::effects::DeltaParticle>(
-                *resourceManager, frame_layout, PARTICLE_COUNT);
-            auto light_model = std::make_shared<graphics::effects::ModelForMultiMesh>(
-                *resourceManager, names, "model");
-            world_->addDrawable(light_model);
 
             graphics::PickingSystem::commit();
         }
