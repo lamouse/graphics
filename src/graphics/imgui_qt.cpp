@@ -38,7 +38,6 @@ void UpdateKeyModifiers(Qt::KeyboardModifiers qt_modifiers) {
     io.AddKeyEvent(ImGuiMod_Super, (qt_modifiers & Qt::KeyboardModifier::MetaModifier) != 0);
 }
 
-
 auto Qt_KeyToImGuiKey(Qt::Key qt_key) -> ImGuiKey {
     // 小键盘（Keypad）键：Qt 有独立的 Key_KeypadX
     switch (qt_key) {
@@ -294,106 +293,123 @@ auto Qt_KeyToImGuiKey(Qt::Key qt_key) -> ImGuiKey {
 
 namespace imgui::qt {
 void mouse_press_event(QMouseEvent* event) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
+    auto pos_x = static_cast<float>(event->position().x());
+    auto pox_y = static_cast<float>(event->position().y());
     auto imgui_button = qt_button_to_imgui(event->button());
-    if (imgui_button < 0) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.MousePos = ImVec2(static_cast<float>(event->position().x()),
-                         static_cast<float>(event->position().y()));
+    ImGuiMouseSource event_source{};
     auto source = event->source();
     if (source == Qt::MouseEventNotSynthesized) {
-        io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+        event_source = ImGuiMouseSource_Mouse;
     } else if (source == Qt::MouseEventSynthesizedBySystem) {
-        io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
+        event_source = ImGuiMouseSource_TouchScreen;
     }
-    io.AddMouseButtonEvent(imgui_button, true);
+
+    auto imgui_event = [event_source, imgui_button, pos_x, pox_y]() -> void {
+        if (imgui_button < 0) {
+            return;
+        }
+        ImGuiIO& io = ImGui::GetIO();
+        io.MousePos = ImVec2(pos_x, pox_y);
+        io.AddMouseSourceEvent(event_source);
+        io.AddMouseButtonEvent(imgui_button, true);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 void mouse_release_event(QMouseEvent* event) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
+    auto pos_x = static_cast<float>(event->position().x());
+    auto pox_y = static_cast<float>(event->position().y());
     auto imgui_button = qt_button_to_imgui(event->button());
-    if (imgui_button < 0) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.MousePos = ImVec2(static_cast<float>(event->position().x()),
-                         static_cast<float>(event->position().y()));
+    ImGuiMouseSource event_source{};
     auto source = event->source();
     if (source == Qt::MouseEventNotSynthesized) {
-        io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+        event_source = ImGuiMouseSource_Mouse;
     } else if (source == Qt::MouseEventSynthesizedBySystem) {
-        io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
+        event_source = ImGuiMouseSource_TouchScreen;
     }
-    io.AddMouseButtonEvent(imgui_button, false);
+
+    auto imgui_event = [event_source, imgui_button, pos_x, pox_y]() -> void {
+        if (imgui_button < 0) {
+            return;
+        }
+        ImGuiIO& io = ImGui::GetIO();
+        io.MousePos = ImVec2(pos_x, pox_y);
+        io.AddMouseSourceEvent(event_source);
+        io.AddMouseButtonEvent(imgui_button, false);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 
 void mouse_move_event(QMouseEvent* event) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.AddMousePosEvent(static_cast<float>(event->position().x()),
-                        static_cast<float>(event->position().y()));
+    auto pos_x = static_cast<float>(event->position().x());
+    auto pox_y = static_cast<float>(event->position().y());
+
+    auto imgui_event = [pos_x, pox_y]() -> void {
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddMousePosEvent(pos_x, pox_y);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 void mouse_wheel_event(QWheelEvent* event) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.MouseWheel += event->angleDelta().y() / 120.0f;   // 垂直滚轮
-    io.MouseWheelH += event->angleDelta().x() / 120.0f;  // 水平滚轮
+    auto mouseWheel_x = static_cast<float>(event->angleDelta().x()) / 120.0f;  // 垂直滚轮
+    auto mouseWheel_y = static_cast<float>(event->angleDelta().y()) / 120.0f;  // 水平滚轮
+
+    ImGuiMouseSource event_source{};
     auto source = event->source();
     if (source == Qt::MouseEventNotSynthesized) {
-        io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
+        event_source = ImGuiMouseSource_Mouse;
     } else if (source == Qt::MouseEventSynthesizedBySystem) {
-        io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
+        event_source = ImGuiMouseSource_TouchScreen;
     }
+
+    auto imgui_event = [event_source, mouseWheel_x, mouseWheel_y]() -> void {
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddMouseSourceEvent(event_source);
+        io.AddMouseWheelEvent(mouseWheel_x, mouseWheel_y);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 void mouse_focus_in_event() {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.AddFocusEvent(true);
+    auto imgui_event = []() -> void {
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddFocusEvent(true);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 void mouse_focus_out_event() {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.AddFocusEvent(false);
+    auto imgui_event = []() -> void {
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddFocusEvent(false);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 
 void new_frame(float weight, float height) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2(weight, height);
+    auto imgui_event = [weight, height]() -> void {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2(weight, height);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 
 void key_press(QKeyEvent* event) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    UpdateKeyModifiers(event->modifiers());
     ImGuiKey key = Qt_KeyToImGuiKey(Qt::Key(event->key()));
-    io.AddKeyEvent(key, true);
+
+    auto imgui_event = [qt_modifiers = event->modifiers(), key]() -> void {
+        UpdateKeyModifiers(qt_modifiers);
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddKeyEvent(key, true);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 void key_release(QKeyEvent* event) {
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return;
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    UpdateKeyModifiers(event->modifiers());
-    ImGuiKey key = Qt_KeyToImGuiKey(Qt::Key(event->key()));
-    io.AddKeyEvent(key, false);
+        ImGuiKey key = Qt_KeyToImGuiKey(Qt::Key(event->key()));
+
+    auto imgui_event = [qt_modifiers = event->modifiers(), key]() -> void {
+        UpdateKeyModifiers(qt_modifiers);
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddKeyEvent(key, false);
+    };
+    graphics::ui::add_imgui_event(imgui_event);
 }
 
 }  // namespace imgui::qt

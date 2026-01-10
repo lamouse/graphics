@@ -585,10 +585,16 @@ auto IsKeyboardControlledByImGui() -> bool {
 }
 
 void add_imgui_event(const std::function<void()>& event_func) {
+    if (!settings::values.use_debug_ui) {
+        return;
+    }
     std::scoped_lock<std::mutex> lock(imgui_event_mutex);
     imgui_event_funcs.push(event_func);
 }
 void run_all_imgui_event() {
+    if (!settings::values.use_debug_ui) {
+        return;
+    }
     std::scoped_lock<std::mutex> lock(imgui_event_mutex);
     if (imgui_event_funcs.empty()) {
         return;
