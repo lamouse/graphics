@@ -2,6 +2,7 @@
 #include "graphics/QT_render_widget.hpp"
 #include "graphics/ui/render_config.hpp"
 #include "input/input.hpp"
+#include "input/drop.hpp"
 #include "common/settings.hpp"
 #include <QScreen>
 #include <QResizeEvent>
@@ -69,7 +70,8 @@ void QTWindow::OnLoadComplete() { spdlog::debug("load complete"); }
 void QTWindow::openFile() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("All Files (*)"));
     if (!fileName.isEmpty()) {
-        spdlog::info("Selected file: {}", fileName.toStdString());
+        auto* file_drop =  input_system_->GetFileDrop();
+        file_drop->push(fileName.toStdString());
     }
 }
 void QTWindow::setDebugUI() {

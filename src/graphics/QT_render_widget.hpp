@@ -79,6 +79,9 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
 
         void keyPressEvent(QKeyEvent* event) override;
         void keyReleaseEvent(QKeyEvent* event) override;
+        void dragEnterEvent(QDragEnterEvent *event) override;
+        void dropEvent(QDropEvent *event) override;
+
 
         [[nodiscard]] auto windowPixelRatio() const -> qreal;
         auto InitRenderTarget() -> bool;

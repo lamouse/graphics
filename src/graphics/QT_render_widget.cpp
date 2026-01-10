@@ -10,8 +10,10 @@
 #include "input/mouse.h"
 #include "input/keyboard.hpp"
 #include "input/input.hpp"
+#include "input/drop.hpp"
 #include <QWindow>
 #include <QLayout>
+#include <QMimeData>
 
 namespace graphics {
 
@@ -75,6 +77,7 @@ RenderWindow::RenderWindow(QTWindow* parent, std::shared_ptr<input::InputSystem>
     auto* layout = new QHBoxLayout(this);  // NOLINT
     layout->setContentsMargins(0, 0, 0, 0);
     this->setMouseTracking(true);
+    setAcceptDrops(true);
     connect(this, &RenderWindow::FirstFrameDisplayed, parent, &QTWindow::OnLoadComplete);
     connect(this, &RenderWindow::ExitSignal, parent, &QTWindow::OnExit, Qt::QueuedConnection);
     connect(this, &RenderWindow::ExecuteProgramSignal, parent, &QTWindow::OnExecuteProgram,
@@ -97,7 +100,8 @@ void RenderWindow::pullEvents() { QCoreApplication::processEvents(); }
 
 void RenderWindow::newFrame() {
     QSize logicalSize = this->size();
-    imgui::qt::new_frame(static_cast<float>(logicalSize.width()), static_cast<float>(logicalSize.height()));
+    imgui::qt::new_frame(static_cast<float>(logicalSize.width()),
+                         static_cast<float>(logicalSize.height()));
 }
 
 void RenderWindow::closeEvent(QCloseEvent* event) {
@@ -155,7 +159,8 @@ void RenderWindow::OnFramebufferResized() {
     const auto width = static_cast<std::uint32_t>(child_widget_->width() * pixel_ratio);
     const auto height = static_cast<std::uint32_t>(child_widget_->height() * pixel_ratio);
     QSize logicalSize = this->size();
-    imgui::qt::new_frame(static_cast<float>(logicalSize.width()), static_cast<float>(logicalSize.height()));
+    imgui::qt::new_frame(static_cast<float>(logicalSize.width()),
+                         static_cast<float>(logicalSize.height()));
     UpdateCurrentFramebufferLayout(width, height);
 }
 
@@ -186,7 +191,8 @@ void RenderWindow::mouseMoveEvent(QMouseEvent* event) {
     const int center_y = height() / 2;
 
     input_system_->GetMouse()->MouseMove(glm::vec2{pos.x(), pos.y()});
-    input_system_->GetMouse()->Move(static_cast<int>(pos.x()), static_cast<int>(pos.y()), center_x, center_y);
+    input_system_->GetMouse()->Move(static_cast<int>(pos.x()), static_cast<int>(pos.y()), center_x,
+                                    center_y);
 }
 void RenderWindow::mouseReleaseEvent(QMouseEvent* event) {
     imgui::qt::mouse_release_event(event);
@@ -227,6 +233,20 @@ void RenderWindow::keyReleaseEvent(QKeyEvent* event) {
     input_system_->GetKeyboard()->SetKeyboardModifiers(modifiers);
     input_system_->GetKeyboard()->ReleaseKey(qt::QtKeyToSwitchKey(Qt::Key(event->key())));
     imgui::qt::key_release(event);
+}
+void RenderWindow::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    }
+}
+
+void RenderWindow::dropEvent(QDropEvent* event) {
+    QList<QUrl> urls = event->mimeData()->urls();
+    auto* file_drop = input_system_->GetFileDrop();
+    for (const QUrl& url : urls) {
+        QString filePath = url.toLocalFile();
+        file_drop->push(filePath.toStdString());
+    }
 }
 
 void RenderWindow::showEvent(QShowEvent* event) {
