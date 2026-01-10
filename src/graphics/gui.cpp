@@ -14,6 +14,8 @@
 #include <string>
 
 #include <glm/gtc/quaternion.hpp>
+#include <queue>
+#include <mutex>
 
 #include <limits>
 // Helper to wire demo markers located in code to an interactive browser
@@ -187,6 +189,9 @@ struct OutLinerMenuData {
         bool has_sky_box{};
         bool add_model{};
 };
+
+std::queue<std::function<void()>> imgui_event_funcs;
+std::mutex imgui_event_mutex;
 }  // namespace
 namespace graphics::ui {
 
@@ -579,6 +584,21 @@ auto IsKeyboardControlledByImGui() -> bool {
     return io.WantCaptureKeyboard;
 }
 
+void add_imgui_event(const std::function<void()>& event_func) {
+    std::scoped_lock<std::mutex> lock(imgui_event_mutex);
+    imgui_event_funcs.push(event_func);
+}
+void run_all_imgui_event() {
+    std::scoped_lock<std::mutex> lock(imgui_event_mutex);
+    if (imgui_event_funcs.empty()) {
+        return;
+    }
+    while (!imgui_event_funcs.empty()) {
+        auto func = imgui_event_funcs.front();
+        func();
+        imgui_event_funcs.pop();
+    }
+}
 void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     if (!menuData.show_status) {
         return;

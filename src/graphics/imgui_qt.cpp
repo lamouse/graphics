@@ -1,7 +1,9 @@
 #include "graphics/imgui_qt.hpp"
+#include "graphics/gui.hpp"
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <imgui.h>
+#include <QKeyEvent>
 
 namespace {
 auto qt_button_to_imgui(Qt::MouseButton button) -> int {
@@ -36,8 +38,6 @@ void UpdateKeyModifiers(Qt::KeyboardModifiers qt_modifiers) {
     io.AddKeyEvent(ImGuiMod_Super, (qt_modifiers & Qt::KeyboardModifier::MetaModifier) != 0);
 }
 
-#include <QKeyEvent>
-#include "imgui.h"
 
 auto Qt_KeyToImGuiKey(Qt::Key qt_key) -> ImGuiKey {
     // 小键盘（Keypad）键：Qt 有独立的 Key_KeypadX

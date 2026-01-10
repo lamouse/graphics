@@ -98,6 +98,7 @@ struct System::Impl {
         }
 
         void run(std::shared_ptr<graphics::input::InputSystem> input_system) {
+            graphics::ui::run_all_imgui_event();
             auto input_system_ = std::move(input_system);
             auto* file_drop = input_system_->GetFileDrop();
             while (!file_drop->empty()) {

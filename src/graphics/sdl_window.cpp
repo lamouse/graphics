@@ -9,6 +9,7 @@
 #include "input/mouse.h"
 #include "input/drop.hpp"
 #include <imgui.h>
+#include "graphics/gui.hpp"
 
 namespace graphics {
 
@@ -146,7 +147,8 @@ void SDLWindow::pullEvents() {
     SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
-        ImGui_ImplSDL3_ProcessEvent(&e);
+        auto imgui_event = [e]() -> void { ImGui_ImplSDL3_ProcessEvent(&e); };
+        ui::add_imgui_event(imgui_event);
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {
             should_close_ = true;
@@ -200,7 +202,7 @@ void SDLWindow::pullEvents() {
                 mouse->Scroll(glm::vec2(e.wheel.x, e.wheel.y));
                 break;
             }
-            case SDL_EVENT_DROP_FILE:{
+            case SDL_EVENT_DROP_FILE: {
                 const char* fileName = e.drop.data;
                 auto* file_drop = input_system_->GetFileDrop();
                 file_drop->push(fileName);
