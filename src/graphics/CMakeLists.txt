@@ -40,7 +40,6 @@ if(USE_QT)
 
         # 构建后复制平台插件 qwindows.dll
         add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROGRAM_NAME}>/plugins/platforms"
             COMMAND ${_windeployqt_exe}
             --include-soft-plugins
             --qmldir ${CMAKE_CURRENT_SOURCE_DIR}
