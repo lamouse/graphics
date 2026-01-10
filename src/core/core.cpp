@@ -135,7 +135,7 @@ struct System::Impl {
             auto* graphics = Render()->getGraphics();
             graphics->clean(frameClean);
             input_system_->GetMouse()->setCapture(graphics::ui::IsMouseControlledByImGui());
-            input_system->GetKeyboard()->setCapture(graphics::ui::IsKeyboardControlledByImGui());
+            input_system_->GetKeyboard()->setCapture(graphics::ui::IsKeyboardControlledByImGui());
             world_->update(*window, *resource_manager, *input_system_);
 
             world_->draw(graphics);
