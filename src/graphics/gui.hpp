@@ -19,4 +19,5 @@ void showOutliner(world::World& world, ResourceManager& resourceManager, setting
 void show_menu(settings::MenuData& data);
 void render_status_bar(settings::MenuData& menuData, StatusBarData& barData);
 auto IsMouseControlledByImGui() -> bool;
+auto IsKeyboardControlledByImGui() -> bool;
 }  // namespace graphics::ui

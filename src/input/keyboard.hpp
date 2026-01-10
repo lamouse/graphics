@@ -31,7 +31,11 @@ class Keyboard : public InputEngine<NativeKeyboard::Keys> {
             return NativeKeyboard::hasFlag(modifiers_, modifiers);
         }
 
+        void setCapture(bool capture) { capture_ = capture; };
+        [[nodiscard]] auto isCapture() const -> bool { return capture_; }
+
     private:
         NativeKeyboard::Modifiers modifiers_{NativeKeyboard::Modifiers::None};
+        bool capture_{};
 };
 }  // namespace graphics::input

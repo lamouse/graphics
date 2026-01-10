@@ -64,6 +64,9 @@ void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager
 }
 
 void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mouse* mouse) {
+    if(mouse->isCapture()){
+        return;
+    }
     if (mouse->IsPressed(graphics::input::MouseButton::Left)) {
         auto mouse_axis = mouse->GetAxis();
 

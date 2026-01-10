@@ -564,8 +564,19 @@ void show_menu(settings::MenuData& data) {
     }
 }
 auto IsMouseControlledByImGui() -> bool {
+    if (ImGui::GetCurrentContext() == nullptr) {
+        return false;
+    }
     ImGuiIO& io = ImGui::GetIO();
     return io.WantCaptureMouse;
+}
+
+auto IsKeyboardControlledByImGui() -> bool {
+    if (ImGui::GetCurrentContext() == nullptr) {
+        return false;
+    }
+    ImGuiIO& io = ImGui::GetIO();
+    return io.WantCaptureKeyboard;
 }
 
 void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {

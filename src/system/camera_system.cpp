@@ -99,27 +99,31 @@ void CameraSystem::update(ecs::CameraComponent &cam, input::InputSystem *input, 
     float frameSpeed = cam.speed * deltaTime;
 
     auto *keyboard = input->GetKeyboard();
-    if (keyboard->IsPressed(input::NativeKeyboard::Keys::W)) {
-        move_forward(cam, frameSpeed);
-    }
-    if (keyboard->IsPressed(input::NativeKeyboard::Keys::S)) {
-        move_backward(cam, frameSpeed);
-    }
-    if (keyboard->IsPressed(input::NativeKeyboard::Keys::A)) {
-        move_left(cam, frameSpeed);
-    }
-    if (keyboard->IsPressed(input::NativeKeyboard::Keys::D)) {
-        move_right(cam, frameSpeed);
+    if (!keyboard->isCapture()) {
+        if (keyboard->IsPressed(input::NativeKeyboard::Keys::W)) {
+            move_forward(cam, frameSpeed);
+        }
+        if (keyboard->IsPressed(input::NativeKeyboard::Keys::S)) {
+            move_backward(cam, frameSpeed);
+        }
+        if (keyboard->IsPressed(input::NativeKeyboard::Keys::A)) {
+            move_left(cam, frameSpeed);
+        }
+        if (keyboard->IsPressed(input::NativeKeyboard::Keys::D)) {
+            move_right(cam, frameSpeed);
+        }
     }
 
     // 🔁 右键旋转视角（如果你还需要旋转功能）
     auto *mouse = input->GetMouse();
-    auto relative = mouse->popRelative();
-    if (mouse->IsPressed(input::MouseButton::Right)) {
-        rotating(cam, relative.x, relative.y);
-    }
+    if (!mouse->isCapture()) {
+        auto relative = mouse->popRelative();
+        if (mouse->IsPressed(input::MouseButton::Right)) {
+            rotating(cam, relative.x, relative.y);
+        }
 
-    // 🧮 缩放
-    change_fov(cam, mouse->GetScrollOffset().y);
+        // 🧮 缩放
+        change_fov(cam, mouse->GetScrollOffset().y);
+    }
 }
 }  // namespace graphics

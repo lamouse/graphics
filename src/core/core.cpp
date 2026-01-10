@@ -15,6 +15,7 @@
 #include "input/input.hpp"
 #include "input/mouse.h"
 #include "input/drop.hpp"
+#include "input/keyboard.hpp"
 #include "system/logger_system.hpp"
 #include <spdlog/spdlog.h>
 #include "common/file.hpp"
@@ -133,6 +134,8 @@ struct System::Impl {
             auto* window = Render()->GetRenderWindow();
             auto* graphics = Render()->getGraphics();
             graphics->clean(frameClean);
+            input_system_->GetMouse()->setCapture(graphics::ui::IsMouseControlledByImGui());
+            input_system->GetKeyboard()->setCapture(graphics::ui::IsKeyboardControlledByImGui());
             world_->update(*window, *resource_manager, *input_system_);
 
             world_->draw(graphics);

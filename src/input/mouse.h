@@ -28,7 +28,8 @@ class Mouse final : public InputEngine<MouseButton> {
         void PressButton(const glm::vec2& position, MouseButton button);
         void PressMouseButton(MouseButton button);
         void ReleaseButton(MouseButton button);
-
+        void setCapture(bool capture) { capture_ = capture; };
+        [[nodiscard]] auto isCapture() const -> bool { return capture_; }
         void MouseMove(const glm::vec2& position);
         void Move(int x, int y, int center_x, int center_y);
         void Scroll(const glm::vec2& offset);
@@ -60,5 +61,6 @@ class Mouse final : public InputEngine<MouseButton> {
         // x: horizontal, y: vertical
         glm::vec2 scroll_offset_{};
         glm::vec2 relative{};
+        bool capture_{};
 };
 }  // namespace graphics::input
