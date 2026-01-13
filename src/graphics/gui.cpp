@@ -1,6 +1,7 @@
+#include "gui.hpp"
 #include "imgui.h"
 #include "imGuIZMOquat.h"
-#include "gui.hpp"
+
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
 #include "ecs/components/camera_component.hpp"
@@ -473,6 +474,12 @@ auto add_sky_box_window(world::World& world, ResourceManager& resourceManager, b
 
 void showOutliner(world::World& world, ResourceManager& resourceManager, settings::MenuData& data) {
     static OutLinerMenuData outLinerMenuData;
+    imguiGizmo::setGizmoFeelingRot(.75f);          // default 1.0, >1 more mouse sensitivity, <1 less mouse sensitivity
+    imguiGizmo::setPanScale(.5f);                  // default 1.0, >1 more, <1 less
+    imguiGizmo::setDollyScale(.5f);                // default 1.0, >1 more, <1 less
+    imguiGizmo::setDollyWheelScale(.5f);           // default 1.0, > more, < less ... (from v3.1 separate values)
+    imguiGizmo::setPanModifier(vg::evSuperModifier);        // change KEY modifier: CTRL (default) ==> SUPER
+    imguiGizmo::setDollyModifier(vg::evControlModifier);    // change KEY modifier: SHIFT (default) ==> CTRL
 
     if (data.show_out_liner) {
         // 设置窗口标志
