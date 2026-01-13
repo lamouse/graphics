@@ -36,10 +36,11 @@
     #define GET_PATH(P) P
     #define INC_PATH(X) <GET_PATH(IMGUIZMO_IMGUI_FOLDER)X>
 
-    #include INC_PATH(imgui.h)
-    #include INC_PATH(imgui_internal.h)
+    //#include INC_PATH(imgui.h)
+    //#include INC_PATH(imgui_internal.h)
 #endif
-
+#include <imgui.h>
+#include <imgui_internal.h>
 
 //--------------------------------------------------------------------------
 //
