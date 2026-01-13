@@ -1,7 +1,6 @@
 #include "model.hpp"
 
 #include "system/pick_system.hpp"
-#include "system/transform_system.hpp"
 #include "resource/obj/model_mesh.hpp"
 
 namespace graphics::effects {
