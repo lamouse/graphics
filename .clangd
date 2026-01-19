@@ -1,0 +1,8 @@
+InlayHints:
+  Enabled: Yes
+  ParameterNames: No
+  DeducedTypes: Yes
+
+CompileFlags:
+  Add: [-std=c++26, -Wno-unknown-warning-option, -Wall, -Wextra, -Wnull-dereference, -Wuninitialized, -Wunused, -Wshadow, -Wunused-parameter, -Wreturn-type]
+  Remove: [-Wc++98-compat, -Wc++98-compat-*, -fdeps-format=p1689r5, -mlongcalls, -fstrict-volatile-bitfields, -fno-shrink-wrap, -fno-tree-switch-conversion, -fsearch-include-path]
