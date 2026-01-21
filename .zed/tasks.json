@@ -1,0 +1,17 @@
+[
+  {
+    "label": "CMAKE build",
+    "cwd": "$ZED_WORKTREE_ROOT",
+
+    "command": "cmake",
+    "args": [
+      "-DCMAKE_BUILD_TYPE=Debug",
+      "-S",
+      ".",
+      "-G",
+      "Ninja",
+      "-B",
+      "cmake-build-debug",
+    ],
+  },
+]

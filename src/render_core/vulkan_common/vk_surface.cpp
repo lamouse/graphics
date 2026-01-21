@@ -6,8 +6,8 @@ module;
 module render.vulkan.common.surface;
 import core;
 namespace render::vulkan {
-auto createSurface(const Instance& instance, const core::frontend::BaseWindow::WindowSystemInfo& wsi)
-    -> SurfaceKHR {
+auto createSurface(const Instance& instance,
+                   const core::frontend::BaseWindow::WindowSystemInfo& wsi) -> SurfaceKHR {
     VkSurfaceKHR unsafe_surface = nullptr;
 
 #ifdef _WIN32
@@ -21,8 +21,8 @@ auto createSurface(const Instance& instance, const core::frontend::BaseWindow::W
             .hwnd = hWnd};
         const auto vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
             (*instance).getProcAddr("vkCreateWin32SurfaceKHR"));
-        if (!vkCreateWin32SurfaceKHR ||
-            vkCreateWin32SurfaceKHR((*instance), &win32_ci, nullptr, &unsafe_surface) != VK_SUCCESS) {
+        if (!vkCreateWin32SurfaceKHR || vkCreateWin32SurfaceKHR((*instance), &win32_ci, nullptr,
+                                                                &unsafe_surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
         return SurfaceKHR{unsafe_surface, (*instance)};

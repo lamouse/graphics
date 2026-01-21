@@ -3,7 +3,6 @@
 
 #pragma once
 
-
 #include "common/common_types.hpp"
 
 namespace FSR {

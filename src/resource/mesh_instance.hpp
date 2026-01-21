@@ -103,6 +103,7 @@ class MeshInstance : public render::IMeshInstance {
         ecs::Entity entity_;
         ecs::RenderStateComponent* render_state;
         [[nodiscard]] auto getId() const -> id_t { return id; }
+
     private:
         UBOs ubos{};
         PushConstants* push_constants{nullptr};

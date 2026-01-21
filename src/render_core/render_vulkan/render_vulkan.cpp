@@ -83,9 +83,10 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
 
     Frame* frame = present_manager.getRenderFrame();
 
-        auto accelerateDisplay = [&](const render::frame::FramebufferConfig & framebuffer, unsigned int stride){
-            return vulkan_graphics.AccelerateDisplay(framebuffer,stride);
-        };
+    auto accelerateDisplay = [&](const render::frame::FramebufferConfig& framebuffer,
+                                 unsigned int stride) {
+        return vulkan_graphics.AccelerateDisplay(framebuffer, stride);
+    };
     blit_swapchain.DrawToFrame(accelerateDisplay, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());

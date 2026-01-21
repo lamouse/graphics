@@ -142,13 +142,12 @@ void Layer::UpdateDescriptorSet(vk::ImageView image_view, vk::Sampler sampler, s
     device.getLogical().updateDescriptorSets(write, {});
 }
 
-void Layer::ConfigureDraw(PresentPushConstants* out_push_constants,
-                          vk::DescriptorSet* out_descriptor_set,
-                          const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
-                               uint32_t stride)>& accelerateDisplay,
-                          vk::Sampler sampler, size_t image_index,
-                          const frame::FramebufferConfig& framebuffer,
-                          const layout::FrameBufferLayout& layout) {
+void Layer::ConfigureDraw(
+    PresentPushConstants* out_push_constants, vk::DescriptorSet* out_descriptor_set,
+    const std::function<std::optional<FramebufferTextureInfo>(
+        const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+    vk::Sampler sampler, size_t image_index, const frame::FramebufferConfig& framebuffer,
+    const layout::FrameBufferLayout& layout) {
     const auto texture_info = accelerateDisplay(framebuffer, framebuffer.stride);
 
     const u32 texture_width = texture_info ? texture_info->width : framebuffer.width;

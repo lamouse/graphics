@@ -54,12 +54,12 @@ void BlitScreen::SetWindowAdaptPass() {
     }
 }
 
-void BlitScreen::DrawToFrame(const std::function<std::optional<FramebufferTextureInfo>(const frame::FramebufferConfig& framebuffer,
-                               uint32_t stride)>& accelerateDisplay, Frame* frame,
-                             const layout::FrameBufferLayout& layout,
-                             std::span<const frame::FramebufferConfig> framebuffers,
-                             size_t current_swapchain_image_count,
-                             vk::Format current_swapchain_view_format) {
+void BlitScreen::DrawToFrame(
+    const std::function<std::optional<FramebufferTextureInfo>(
+        const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
+    Frame* frame, const layout::FrameBufferLayout& layout,
+    std::span<const frame::FramebufferConfig> framebuffers, size_t current_swapchain_image_count,
+    vk::Format current_swapchain_view_format) {
     bool resource_update_required = false;
     bool presentation_recreate_required = false;
 
@@ -110,7 +110,8 @@ void BlitScreen::DrawToFrame(const std::function<std::optional<FramebufferTextur
                             window_adapt->getDescriptorSetLayout());
     }
     // Perform the draw
-    window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout, frame);
+    window_adapt->Draw(accelerateDisplay, scheduler, image_index, layers, framebuffers, layout,
+                       frame);
 
     // Advance to next image
     if (++image_index >= image_count) {

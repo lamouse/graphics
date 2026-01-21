@@ -1,0 +1,45 @@
+[2026-01-19 17:03:27.861] [info] [thread 25684] (: ): use debug ui: true
+[2026-01-19 17:03:27.863] [info] [thread 25684] (: ): render debug: true
+[2026-01-19 17:03:44.997] [info] [thread 25684] (render_vulkan.cpp:23 render::vulkan::createDevice): 设备类型：离散 GPU（独立显卡）, 设备名称：NVIDIA GeForce RTX 4080 SUPER
+[2026-01-19 17:03:45.023] [info] [thread 25684] (vk_device.cpp:1093 render::vulkan::Device::collectToolingInfo): Attached debugging tool: Khronos Validation Layer
+[2026-01-19 17:03:45.023] [warning] [thread 25684] (vk_device.cpp:355 render::vulkan::Device::Device): Render_Vulkan NVIDIA Drivers >= 510 do not support MSAA image blits
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer: Inserted device layer "VK_LAYER_KHRONOS_validation" (E:\utils\.\VkLayer_khronos_validation.dll)
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer: Inserted device layer "VK_LAYER_OBS_HOOK" (C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll)
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer: Inserted device layer "VK_LAYER_NV_present" (C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\.\nvoglv64.dll)
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer: Inserted device layer "VK_LAYER_NV_optimus" (C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\.\nvoglv64.dll)
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer: vkCreateDevice layer callstack setup to:
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    <Application>
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:      ||
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    <Loader>
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:      ||
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    VK_LAYER_NV_optimus
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Type: Implicit
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Enabled By: Implicit Layer
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:                Disable Env Var:  DISABLE_LAYER_NV_OPTIMUS_1
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Manifest: C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\nv-vk64.json
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Library:  C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\.\nvoglv64.dll
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:      ||
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    VK_LAYER_NV_present
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Type: Implicit
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Enabled By: Implicit Layer
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:                Disable Env Var:  DISABLE_LAYER_NV_GR2608_1
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Manifest: C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\nv-vk64.json
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Library:  C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\.\nvoglv64.dll
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:      ||
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    VK_LAYER_OBS_HOOK
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Type: Implicit
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Enabled By: Implicit Layer
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:                Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Manifest: C:\ProgramData\obs-studio-hook\obs-vulkan64.json
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Library:  C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:      ||
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    VK_LAYER_KHRONOS_validation
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Type: Explicit
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Enabled By: By the Application
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Manifest: E:\utils\VkLayer_khronos_validation.json
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:            Library:  E:\utils\.\VkLayer_khronos_validation.dll
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:      ||
+[2026-01-19 17:03:45.024] [debug] [thread 25684] (: ): validation layer:    <Device>
+[2026-01-19 17:03:45.026] [debug] [thread 25684] (: ): validation layer:        Using "NVIDIA GeForce RTX 4080 SUPER" with driver: "C:\WINDOWS\System32\DriverStore\FileRepository\nv_dispsi.inf_amd64_8fb57f19613dba6f\.\nvoglv64.dll"
+[2026-01-19 17:03:45.229] [info] [thread 25684] (: ): 创建 swapchain w:1920, h:1047, present mode Mailbox
+[2026-01-19 17:03:46.084] [error] [thread 25684] (: ): [json.exception.parse_error.101] parse error at line 1, column 1: attempting to parse an empty input; check that your input string or stream contains the expected JSON

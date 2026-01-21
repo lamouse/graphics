@@ -1,0 +1,17 @@
+// Project-local debug tasks
+//
+// For more documentation on how to configure debug tasks,
+// see: https://zed.dev/docs/debugger
+[
+  {
+    "label": "Debug native binary",
+    "build": {
+      "cwd": "$ZED_WORKTREE_ROOT",
+      "command": "cmake",
+      "args": ["--build", "cmake-build-debug", "--target", "graphics"],
+    },
+    "program": "$ZED_WORKTREE_ROOT/build/bin/graphics.exe",
+    "request": "launch",
+    "adapter": "vsdbg",
+  },
+]

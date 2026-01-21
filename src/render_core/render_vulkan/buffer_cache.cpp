@@ -1,7 +1,6 @@
 module;
 #include "common/alignment.h"
 
-
 #include <boost/container/small_vector.hpp>
 #include <vulkan/vulkan.hpp>
 #include <spdlog/spdlog.h>

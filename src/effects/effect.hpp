@@ -4,12 +4,7 @@ class Scene;
 }
 namespace graphics::effects {
 
-enum class EffectType{
-    Model,
-    Light,
-    CubeMap,
-    Particle
-};
+enum class EffectType { Model, Light, CubeMap, Particle };
 
 auto getEffectsScene() -> ecs::Scene&;
-}
+}  // namespace graphics::effects

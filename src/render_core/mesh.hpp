@@ -23,7 +23,6 @@ class IMeshData {
             -> std::vector<render::VertexBinding> = 0;
 };
 
-
 class IMeshInstance {
     public:
         IMeshInstance() = default;
@@ -37,11 +36,9 @@ class IMeshInstance {
               render_command(render_command_),
               meshId(meshId_),
               vertex_shader_hash(vertex_shader_hash_),
-              fragment_shader_hash(fragment_shader_hash_){}
+              fragment_shader_hash(fragment_shader_hash_) {}
         [[nodiscard]] auto getMeshId() const -> render::MeshId { return meshId; };
-        [[nodiscard]] auto vertexShaderHash() const -> std::uint64_t {
-            return vertex_shader_hash;
-        }
+        [[nodiscard]] auto vertexShaderHash() const -> std::uint64_t { return vertex_shader_hash; }
         [[nodiscard]] auto fragmentShaderHash() const -> std::uint64_t {
             return fragment_shader_hash;
         }
@@ -78,7 +75,6 @@ class IMeshInstance {
         std::uint64_t fragment_shader_hash{0};
         std::int32_t vertex_count{-1};
         std::vector<std::vector<std::byte>> ubo_buffers_;
-
 };
 
 class ITexture {

@@ -12,7 +12,6 @@ import render.vulkan.common;
 import render.vulkan.scheduler;
 import render.texture;
 
-
 namespace render::vulkan {
 namespace {
 constexpr auto ConvertBorderColor(const std::array<float, 4>& color) -> vk::BorderColor {

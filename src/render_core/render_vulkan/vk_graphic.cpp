@@ -50,7 +50,6 @@ auto buildVertexAttribute(const render::vulkan::Device& device,
 
 auto buildVertexBinding(std::span<render::VertexBinding> bindings)
     -> boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> {
-
     boost::container::static_vector<vk::VertexInputBindingDescription2EXT, 32> vertex_bindings;
     for (auto binding : bindings) {
         vertex_bindings.push_back(vk::VertexInputBindingDescription2EXT()
@@ -93,7 +92,8 @@ VulkanGraphics::VulkanGraphics(core::frontend::BaseWindow* emu_window_, const De
       buffer_cache(buffer_cache_runtime),
       pipeline_cache(device, scheduler, descriptor_pool, guest_descriptor_queue, render_pass_cache,
                      buffer_cache, texture_cache, shader_notify_),
-      wfi_event(device.logical().createEvent()),use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {}
+      wfi_event(device.logical().createEvent()),
+      use_dynamic_render(settings::values.use_dynamic_rendering.GetValue()) {}
 
 VulkanGraphics::~VulkanGraphics() = default;
 
