@@ -4,7 +4,7 @@ module;
 
 export module render.shader_cache;
 export namespace render {
-using ShaderType=render::ShaderType;
-using ShaderInfo=render::ShaderInfo;
-using ShaderCache = render::ShaderCache;
+using render::ShaderType;
+using render::ShaderInfo;
+using render::ShaderCache;
 }  // namespace render

@@ -3,6 +3,6 @@ module;
 export module render.texture.image_view_base;
 
 export namespace render::texture {
-using NullImageViewParams = render::texture::NullImageViewParams;
-using ImageViewBase = render::texture::ImageViewBase;
+using render::texture::NullImageViewParams;
+using render::texture::ImageViewBase;
 }  // namespace render::texture

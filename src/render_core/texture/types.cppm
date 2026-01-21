@@ -34,15 +34,15 @@ using Offset3D = render::texture::Offset3D;
 using render::texture::Region2D;
 using render::texture::Extent2D;
 using render::texture::Extent3D;
-using SubresourceLayers = render::texture::SubresourceLayers;
-using SubresourceBase = render::texture::SubresourceBase;
-using SubresourceExtent = render::texture::SubresourceExtent;
-using SubresourceRange = render::texture::SubresourceRange;
-using ImageCopy = render::texture::ImageCopy;
-using BufferImageCopy = render::texture::BufferImageCopy;
-using BufferCopy = render::texture::BufferCopy;
-using SwizzleParameters = render::texture::SwizzleParameters;
-using MsaaMode = render::texture::MsaaMode;
+using render::texture::SubresourceLayers;
+using render::texture::SubresourceBase;
+using render::texture::SubresourceExtent;
+using render::texture::SubresourceRange;
+using render::texture::ImageCopy;
+using render::texture::BufferImageCopy;
+using render::texture::BufferCopy;
+using render::texture::SwizzleParameters;
+using render::texture::MsaaMode;
 
 }  // namespace render::texture
 

@@ -4,6 +4,6 @@ export module render.texture.image;
 
 namespace render::texture {
 export {
-    using ImageInfo = render::texture::ImageInfo;
+    using render::texture::ImageInfo;
     }
 }  // namespace render::texture

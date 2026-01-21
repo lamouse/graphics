@@ -6,6 +6,7 @@ module;
 #include <span>
 #include <vector>
 #include <memory>
+#include <array>
 
 export module render.buffer.cache;
 import common;
