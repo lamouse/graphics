@@ -3,9 +3,6 @@
 #include "common/common_types.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/device.hpp"
-
-#include "vma.hpp"
-
 VK_DEFINE_HANDLE(VmaAllocator)
 namespace render::vulkan {
 template <typename F>
