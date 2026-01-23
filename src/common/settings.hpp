@@ -61,8 +61,7 @@ struct Values {
             linkage,       enums::LogLevel::debug,      "level",
             Category::log, Specialization::RuntimeList, true,
             true};
-        Setting<bool, false> log_console{
-            linkage, true, "console", Category::log, Specialization::Default, true, true};
+        Setting<bool, false> log_console{linkage, true, "console", Category::log};
         Setting<bool, false> log_file{linkage, true, "file", Category::log};
         Setting<int, true> fsr_sharpening_slider{
             linkage, 53, 0, 100, "fsr_sharpening_slider", Category::core, Specialization::Scalar,
