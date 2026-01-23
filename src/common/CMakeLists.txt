@@ -42,7 +42,7 @@ if(TRACY_ENABLE)
     target_link_libraries(${LIB_COMMON_NAME} INTERFACE Tracy::TracyClient)
 endif()
 
-target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog xxHash::xxhash Imgui::Imgui system)
+target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog xxHash::xxhash Imgui::Imgui system tomlplusplus::tomlplusplus)
 target_link_libraries(${LIB_COMMON_NAME} PRIVATE assimp::assimp)
 
 # 设置动态库/静态库生成路径

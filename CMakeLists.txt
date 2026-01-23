@@ -39,6 +39,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 
 find_package(spirv-cross CONFIG QUIET)
+find_package(tomlplusplus CONFIG REQUIRED)
 
 if(NOT spirv-cross_FOUND)
         find_package(spirv_cross_core CONFIG REQUIRED)

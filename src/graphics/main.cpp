@@ -1,4 +1,5 @@
 #include "common/logger.hpp"
+#include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 #ifdef USE_QT
 #include <QScreen>
@@ -20,6 +21,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #endif
     try {
         common::logger::init();
+        settings::load_settings();
 #ifdef USE_QT
         QApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::Floor);

@@ -6,11 +6,11 @@
 namespace settings {
 
 struct Resolution {
-        uint32_t weight{};
+        uint32_t width{};
         uint32_t height{};
 };
 
-constexpr auto DEFAULT_RESOLUTION = Resolution{.weight = 1920, .height = 1080};
+constexpr auto DEFAULT_RESOLUTION = Resolution{.width = 1920, .height = 1080};
 
 auto TranslateCategory(Category category) -> const char*;
 
@@ -40,9 +40,7 @@ struct Values {
                                                              Specialization::RuntimeList,
                                                              true,
                                                              true};
-        SwitchableSetting<enums::LogLevel, true> log_level{
-            linkage, enums::LogLevel::debug, "", Category::log, Specialization::RuntimeList, true,
-            true};
+
         Setting<enums::VramUsageMode, false> v_ram_usage_mode{
             linkage, enums::VramUsageMode::Conservative, "v_ram_usage_mode", Category::render};
         Setting<bool, false> use_present_thread{linkage, false, "use_present_thread",
@@ -59,7 +57,12 @@ struct Values {
         Setting<bool, false> use_dynamic_rendering{linkage, true, "use_dynamic_rendering",
                                                    Category::render};
 
-        Setting<bool, false> log_console{linkage, true, "log_console", Category::log};
+        SwitchableSetting<enums::LogLevel, true> log_level{
+            linkage,       enums::LogLevel::debug,      "level",
+            Category::log, Specialization::RuntimeList, true,
+            true};
+        Setting<bool, false> log_console{
+            linkage, true, "console", Category::log, Specialization::Default, true, true};
         Setting<bool, false> log_file{linkage, true, "file", Category::log};
         Setting<int, true> fsr_sharpening_slider{
             linkage, 53, 0, 100, "fsr_sharpening_slider", Category::core, Specialization::Scalar,
@@ -84,4 +87,8 @@ struct Values {
 };
 
 extern Values values;  // NOLINT
+
+void save_settings();
+
+void load_settings();
 }  // namespace settings

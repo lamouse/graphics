@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
+#include <mutex>
 namespace common {
 
 namespace {
@@ -53,6 +54,8 @@ auto is_ktx_image_file(const std::string& filepath) {
     return false;
 }
 
+std::filesystem::path current_working_path = std::filesystem::current_path();
+std::mutex path_mutex;
 }  // namespace
 
 auto file_hash(const std::string& filepath) -> std::optional<std::uint64_t> {
@@ -109,7 +112,7 @@ void copy_file(const std::string& src, const std::string& dst) {
 auto model_mtl_file_path(const std::string& filepath) -> std::string {
     fs::path path(filepath);
     path.replace_extension(".mtl");
-    if(fs::exists(path)){
+    if (fs::exists(path)) {
         return path.string();
     }
     return "";
@@ -145,5 +148,38 @@ auto to_string(FileType fileType) -> std::string {
         case common::FileType::UnSupper:
             return "Un super";
     }
+}
+
+void set_current_path(const std::string& path) {
+    std::scoped_lock lock(path_mutex);
+    std::filesystem::path new_path(path);
+    if (std::filesystem::is_directory(new_path)) {
+        current_working_path = std::filesystem::absolute(new_path);
+        std::filesystem::current_path(new_path);
+    }
+}
+auto get_module_path(ModuleType type) -> std::filesystem::path {
+    std::filesystem::path current_path = current_working_path;
+    switch (type) {
+        case ModuleType::Config:
+            current_path /= "config";
+            break;
+        case ModuleType::Model:
+            current_path /= "models";
+            break;
+        case ModuleType::Image:
+            current_path /= "images";
+            break;
+        case ModuleType::Shader:
+            current_path /= "shaders";
+            break;
+        case ModuleType::Cache:
+            current_path /= "cache";
+            break;
+    }
+    if (!std::filesystem::exists(current_path)) {
+        std::filesystem::create_directories(current_path);
+    }
+    return current_path;
 }
 }  // namespace common

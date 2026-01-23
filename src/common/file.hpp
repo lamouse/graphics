@@ -2,6 +2,7 @@
 #include <string>
 #include <optional>
 #include <cstdint>
+#include <filesystem>
 namespace common {
 
     enum class FileType{
@@ -9,6 +10,14 @@ namespace common {
         KtxImage,
         Model,
         UnSupper
+    };
+
+    enum class ModuleType{
+        Config,
+        Model,
+        Image,
+        Shader,
+        Cache,
     };
 
 auto file_hash(const std::string& filepath) -> std::optional<std::uint64_t>;
@@ -25,6 +34,8 @@ auto getFileType(const std::string& filepath) -> FileType;
  */
 auto model_mtl_file_path(const std::string& filepath) -> std::string;
 auto to_string(FileType fileType) -> std::string;
+void set_current_path(const std::string& path);
+auto get_module_path(ModuleType type) ->std::filesystem::path;
 
 
 }  // namespace common

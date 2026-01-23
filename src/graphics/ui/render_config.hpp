@@ -43,7 +43,7 @@ class ResolutionModel : public QAbstractListModel {
         enum Roles { TextRole = Qt::UserRole + 1 };
         ResolutionModel(QObject *parent = nullptr) : QAbstractListModel(parent) {
             items = {QString("%1/%2")
-                         .arg(settings::values.resolution.weight)
+                         .arg(settings::values.resolution.width)
                          .arg(settings::values.resolution.height)};
         }
         [[nodiscard]] auto rowCount(const QModelIndex &parent = QModelIndex()) const

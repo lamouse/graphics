@@ -2,6 +2,7 @@
 #include "setting_ui.hpp"
 #include "common/settings.hpp"
 #include <imgui.h>
+#include <spdlog/spdlog.h>
 #include <ranges>
 #include <vector>
 
@@ -36,6 +37,21 @@ void log_settings() {
     auto& render_category =
         settings::values.linkage.by_category.find(settings::Category::log)->second;
     for (auto* setting : render_category) {
+        if (setting->TypeId() == std::type_index(typeid(settings::enums::LogLevel))) {
+            auto value_string = setting->ToString();
+            int current_level = std::stoi(value_string);
+            auto canon =
+                settings::enums::EnumMetadata<settings::enums::LogLevel>::canonicalizations();
+            std::vector<const char*> names;
+            for (auto& key : canon | std::views::keys) {
+                names.push_back(key.c_str());
+            }
+            if (ImGui::Combo(setting->GetLabel().c_str(), &current_level, names.data(),
+                             static_cast<int>(names.size()))) {
+                setting->LoadString(std::to_string(current_level));
+            }
+        }
+
         if (setting->TypeId() == std::type_index(typeid(bool))) {
             auto value_string = setting->ToString();
             bool tmp = to_bool(value_string);
@@ -46,7 +62,7 @@ void log_settings() {
             if (!setting->RuntimeModifiable()) {
                 ImGui::EndDisabled();
             } else {
-                dynamic_cast<settings::Setting<bool, false>*>(setting)->SetValue(tmp);
+                setting->LoadString(std::to_string(tmp));
             }
         }
     }
@@ -82,6 +98,11 @@ void draw_setting(bool& show) {
         vsync_setting();
         log_settings();
         render_setting();
+
+        ImGui::Separator();
+        if (ImGui::Button("保存设置")) {
+            settings::save_settings();
+        }
 
         ImGui::End();
     }
