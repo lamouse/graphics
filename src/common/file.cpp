@@ -171,10 +171,10 @@ auto get_module_path(ModuleType type) -> std::filesystem::path {
             current_path /= "images";
             break;
         case ModuleType::Shader:
-            current_path /= "shaders";
+            current_path /= "data/shader";
             break;
         case ModuleType::Cache:
-            current_path /= "cache";
+            current_path /= "data/cache";
             break;
     }
     if (!std::filesystem::exists(current_path)) {
