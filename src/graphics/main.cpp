@@ -1,3 +1,4 @@
+#include "common/logger.hpp"
 #include <spdlog/spdlog.h>
 #ifdef USE_QT
 #include <QScreen>
@@ -11,7 +12,6 @@
 #endif
 #include "app.hpp"
 
-import common;
 
 using namespace std;
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {

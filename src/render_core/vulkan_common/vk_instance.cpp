@@ -23,7 +23,7 @@ void removeUnavailableLayers(std::vector<const char*>& layers) {
     }
     std::erase_if(layers, [&layer_properties](const char* layer) {
         const auto comp = [layer](const VkLayerProperties& layer_property) {
-            return std::strcmp(layer, layer_property.layerName) == 0;
+            return std::strcmp(layer, layer_property.layerName) == 0;//NOLINT(hicpp-no-array-decay)
         };
         const auto it = std::ranges::find_if(layer_properties, comp);
         if (it == layer_properties.end()) {

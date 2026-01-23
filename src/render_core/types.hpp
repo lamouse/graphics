@@ -8,6 +8,7 @@ using VertexBindingsId = common::SlotId;
 using ComputeBindingId = common::SlotId;
 using MeshId = common::SlotId;
 using TextureId = common::SlotId;
+using ShaderHash = std::uint64_t;
 
 struct RenderCommand {
         uint32_t indexOffset{};
