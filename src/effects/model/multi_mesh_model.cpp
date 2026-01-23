@@ -23,7 +23,7 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager, const ModelResour
                 .indexOffset = 0,
                 .indexCount = static_cast<uint32_t>(mesh.indices_.size()),
             },
-            shader_hash, name + "mesh", mesh_id, materialResource);
+            shader_hash, sub_mesh.material.name, mesh_id, materialResource);
         meshes.back().setUBO(&materials.back());
         meshes.back().setUBO(&light_ubo);
         meshes.back().setPushConstant(&push_constant);

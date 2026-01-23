@@ -294,8 +294,8 @@ void draw_detail(settings::MenuData& data, ecs::Entity entity) {
 }
 
 void DrawModelTreeNode(ecs::Entity entity) {
-    ImGui::PushID(&entity);
     auto& render_state = entity.getComponent<ecs::RenderStateComponent>();
+    ImGui::PushID(&render_state);
     auto& tag = entity.getComponent<ecs::TagComponent>();
     const float indent_spacing = ImGui::GetStyle().IndentSpacing;
 

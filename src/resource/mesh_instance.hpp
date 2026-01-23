@@ -92,7 +92,7 @@ class MeshInstance : public render::IMeshInstance {
               id(getCurrentId()) {
             entity_ = getModelScene().createEntity(meshName.empty()
                                                        ? "Mesh " + std::to_string(id)
-                                                       : meshName + " " + std::to_string(id));
+                                                       : meshName);
             entity_.addComponent<ecs::RenderStateComponent>(id);
             entity_.addComponent<ecs::DynamicPipeStateComponenet>();
             pipeline_state =                                                     // NOLINT

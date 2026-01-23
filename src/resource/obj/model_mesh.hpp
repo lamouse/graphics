@@ -21,7 +21,7 @@ struct ModelCacheHeader {
         uint32_t magic = MAGIC;
         uint32_t version = MESH_CACHE_VERSION;
         uint64_t objFileHash = 0;
-        uint32_t subMeshCount = 0;  // 改为 subMeshCount
+        uint32_t subMeshCount = 0;
         uint32_t padding = 0;       // 对齐
 };
 
