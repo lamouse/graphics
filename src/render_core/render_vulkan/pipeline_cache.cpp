@@ -14,8 +14,8 @@
 #include <xxhash.h>
 namespace render::vulkan {
 
-constexpr const char* PIPELINE_CACHE_PATH = "data/cache/pipeline";
-constexpr const char* PIPELINE_CACHE_BIN_PATH = "data/cache/pipeline/vulkan.bin";
+constexpr const char* PIPELINE_CACHE_PATH = "pipeline";
+constexpr const char* PIPELINE_CACHE_BIN_NAME = "vulkan.bin";
 namespace {
 
 constexpr u32 CACHE_VERSION = 11;
@@ -78,12 +78,13 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
 
 void PipelineCache::loadPipelineCacheFromDisk() {
     if (use_vulkan_pipeline_cache) {
-        common::create_dir(PIPELINE_CACHE_PATH);
+        auto pipeline_cache_dir = common::get_module_path(common::ModuleType::Cache) /= PIPELINE_CACHE_PATH;
+        common::create_dir(pipeline_cache_dir.string());
         std::vector<char> cacheData;
 
         try {
             // 尝试读取缓存文件
-            std::ifstream file(PIPELINE_CACHE_BIN_PATH, std::ios::binary);
+            std::ifstream file(pipeline_cache_dir /= PIPELINE_CACHE_BIN_NAME, std::ios::binary);
             if (file.is_open()) {
                 // 读取头部
 
@@ -136,7 +137,8 @@ void PipelineCache::savePipelineCache() {
     std::vector<char> cacheData(dataSize);
     vulkan_pipeline_cache.Read(&dataSize, cacheData.data());
     XXH64_hash_t hash = XXH64(cacheData.data(), dataSize * sizeof(char), 0);
-    std::ofstream file(PIPELINE_CACHE_BIN_PATH, std::ios::binary);
+    auto pipeline_cache_dir = common::get_module_path(common::ModuleType::Cache) /= PIPELINE_CACHE_PATH;
+    std::ofstream file(pipeline_cache_dir /= PIPELINE_CACHE_BIN_NAME, std::ios::binary);
     if (file.is_open()) {
         // 构造头部
         PipelineCacheHeader header{};
