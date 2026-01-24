@@ -44,7 +44,9 @@ World::World() : id_(graphics::getCurrentId()), frame_time_(std::make_unique<cor
 }
 
 [[nodiscard]] auto World::getScene() -> ecs::Scene& { return scene_; }
-
+auto World::get_module_count() -> size_t{
+    return render_registry_.size();
+}
 World::~World() = default;
 
 void World::update(core::frontend::BaseWindow& window, graphics::ResourceManager& resourceManager,

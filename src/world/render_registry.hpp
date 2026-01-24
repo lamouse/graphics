@@ -76,7 +76,6 @@ class RenderRegistry {
         void add(T obj) {
             objects_.push_back(Drawable{obj});
 
-            using U = typename std::decay_t<T>::element_type;
             id_to_index_[obj->getId()] = objects_.size() - 1;
         }
         // 批量添加

@@ -93,6 +93,7 @@ class World {
         };
 
         [[nodiscard]] auto getScene() -> ecs::Scene&;
+        auto get_module_count() -> size_t;
         ~World();
         CLASS_DEFAULT_MOVEABLE(World);
         CLASS_NON_COPYABLE(World);

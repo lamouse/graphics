@@ -142,7 +142,7 @@ struct System::Impl {
                     statusData.mouseX_ = mouse_axis.x;
                     statusData.mouseY_ = mouse_axis.y;
                 }
-
+                statusData.registry_count = static_cast<int>(world_->get_module_count());
                 auto ui_fun = [&]() -> void {
                     auto imageId = graphics->getDrawImage();
                     graphics::ui::show_menu(settings::values.menu_data);
