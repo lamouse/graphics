@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <mutex>
 
 namespace graphics::input {
 template <typename T>
@@ -20,12 +21,14 @@ class InputEngine {
 
         [[nodiscard]] auto GetEngineName() const -> std::string_view { return engine_name_; }
         void ResetButtonState() {
+            std::scoped_lock lock(mutex_);
             for (auto &[k, v] : button_states_) {
                 button_states_[k] = false;
             }
         }
 
         [[nodiscard]] auto IsPressed(BUTTON button) const -> bool {
+            std::scoped_lock lock(mutex_);
             auto it = button_states_.find(button);
             if (it != button_states_.end()) {
                 return it->second;
@@ -34,7 +37,11 @@ class InputEngine {
         }
 
     protected:
-        void SetButtonState(BUTTON button, bool is_pressed) { button_states_[button] = is_pressed; }
+        void SetButtonState(BUTTON button, bool is_pressed) {
+            std::scoped_lock lock(mutex_);
+            button_states_[button] = is_pressed;
+        }
+        mutable std::mutex mutex_;
 
     private:
         std::string engine_name_;

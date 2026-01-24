@@ -29,11 +29,17 @@ class Mouse final : public InputEngine<MouseButton> {
         void PressMouseButton(MouseButton button);
         void ReleaseButton(MouseButton button);
         void setCapture(bool capture) { capture_ = capture; };
-        [[nodiscard]] auto isCapture() const -> bool { return capture_; }
+        [[nodiscard]] auto isCapture() const -> bool {
+            std::scoped_lock lock(mutex_);
+            return capture_;
+        }
         void MouseMove(const glm::vec2& position);
         void Move(int x, int y, int center_x, int center_y);
         void Scroll(const glm::vec2& offset);
-        [[nodiscard]] auto GetAxis() const -> Axis { return axis_; }
+        [[nodiscard]] auto GetAxis() const -> Axis {
+            std::scoped_lock lock(mutex_);
+            return axis_;
+        }
         [[nodiscard]] auto IsButtonPressed() const -> bool;
         [[nodiscard]] auto GetMouseOrigin() const -> glm::vec2;
         [[nodiscard]] auto GetLastPosition() const -> glm::vec2;

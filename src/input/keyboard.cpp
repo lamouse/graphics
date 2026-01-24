@@ -8,11 +8,13 @@ void Keyboard::PressKey(NativeKeyboard::Keys key_code) { SetButtonState(key_code
 void Keyboard::ReleaseKey(NativeKeyboard::Keys key_code) { SetButtonState(key_code, false); }
 
 void Keyboard::SetKeyboardModifiers(NativeKeyboard::Modifiers key_modifiers) {
+    std::scoped_lock lock(mutex_);
     modifiers_ = key_modifiers;
 }
 
 void Keyboard::ReleaseAllKeys() {
     ResetButtonState();
+    std::scoped_lock lock(mutex_);
     modifiers_ = NativeKeyboard::Modifiers::None;
 }
 

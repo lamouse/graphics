@@ -31,8 +31,14 @@ class Keyboard : public InputEngine<NativeKeyboard::Keys> {
             return NativeKeyboard::hasFlag(modifiers_, modifiers);
         }
 
-        void setCapture(bool capture) { capture_ = capture; };
-        [[nodiscard]] auto isCapture() const -> bool { return capture_; }
+        void setCapture(bool capture) {
+            std::scoped_lock lock(mutex_);
+            capture_ = capture;
+        };
+        [[nodiscard]] auto isCapture() const -> bool {
+            std::scoped_lock lock(mutex_);
+            return capture_;
+        }
 
     private:
         NativeKeyboard::Modifiers modifiers_{NativeKeyboard::Modifiers::None};
