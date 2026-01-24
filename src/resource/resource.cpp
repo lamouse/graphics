@@ -1,5 +1,6 @@
 #include "resource/resource.hpp"
 #include "common/assert.hpp"
+#include "common/file.hpp"
 #include "resource/shader/shader.hpp"
 #include "resource/texture/ktx_image.hpp"
 #include "render_core/types.hpp"
@@ -100,7 +101,7 @@ auto ResourceManager::getTexture(std::string textureName) const -> render::Textu
 auto ResourceManager::addModel(std::string_view model_path, add_mesh_func func) -> render::MeshId {
     ASSERT_MSG(!model_path.empty(), "meshName is null");
     namespace fs = std::filesystem;
-    fs::path file_path(std::string(model::MODEL_ROOT_PATH) + std::string(model_path));
+    fs::path file_path = common::get_module_path(common::ModuleType::Model)/model_path;
     std::string model_file_path{model_path};
     bool flip_uv{false};
     if (fs::is_directory(file_path)) {

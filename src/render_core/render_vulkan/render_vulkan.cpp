@@ -85,6 +85,10 @@ void RendererVulkan::composite(std::span<frame::FramebufferConfig> frame_buffers
     blit_swapchain.DrawToFrame(accelerateDisplay, frame, window_->getFramebufferLayout(),
                                frame_buffers, swapchain.getImageCount(),
                                swapchain.getImageViewFormat());
+    if(settings::values.use_debug_ui && !imgui){
+        imgui = std::make_unique<ImguiCore>(window_, device, scheduler, device.getPhysical(),
+                                           *instance);
+    }
     if (settings::values.use_debug_ui && imgui && func) {
         imgui->draw(func, frame);
     }

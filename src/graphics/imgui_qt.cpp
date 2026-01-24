@@ -384,11 +384,11 @@ void mouse_focus_out_event() {
 }
 
 void new_frame(float weight, float height) {
-    auto imgui_event = [weight, height]() -> void {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2(weight, height);
-    };
-    graphics::ui::add_imgui_event(imgui_event);
+    if (ImGui::GetCurrentContext() == nullptr) {
+        return;
+    }
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(weight, height);
 }
 
 void key_press(QKeyEvent* event) {
@@ -402,7 +402,7 @@ void key_press(QKeyEvent* event) {
     graphics::ui::add_imgui_event(imgui_event);
 }
 void key_release(QKeyEvent* event) {
-        ImGuiKey key = Qt_KeyToImGuiKey(Qt::Key(event->key()));
+    ImGuiKey key = Qt_KeyToImGuiKey(Qt::Key(event->key()));
 
     auto imgui_event = [qt_modifiers = event->modifiers(), key]() -> void {
         UpdateKeyModifiers(qt_modifiers);
