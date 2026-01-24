@@ -1,11 +1,7 @@
 #pragma once
-#include "common/common_funcs.hpp"
-#include "common/assert.hpp"
 #include "render_core/types.hpp"
 #include <span>
-#include "render_core/pipeline_state.h"
 #include <spdlog/spdlog.h>
-#include "resource/id.hpp"
 namespace ecs {
 class Scene;
 }

@@ -44,6 +44,7 @@ class VulkanGraphics : public render::Graphic {
         auto uploadTexture(const ITexture& texture) -> TextureId override;
         auto uploadTexture(ktxTexture* ktxTexture) -> TextureId override;
         void draw(const IMeshInstance& instance) override;
+        void draw(const DrawIndexCommand& command) override;
         auto getDrawImage() -> unsigned long long override;
         auto addShader(std::span<const u32> data, ShaderType type) -> u64 override {
             return pipeline_cache.addShader(data, type);
@@ -82,6 +83,8 @@ class VulkanGraphics : public render::Graphic {
         void UpdateDepthBounds();
         void UpdateStencilFaces();
         void UpdateLineWidth();
+
+        void update_pipeline_state(const DynamicPipelineState& state);
         const Device& device;
         MemoryAllocator& memory_allocator;
         scheduler::Scheduler& scheduler;

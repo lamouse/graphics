@@ -6,6 +6,9 @@
 #include "ecs/components/dynamic_pipeline_state_component.hpp"
 #include "resource/instance.hpp"
 #include "resource/resource.hpp"
+#include "resource/id.hpp"
+#include "render_core/render_command.hpp"
+#include "shader_tools/stage.h"
 #include <type_traits>
 #include <tuple>
 
@@ -115,5 +118,21 @@ class MeshInstance : public render::IMeshInstance {
             std::tuple_size_v<decltype(ubos)>};
         id_t id;
 };
+
+inline auto build_render_command(const render::IMeshInstance& instance) -> render::DrawCommand{
+    render::DrawIndexCommand command;
+    command.shaders[static_cast<uint32_t>(shader::Stage::Vertex)] = instance.vertexShaderHash();
+    command.shaders[static_cast<uint32_t>(shader::Stage::Fragment)] =
+        instance.fragmentShaderHash();
+    command.topology = instance.getPrimitiveTopology();
+    command.pipelineState = instance.getPipelineState();
+    command.ubos = instance.getUBOs();
+    command.push_constants = instance.getPushConstants();
+    command.textures = instance.getMaterialIds();
+    command.index_count = instance.getRenderCommand().indexCount;
+    command.index_offset = instance.getRenderCommand().indexOffset;
+    command.mesh = instance.getMeshId();
+    return command;
+}
 
 }  // namespace graphics

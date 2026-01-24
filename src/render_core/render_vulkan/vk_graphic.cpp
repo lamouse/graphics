@@ -5,6 +5,7 @@
 #include <imgui_impl_vulkan.h>
 #include <tracy/Tracy.hpp>
 #include "common/settings.hpp"
+#include "shader_tools/stage.h"
 #ifdef MemoryBarrier
 #undef MemoryBarrier
 #endif
@@ -669,13 +670,8 @@ auto VulkanGraphics::uploadTexture(ktxTexture* ktxTexture) -> TextureId {
 }
 
 void VulkanGraphics::draw(const IMeshInstance& instance) {
-    ZoneScopedN("VulkanGraphics::draw()");
-    if (is_begin_frame) {
-        last_pipeline_state = instance.getPipelineState();
-    } else {
-        current_pipeline_state = instance.getPipelineState();
-    }
 
+    update_pipeline_state(instance.getPipelineState());
     pipeline_cache.setCurrentShader(instance.vertexShaderHash(), instance.fragmentShaderHash());
     current_modelId = instance.getMeshId();
     texture_cache.setCurrentTextures(instance.getMaterialIds());
@@ -715,6 +711,49 @@ void VulkanGraphics::draw(const IMeshInstance& instance) {
             }
         });
     });
+}
+
+void VulkanGraphics::draw(const DrawIndexCommand& command) {
+    update_pipeline_state(command.pipelineState);
+    auto vertex_shader = command.shaders[static_cast<uint32_t>(shader::Stage::Vertex)];
+    auto fragment_shader = command.shaders[static_cast<uint32_t>(shader::Stage::Fragment)];
+    pipeline_cache.setCurrentShader(vertex_shader, fragment_shader);
+    current_modelId = command.mesh;
+    texture_cache.setCurrentTextures(command.textures);
+    if (!command.ubos.empty()) {
+        buffer_cache.UploadGraphicUniformBuffer(command.ubos);
+    }
+    if (!command.push_constants.empty()) {
+        buffer_cache.UploadPushConstants(command.push_constants);
+    }
+
+    current_primitive_topology = command.topology;
+    const auto index_count = command.index_count;
+    const auto instance_count = command.instance_count;
+    const auto index_offset = command.index_offset;
+
+    PrepareDraw([index_count, instance_count, index_offset, this] -> void {
+        if (current_modelId) {
+            const auto resource = modelResource[current_modelId];
+            auto bindings = vertex_bindings[resource.vertex_binding_id];
+            buffer_cache.BindVertexBuffers(resource.vertex_buffer_id, resource.vertex_size,
+                                           bindings[0].stride);
+            buffer_cache.BindIndexBuffer(IndexFormat::UnsignedInt, resource.indices_buffer_id);
+        }
+        scheduler.record(
+            [index_count, instance_count, index_offset](vk::CommandBuffer cmdbuf) -> void {
+                cmdbuf.drawIndexed(index_count, instance_count, index_offset, 0, 0);
+            });
+    });
+}
+
+void VulkanGraphics::update_pipeline_state(const DynamicPipelineState& state){
+    if (is_begin_frame) {
+        last_pipeline_state = state;
+    } else {
+        current_pipeline_state = state;
+    }
+
 }
 
 void VulkanGraphics::TickFrame() {

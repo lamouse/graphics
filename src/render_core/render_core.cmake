@@ -10,6 +10,8 @@ set(sources
     graphic.hpp
     render_base.cpp
     render_base.hpp
+    render_thread.hpp
+    render_thread.cpp
     render_core.hpp
     render_core.cpp
     shader_cache.hpp

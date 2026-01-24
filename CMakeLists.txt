@@ -32,7 +32,7 @@ set(BUILD_TESTING ON)
 
 # need vcpkg start
 find_package(assimp CONFIG REQUIRED)
-find_package(Boost REQUIRED COMPONENTS container)
+find_package(Boost REQUIRED COMPONENTS container lockfree)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)

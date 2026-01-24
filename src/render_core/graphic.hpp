@@ -3,6 +3,7 @@
 #include "render_core/shader_cache.hpp"
 #include "render_core/compute_instance.hpp"
 #include "render_core/texture/types.hpp"
+#include "render_core/render_command.hpp"
 #include "common/class_traits.hpp"
 #include "render_core/mesh.hpp"
 #include <ktx.h>
@@ -34,6 +35,8 @@ class Graphic {
         virtual auto uploadTexture(const ITexture& texture) -> TextureId = 0;
         virtual auto uploadTexture(ktxTexture* ktxTexture) -> TextureId = 0;
         virtual void draw(const IMeshInstance& instance) = 0;
+        virtual void draw(const DrawIndexCommand& command) = 0;
+
         /**
          * @brief 添加shader，返回shader的hash，同过设置IModelInstance设置shader hash
          * 确认使用的shader

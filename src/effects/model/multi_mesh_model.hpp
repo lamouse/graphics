@@ -13,7 +13,12 @@ class ModelForMultiMesh {
             if (render_state->visible) {
                 for (auto& mesh : meshes) {
                     if (mesh.render_state->visible) {
-                        graphic->draw(mesh);
+                        auto render_cmd = build_render_command(mesh);
+                        if (const auto* p = std::get_if<render::DrawIndexCommand>(&render_cmd)) {
+                            graphic->draw(*p);
+                        } else {
+                            graphic->draw(mesh);
+                        }
                     }
                 }
             }

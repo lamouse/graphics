@@ -30,7 +30,7 @@ add_subdirectory(host_shaders)
 
 add_dependencies(${LIB_NAME} host_shaders)
 target_include_directories(${LIB_NAME} PRIVATE ${HOST_SHADERS_INCLUDE})
-target_link_libraries(${LIB_NAME} PUBLIC core common shader Imgui::Imgui Microsoft.GSL::GSL)
+target_link_libraries(${LIB_NAME} PUBLIC core common shader Imgui::Imgui Microsoft.GSL::GSL Boost::lockfree)
 target_link_libraries(${LIB_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator)
 
 if(TARGET vulkan-headers::vulkan-headers)
