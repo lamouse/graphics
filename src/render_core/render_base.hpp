@@ -3,7 +3,6 @@
 #include <span>
 #include "framebuffer_config.hpp"
 #include "core/frontend/window.hpp"
-#include "common/class_traits.hpp"
 #include "render_core/graphic.hpp"
 #include "render_core/shader_notify.hpp"
 #include <functional>
@@ -12,8 +11,12 @@ namespace render {
 using imgui_ui_fun = std::function<void()>;
 class RenderBase {
     public:
-        CLASS_NON_COPYABLE(RenderBase);
-        CLASS_NON_MOVEABLE(RenderBase);
+
+        RenderBase(RenderBase&&) = default;
+        auto operator=(RenderBase&&) -> RenderBase& = default;
+        RenderBase(const RenderBase&) = delete;
+        auto operator=(const RenderBase&) -> RenderBase& = delete;
+
         explicit RenderBase(core::frontend::BaseWindow*);
         virtual ~RenderBase() = default;
         [[nodiscard]] virtual auto GetDeviceVendor() const -> std::string = 0;
