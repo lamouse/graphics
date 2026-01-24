@@ -1,5 +1,6 @@
 #include "settings.hpp"
 #include "common/file.hpp"
+#include "common/logger.hpp"
 #include <toml++/toml.h>
 #include <spdlog/spdlog.h>
 #include <fstream>
@@ -52,6 +53,14 @@ void save_settings() {
     resolution_table.insert("height", values.resolution.height);
     tables.insert("resolution", resolution_table);
 
+    toml::table menu_data_table;
+    menu_data_table.insert("show_system_setting", values.menu_data.show_system_setting);
+    menu_data_table.insert("show_log", values.menu_data.show_log);
+    menu_data_table.insert("show_out_liner", values.menu_data.show_out_liner);
+    menu_data_table.insert("show_detail", values.menu_data.show_detail);
+    menu_data_table.insert("show_status", values.menu_data.show_status);
+    tables.insert("menu_data", menu_data_table);
+
     auto config_file = common::get_module_path(common::ModuleType::Config) /= SETTING_FILE_NAME;
     std::ofstream file(config_file);
     if (file.is_open()) {
@@ -81,8 +90,21 @@ void load_settings() {
             toml_data["resolution"]["width"].value_or(values.resolution.width);
         values.resolution.height =
             toml_data["resolution"]["height"].value_or(values.resolution.height);
+
+        auto menu_data = toml_data["menu_data"];
+        values.menu_data.show_system_setting =
+            menu_data["show_system_setting"].value_or(values.menu_data.show_system_setting);
+        values.menu_data.show_log = menu_data["show_log"].value_or(values.menu_data.show_log);
+        values.menu_data.show_out_liner =
+            menu_data["show_out_liner"].value_or(values.menu_data.show_out_liner);
+        values.menu_data.show_detail =
+            menu_data["show_detail"].value_or(values.menu_data.show_detail);
+        values.menu_data.show_status =
+            menu_data["show_status"].value_or(values.menu_data.show_status);
+        common::logger::init();
         spdlog::info("setting file loaded: {}", config_file.string());
     } catch (std::exception& e) {
+        common::logger::init();
         spdlog::info("failed to load settings: {}", e.what());
     }
 }

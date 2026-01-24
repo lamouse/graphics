@@ -328,6 +328,7 @@ void DrawModelTreeNode(ecs::Entity entity) {
     auto popup_tag = std::string("##tag_context_menu") + std::to_string(render_state.id);
     if (ImGui::BeginPopupContextItem(popup_tag.c_str(), ImGuiPopupFlags_MouseButtonRight)) {
         if (ImGui::MenuItem("编辑")) {
+            settings::values.menu_data.show_detail = true;
             detail_entity = entity;
             select = render_state.id;
         }

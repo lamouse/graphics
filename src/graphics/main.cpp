@@ -1,4 +1,3 @@
-#include "common/logger.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
 #ifdef USE_QT
@@ -13,14 +12,12 @@
 #endif
 #include "app.hpp"
 
-
 using namespace std;
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #if defined(_WIN32)
     SetConsoleOutputCP(65001);
 #endif
     try {
-        common::logger::init();
         settings::load_settings();
 #ifdef USE_QT
         QApplication::setHighDpiScaleFactorRoundingPolicy(
@@ -45,6 +42,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #ifdef USE_QT
         QApplication::exec();
 #endif
+        settings::save_settings();
     } catch (const ::std::exception& e) {
         ::spdlog::error(e.what());
         return EXIT_FAILURE;
