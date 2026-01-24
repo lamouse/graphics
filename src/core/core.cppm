@@ -4,5 +4,5 @@ module;
 export module core;
 export namespace core {
 
-using System = core::System;
+using core::System;
 }  // namespace core
