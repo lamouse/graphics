@@ -1,5 +1,4 @@
 #include "core/frontend/window.hpp"
-#include "common/class_traits.hpp"
 #include "core/core.hpp"
 #include <memory>
 #include <QWidget>
@@ -18,8 +17,10 @@ class RenderThread final : public QThread {
     public:
         explicit RenderThread(core::System& sys, std::shared_ptr<input::InputSystem> input_system);
         ~RenderThread() override;
-        CLASS_NON_COPYABLE(RenderThread);
-        CLASS_NON_MOVEABLE(RenderThread);
+        RenderThread(const RenderThread&) = delete;
+        RenderThread(RenderThread&&) = delete;
+        auto operator=(RenderThread&&) -> RenderThread& = delete;
+        auto operator=(const RenderThread&) -> RenderThread& = delete;
         void run() override;
 
         void SetRunning(bool running) {
@@ -43,8 +44,10 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         Q_OBJECT
     public:
         explicit RenderWindow(QTWindow* parent, std::shared_ptr<input::InputSystem> input_system);
-        CLASS_NON_COPYABLE(RenderWindow);
-        CLASS_NON_MOVEABLE(RenderWindow);
+        RenderWindow(const RenderWindow&) = delete;
+        RenderWindow(RenderWindow&&) = delete;
+        auto operator=(RenderWindow&&) -> RenderWindow& = delete;
+        auto operator=(const RenderWindow&) -> RenderWindow& = delete;
         ~RenderWindow() override;
         void Exit();
         void ExecuteProgram(std::size_t program_index);
@@ -52,7 +55,7 @@ class RenderWindow : public QWidget, public core::frontend::BaseWindow {
         [[nodiscard]] auto IsShown() const -> bool override;
         [[nodiscard]] auto IsMinimized() const -> bool override;
         [[nodiscard]] auto shouldClose() const -> bool override;
-        void setWindowTitle(std::string_view title) override {};
+        void setWindowTitle(std::string_view title);
         void setShouldClose() override {
             should_close_ = true;
             this->close();

@@ -1,6 +1,5 @@
 
 #include <utility>
-#include "common/class_traits.hpp"
 #include "common/thread.hpp"
 #include <spdlog/spdlog.h>
 #include "graphics/QT_render_widget.hpp"
@@ -20,8 +19,11 @@ namespace graphics {
 namespace {
 class RenderWidget : public QWidget {
     public:
-        CLASS_NON_MOVEABLE(RenderWidget);
-        CLASS_NON_COPYABLE(RenderWidget);
+        RenderWidget(const RenderWidget&) = delete;
+        RenderWidget(RenderWidget&&) = delete;
+        auto operator=(RenderWidget&&) -> RenderWidget& = delete;
+        auto operator=(const RenderWidget&) -> RenderWidget& = delete;
+
         explicit RenderWidget(RenderWindow* parent) : QWidget(parent) {
             setAttribute(Qt::WA_NativeWindow);
             setAttribute(Qt::WA_PaintOnScreen);
@@ -36,8 +38,11 @@ class RenderWidget : public QWidget {
 };
 
 struct VulkanRenderWidget : public RenderWidget {
-        CLASS_NON_MOVEABLE(VulkanRenderWidget);
-        CLASS_NON_COPYABLE(VulkanRenderWidget);
+        VulkanRenderWidget(const VulkanRenderWidget&) = delete;
+        VulkanRenderWidget(VulkanRenderWidget&&) = delete;
+        auto operator=(VulkanRenderWidget&&) -> VulkanRenderWidget& = delete;
+        auto operator=(const VulkanRenderWidget&) -> VulkanRenderWidget& = delete;
+
         explicit VulkanRenderWidget(RenderWindow* parent) : RenderWidget(parent) {
             windowHandle()->setSurfaceType(QWindow::VulkanSurface);
         }
@@ -93,6 +98,10 @@ void RenderWindow::OnFrameDisplayed() {
         emit FirstFrameDisplayed();
     }
 }
+
+void RenderWindow::setWindowTitle(std::string_view title) {
+    QWidget::setWindowTitle(QString(title.data()));
+};
 
 RenderWindow::~RenderWindow() { input_system_->Shutdown(); }
 
