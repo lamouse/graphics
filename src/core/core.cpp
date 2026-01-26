@@ -7,6 +7,7 @@
 #include "resource/resource.hpp"
 #include "world/world.hpp"
 #include "effects/model/multi_mesh_model.hpp"
+#include "effects/model/model.hpp"
 #include "graphics/gui.hpp"
 #include "resource/mesh_instance.hpp"
 #include "system/pick_system.hpp"
@@ -20,6 +21,7 @@
 #include <spdlog/spdlog.h>
 #include "common/file.hpp"
 #include <filesystem>
+#include <mutex>
 // module core;
 
 namespace core {
@@ -33,6 +35,7 @@ struct System::Impl {
         render::frame::FramebufferConfig frame_config_;
         render::CleanValue frameClean{};
         graphics::ui::StatusBarData statusData;
+        std::mutex mutex_;
 
         void load_resource() {
             std::string viking_obj_path = "backpack";
@@ -54,8 +57,12 @@ struct System::Impl {
     public:
         auto Render() -> render::RenderBase* { return render_base.get(); }
         auto isSisShutdown() -> bool { return is_shut_down_.load(); }
-        void set_shutdown(bool shutdown) { is_shut_down_ = shutdown; }
+        void set_shutdown(bool shutdown) {
+            std::scoped_lock lock(mutex_);
+            is_shut_down_ = shutdown;
+        }
         void shutdown_main_process() {
+            std::scoped_lock lock(mutex_);
             if (render_base) {
                 Render()->composite(std::span{&frame_config_, 1});
             }
@@ -66,6 +73,7 @@ struct System::Impl {
         auto ResourceManager() -> graphics::ResourceManager* { return resource_manager.get(); }
         void load(frontend::BaseWindow& window) {
             shutdown_main_process();
+            std::scoped_lock lock(mutex_);
             render_base = render::createRender(&window);
             resource_manager =
                 std::make_unique<graphics::ResourceManager>(render_base->getGraphics());
@@ -86,40 +94,10 @@ struct System::Impl {
         }
 
         void run(std::shared_ptr<graphics::input::InputSystem> input_system) {
+            std::scoped_lock lock(mutex_);
             graphics::ui::run_all_imgui_event();
             auto input_system_ = std::move(input_system);
             auto* file_drop = input_system_->GetFileDrop();
-            while (!file_drop->empty()) {
-                auto drop_file = file_drop->pop();
-                spdlog::debug("drop file: {}, type: {}", drop_file,
-                              common::to_string(common::getFileType(drop_file)));
-
-                if (common::getFileType(drop_file) == common::FileType::Model) {
-                    try {
-                        std::filesystem::path model_path(drop_file);
-                        common::copy_file(drop_file, common::get_current_path() + "/models/" +
-                                                         model_path.filename().string());
-
-                        auto mtl_file_path = common::model_mtl_file_path(drop_file);
-                        if (!mtl_file_path.empty()) {
-                            auto dst_mtl_path = model_path;
-                            dst_mtl_path.replace_extension(".mtl");
-                            common::copy_file(mtl_file_path, common::get_current_path() +
-                                                                 "/models/" +
-                                                                 dst_mtl_path.filename().string());
-                        }
-                        auto* resourceManager = resource_manager.get();
-                        graphics::ModelResourceName names{
-                            .shader_name = "model", .mesh_name = model_path.filename().string()};
-                        auto light_model = std::make_shared<graphics::effects::ModelForMultiMesh>(
-                            *resourceManager, names, "model");
-                        world_->addDrawable(light_model);
-                    } catch (std::filesystem::filesystem_error& e) {
-                        spdlog::error("file system error {}", e.what());
-                    }
-                }
-            }
-
             auto* window = Render()->GetRenderWindow();
             auto* graphics = Render()->getGraphics();
             graphics->clean(frameClean);
@@ -143,7 +121,7 @@ struct System::Impl {
                     statusData.mouseY_ = mouse_axis.y;
                 }
                 statusData.registry_count = static_cast<int>(world_->get_module_count());
-                auto ui_fun = [&]() -> void {
+                auto ui_fun = [&, this]() -> void {
                     auto imageId = graphics->getDrawImage();
                     graphics::ui::show_menu(settings::values.menu_data);
                     graphics::draw_setting(settings::values.menu_data.show_system_setting);
@@ -152,6 +130,47 @@ struct System::Impl {
                     render_status_bar(settings::values.menu_data, statusData);
                     graphics::ui::draw_texture(settings::values.menu_data, imageId,
                                                window->getAspectRatio());
+                    if (!file_drop->empty() &&
+                        common::getFileType(file_drop->top()) == common::FileType::Model) {
+                        auto add_model = graphics::ui::add_model(file_drop->top());
+
+                        std::visit(
+                            [file_drop, manager = this->resource_manager.get(),
+                             world = this->world_.get()](auto& model) {
+                                using T = std::decay_t<decltype(model)>;
+                                if constexpr (std::is_same_v<T, bool>) {
+                                    if (model) {
+                                        file_drop->pop();
+                                    }
+                                } else if constexpr (std::is_same_v<
+                                                         T, graphics::effects::ModelEffectInfo>) {
+                                    auto created_model =
+                                        graphics::effects::create_model(model, *manager);
+
+                                    std::visit(
+                                        [world](auto& drawable) {
+                                            using Ty = std::decay_t<decltype(drawable)>;
+                                            if constexpr (std::is_same_v<
+                                                              std::shared_ptr<
+                                                                  graphics::effects::LightModel>,
+                                                              Ty>) {
+                                                world->addDrawable(drawable);
+                                            } else if constexpr (std::is_same_v<
+                                                                     std::shared_ptr<
+                                                                         graphics::effects::
+                                                                             ModelForMultiMesh>,
+                                                                     Ty>) {
+                                                world->addDrawable(drawable);
+                                            }
+                                        },
+                                        created_model);
+
+                                    file_drop->pop();
+                                }
+                            },
+                            add_model);
+                    }
+
                     common::logger::getLogger()->drawUi(settings::values.menu_data.show_log);
                 };
                 Render()->composite(std::span{&frame_config_, 1}, ui_fun);

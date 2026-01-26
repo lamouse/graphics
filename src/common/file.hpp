@@ -23,9 +23,10 @@ namespace common {
 auto file_hash(const std::string& filepath) -> std::optional<std::uint64_t>;
 auto create_dir(const std::string& dirPath) -> bool;
 void copy_file(const std::string& src, const std::string& dst);
+void copy_file(const std::filesystem::path& src, const std::filesystem::path& dst);
 auto get_current_path() -> std::string;
 
-auto getFileType(const std::string& filepath) -> FileType;
+auto getFileType(std::string_view file) -> FileType;
 /**
  * @brief if model has mtl file, return mtl path ,else return empty string
  *

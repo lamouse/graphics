@@ -11,10 +11,10 @@
 namespace common {
 
 namespace {
-auto is_model_file(const std::string& filepath) -> bool {
+auto is_model_file(std::string_view file) -> bool {
     namespace fs = std::filesystem;
     Assimp::Importer importer;
-    auto path = fs::path(filepath);
+    auto path = fs::path(file);
     if (path.has_extension()) {
         auto extension = path.extension().string();
         if (importer.IsExtensionSupported(path.extension().string())) {
@@ -24,10 +24,10 @@ auto is_model_file(const std::string& filepath) -> bool {
     return false;
 }
 
-auto is_image_file(const std::string& filepath) {
+auto is_image_file(const std::string_view file) {
     namespace fs = std::filesystem;
     Assimp::Importer importer;
-    auto path = fs::path(filepath);
+    auto path = fs::path(file);
     if (path.has_extension()) {
         auto extension = path.extension().string();
         std::ranges::transform(extension, extension.begin(),
@@ -39,10 +39,10 @@ auto is_image_file(const std::string& filepath) {
     return false;
 }
 
-auto is_ktx_image_file(const std::string& filepath) {
+auto is_ktx_image_file(std::string_view file) {
     namespace fs = std::filesystem;
     Assimp::Importer importer;
-    auto path = fs::path(filepath);
+    auto path = fs::path(file);
     if (path.has_extension()) {
         auto extension = path.extension().string();
         std::ranges::transform(extension, extension.begin(),
@@ -109,6 +109,10 @@ void copy_file(const std::string& src, const std::string& dst) {
     fs::copy(src_path, dst_path, fs::copy_options::update_existing);
 }
 
+void copy_file(const std::filesystem::path& src, const std::filesystem::path& dst){
+    fs::copy(src, dst, fs::copy_options::update_existing);
+}
+
 auto model_mtl_file_path(const std::string& filepath) -> std::string {
     fs::path path(filepath);
     path.replace_extension(".mtl");
@@ -123,14 +127,14 @@ auto get_current_path() -> std::string {
     return current_path.string();
 }
 
-auto getFileType(const std::string& filepath) -> FileType {
-    if (is_model_file(filepath)) {
+auto getFileType(std::string_view file) -> FileType {
+    if (is_model_file(file)) {
         return FileType::Model;
     }
-    if (is_image_file(filepath)) {
+    if (is_image_file(file)) {
         return FileType::Image;
     }
-    if (is_ktx_image_file(filepath)) {
+    if (is_ktx_image_file(file)) {
         return FileType::KtxImage;
     }
 

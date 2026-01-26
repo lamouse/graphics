@@ -52,6 +52,8 @@ class LightModel {
             return entity;
         }
 
+         [[nodiscard]] auto getId() const -> id_t { return id; }
+
         ecs::Entity entity_;
 
     private:

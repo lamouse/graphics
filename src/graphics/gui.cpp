@@ -1,4 +1,5 @@
 #include "gui.hpp"
+#include "common/file.hpp"
 #include "imgui.h"
 #include "imGuIZMOquat.h"
 
@@ -17,6 +18,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <queue>
 #include <mutex>
+#include <filesystem>
 
 #include <limits>
 // Helper to wire demo markers located in code to an interactive browser
@@ -665,4 +667,74 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
 
     ImGui::End();
 }
+
+auto add_model(std::string_view model_path) -> AddModelInfo {
+    static bool confirm_add_model = true;
+    confirm_add_model = true;
+    ASSERT_MSG(!model_path.empty(), "model path is empty");  // NOLINT
+    ImGui::Begin("Add Model", &confirm_add_model);
+    ImGui::Text("Model Path: %s", model_path.data());
+    auto mtl_path = common::model_mtl_file_path(std::string(model_path));
+    if (not mtl_path.empty()) {
+        ImGui::Text("MTL Path: %s", mtl_path.c_str());
+    }
+    ImGui::Separator();
+    static std::unique_ptr<effects::ModelEffectInfo> model_info;
+    if(not model_info){
+        model_info = std::make_unique<effects::ModelEffectInfo>();
+    }
+    auto model_path_fs = std::filesystem::path(model_path);
+    model_info->source_path = std::string(model_path);
+    model_info->model_name = model_path_fs.filename().string();
+    model_info->asset_name = model_path_fs.stem().string() + ".asset";
+    model_info->shader_name = "model";
+    ImGui::Text("asset name: %s", model_info->asset_name.c_str());
+    ImGui::Checkbox("flip uv", &model_info->flip_uv);
+    ImGui::Checkbox("use mtl", &model_info->use_mtl);
+    ImGui::Checkbox("copy local", &model_info->copy_local);
+    ImGui::Checkbox("split mesh", &model_info->split_mesh);
+    ImGui::SliderFloat("scale", &model_info->default_scale, 0.01f, 10.f);
+    static std::unique_ptr<render::DynamicPipelineState> current_pipeline_state;
+    if (!current_pipeline_state) {
+        current_pipeline_state = std::make_unique<render::DynamicPipelineState>(model_info->pipeline_state);
+    }
+    ImGui::Separator();
+    ImGui::Text("Pipeline State:");
+    pipeline_state(*current_pipeline_state);
+    bool use_model{};
+    if (ImGui::Button("确认")) {
+        std::filesystem::path model(model_path);
+        use_model = true;
+        if(model_info->copy_local){
+            model_info->source_path = (common::get_module_path(common::ModuleType::Model) / model_path_fs.filename()).string();
+        };
+        common::copy_file(model,
+                          common::get_module_path(common::ModuleType::Model) / model.filename());
+
+        if (!mtl_path.empty()) {
+            common::copy_file(mtl_path, common::get_module_path(common::ModuleType::Model) /
+                                            std::filesystem::path(mtl_path).filename());
+        }
+        model_info->pipeline_state = *current_pipeline_state;
+        current_pipeline_state.reset();
+        confirm_add_model = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("取消")) {
+        spdlog::info("cancel add model {}", model_path);
+        confirm_add_model = false;
+    }
+    ImGui::End();
+    if (use_model) {
+        auto tmp = std::move(*model_info);
+        model_info.reset();
+        return tmp;
+    }
+    if(!confirm_add_model){
+        current_pipeline_state.reset();
+        model_info.reset();
+    }
+    return !confirm_add_model;
+}
+
 }  // namespace graphics::ui
