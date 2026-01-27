@@ -1,6 +1,5 @@
 #pragma once
 #include <QObject>
-#include <spdlog/spdlog.h>
 #include <QtQml/QQmlApplicationEngine>
 #include <QAbstractListModel>
 #include "common/settings.hpp"
@@ -17,7 +16,6 @@ class RenderController : public QObject {
         // NOLINTNEXTLINE
     public slots:
         void handleOptionRenderDebug(bool checked) {
-            spdlog::info("render debug: {}", checked);
             settings::values.render_debug.SetValue(checked);
         }
         Q_INVOKABLE [[nodiscard]] auto isRenderDebugEnabled() const -> bool {
@@ -25,7 +23,6 @@ class RenderController : public QObject {
         }
 
         Q_INVOKABLE void setUseDebugUI(bool enabled) {
-            spdlog::info("use debug ui: {}", enabled);
             settings::values.use_debug_ui.SetValue(enabled);
             use_debug_ui_ = enabled;
         }
