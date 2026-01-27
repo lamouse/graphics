@@ -13,6 +13,7 @@ namespace common {
     };
 
     enum class ModuleType{
+        Asset,
         Config,
         Model,
         Image,
@@ -21,7 +22,7 @@ namespace common {
     };
 
 auto file_hash(const std::string& filepath) -> std::optional<std::uint64_t>;
-auto create_dir(const std::string& dirPath) -> bool;
+auto create_dir(const std::filesystem::path& dirPath) -> bool;
 void copy_file(const std::string& src, const std::string& dst);
 void copy_file(const std::filesystem::path& src, const std::filesystem::path& dst);
 auto get_current_path() -> std::string;

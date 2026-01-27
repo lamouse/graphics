@@ -20,7 +20,6 @@
 #include "system/logger_system.hpp"
 #include <spdlog/spdlog.h>
 #include "common/file.hpp"
-#include <filesystem>
 #include <mutex>
 // module core;
 
@@ -51,6 +50,20 @@ struct System::Impl {
             }
             resourceManager->addComputeShader(particle_shader);
 
+            auto models = graphics::effects::load_model_form_asset(*resourceManager);
+
+            for(auto& model : models){
+                std::visit([world = this->world_.get()](auto& drawable){
+                    using T = std::decay_t<decltype(drawable)>;
+                    if constexpr(std::is_same_v<std::shared_ptr<graphics::effects::LightModel>, T>){
+                        world->addDrawable(drawable);
+                    } else if constexpr(std::is_same_v<std::shared_ptr<graphics::effects::ModelForMultiMesh>, T>){
+                        world->addDrawable(drawable);
+                    } else {
+                        ASSERT_MSG(false, "unknown model type");//NOLINT
+                    }
+                }, model);
+            }
             graphics::PickingSystem::commit();
         }
 

@@ -87,8 +87,9 @@ auto file_hash(const std::string& filepath) -> std::optional<std::uint64_t> {
     return hash;
 }
 namespace fs = std::filesystem;
-auto create_dir(const std::string& dirPath) -> bool {
-    // 检查路径是否已经存在
+
+auto create_dir(const std::filesystem::path& dirPath) -> bool{
+        // 检查路径是否已经存在
     if (fs::exists(dirPath)) {
         if (fs::is_directory(dirPath)) {
             return true;
@@ -165,6 +166,9 @@ void set_current_path(const std::string& path) {
 auto get_module_path(ModuleType type) -> std::filesystem::path {
     std::filesystem::path current_path = current_working_path;
     switch (type) {
+        case ModuleType::Asset:
+            current_path /= "assets";
+            break;
         case ModuleType::Config:
             current_path /= "config";
             break;

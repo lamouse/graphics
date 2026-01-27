@@ -686,7 +686,7 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
     auto model_path_fs = std::filesystem::path(model_path);
     model_info->source_path = std::string(model_path);
     model_info->model_name = model_path_fs.filename().string();
-    model_info->asset_name = model_path_fs.stem().string() + ".asset";
+    model_info->asset_name = model_path_fs.stem().string() + "_asset.json";
     model_info->shader_name = "model";
     ImGui::Text("asset name: %s", model_info->asset_name.c_str());
     ImGui::Checkbox("flip uv", &model_info->flip_uv);
@@ -706,7 +706,9 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
         std::filesystem::path model(model_path);
         use_model = true;
         if(model_info->copy_local){
-            model_info->source_path = (common::get_module_path(common::ModuleType::Model) / model_path_fs.filename()).string();
+            auto path  = (common::get_module_path(common::ModuleType::Model) / model_path_fs.filename()).string();
+            auto rel_path = std::filesystem::relative(path, common::get_current_path()).generic_string();
+            model_info->source_path = rel_path;
         };
         common::copy_file(model,
                           common::get_module_path(common::ModuleType::Model) / model.filename());
@@ -728,6 +730,7 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
     if (use_model) {
         auto tmp = std::move(*model_info);
         model_info.reset();
+        graphics::effects::save_model_to_asset(tmp);
         return tmp;
     }
     if(!confirm_add_model){

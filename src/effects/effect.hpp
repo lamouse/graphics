@@ -34,5 +34,9 @@ using Model = std::variant<std::shared_ptr<graphics::effects::LightModel>,
 
 auto create_model(const ModelEffectInfo& info, ResourceManager& manager) -> Model;
 
+void save_model_to_asset(const ModelEffectInfo& info);
+
+auto load_model_form_asset(ResourceManager& manager) -> std::vector<Model>;
+
 auto getEffectsScene() -> ecs::Scene&;
 }  // namespace graphics::effects
