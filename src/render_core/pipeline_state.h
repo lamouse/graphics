@@ -12,6 +12,7 @@
 #include "common/common_types.hpp"
 #include "render_core/surface.hpp"
 #include "pipeline_dynamic_state.hpp"
+#include <string>
 namespace render {
 
 enum class PrimitiveTopology : u32 {
@@ -230,5 +231,10 @@ struct DynamicPipelineState {
               reserved(0)
         // viewport, scissors, blendColor 使用 {} 初始化，已为 0
         {}
+        [[nodiscard]] auto to_json_string() const -> std::string;
+        static auto from_json_string(const std::string& json_str) -> DynamicPipelineState;
 };
+
+
+
 }  // namespace render

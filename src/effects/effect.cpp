@@ -10,6 +10,8 @@ namespace graphics::effects {
 namespace {
 auto serialize_model_effect_info_to_asset(const ModelEffectInfo& info) -> nlohmann::json {
     nlohmann::json j;
+    nlohmann::json pipeline_state_json =
+        nlohmann::json::parse(info.pipeline_state.to_json_string());
     j["source_path"] = info.source_path;
     j["model_name"] = info.model_name;
     j["shader_name"] = info.shader_name;
@@ -19,6 +21,7 @@ auto serialize_model_effect_info_to_asset(const ModelEffectInfo& info) -> nlohma
     j["copy_local"] = info.copy_local;
     j["split_mesh"] = info.split_mesh;
     j["default_scale"] = info.default_scale;
+    j["pipeline_state"] = pipeline_state_json;
     return j;
 }
 
@@ -33,6 +36,8 @@ auto deserialize_effect_info_from_asset(const nlohmann::json& j) -> ModelEffectI
     info.copy_local = j.value("copy_local", true);
     info.split_mesh = j.value("split_mesh", false);
     info.default_scale = j.value("default_scale", 1.0f);
+    info.pipeline_state =
+        render::DynamicPipelineState::from_json_string(j["pipeline_state"].dump());
     return info;
 }
 }  // namespace
@@ -60,6 +65,9 @@ auto create_model(const ModelEffectInfo& info, ResourceManager& manager) -> Mode
 auto load_model_form_asset(ResourceManager& manager) -> std::vector<Model> {
     std::vector<Model> models;
     auto asset_path = common::get_module_path(common::ModuleType::Asset) / MODEL_ASSET_PATH;
+    if(!std::filesystem::exists(asset_path)){
+        return models;
+    }
     for (const auto& entry : std::filesystem::directory_iterator(asset_path)) {
         if (entry.is_regular_file()) {
             const auto& path = entry.path();
@@ -72,6 +80,7 @@ auto load_model_form_asset(ResourceManager& manager) -> std::vector<Model> {
             }
         }
     }
+
     return models;
 }
 
