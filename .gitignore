@@ -7,6 +7,7 @@ cmake-build/
 cmake-build*/
 .vcpkg_install/
 vcpkg_install/
+.VSCodeCounter
 # MacOS Cache
 .DS_Store
 
