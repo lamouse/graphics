@@ -1,10 +1,11 @@
 #pragma once
-#include "effects/light/point_light.hpp"
 #include "ecs/components/transform_component.hpp"
+#include "resource/instance.hpp"
+#include "resource/mesh_instance.hpp"
 #include "world/world.hpp"
 #include "render_core/graphic.hpp"
+#include "effects/light/light.hpp"
 #include <tuple>
-#include <tracy/Tracy.hpp>
 #include <unordered_set>
 namespace graphics::effects {
 
@@ -33,7 +34,6 @@ class LightModel {
         void update(const core::FrameInfo& frameInfo, world::World& world);
 
         void draw(render::Graphic* graphic) {
-            ZoneScopedNC("model::draw", 210);
             if (render_state->visible) {
                 for (auto& mesh : meshes) {
                     if (mesh.render_state->visible) {

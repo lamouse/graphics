@@ -2,6 +2,7 @@
 
 #include "system/pick_system.hpp"
 #include "resource/obj/model_mesh.hpp"
+#include "effects/effect.hpp"
 
 namespace graphics::effects {
 
@@ -80,8 +81,6 @@ LightModel::LightModel(graphics::ResourceManager& manager, const ModelResourceNa
 }
 
 void LightModel::update(const core::FrameInfo& frameInfo, world::World& world) {
-    ZoneScopedNC("model::update", 110);
-
     updateLightUBO(frameInfo, light_ubo, world);
 
     push_constant.modelMatrix = transform->mat4();

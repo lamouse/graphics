@@ -9,7 +9,6 @@ class ModelForMultiMesh {
                           const std::string& name);
         ecs::Entity entity_;
         void draw(render::Graphic* graphic) {
-            ZoneScopedNC("model::draw", 210);
             if (render_state->visible) {
                 for (auto& mesh : meshes) {
                     if (mesh.render_state->visible) {

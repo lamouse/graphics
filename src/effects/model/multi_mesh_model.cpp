@@ -1,6 +1,7 @@
 #include "effects/model/multi_mesh_model.hpp"
 #include "system/pick_system.hpp"
 #include "resource/obj/model_mesh.hpp"
+#include "effects/effect.hpp"
 namespace graphics::effects {
 ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager, const ModelResourceName& names,
                                      const std::string& name)
@@ -39,7 +40,6 @@ ModelForMultiMesh::ModelForMultiMesh(ResourceManager& manager, const ModelResour
 }
 
 void ModelForMultiMesh::update(const core::FrameInfo& frameInfo, world::World& world) {
-    ZoneScopedNC("model::update", 110);
 
     updateLightUBO(frameInfo, light_ubo, world);
     push_constant.modelMatrix = transform->mat4();
