@@ -144,7 +144,7 @@ struct System::Impl {
                     graphics::ui::draw_texture(settings::values.menu_data, imageId,
                                                window->getAspectRatio());
                     if (!file_drop->empty() &&
-                        common::getFileType(file_drop->top()) == common::FileType::Model) {
+                        common::FS::getFileType(file_drop->top()) == common::FS::FileType::Model) {
                         auto add_model = graphics::ui::add_model(file_drop->top());
 
                         std::visit(

@@ -61,7 +61,7 @@ void save_settings() {
     menu_data_table.insert("show_status", values.menu_data.show_status);
     tables.insert("menu_data", menu_data_table);
 
-    auto config_file = common::get_module_path(common::ModuleType::Config) /= SETTING_FILE_NAME;
+    auto config_file = common::FS::get_module_path(common::FS::ModuleType::Config) /= SETTING_FILE_NAME;
     std::ofstream file(config_file);
     if (file.is_open()) {
         file << tables;  // toml::table 重载了 << 运算符
@@ -73,7 +73,7 @@ void save_settings() {
 void load_settings() {
     try {
         using namespace std::literals;
-        auto config_file = common::get_module_path(common::ModuleType::Config) /= SETTING_FILE_NAME;
+        auto config_file = common::FS::get_module_path(common::FS::ModuleType::Config) /= SETTING_FILE_NAME;
         auto toml_data = toml::parse_file(config_file.string());
         for (const auto& [category, setting] : settings::values.linkage.by_category) {
             for (auto* s : setting) {

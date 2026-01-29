@@ -3,7 +3,7 @@
 #include <optional>
 #include <cstdint>
 #include <filesystem>
-namespace common {
+namespace common::FS{
 
     enum class FileType{
         Image,

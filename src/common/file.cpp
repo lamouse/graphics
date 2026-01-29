@@ -8,7 +8,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
 #include <mutex>
-namespace common {
+namespace common::FS {
 
 namespace {
 auto is_model_file(std::string_view file) -> bool {
@@ -144,13 +144,13 @@ auto getFileType(std::string_view file) -> FileType {
 
 auto to_string(FileType fileType) -> std::string {
     switch (fileType) {
-        case common::FileType::Model:
+        case common::FS::FileType::Model:
             return "model";
-        case common::FileType::Image:
+        case common::FS::FileType::Image:
             return "image";
-        case common::FileType::KtxImage:
+        case common::FS::FileType::KtxImage:
             return "ktx image";
-        case common::FileType::UnSupper:
+        case common::FS::FileType::UnSupper:
             return "Un super";
     }
 }

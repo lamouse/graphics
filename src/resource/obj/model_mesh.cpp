@@ -37,7 +37,7 @@ auto as_bytes(std::span<const T> s) -> std::span<const std::byte> {
 }
 
 void saveModelToCache(std::uint64_t file_hash, const graphics::Model& model) {
-    common::create_dir(model_cache_path);
+    common::FS::create_dir(model_cache_path);
     auto cachePath = std::string(model_cache_path) + std::to_string(file_hash) + model_cache_extend;
     std::ofstream file(cachePath, std::ios::binary);
     if (!file) {
@@ -223,7 +223,7 @@ auto loadModelFromAssimpScene(const aiScene* scene) -> graphics::Model {
 }
 
 void saveMultiMeshToCache(uint64_t file_hash, const graphics::MultiMeshModel& model) {
-    common::create_dir(model_cache_path);
+    common::FS::create_dir(model_cache_path);
     auto cachePath =
         std::string(model_cache_path) + std::to_string(file_hash) + model_multi_mesh_cache_extend;
     std::ofstream file(cachePath, std::ios::binary);
@@ -286,7 +286,7 @@ auto Model::createFromFile(const ::std::string& model_path, std::uint64_t obj_ha
     }
 
     if (obj_hash == 0) {
-        auto file_hash = common::file_hash(model_path);
+        auto file_hash = common::FS::file_hash(model_path);
         obj_hash = file_hash ? file_hash.value() : 0;
     }
     if (!obj_hash) {
@@ -324,7 +324,7 @@ auto Model::getIndices() const -> std::span<const std::byte> {
 MultiMeshModel::MultiMeshModel(std::string_view path, uint64_t file_hash_, bool flip_uv)
     : file_hash(file_hash_) {
     if (file_hash_ == 0) {
-        auto model_file_hash = common::file_hash(std::string(path));
+        auto model_file_hash = common::FS::file_hash(std::string(path));
         file_hash = model_file_hash ? model_file_hash.value() : 0;
     }
     auto meshes = loadMultiMeshFromCache(file_hash);

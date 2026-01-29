@@ -674,7 +674,7 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
     ASSERT_MSG(!model_path.empty(), "model path is empty");  // NOLINT
     ImGui::Begin("Add Model", &confirm_add_model);
     ImGui::Text("Model Path: %s", model_path.data());
-    auto mtl_path = common::model_mtl_file_path(std::string(model_path));
+    auto mtl_path = common::FS::model_mtl_file_path(std::string(model_path));
     if (not mtl_path.empty()) {
         ImGui::Text("MTL Path: %s", mtl_path.c_str());
     }
@@ -706,15 +706,15 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
         std::filesystem::path model(model_path);
         use_model = true;
         if(model_info->copy_local){
-            auto path  = (common::get_module_path(common::ModuleType::Model) / model_path_fs.filename()).string();
-            auto rel_path = std::filesystem::relative(path, common::get_current_path()).generic_string();
+            auto path  = (common::FS::get_module_path(common::FS::ModuleType::Model) / model_path_fs.filename()).string();
+            auto rel_path = std::filesystem::relative(path, common::FS::get_current_path()).generic_string();
             model_info->source_path = rel_path;
         };
-        common::copy_file(model,
-                          common::get_module_path(common::ModuleType::Model) / model.filename());
+        common::FS::copy_file(model,
+                          common::FS::get_module_path(common::FS::ModuleType::Model) / model.filename());
 
         if (!mtl_path.empty()) {
-            common::copy_file(mtl_path, common::get_module_path(common::ModuleType::Model) /
+            common::FS::copy_file(mtl_path, common::FS::get_module_path(common::FS::ModuleType::Model) /
                                             std::filesystem::path(mtl_path).filename());
         }
         model_info->pipeline_state = *current_pipeline_state;

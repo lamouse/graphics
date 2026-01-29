@@ -64,7 +64,7 @@ auto create_model(const ModelEffectInfo& info, ResourceManager& manager) -> Mode
 }
 auto load_model_form_asset(ResourceManager& manager) -> std::vector<Model> {
     std::vector<Model> models;
-    auto asset_path = common::get_module_path(common::ModuleType::Asset) / MODEL_ASSET_PATH;
+    auto asset_path = common::FS::get_module_path(common::FS::ModuleType::Asset) / MODEL_ASSET_PATH;
     if(!std::filesystem::exists(asset_path)){
         return models;
     }
@@ -87,8 +87,8 @@ auto load_model_form_asset(ResourceManager& manager) -> std::vector<Model> {
 void save_model_to_asset(const ModelEffectInfo& info) {
     auto json_data = serialize_model_effect_info_to_asset(info);
     auto asset_path =
-        (common::get_module_path(common::ModuleType::Asset) / MODEL_ASSET_PATH) / info.asset_name;
-    common::create_dir(common::get_module_path(common::ModuleType::Asset) / MODEL_ASSET_PATH);
+        (common::FS::get_module_path(common::FS::ModuleType::Asset) / MODEL_ASSET_PATH) / info.asset_name;
+    common::FS::create_dir(common::FS::get_module_path(common::FS::ModuleType::Asset) / MODEL_ASSET_PATH);
     std::ofstream file(asset_path);
     if (file.is_open()) {
         file << json_data.dump(4);

@@ -78,8 +78,8 @@ PipelineCache::PipelineCache(const Device& device, scheduler::Scheduler& schedul
 
 void PipelineCache::loadPipelineCacheFromDisk() {
     if (use_vulkan_pipeline_cache) {
-        auto pipeline_cache_dir = common::get_module_path(common::ModuleType::Cache) /= PIPELINE_CACHE_PATH;
-        common::create_dir(pipeline_cache_dir.string());
+        auto pipeline_cache_dir = common::FS::get_module_path(common::FS::ModuleType::Cache) /= PIPELINE_CACHE_PATH;
+        common::FS::create_dir(pipeline_cache_dir.string());
         std::vector<char> cacheData;
 
         try {
@@ -137,7 +137,7 @@ void PipelineCache::savePipelineCache() {
     std::vector<char> cacheData(dataSize);
     vulkan_pipeline_cache.Read(&dataSize, cacheData.data());
     XXH64_hash_t hash = XXH64(cacheData.data(), dataSize * sizeof(char), 0);
-    auto pipeline_cache_dir = common::get_module_path(common::ModuleType::Cache) /= PIPELINE_CACHE_PATH;
+    auto pipeline_cache_dir = common::FS::get_module_path(common::FS::ModuleType::Cache) /= PIPELINE_CACHE_PATH;
     std::ofstream file(pipeline_cache_dir /= PIPELINE_CACHE_BIN_NAME, std::ios::binary);
     if (file.is_open()) {
         // 构造头部
