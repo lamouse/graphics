@@ -1,6 +1,5 @@
 #pragma once
 #include "common/common_types.hpp"
-#include "common/class_traits.hpp"
 #include <unordered_map>
 #include <memory>
 #include <span>
@@ -26,8 +25,11 @@ class ShaderCache {
     public:
         virtual ~ShaderCache() = default;  // 如果你打算多态删除
         ShaderCache() = default;
-        CLASS_NON_COPYABLE(ShaderCache);
-        CLASS_DEFAULT_MOVEABLE(ShaderCache);
+        ShaderCache(const ShaderCache&) = delete;
+        ShaderCache(ShaderCache&&) noexcept = default;
+        auto operator=(const ShaderCache&) -> ShaderCache& = delete;
+        auto operator=(ShaderCache&&) noexcept -> ShaderCache& = default;
+
         // 返回计算后的hash
         auto addShader(std::span<const u32> data, ShaderType type) -> u64;
         void setCurrentShader(u64 vertexHash, u64 fragmentHas);

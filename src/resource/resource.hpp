@@ -1,5 +1,4 @@
 #pragma once
-#include "common/class_traits.hpp"
 #include "render_core/types.hpp"
 #include "render_core/shader_cache.hpp"
 #include "resource/obj/model_mesh.hpp"
@@ -47,8 +46,11 @@ using add_mesh_func = std::function<render::TextureId(const render::IMeshData&)>
 class ResourceManager {
     public:
         ~ResourceManager() = default;
-        CLASS_NON_COPYABLE(ResourceManager);
-        CLASS_DEFAULT_MOVEABLE(ResourceManager);
+
+        ResourceManager(const ResourceManager&) = delete("can't be copy construct");
+        ResourceManager(ResourceManager&&) = delete("can't be move construct");
+        auto operator=(const ResourceManager&) ->ResourceManager& = delete;
+        auto operator=(ResourceManager&&) -> ResourceManager& = delete;
         auto addTexture(std::string_view textureName, const add_texture_func& func = nullptr)
             -> render::TextureId;
         /**
