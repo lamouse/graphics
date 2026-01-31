@@ -47,8 +47,8 @@ class ResourceManager {
     public:
         ~ResourceManager() = default;
 
-        ResourceManager(const ResourceManager&) = delete("can't be copy construct");
-        ResourceManager(ResourceManager&&) = delete("can't be move construct");
+        ResourceManager(const ResourceManager&);
+        ResourceManager(ResourceManager&&);
         auto operator=(const ResourceManager&) ->ResourceManager& = delete;
         auto operator=(ResourceManager&&) -> ResourceManager& = delete;
         auto addTexture(std::string_view textureName, const add_texture_func& func = nullptr)
