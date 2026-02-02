@@ -9,6 +9,8 @@
 #include "render_core/texture/image_info.hpp"
 #include "render_core/texture/render_targets.h"
 #include <ktx.h>
+#include <unordered_map>
+#include <mutex>
 namespace render::texture {
 // 定义 key
 struct FramebufferKey {

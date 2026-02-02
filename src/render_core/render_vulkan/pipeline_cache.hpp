@@ -4,7 +4,6 @@
 #include <memory>
 #include "render_core/render_vulkan/buffer_cache.h"
 #include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
 #include "render_core/render_vulkan/graphics_pipeline.hpp"
 #include "render_core/render_vulkan/texture_cache.hpp"
 #include "render_core/shader_cache.hpp"
@@ -65,9 +64,11 @@ class PipelineCache : public ShaderCache {
                       GuestDescriptorQueue& guest_descriptor_queue,
                       RenderPassCache& render_pass_cache, BufferCache& buffer_cache,
                       TextureCache& texture_cache, ShaderNotify& shader_notify);
-        ~PipelineCache();
-        CLASS_NON_COPYABLE(PipelineCache);
-        CLASS_NON_MOVEABLE(PipelineCache);
+        ~PipelineCache() override;
+        PipelineCache(const PipelineCache&) = delete;
+        PipelineCache(PipelineCache&&)noexcept = delete;
+        auto operator=(const PipelineCache&) -> PipelineCache& = delete;
+        auto operator=(PipelineCache&&) noexcept -> PipelineCache& = delete;
         [[nodiscard]] auto currentGraphicsPipeline(PrimitiveTopology topology) -> GraphicsPipeline*;
         [[nodiscard]] auto currentComputePipeline(const std::array<u32, 3>& workgroupSize)
             -> ComputePipeline*;
