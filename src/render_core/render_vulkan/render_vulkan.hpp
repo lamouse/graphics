@@ -12,8 +12,10 @@ auto createDevice(const Instance& instance, vk::SurfaceKHR surface) -> Device;
 
 class RendererVulkan final : public render::RenderBase {
     public:
-        CLASS_NON_COPYABLE(RendererVulkan);
-        CLASS_NON_MOVEABLE(RendererVulkan);
+        RendererVulkan(const RendererVulkan&) = delete;
+        RendererVulkan(RendererVulkan&&)noexcept = delete;
+        auto operator=(const RendererVulkan&) ->RendererVulkan& = delete;
+        auto operator=(RendererVulkan&&) noexcept -> RendererVulkan& = delete;
         explicit RendererVulkan(core::frontend::BaseWindow* window);
         ~RendererVulkan() override;
 

@@ -3,7 +3,6 @@
 #include "resource/obj/mesh_material.hpp"
 #include "resource/obj/mesh_vertex.hpp"
 #include "render_core/pipeline_state.h"
-#include "common/class_traits.hpp"
 #include "render_core/mesh.hpp"
 
 #include <vector>
@@ -52,8 +51,10 @@ class Model : public render::IMeshData {
         }
         static auto createFromFile(const ::std::string& path, std::uint64_t obj_hash,
                                    bool flip_uv = false) -> Model;
-        CLASS_NON_COPYABLE(Model);
-        CLASS_DEFAULT_MOVEABLE(Model);
+        Model(const Model&) = delete;
+        Model(Model&&) noexcept = default;
+        auto operator=(const Model&) = delete;
+        auto operator=(Model&&) noexcept -> Model& = default;
         Model(const ::std::vector<Vertex>& vertices, const ::std::vector<uint32_t>& indices,
               const std::vector<::glm::vec3>& only_vertex, MeshMaterial material);
         [[nodiscard]] auto getIndicesSize() const -> std::uint64_t override {
@@ -153,8 +154,10 @@ class MultiMeshModel {
 
         [[nodiscard]] auto getMeshes() const -> std::span<const Mesh> { return meshes_; }
         MultiMeshModel(std::string_view path, uint64_t file_hash = 0, bool flip_uv = false);
-        CLASS_NON_COPYABLE(MultiMeshModel);
-        CLASS_DEFAULT_MOVEABLE(MultiMeshModel);
+        MultiMeshModel(const MultiMeshModel&) = delete;
+        MultiMeshModel(MultiMeshModel&&) noexcept = default;
+        auto operator=(const MultiMeshModel&) -> MultiMeshModel& = delete;
+        auto operator=(MultiMeshModel&&)noexcept ->MultiMeshModel& = default;
         ~MultiMeshModel();
 
     private:

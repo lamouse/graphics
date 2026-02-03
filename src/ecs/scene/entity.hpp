@@ -4,7 +4,6 @@
 
 #pragma once
 #include "ecs/scene/scene.hpp"
-#include "common/class_traits.hpp"
 #include "common/assert.hpp"
 
 namespace ecs {
@@ -13,10 +12,12 @@ class Entity {
         friend class Scene;
 
     public:
-        CLASS_DEFAULT_COPYABLE(Entity);
-        CLASS_DEFAULT_MOVEABLE(Entity);
         Entity() = default;
         ~Entity() = default;
+        Entity(const Entity&) = default;
+        Entity(Entity&&) = default;
+        auto operator=(const Entity&) -> Entity& = default;
+        auto operator=(Entity&&)noexcept ->Entity& = default;
         template <typename T>
         [[nodiscard]] auto hasComponent() const -> bool {
             return scene_->registry_.all_of<T>(handle_);

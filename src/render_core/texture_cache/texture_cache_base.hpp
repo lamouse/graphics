@@ -86,8 +86,10 @@ class TextureCache {
 
     public:
         explicit TextureCache(Runtime&);
-        CLASS_NON_COPYABLE(TextureCache);
-        CLASS_NON_MOVEABLE(TextureCache);
+        TextureCache(const TextureCache&) = delete;
+        TextureCache(TextureCache&&) noexcept = delete;
+        auto operator=(const TextureCache&) -> TextureCache& = delete;
+        auto operator=(TextureCache&&) noexcept -> TextureCache& = delete;
         ~TextureCache() = default;
         /// Notify the cache that a new frame has been queued
         void TickFrame();

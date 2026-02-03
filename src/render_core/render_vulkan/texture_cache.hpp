@@ -3,7 +3,6 @@
 #include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/surface.hpp"
 #include "render_core/texture/image_info.hpp"
-#include "common/class_traits.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/render_vulkan/descriptor_pool.hpp"
 #include "render_core/render_vulkan/render_pass.hpp"
@@ -64,7 +63,8 @@ class TextureImage {
 
         ~TextureImage();
 
-        CLASS_NON_COPYABLE(TextureImage);
+        TextureImage(const TextureImage&) = delete;
+        auto operator=(const TextureImage&) -> TextureImage& = delete;
         TextureImage(TextureImage&&) = default;
         auto operator=(TextureImage&&) -> TextureImage& = default;
 
@@ -105,8 +105,10 @@ class TextureImageView : public render::texture::ImageViewBase {
         explicit TextureImageView(TextureCacheRuntime&, const texture::NullImageViewParams&);
 
         ~TextureImageView();
-        CLASS_NON_COPYABLE(TextureImageView);
-        CLASS_DEFAULT_MOVEABLE(TextureImageView);
+        TextureImageView(const TextureImageView&) = delete;
+        TextureImageView(TextureImageView&&) = default;
+        auto operator=(const TextureImageView&) -> TextureImageView& = delete;
+        auto operator=(TextureImageView&&) noexcept -> TextureImageView& = default;
 
         [[nodiscard]] auto Handle(shader::TextureType texture_type) const noexcept
             -> vk::ImageView {
@@ -150,8 +152,10 @@ class TextureFramebuffer {
                                     TextureImageView* depth_buffer, vk::Extent2D extent);
 
         ~TextureFramebuffer();
-        CLASS_NON_COPYABLE(TextureFramebuffer);
-        CLASS_DEFAULT_MOVEABLE(TextureFramebuffer);
+        TextureFramebuffer(const TextureFramebuffer&) = delete;
+        TextureFramebuffer(TextureFramebuffer&&) noexcept = default;
+        auto operator=(const TextureFramebuffer&) -> TextureFramebuffer& = delete;
+        auto operator=(TextureFramebuffer&&) noexcept -> TextureFramebuffer& = default;
 
         void CreateFramebuffer(TextureCacheRuntime& runtime,
                                std::span<TextureImageView*, texture::NUM_RT> color_buffers,

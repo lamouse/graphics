@@ -1,13 +1,20 @@
 #pragma once
 #include <string>
 #include <ktx.h>
-#include "common/class_traits.hpp"
 
 namespace resource::image {
 class KtxImage {
     public:
-        CLASS_NON_COPYABLE(KtxImage);
-        CLASS_NON_MOVEABLE(KtxImage);
+        KtxImage(const KtxImage&) = delete;
+        auto operator=(const KtxImage) = delete;
+        KtxImage(KtxImage&& image) noexcept : handle(image.handle) {
+            image.handle = nullptr;
+        }
+        auto operator=(KtxImage&& image) noexcept -> KtxImage&{
+            this->handle = image.handle;
+            image.handle = nullptr;
+            return *this;
+        }
         KtxImage(const std::string& path);
         auto getKtxTexture() { return handle; }
         ~KtxImage();

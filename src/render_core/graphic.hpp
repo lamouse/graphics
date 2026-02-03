@@ -4,7 +4,6 @@
 #include "render_core/compute_instance.hpp"
 #include "render_core/texture/types.hpp"
 #include "render_core/render_command.hpp"
-#include "common/class_traits.hpp"
 #include "render_core/mesh.hpp"
 #include <ktx.h>
 namespace render {
@@ -49,7 +48,9 @@ class Graphic {
         virtual void dispatchCompute(const IComputeInstance& instance) = 0;
         virtual void clean(const CleanValue& cleanValue) = 0;
         Graphic() = default;
-        CLASS_DEFAULT_COPYABLE(Graphic);
-        CLASS_DEFAULT_MOVEABLE(Graphic);
+        Graphic(const Graphic&) = default;
+        Graphic(Graphic&&) noexcept = default;
+        auto operator=(const Graphic&) -> Graphic& = default;
+        auto operator=(Graphic&&) noexcept ->Graphic& = default;
 };
 }  // namespace render

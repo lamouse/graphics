@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <limits>
 #include "common/common_types.hpp"
-#include "common/class_traits.hpp"
 namespace settings {
 enum class Category : u16 {
     core = 0,
@@ -44,8 +43,10 @@ class BasicSetting;
 class Linkage {
     public:
         explicit Linkage(u32 initial_count = 0);
-        CLASS_DEFAULT_COPYABLE(Linkage);
-        CLASS_DEFAULT_MOVEABLE(Linkage);
+        Linkage(const Linkage&) = default;
+        Linkage(Linkage&&) noexcept = default;
+        auto operator=(const Linkage&) ->Linkage& = default;
+        auto operator=(Linkage&&) noexcept -> Linkage& = default;
         ~Linkage();
         std::unordered_map<Category, std::vector<BasicSetting*>> by_category;
         std::unordered_map<std::string, settings::BasicSetting*> by_key;

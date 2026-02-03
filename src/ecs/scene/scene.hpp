@@ -1,5 +1,4 @@
 #pragma once
-#include "common/class_traits.hpp"
 #include <entt/entt.hpp>
 
 namespace ecs {
@@ -8,8 +7,10 @@ class Scene {
     public:
         Scene();
         ~Scene();
-        CLASS_DEFAULT_MOVEABLE(Scene);
-        CLASS_NON_COPYABLE(Scene);
+        Scene(const Scene&) = delete;
+        Scene(Scene&&) = default;
+        auto operator=(const Scene&)->Scene& = delete;
+        auto operator=(Scene&&)->Scene& = default;
         auto createEntity() -> Entity;
         auto createEntity(const std::string& tag) -> Entity;
 

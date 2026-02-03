@@ -3,7 +3,6 @@
 #include <QTimer>
 #include <memory>
 #include "core/frontend/window.hpp"
-#include "common/class_traits.hpp"
 #include "core/core.hpp"
 class QQmlApplicationEngine;
 namespace graphics {
@@ -17,8 +16,10 @@ class RenderWindow;
 class QTWindow : public QMainWindow {
         Q_OBJECT
     public:
-        CLASS_NON_COPYABLE(QTWindow);
-        CLASS_NON_MOVEABLE(QTWindow);
+        QTWindow(const QTWindow&) = delete;
+        QTWindow(QTWindow&&) noexcept = delete;
+        auto operator=(const QTWindow&)-> QTWindow& = delete;
+        auto operator=(QTWindow&&) noexcept ->QTWindow& = delete;
         QTWindow(std::shared_ptr<input::InputSystem> input_system,
                  std::shared_ptr<core::System>& system, int width, int height,
                  ::std::string_view title);

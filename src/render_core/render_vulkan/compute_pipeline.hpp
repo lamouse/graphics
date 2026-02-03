@@ -7,7 +7,6 @@
 #include <condition_variable>
 #include <mutex>
 
-#include "common/common_funcs.hpp"
 #include "common/thread_worker.hpp"
 #include "shader_tools/shader_info.h"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
@@ -35,8 +34,10 @@ class ComputePipeline {
                                  common::ThreadWorker* thread_worker, ShaderNotify* shader_notify,
                                  const shader::Info& info, ShaderModule spv_module);
 
-        CLASS_NON_COPYABLE(ComputePipeline);
-        CLASS_NON_MOVEABLE(ComputePipeline);
+        ComputePipeline(const ComputePipeline&) = delete;
+        ComputePipeline(ComputePipeline&&) noexcept = delete;
+        auto operator=(const ComputePipeline&) -> ComputePipeline& = delete;
+        auto operator=(ComputePipeline&&) noexcept -> ComputePipeline& = delete;
 
         void Configure(scheduler::Scheduler& scheduler, BufferCache& buffer_cache);
 

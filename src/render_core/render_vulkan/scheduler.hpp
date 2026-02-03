@@ -3,7 +3,6 @@
 #include "render_core/render_vulkan/master_semaphore.hpp"
 #include "render_core/render_vulkan/command_pool.hpp"
 #include "common/alignment.hpp"
-#include "common/class_traits.hpp"
 #include <array>
 #include <memory>
 #include <thread>
@@ -40,8 +39,10 @@ struct RequestsRending {
 class Scheduler {
     public:
         explicit Scheduler(const Device& device);
-        CLASS_NON_COPYABLE(Scheduler);
-        CLASS_NON_MOVEABLE(Scheduler);
+        Scheduler(const Scheduler&) = delete;
+        Scheduler(Scheduler&&) noexcept = delete;
+        auto operator=(const Scheduler&) -> Scheduler& = delete;
+        auto operator=(Scheduler&&) noexcept -> Scheduler& = delete;
         ~Scheduler() = default;
         std::mutex submit_mutex_;
         /// Returns the master timeline semaphore.
@@ -104,6 +105,11 @@ class Scheduler {
         class Command {
             public:
                 virtual ~Command() = default;
+                Command() = default;
+                Command(const Command&) = default;
+                Command(Command&&) noexcept = default;
+                auto operator=(const Command&) -> Command& = default;
+                auto operator=(Command&&) noexcept -> Command& = default;
 
                 virtual void execute(vk::CommandBuffer cmdbuf,
                                      vk::CommandBuffer upload_cmdbuf) const = 0;
@@ -121,8 +127,10 @@ class Scheduler {
             public:
                 explicit TypedCommand(T&& command_) : command{std::move(command_)} {}
                 ~TypedCommand() override = default;
-
-                CLASS_NON_MOVEABLE(TypedCommand);
+                TypedCommand(const TypedCommand&) = delete;
+                TypedCommand(TypedCommand&&) = delete;
+                auto operator=(const TypedCommand&) -> TypedCommand& = delete;
+                auto operator=(TypedCommand&&) noexcept -> TypedCommand& = delete;
 
                 void execute(vk::CommandBuffer cmdBuf,
                              vk::CommandBuffer uploadCmdBuf) const override {

@@ -9,7 +9,6 @@
 #include <imgui.h>
 
 #include <absl/strings/match.h>
-#include "common/common_funcs.hpp"
 
 namespace sys {
 template <typename Mutex>
@@ -102,8 +101,10 @@ using ImGuiLogSink_mt = ImGuiLogSink<std::mutex>;
 class LoggerSystem {
     public:
         explicit LoggerSystem();
-        CLASS_NON_COPYABLE(LoggerSystem);
-        CLASS_DEFAULT_MOVEABLE(LoggerSystem);
+        LoggerSystem(const LoggerSystem&) = default;
+        LoggerSystem(LoggerSystem&&) noexcept = default;
+        auto operator=(const LoggerSystem&) -> LoggerSystem& = default;
+        auto operator=(LoggerSystem&&) noexcept -> LoggerSystem& = default;
         ~LoggerSystem();
         void drawUi(bool& show);
 

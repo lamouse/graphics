@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <string_view>
 #include "framebuffer_layout.hpp"
-#include "common/class_traits.hpp"
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -88,8 +87,11 @@ class EXPORT BaseWindow {
 
     public:
         BaseWindow() = default;
-        CLASS_DEFAULT_COPYABLE(BaseWindow);
-        CLASS_DEFAULT_MOVEABLE(BaseWindow);
+        BaseWindow(const BaseWindow&) = default;
+        BaseWindow(BaseWindow&&) noexcept = default;
+        auto operator=(const BaseWindow&) ->BaseWindow& = default;
+        auto operator=(BaseWindow&&) -> BaseWindow& = default;
+
         virtual ~BaseWindow() = default;
 };
 }  // namespace core::frontend

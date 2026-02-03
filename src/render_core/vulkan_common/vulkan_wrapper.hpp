@@ -1,6 +1,5 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include "common/class_traits.hpp"
 #include <vector>
 #include <type_traits>
 #include "common/common_types.hpp"
@@ -20,14 +19,7 @@ namespace render::vulkan::wrapper {
 /// Dummy type used to specify a handle has no owner.
 struct NoOwner {
         NoOwner() = default;
-        CLASS_DEFAULT_COPYABLE(NoOwner);
-        CLASS_DEFAULT_MOVEABLE(NoOwner);
-        ~NoOwner() = default;
-        // NOLINTNEXTLINE
         NoOwner(std::nullptr_t) {}
-
-        // auto operator=(std::nullptr_t) -> NoOwner { return {}; }  // NOLINT
-        // auto operator=(NoOwner) -> NoOwner { return {}; }         // NOLINT
         operator bool() const { return false; }  // NOLINT
 };
 inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
@@ -139,7 +131,8 @@ class PoolAllocations {
         /// Construct an empty allocation.
         PoolAllocations() = default;
         ~PoolAllocations() = default;
-        CLASS_NON_COPYABLE(PoolAllocations);
+        PoolAllocations(const PoolAllocations&) = delete;
+        auto operator=(const PoolAllocations&) -> PoolAllocations = delete;
         /// Construct an allocation. Errors are reported through IsOutOfPoolMemory().
         explicit PoolAllocations(std::vector<AllocationType> allocations_, vk::Device device_,
                                  PoolType pool) noexcept
@@ -221,18 +214,11 @@ namespace render::vulkan {
 namespace utils {
 class VulkanException final : public std::exception {
     public:
-        /// Construct the exception with a result.
         /// @pre result != VK_SUCCESS
-        CLASS_DEFAULT_COPYABLE(VulkanException);
-        CLASS_DEFAULT_MOVEABLE(VulkanException);
         explicit VulkanException(vk::Result result_) : result{result_} {}
         explicit VulkanException(VkResult result_) : result{static_cast<vk::Result>(result_)} {}
-        ~VulkanException() override = default;
-        /// @cond
         [[nodiscard]] auto what() const noexcept -> const char* override;
-        /// @endcond
         [[nodiscard]] auto getResult() const noexcept -> vk::Result { return result; }
-
     private:
         vk::Result result;
 };
@@ -298,7 +284,8 @@ class Image {
               allocation{allocation_} {}
         Image() = default;
 
-        CLASS_NON_COPYABLE(Image);
+        Image(const Image&) = delete;
+        auto operator=(const Image&) -> Image& = delete;
 
         Image(Image&& rhs) noexcept
             : handle{std::exchange(rhs.handle, nullptr)},
@@ -375,7 +362,8 @@ class Buffer {
               is_coherent{is_coherent_} {}
         Buffer() = default;
 
-        CLASS_NON_COPYABLE(Buffer);
+        Buffer(const Buffer&) = delete;
+        auto operator=(const Buffer&) -> Buffer& = delete;
 
         Buffer(Buffer&& rhs) noexcept
             : handle{std::exchange(rhs.handle, nullptr)},

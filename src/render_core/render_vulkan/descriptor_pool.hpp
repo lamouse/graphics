@@ -1,6 +1,5 @@
 #pragma once
 #include "render_core/render_vulkan/resource_pool.hpp"
-#include "common/common_funcs.hpp"
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include <shared_mutex>
 #include "shader_tools/shader_info.h"
@@ -35,12 +34,12 @@ class DescriptorAllocator final : public ResourcePool {
         friend class DescriptorPool;
 
     public:
-        explicit DescriptorAllocator() = default;
         ~DescriptorAllocator() override = default;
-
-        auto operator=(DescriptorAllocator&&) noexcept -> DescriptorAllocator& = default;
+        DescriptorAllocator() = default;
+        DescriptorAllocator(const DescriptorAllocator&) = delete;
         DescriptorAllocator(DescriptorAllocator&&) noexcept = default;
-        CLASS_NON_COPYABLE(DescriptorAllocator);
+        auto operator=(const DescriptorAllocator&) -> DescriptorAllocator& = delete;
+        auto operator=(DescriptorAllocator&&) noexcept -> DescriptorAllocator& = default;
 
         auto commit() -> vk::DescriptorSet;
 
@@ -64,8 +63,10 @@ class DescriptorPool {
         explicit DescriptorPool(const Device& device, scheduler::Scheduler& scheduler);
         ~DescriptorPool() = default;
         DescriptorPool() = delete;
-        CLASS_NON_COPYABLE(DescriptorPool);
-        CLASS_NON_MOVEABLE(DescriptorPool);
+        DescriptorPool(const DescriptorPool&) = delete;
+        DescriptorPool(DescriptorPool&&) noexcept = delete;
+        auto operator=(const DescriptorPool&) -> DescriptorPool& = delete;
+        auto operator=(DescriptorPool&&) noexcept -> DescriptorPool& = delete;
         auto allocator(vk::DescriptorSetLayout layout, std::span<const shader::Info> infos)
             -> DescriptorAllocator;
         auto allocator(vk::DescriptorSetLayout layout, const shader::Info& info)

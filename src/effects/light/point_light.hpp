@@ -81,8 +81,11 @@ class PointLightEffect {
             point_light.setPushConstant(&push_constants);
         }
 
-        CLASS_NON_COPYABLE(PointLightEffect);
-        CLASS_DEFAULT_MOVEABLE(PointLightEffect);
+        PointLightEffect(const PointLightEffect&) = delete;
+        PointLightEffect(PointLightEffect&&) noexcept = default;
+        auto operator=(const PointLightEffect&) -> PointLightEffect& = delete;
+        auto operator=(PointLightEffect&&) noexcept -> PointLightEffect& = delete;
+
 
         void update(const core::FrameInfo& frameInfo, world::World& world) {
             constexpr float angularSpeed = .5f;  // 弧度/秒

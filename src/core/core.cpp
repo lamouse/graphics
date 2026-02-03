@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include "core/core.hpp"
+#include "render_core/render_base.hpp"
 
 #include "render_core/render_core.hpp"
 #include "resource/resource.hpp"

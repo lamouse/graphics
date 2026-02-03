@@ -29,6 +29,10 @@ class BlitScreen {
         explicit BlitScreen(const Device& device, MemoryAllocator& memory_allocator,
                             PresentManager& present_manager, scheduler::Scheduler& scheduler);
         ~BlitScreen();
+        BlitScreen(const BlitScreen&) = delete;
+        auto operator=(const BlitScreen&) -> BlitScreen& = delete;
+        BlitScreen(BlitScreen&&) noexcept = delete;
+        auto operator=(BlitScreen&&) noexcept -> BlitScreen& = delete;
 
         void DrawToFrame(
             const std::function<std::optional<present::FramebufferTextureInfo>(

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/math_util.h"
-#include "common/class_traits.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 #include "core/frontend/framebuffer_layout.hpp"
 #include "framebuffer_config.hpp"
@@ -32,8 +31,10 @@ class Layer final {
                 const frame::FramebufferConfig& framebuffer, uint32_t stride)>& accelerateDisplay,
             vk::Sampler sampler, size_t image_index, const frame::FramebufferConfig& framebuffer,
             const layout::FrameBufferLayout& layout);
-        CLASS_NON_COPYABLE(Layer);
-        CLASS_NON_MOVEABLE(Layer);
+        Layer(const Layer&) = delete;
+        Layer(Layer&&) noexcept = delete;
+        auto operator=(const Layer&) -> Layer& = delete;
+        auto operator=(Layer&&) noexcept ->Layer& = delete;
 
     private:
         void CreateDescriptorPool();

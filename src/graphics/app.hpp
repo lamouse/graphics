@@ -1,7 +1,6 @@
 
 #pragma once
 #include <memory>
-#include "common/class_traits.hpp"
 #ifdef USE_QT
 #include "QT_window.hpp"
 #else
@@ -17,8 +16,10 @@ class RenderRegistry;
 class App {
     public:
         explicit App();
-        CLASS_NON_COPYABLE(App);
-        CLASS_NON_MOVEABLE(App);
+        App(const App&) = delete;
+        App(App&&) noexcept = delete;
+        auto operator=(const App&) -> App& = delete;
+        auto operator=(App&&) noexcept -> App& = delete;
         ~App();
 
     private:

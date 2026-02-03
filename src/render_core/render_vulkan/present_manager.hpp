@@ -7,7 +7,6 @@
 #include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/vulkan_common/memory_allocator.hpp"
 #include "render_core/render_vulkan/present/present_frame.hpp"
-#include "common/class_traits.hpp"
 
 namespace core::frontend {
 class BaseWindow;
@@ -24,8 +23,11 @@ class PresentManager {
         PresentManager(const vk::Instance& instance, core::frontend::BaseWindow& render_window,
                        const Device& device, MemoryAllocator& memory_allocator,
                        scheduler::Scheduler& scheduler, Swapchain& swapchain, SurfaceKHR& surface);
-        CLASS_NON_COPYABLE(PresentManager);
-        CLASS_NON_MOVEABLE(PresentManager);
+        PresentManager(const PresentManager&) = delete;
+        PresentManager(PresentManager&&) = delete;
+        auto operator=(const PresentManager&)-> PresentManager& = delete;
+        auto operator=(PresentManager&&) noexcept -> PresentManager& = delete;
+
         ~PresentManager() = default;
         /// Returns the last used presentation frame
         auto getRenderFrame() -> present::Frame*;

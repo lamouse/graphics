@@ -9,7 +9,6 @@
 #include "ecs/components/render_state_component.hpp"
 #include "effects/effect.hpp"
 #include "core/frame_info.hpp"
-#include "common/common_funcs.hpp"
 #include "world/world.hpp"
 const uint32_t PARTICLE_COUNT = 8192;
 
@@ -30,8 +29,11 @@ template <typename UBO, ParticleType Type>
     requires ByteSpanConvertible<UBO> && std::is_trivially_copyable_v<UBO>
 class Particle : public render::IComputeInstance {
     public:
-        CLASS_DEFAULT_MOVEABLE(Particle);
-        CLASS_NON_COPYABLE(Particle);
+        ~Particle() noexcept = default;
+        Particle(const Particle&) = delete;
+        Particle(Particle&&) noexcept = default;
+        auto operator=(const Particle&) -> Particle& = delete;
+        auto operator=(Particle&&) noexcept -> Particle& = default;
 
         [[nodiscard]] auto getUBOData() const -> std::vector<std::span<const std::byte>> override {
             return std::vector<std::span<const std::byte>>{u.as_byte_span()};

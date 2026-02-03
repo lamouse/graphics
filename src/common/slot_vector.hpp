@@ -8,7 +8,6 @@
 #include <cassert>
 
 #include "common_types.hpp"
-#include "common/class_traits.hpp"
 
 namespace common {
 struct SlotId {
@@ -25,8 +24,10 @@ template <class T>
     requires std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible_v<T>
 class SlotVector {
     public:
-        CLASS_NON_COPYABLE(SlotVector);
-        CLASS_NON_MOVEABLE(SlotVector);
+        SlotVector(const SlotVector&) = default;
+        auto operator=(const SlotVector&) ->SlotVector& = default;
+        SlotVector(SlotVector&&) noexcept = default;
+        auto operator=(SlotVector&&) noexcept -> SlotVector& = default;
         SlotVector() = default;
         class Iterator {
                 friend class SlotVector<T>;
@@ -147,8 +148,11 @@ class SlotVector {
 
         union Entry {
                 Entry() noexcept : dummy{} {}
-                CLASS_DEFAULT_COPYABLE(Entry);
-                CLASS_DEFAULT_MOVEABLE(Entry);
+                Entry(const Entry&) = default;
+                Entry(Entry&&) noexcept = default;
+                auto operator=(const Entry&) -> Entry& = default;
+                auto operator=(Entry&&) noexcept -> Entry& = default;
+
                 ~Entry() noexcept {}
 
                 NonTrivialDummy dummy;
@@ -185,7 +189,7 @@ class SlotVector {
 
         void Reserve(size_t new_capacity) noexcept {
             auto* const new_values =
-                new Entry[new_capacity];  // NOLINT(cppcoreguidelines-owning-memory)
+                new Entry[new_capacity];
             size_t index = 0;
             for (u64 bits : stored_bitset) {
                 u64 temp = bits;

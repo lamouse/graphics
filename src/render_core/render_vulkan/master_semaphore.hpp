@@ -1,10 +1,10 @@
 #pragma once
+#include "render_core/vulkan_common/vulkan_wrapper.hpp"
+
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <queue>
-#include "common/common_funcs.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 namespace render::vulkan {
 class Device;
 namespace semaphore {
@@ -12,8 +12,10 @@ class MasterSemaphore {
         using Waitable = std::pair<uint64_t, Fence>;
 
     public:
-        CLASS_NON_COPYABLE(MasterSemaphore);
-        CLASS_NON_MOVEABLE(MasterSemaphore);
+        MasterSemaphore(const MasterSemaphore&) = delete;
+        MasterSemaphore(MasterSemaphore&&) noexcept = delete;
+        auto operator=(const MasterSemaphore&) -> MasterSemaphore& = delete;
+        auto operator=(MasterSemaphore&&) noexcept -> MasterSemaphore& = delete;
         explicit MasterSemaphore(const Device& device);
         ~MasterSemaphore() = default;
         /// Returns the current logical tick.

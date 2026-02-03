@@ -42,9 +42,11 @@ template <typename PushConstants, render::PrimitiveTopology primitiveTopology, t
 class MeshInstance : public render::IMeshInstance {
     public:
         using UBOs = std::tuple<UBO*...>;
+        MeshInstance(const MeshInstance&) = delete;
+        MeshInstance(MeshInstance&&) noexcept = default;
+        auto operator=(const MeshInstance&) -> MeshInstance& = delete;
+        auto operator=(MeshInstance&&) noexcept ->MeshInstance& = default;
 
-        CLASS_DEFAULT_MOVEABLE(MeshInstance);
-        CLASS_NON_COPYABLE(MeshInstance);
         [[nodiscard]] auto getEntity() -> ecs::Entity& { return entity_; }
         ~MeshInstance() override = default;
         [[nodiscard]] auto getPushConstants() const -> std::span<const std::byte> override {
@@ -106,7 +108,7 @@ class MeshInstance : public render::IMeshInstance {
 
         MeshInstance() = default;
         ecs::Entity entity_;
-        ecs::RenderStateComponent* render_state;
+        ecs::RenderStateComponent* render_state{};
 
     private:
         UBOs ubos{};
@@ -116,7 +118,7 @@ class MeshInstance : public render::IMeshInstance {
         std::vector<render::TextureId> materials;
         mutable std::vector<std::span<const std::byte>> ubosSpans{
             std::tuple_size_v<decltype(ubos)>};
-        id_t id;
+        id_t id{};
 };
 
 inline auto build_render_command(const render::IMeshInstance& instance) -> render::DrawCommand{

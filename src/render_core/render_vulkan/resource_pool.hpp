@@ -1,5 +1,4 @@
 #pragma once
-#include "common/class_traits.hpp"
 #include <vector>
 namespace render::vulkan {
 namespace semaphore {
@@ -8,14 +7,14 @@ class MasterSemaphore;
 namespace resource {
 class ResourcePool {
     public:
-        explicit ResourcePool() = default;
         explicit ResourcePool(semaphore::MasterSemaphore* master_semaphore, size_t grow_step);
 
         virtual ~ResourcePool() = default;
-
-        CLASS_DEFAULT_COPYABLE(ResourcePool);
-        CLASS_DEFAULT_MOVEABLE(ResourcePool);
-
+        ResourcePool() = default;
+        ResourcePool(const ResourcePool&) = delete;
+        ResourcePool(ResourcePool&&) noexcept = default;
+        auto operator=(const ResourcePool&) -> ResourcePool& = delete;
+        auto operator=(ResourcePool&&) noexcept -> ResourcePool& = default;
     protected:
         auto commitResource() -> size_t;
 

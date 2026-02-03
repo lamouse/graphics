@@ -1,8 +1,11 @@
 #pragma once
 #include "core/frontend/window.hpp"
-#include "render_core/render_base.hpp"
 #include "resource/resource.hpp"
 #include <memory>
+
+namespace render {
+    class RenderBase;
+}
 namespace graphics::input {
 class InputSystem;
 }
@@ -11,8 +14,10 @@ class System {
     public:
         System();
         ~System();
-        CLASS_NON_COPYABLE(System);
-        CLASS_NON_MOVEABLE(System);
+        System(const System&) = delete;
+        System(System&&) noexcept = default;
+        auto operator=(const System&) = delete;
+        auto operator=(System&&) noexcept -> System& = default;
         auto Render() -> render::RenderBase&;
         [[nodiscard]] auto Render() const -> render::RenderBase&;
         auto ResourceManager() -> graphics::ResourceManager&;

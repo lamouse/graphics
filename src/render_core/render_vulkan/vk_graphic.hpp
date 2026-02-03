@@ -10,7 +10,6 @@
 #include "render_core/render_vulkan/vk_imgui.hpp"
 #include "render_core/graphic.hpp"
 #include "core/frontend/window.hpp"
-#include "common/class_traits.hpp"
 #include "render_core/framebuffer_config.hpp"
 #include "render_core/render_vulkan/present/present_frame.hpp"
 namespace render::vulkan {
@@ -36,8 +35,10 @@ class VulkanGraphics : public render::Graphic {
                                 MemoryAllocator& memory_allocator_,
                                 scheduler::Scheduler& scheduler_, ShaderNotify& shader_notify_);
 
-        CLASS_NON_COPYABLE(VulkanGraphics);
-        CLASS_NON_MOVEABLE(VulkanGraphics);
+        VulkanGraphics(const VulkanGraphics&) = delete;
+        VulkanGraphics(VulkanGraphics&&)noexcept = delete;
+        auto operator=(const VulkanGraphics&) -> VulkanGraphics& = delete;
+        auto operator=(VulkanGraphics&&) noexcept -> VulkanGraphics& = delete;
         void clean(const CleanValue& cleanValue) override;
         void dispatchCompute(const IComputeInstance& instance) override;
         auto uploadModel(const IMeshData& instance) -> MeshId override;

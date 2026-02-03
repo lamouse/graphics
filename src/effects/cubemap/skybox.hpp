@@ -13,8 +13,10 @@ struct SkyUBO {
 };
 class SkyBox {
     public:
-        CLASS_DEFAULT_MOVEABLE(SkyBox);
-        CLASS_NON_COPYABLE(SkyBox);
+        SkyBox(const SkyBox&) = delete;
+        SkyBox(SkyBox&&) = default;
+        auto operator=(const SkyBox&) ->SkyBox& = delete;
+        auto operator=(SkyBox&&) noexcept -> SkyBox& = default;
         ~SkyBox() = default;
         SkyBox(graphics::ResourceManager& manager) : id(getCurrentId()) {
             entity_ = getEffectsScene().createEntity("SkyBox" + std::to_string(id));

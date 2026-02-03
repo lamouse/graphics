@@ -4,18 +4,17 @@
 #pragma once
 
 #include <utility>
-#include "common/class_traits.hpp"
 
 namespace detail {
 template <class F>
 class ScopeGuard {
-        CLASS_NON_COPYABLE(ScopeGuard);
-
     private:
         F f;
         bool active;
 
     public:
+        ScopeGuard(const ScopeGuard&) = delete;
+        auto operator=(const ScopeGuard&) -> ScopeGuard& = delete;
         constexpr ScopeGuard(F f_) : f(std::move(f_)), active(true) {}
         constexpr ~ScopeGuard() {
             if (active) {

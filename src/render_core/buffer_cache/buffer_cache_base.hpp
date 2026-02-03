@@ -1,6 +1,5 @@
 #pragma once
 #include "common/common_types.hpp"
-#include "common/common_funcs.hpp"
 #include "common/slot_vector.hpp"
 #include "common/literals.hpp"
 #include "render_core/surface.hpp"
@@ -54,7 +53,12 @@ struct IndirectParams {
 class BufferCacheInfo {
     public:
         BufferCacheInfo() noexcept = default;
-        CLASS_NON_COPYABLE(BufferCacheInfo);
+        ~BufferCacheInfo() noexcept = default;
+        BufferCacheInfo(const BufferCacheInfo&) = delete;
+        BufferCacheInfo(BufferCacheInfo&&) noexcept = default;
+        auto operator=(const BufferCacheInfo&) -> BufferCacheInfo& = delete;
+        auto operator=(BufferCacheInfo&&) noexcept -> BufferCacheInfo& = default;
+
 
         Binding index_buffer;
         std::array<Binding, NUM_VERTEX_BUFFERS> vertex_buffers;
@@ -77,6 +81,10 @@ class BufferCache : public BufferCacheInfo {
 
     public:
         explicit BufferCache(Runtime& runtime_);
+        BufferCache(const BufferCache&) = delete;
+        BufferCache(BufferCache&&) noexcept = delete;
+        auto operator=(const BufferCache&) ->BufferCache& = delete;
+        auto operator=(BufferCache&&) noexcept -> BufferCache& = delete;
         void TickFrame();
         auto addVertexBuffer(const void* data, u32 size) -> BufferId;
         auto addIndexBuffer(const void* data, u32 size) -> BufferId;

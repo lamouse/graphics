@@ -1,7 +1,6 @@
 #pragma once
 #include "resource/obj/bone_info.hpp"
 #include "resource/obj/animation_model.hpp"
-#include "common/class_traits.hpp"
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <resource/obj/bone.hpp>
@@ -21,8 +20,10 @@ class Animation {
     public:
         Animation() = default;
         ~Animation() = default;
-        CLASS_NON_COPYABLE(Animation);
-        CLASS_NON_MOVEABLE(Animation);
+        Animation(const Animation&) = delete;
+        Animation(Animation&&) noexcept = delete;
+        auto operator=(const Animation&) -> Animation& = delete;
+        auto operator=(Animation&&) noexcept -> Animation& = delete;
         Animation(std::string_view path, Model* model);
         auto findBone(const std::string_view name) -> Bone* {
             auto iter =

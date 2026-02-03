@@ -1,5 +1,4 @@
 #pragma once
-#include "common/class_traits.hpp"
 #include "world/render_registry.hpp"
 #include "resource/id.hpp"
 #include "ecs/scene/scene.hpp"
@@ -95,8 +94,10 @@ class World {
         [[nodiscard]] auto getScene() -> ecs::Scene&;
         auto get_module_count() -> size_t;
         ~World();
-        CLASS_DEFAULT_MOVEABLE(World);
-        CLASS_NON_COPYABLE(World);
+        World(const World&) = delete;
+        World(World&&) = delete;
+        auto operator=(const World&) -> World& = delete;
+        auto operator=(World&&) noexcept -> World = delete;
 
         void remove_light(id_t id) {
             auto light_iterator = light_index.find(id);
