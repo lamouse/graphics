@@ -52,7 +52,7 @@ void Animation::readHierarchyData(AssimpNodeData& rootDest, const aiNode* rootSr
     rootDest.childrenCount = static_cast<int>(rootSrc->mNumChildren);
 
     std::stack<NodePair> stack;
-    stack.push({&rootDest, rootSrc});
+    stack.push({.dest=&rootDest, .src=rootSrc});
 
     while (!stack.empty()) {
         NodePair current = stack.top();
