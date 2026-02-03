@@ -32,6 +32,7 @@ MasterSemaphore::MasterSemaphore(const Device& device) : device_(device) {
     // Validation layers have a bug where they fail to track resource usage when using timeline
     // semaphores and synchronizing with GetSemaphoreCounterValue. To workaround this issue, have
     // a separate thread waiting for each timeline semaphore value.
+    // NOLINTNEXTLINE
     debug_thread_ = std::jthread([this](std::stop_token stop_token) {
         u64 counter = 0;
         while (!stop_token.stop_requested()) {

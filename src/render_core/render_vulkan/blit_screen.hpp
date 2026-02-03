@@ -1,9 +1,7 @@
 #pragma once
 
-#include "common/common_types.hpp"
 #include "common/settings_enums.hpp"
 #include "render_core/framebuffer_config.hpp"
-#include "render_core/vulkan_common/vulkan_wrapper.hpp"
 #include "render_core/render_vulkan/present/present_frame.hpp"
 #include <list>
 #include <memory>
