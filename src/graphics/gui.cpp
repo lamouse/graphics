@@ -2,6 +2,7 @@
 #include "common/file.hpp"
 #include "imgui.h"
 #include "imGuIZMOquat.h"
+#include <ImGuiFileDialog.h>
 
 #include "ecs/components/tag_component.hpp"
 #include "ecs/components/render_state_component.hpp"
@@ -47,6 +48,11 @@ static void ShowExampleMenuFile() {
     if (ImGui::MenuItem("New")) {
     }
     if (ImGui::MenuItem("Open", "Ctrl+O")) {
+        IGFD::FileDialogConfig config;
+        config.path = ".";
+        config.flags = ImGuiFileDialogFlags_Default | ImGuiFileDialogFlags_ShowDevicesButton;
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*",
+                                                config);
     }
     if (ImGui::BeginMenu("Open Recent")) {
         ImGui::MenuItem("fish_hat.c");
@@ -623,6 +629,19 @@ void run_all_imgui_event() {
     }
 }
 void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
+
+    // display
+    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {  // action if OK
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            // action
+        }
+
+        // close
+        ImGuiFileDialog::Instance()->Close();
+    }
+
     if (!menuData.show_status) {
         return;
     }
@@ -680,7 +699,7 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
     }
     ImGui::Separator();
     static std::unique_ptr<effects::ModelEffectInfo> model_info;
-    if(not model_info){
+    if (not model_info) {
         model_info = std::make_unique<effects::ModelEffectInfo>();
     }
     auto model_path_fs = std::filesystem::path(model_path);
@@ -696,7 +715,8 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
     ImGui::SliderFloat("scale", &model_info->default_scale, 0.01f, 10.f);
     static std::unique_ptr<render::DynamicPipelineState> current_pipeline_state;
     if (!current_pipeline_state) {
-        current_pipeline_state = std::make_unique<render::DynamicPipelineState>(model_info->pipeline_state);
+        current_pipeline_state =
+            std::make_unique<render::DynamicPipelineState>(model_info->pipeline_state);
     }
     ImGui::Separator();
     ImGui::Text("Pipeline State:");
@@ -705,17 +725,21 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
     if (ImGui::Button("确认")) {
         std::filesystem::path model(model_path);
         use_model = true;
-        if(model_info->copy_local){
-            auto path  = (common::FS::get_module_path(common::FS::ModuleType::Model) / model_path_fs.filename()).string();
-            auto rel_path = std::filesystem::relative(path, common::FS::get_current_path()).generic_string();
+        if (model_info->copy_local) {
+            auto path = (common::FS::get_module_path(common::FS::ModuleType::Model) /
+                         model_path_fs.filename())
+                            .string();
+            auto rel_path =
+                std::filesystem::relative(path, common::FS::get_current_path()).generic_string();
             model_info->source_path = rel_path;
         };
-        common::FS::copy_file(model,
-                          common::FS::get_module_path(common::FS::ModuleType::Model) / model.filename());
+        common::FS::copy_file(
+            model, common::FS::get_module_path(common::FS::ModuleType::Model) / model.filename());
 
         if (!mtl_path.empty()) {
-            common::FS::copy_file(mtl_path, common::FS::get_module_path(common::FS::ModuleType::Model) /
-                                            std::filesystem::path(mtl_path).filename());
+            common::FS::copy_file(mtl_path,
+                                  common::FS::get_module_path(common::FS::ModuleType::Model) /
+                                      std::filesystem::path(mtl_path).filename());
         }
         model_info->pipeline_state = *current_pipeline_state;
         current_pipeline_state.reset();
@@ -733,7 +757,7 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
         graphics::effects::save_model_to_asset(tmp);
         return tmp;
     }
-    if(!confirm_add_model){
+    if (!confirm_add_model) {
         current_pipeline_state.reset();
         model_info.reset();
     }

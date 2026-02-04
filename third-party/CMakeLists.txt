@@ -9,3 +9,4 @@ set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
 
 add_subdirectory(imgui)
 add_subdirectory(imguizmo.quat)
+add_subdirectory(ImGuiFileDialog)
