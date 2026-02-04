@@ -12,13 +12,8 @@ add_executable(
   resource_test.cpp
 )
 
-add_custom_command(TARGET ${TEST_NAME} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TEST_NAME}>/test"
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different
-      ${CMAKE_SOURCE_DIR}/images/test/test.jpg
-      "$<TARGET_FILE_DIR:${TEST_NAME}>/test"
-      COMMENT "Copying test need resource"
-  )
+
+file(COPY ${CMAKE_SOURCE_DIR}/images/test DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test/image)
 target_link_libraries(
   ${TEST_NAME} PRIVATE GTest::gtest GTest::gtest_main absl::strings resource
 )
@@ -26,6 +21,7 @@ target_link_libraries(
   ${TEST_NAME} PRIVATE render-core
 )
 target_compile_definitions(${TEST_NAME} PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+target_compile_definitions(${TEST_NAME} PRIVATE IMAGE_RESOURCE_PATH="${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 if(TARGET Vulkan::Headers)
     target_link_libraries(${TEST_NAME} PRIVATE Vulkan::Headers)
 else()

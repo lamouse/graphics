@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <ktx.h>
+#include <span>
 
 namespace resource::image {
 class KtxImage {
@@ -29,4 +30,14 @@ class KtxImage {
  * @return std::string ktx
  */
 auto createKtxImage(std::string_view sourcePath, std::string_view dstDir) -> std::string;
+
+/**
+ * @brief Create a Cube Map Ktx Image object order right left top bottom front back or
+    POSITIVE_X NEGATIVE_X POSITIVE_Y NEGATIVE_Y POSITIVE_Z NEGATIVE_Z
+ *
+ * @param images
+ * @param dstDir
+ * @return std::string
+ */
+auto createCubeMapKtxImage(std::span<std::string_view, 6> images, std::string_view name, std::string_view dstDir) -> std::string;
 }  // namespace resource::image
