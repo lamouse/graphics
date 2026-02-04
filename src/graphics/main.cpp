@@ -1,12 +1,5 @@
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
-#ifdef USE_QT
-#include <QScreen>
-#include <QtQml/QQmlApplicationEngine>
-#include <QWindow>
-#include <QApplication>
-#include <QFontDatabase>
-#endif
 #if defined(_WIN32)
 #include <windows.h>
 #endif
@@ -19,29 +12,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) -> int {
 #endif
     try {
         settings::load_settings();
-#ifdef USE_QT
-        QApplication::setHighDpiScaleFactorRoundingPolicy(
-            Qt::HighDpiScaleFactorRoundingPolicy::Floor);
-        QApplication::addLibraryPath("plugins");
-        QApplication app(argc, argv);
-
-        // 加载中文字体
-        int chineseId = QFontDatabase::addApplicationFont("fonts/AlibabaPuHuiTi-3-55-Regular.otf");
-        QString chineseFamily = QFontDatabase::applicationFontFamilies(chineseId).at(0);
-
-        // 加载图标字体（例如 FontAwesome）
-        int iconId = QFontDatabase::addApplicationFont("fonts/MesloLGS NF Regular.ttf");
-        QString iconFamily = QFontDatabase::applicationFontFamilies(iconId).at(0);
-
-        // 设置全局默认字体为中文字体
-        QApplication::setFont(QFont(chineseFamily, 10));
-
-#endif
         graphics::App g_app;
-
-#ifdef USE_QT
-        QApplication::exec();
-#endif
         settings::save_settings();
     } catch (const ::std::exception& e) {
         ::spdlog::error(e.what());

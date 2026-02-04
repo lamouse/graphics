@@ -21,7 +21,6 @@ set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
 option(TRACY_ENABLE "Enable Tracy profiling support" ON)
 option(TRACY_ON_DEMAND "Tracy on on demand" ON)
-option(USE_QT "use qt" ON)
 
 # 设置可执行文件输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
@@ -58,11 +57,6 @@ find_package(Tracy CONFIG REQUIRED)
 find_package(embree CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
-
-if(USE_QT)
-        find_package(Qt6 CONFIG REQUIRED COMPONENTS Widgets Quick)
-        set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate qmlls.ini for QML LS")
-endif()
 
 # need vcpkg end
 add_subdirectory(third-party)

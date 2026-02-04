@@ -29,7 +29,7 @@
 /////////////////////////////////
 
 // the slash's buttons in path cna be used for quick select parallles directories
-#define USE_QUICK_PATH_SELECT
+// #define USE_QUICK_PATH_SELECT
 
 /////////////////////////////////
 //// THUMBNAILS /////////////////
