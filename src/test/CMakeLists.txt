@@ -2,14 +2,25 @@
 
 find_package(GTest CONFIG REQUIRED)
 set(TEST_NAME all_test)
+
+
 add_executable(
   ${TEST_NAME}
   a.cpp
   vulkan_test.cpp
   common_test.cpp
+  resource_test.cpp
 )
+
+add_custom_command(TARGET ${TEST_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TEST_NAME}>/test"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${CMAKE_SOURCE_DIR}/images/test/test.jpg
+      "$<TARGET_FILE_DIR:${TEST_NAME}>/test"
+      COMMENT "Copying test need resource"
+  )
 target_link_libraries(
-  ${TEST_NAME} PRIVATE GTest::gtest GTest::gtest_main absl::strings
+  ${TEST_NAME} PRIVATE GTest::gtest GTest::gtest_main absl::strings resource
 )
 target_link_libraries(
   ${TEST_NAME} PRIVATE render-core

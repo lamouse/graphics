@@ -22,4 +22,11 @@ class KtxImage {
     private:
         ktxTexture* handle = nullptr;
 };
+/**
+ * @brief Create a Ktx Image
+ *
+ * @param path
+ * @return std::string ktx
+ */
+auto createKtxImage(std::string_view sourcePath, std::string_view dstDir) -> std::string;
 }  // namespace resource::image
