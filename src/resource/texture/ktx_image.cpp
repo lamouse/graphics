@@ -1,9 +1,11 @@
 #include "ktx_image.hpp"
-#include "resource/texture/image.hpp"
 #include <stdexcept>
 #include <filesystem>
-#include <ranges>
 #include "common/file.hpp"
+#if _WIN32
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <boost/process.hpp>
 
 namespace {
 void check_ktx_error(KTX_error_code code) {
@@ -25,71 +27,57 @@ KtxImage::~KtxImage() {
 
 auto createKtxImage(std::string_view path, std::string_view dstDir) -> std::string {
     std::filesystem::path src_path(path);
-    Image image(path);
-    ktxTextureCreateInfo ci;
-    ci.baseWidth = image.getWidth();
-    ci.baseHeight = image.getHeight();
-    ci.baseDepth = 1;
-    ci.numLevels = image.getMipLevels();
-    ci.numFaces = 1;
-    ci.numLayers = 1;
-    ci.isArray = false;
-    ci.generateMipmaps = false;
-    ci.numDimensions = 2;
-    ci.vkFormat = 44;
-
-    ktxTexture2* ktx2 = nullptr;
-    check_ktx_error(ktxTexture2_Create(&ci, KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2));
-
-    check_ktx_error(ktxTexture_SetImageFromMemory(reinterpret_cast<ktxTexture*>(ktx2), 0, 0, 0,
-                                                  image.data().data(), image.data().size()));
-
     std::filesystem::path dst_path(dstDir);
-
     src_path.replace_extension(".ktx2");
     common::FS::create_dir(dst_path);
     dst_path /= src_path.filename();
-    check_ktx_error(
-        ktxTexture_WriteToNamedFile(reinterpret_cast<ktxTexture*>(ktx2), dst_path.string().data()));
+    namespace bp = boost::process;
+    boost::asio::io_context context;
+    auto c = bp::environment::current();
+    // we need to use a value, since windows needs wchar_t.
+    std::vector<bp::environment::key_value_pair> my_env{c.begin(), c.end()};
+    my_env.emplace_back("KTX_TOOL_PATH=./tools");
+    auto exe = bp::environment::find_executable("ktx", my_env);
+
+    bp::process proc(context, exe,
+                     {"create", "--generate-mipmap", "--format", "B8G8R8A8_UNORM", "--assign-tf",
+                      "srgb", path.data(), dst_path.generic_string()},
+                     bp::process_environment(my_env));
+    if (proc.wait() != 0) {
+        throw std::runtime_error("wait ktx process!");
+    }
+    if (proc.exit_code() != 0) {
+        throw std::runtime_error("ktx process execute error!");
+    }
     return dst_path.string();
 }
 
-auto createCubeMapKtxImage(std::span<std::string_view, 6> images, std::string_view name, std::string_view dstDir)
-    -> std::string {
-    Image image(images[0]);
-    ktxTextureCreateInfo ci;
-    ci.baseDepth = 1;
-    ci.numFaces = 6;
-    ci.numLayers = 1;
-    ci.isArray = true;
-    ci.generateMipmaps = false;
-    ci.numDimensions = 2;
-    ci.vkFormat = 44;
-    ci.baseWidth = image.getWidth();
-    ci.baseHeight = image.getHeight();
-    ci.numLevels = image.getMipLevels();
-
-    ktxTexture2* ktx2 = nullptr;
-    check_ktx_error(ktxTexture2_Create(&ci, KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2));
-
-    check_ktx_error(ktxTexture_SetImageFromMemory(reinterpret_cast<ktxTexture*>(ktx2), 0, 0, 0,
-                                                  image.data().data(), image.data().size()));
-
-    for (const auto& [index, image_path] : std::views::enumerate(images)) {
-        if (index == 0) {
-            continue;
-        }
-        Image other_image(image_path);
-        check_ktx_error(ktxTexture_SetImageFromMemory(reinterpret_cast<ktxTexture*>(ktx2), 0, 0,
-                                                      index, other_image.data().data(),
-                                                      other_image.data().size()));
-    }
+auto createCubeMapKtxImage(std::span<std::string_view, 6> images, std::string_view name,
+                           std::string_view dstDir) -> std::string {
     std::filesystem::path dst_path(dstDir);
-
     common::FS::create_dir(dst_path);
     dst_path /= (std::string(name) + ".ktx2");
-    check_ktx_error(
-        ktxTexture_WriteToNamedFile(reinterpret_cast<ktxTexture*>(ktx2), dst_path.string().data()));
+    namespace bp = boost::process;
+    boost::asio::io_context context;
+    auto c = bp::environment::current();
+    // we need to use a value, since windows needs wchar_t.
+    std::vector<bp::environment::key_value_pair> my_env{c.begin(), c.end()};
+    my_env.emplace_back("KTX_TOOL_PATH=./tools");
+    auto exe = bp::environment::find_executable("ktx", my_env);
+
+    bp::process proc(
+        context, exe,
+        {"create", "--generate-mipmap", "--format", "R8G8B8A8_SRGB", "--cubemap", "--assign-tf",
+         "srgb", images[0].data(), images[1].data(), images[2].data(), images[3].data(),
+         images[4].data(), images[5].data(), dst_path.generic_string()},
+        bp::process_environment(my_env));
+    if (proc.wait() != 0) {
+        throw std::runtime_error("wait ktx process!");
+    }
+    if (proc.exit_code() != 0) {
+        throw std::runtime_error("ktx process execute error!");
+    }
+
     return dst_path.string();
 }
 

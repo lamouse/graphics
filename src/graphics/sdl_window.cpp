@@ -147,7 +147,7 @@ void SDLWindow::pullEvents() {
     SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
-        auto imgui_event = [e]() -> void { ImGui_ImplSDL3_ProcessEvent(&e); };
+        auto imgui_event = [event = e]() -> void { ImGui_ImplSDL3_ProcessEvent(&event); };
         ui::add_imgui_event(imgui_event);
         if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             e.window.windowID == SDL_GetWindowID(window_)) {

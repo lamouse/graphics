@@ -9,6 +9,7 @@
 #include "world/world.hpp"
 #include "effects/model/multi_mesh_model.hpp"
 #include "effects/model/model.hpp"
+#include "effects/cubemap/skybox.hpp"
 #include "graphics/gui.hpp"
 #include "resource/mesh_instance.hpp"
 #include "system/pick_system.hpp"
@@ -65,6 +66,8 @@ struct System::Impl {
                     }
                 }, model);
             }
+            auto sky_box = std::make_shared<graphics::effects::SkyBox>(*resourceManager);
+            world_->addDrawable(sky_box);
             graphics::PickingSystem::commit();
         }
 

@@ -40,7 +40,14 @@
     "features": {
         "classic-dependencies":{
             "description":"need classic mode",
-            "dependencies": ["ktx"]
+            "dependencies": [
+                {
+                "name": "ktx",
+                    "features": [
+                        "tools"
+                    ]
+            }
+        ]
         }
     }
 }

@@ -1,5 +1,6 @@
 # 找到 toktx（可从 PATH 或指定路径）
 find_program(TOKTX_EXECUTABLE ktx REQUIRED
+    PATHS ${CMAKE_CURRENT_SOURCE_DIR/tool}
     PATHS ENV PATH
     DOC "Path to toktx executable from KTX-Software"
 )
@@ -134,9 +135,28 @@ foreach(TEXTURE_FILE IN LISTS IMAGE_FILES)
     )
     list(APPEND KTX_OUTPUTS "${TEXTURE_OUT_PATH}")
 endforeach()
+set(IMAGE_TOOL_DEPEND "")
+set(IMAGT_TOOLS "")
+if(WIN32)
+list(APPEND IMAGE_TOOL_DEPEND ktx.exe ktx.dll)
+endif()
+
+foreach(DEPEND IN LISTS IMAGE_TOOL_DEPEND)
+    set(DEPEND_OUT_PUT_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools)
+    set(OUT_PATH ${DEPEND_OUT_PUT_PATH}/${DEPEND})
+    add_custom_command(
+        OUTPUT ${OUT_PATH}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPEND_OUT_PUT_PATH}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/tool/${DEPEND}"
+        ${OUT_PATH}
+        COMMENT "copy ktx utils"
+    )
+    list(APPEND IMAGT_TOOLS "${OUT_PATH}")
+endforeach()
 
 # 创建总目标
-add_custom_target(skyboxes_ktx2 DEPENDS ${KTX2_TARGETS} ${KTX_OUTPUTS})
+add_custom_target(skyboxes_ktx2 DEPENDS ${KTX2_TARGETS} ${KTX_OUTPUTS} ${IMAGT_TOOLS})
 
 set(TEXTURE_PATH_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include PARENT_SCOPE)
 set(TEXTURE_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include)

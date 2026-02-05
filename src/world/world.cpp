@@ -70,8 +70,6 @@ void World::process_mouse_input(core::FrameInfo& frameInfo, graphics::input::Mou
         return;
     }
     if (mouse->IsPressed(graphics::input::MouseButton::Left)) {
-        auto mouse_axis = mouse->GetAxis();
-
         if (!is_pick) {
             auto origin = mouse->GetMouseOrigin();
             auto pick_result = graphics::PickingSystem::pick(

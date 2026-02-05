@@ -28,7 +28,7 @@ endif()
 target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${SHADER_PATH_INCLUDE})
 target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${MOUDLE_PATH_INCLUDE})
 target_include_directories(${LIB_RESOURCE_NAME} PRIVATE ${TEXTURE_PATH_INCLUDE})
-target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE spdlog::spdlog glm::glm ecs Imgui::Imgui absl::strings)
+target_link_libraries(${LIB_RESOURCE_NAME} PRIVATE spdlog::spdlog glm::glm ecs Imgui::Imgui absl::strings Boost::process)
 target_link_libraries(${LIB_RESOURCE_NAME} PUBLIC nlohmann_json::nlohmann_json KTX::ktx assimp::assimp)
 
 # 设置动态库/静态库生成路径
