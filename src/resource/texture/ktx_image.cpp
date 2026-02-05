@@ -87,7 +87,7 @@ auto createCubeMapKtxImage(std::span<std::string_view, 6> images, std::string_vi
     std::filesystem::path dst_path(dstDir);
 
     common::FS::create_dir(dst_path);
-    dst_path /= (std::string(name) + "ktx2");
+    dst_path /= (std::string(name) + ".ktx2");
     check_ktx_error(
         ktxTexture_WriteToNamedFile(reinterpret_cast<ktxTexture*>(ktx2), dst_path.string().data()));
     return dst_path.string();
