@@ -40,7 +40,7 @@ auto createKtxImage(std::string_view path, std::string_view dstDir) -> std::stri
     auto exe = bp::environment::find_executable("ktx", my_env);
 
     bp::process proc(context, exe,
-                     {"create", "--generate-mipmap", "--format", "B8G8R8A8_UNORM", "--assign-tf",
+                     {"create", "--generate-mipmap", "--format", "B8G8R8A8_SRGB", "--assign-tf",
                       "srgb", path.data(), dst_path.generic_string()},
                      bp::process_environment(my_env));
     if (proc.wait() != 0) {

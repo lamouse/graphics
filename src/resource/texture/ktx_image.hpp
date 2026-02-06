@@ -33,7 +33,7 @@ auto createKtxImage(std::string_view sourcePath, std::string_view dstDir) -> std
 
 /**
  * @brief Create a Cube Map Ktx Image object order right left top bottom front back or
-    POSITIVE_X NEGATIVE_X POSITIVE_Y NEGATIVE_Y POSITIVE_Z NEGATIVE_Z
+    posx negx posy negy posz negz
  *
  * @param images
  * @param dstDir
