@@ -29,8 +29,6 @@ export enum class MemoryUsage {
 };
 
 export class MemoryAllocator {
-    friend class MemoryAllocation;
-
     public:
         /**
          * Construct memory allocator
