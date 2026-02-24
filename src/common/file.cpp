@@ -104,12 +104,6 @@ auto create_dir(const std::filesystem::path& dirPath) -> bool{
     return false;
 }
 
-void copy_file(const std::string& src, const std::string& dst) {
-    fs::path src_path(src);
-    fs::path dst_path(dst);
-    fs::copy(src_path, dst_path, fs::copy_options::update_existing);
-}
-
 void copy_file(const std::filesystem::path& src, const std::filesystem::path& dst){
     fs::copy(src, dst, fs::copy_options::update_existing);
 }
