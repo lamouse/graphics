@@ -4,7 +4,7 @@
 #include "effects/model/model.hpp"
 #include "common/file.hpp"
 #include <nlohmann/json.hpp>
-
+#include <fstream>
 constexpr std::string_view MODEL_ASSET_PATH = "models";
 namespace graphics::effects {
 namespace {

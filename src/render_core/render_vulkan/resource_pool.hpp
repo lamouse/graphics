@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "common/common_types.hpp"
 namespace render::vulkan {
 namespace semaphore {
 class MasterSemaphore;
@@ -31,7 +32,7 @@ class ResourcePool {
         semaphore::MasterSemaphore* master_semaphore_{};
         size_t grow_step_ = 0;      ///< Number of new resources created after an overflow
         size_t hint_iterator_ = 0;  ///< Hint to where the next free resources is likely to be found
-        std::vector<uint64_t> ticks_;  ///< Ticks for each resource
+        std::vector<u64> ticks_;  ///< Ticks for each resource
 };
 }  // namespace resource
 

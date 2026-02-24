@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <array>
+#include <cstddef>
 using u8 = std::uint8_t;    ///< 8-bit unsigned byte
 using u16 = std::uint16_t;  ///< 16-bit unsigned short
 using u32 = std::uint32_t;  ///< 32-bit unsigned word
