@@ -21,6 +21,7 @@
         "qtbase",
         "qtdeclarative",
         "nlohmann-json",
+        "tomlplusplus",
         {
             "name": "sdl3",
             "features": [
