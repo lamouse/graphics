@@ -152,7 +152,7 @@ void PresentManager::copyToSwapchain(present::Frame* frame) {
 }
 
 void PresentManager::copyToSwapchainImpl(present::Frame* frame) {
-    ZoneScopedN("PresentManager::copyToSwapchainImpl()");
+    ZoneScoped;
     // If the size of the incoming frames has changed, recreate the swapchain
     // to account for that.
     const bool is_suboptimal = swapchain_.needsRecreation();
@@ -284,7 +284,6 @@ void PresentManager::copyToSwapchainImpl(present::Frame* frame) {
 }
 
 auto PresentManager::getRenderFrame() -> present::Frame* {
-    ZoneScopedN("PresentManager::getRenderFrame()");
     // Wait for free presentation frames
     std::unique_lock lock{free_mutex_};
     free_cv_.wait(lock, [this] { return !free_queue_.empty(); });

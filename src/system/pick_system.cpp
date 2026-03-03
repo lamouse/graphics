@@ -23,7 +23,7 @@ void PickingSystem::update_transform(id_t id, const ecs::TransformComponent& tra
 }
 
 void PickingSystem::commit() {
-    ZoneScopedN("PickingSystem::commit");
+    ZoneScoped;
     auto* picker = get_embree_picker();
     picker->commit();
     picker->warmUp();

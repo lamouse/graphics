@@ -115,7 +115,7 @@ void Scheduler::acquireNewChunk() {
 }
 
 void Scheduler::waitWorker() {
-    ZoneScopedN("Scheduler::waitWorker()");
+    ZoneScoped;
     dispatchWork();
 
     // Ensure the queue is drained.

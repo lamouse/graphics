@@ -145,7 +145,7 @@ void EmbreePicker::updateTransform(id_t id, const ecs::TransformComponent& trans
     rtcCommitGeometry(geometry);
 }
 void EmbreePicker::commit() {
-    ZoneScopedN("EmbreePicker::commit");
+    ZoneScoped;
     rtcCommitScene(scene_);
     rtcCommitScene(main_scene_);
 }
@@ -154,7 +154,7 @@ void EmbreePicker::warmUp() { warmup_embree(main_scene_); }
 
 auto EmbreePicker::pick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
     -> std::optional<PickResult> {
-    ZoneScopedN("EmbreePicker::pick");
+    ZoneScoped;
 
     RTCRayHit ray_hit{};
     ray_hit.ray.org_x = rayOrigin.x;

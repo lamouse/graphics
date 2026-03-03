@@ -772,7 +772,6 @@ void VulkanGraphics::TickFrame() {
 
 template <typename Func>
 void VulkanGraphics::PrepareDraw(Func&& draw_func) {
-    ZoneScopedN("VulkanGraphics::PrepareDraw()");
     GraphicsPipeline* const pipeline{
         pipeline_cache.currentGraphicsPipeline(current_primitive_topology)};
     if (!pipeline) {
