@@ -6,9 +6,9 @@ set(TEST_NAME all_test)
 
 add_executable(
   ${TEST_NAME}
-  a.cpp
   vulkan_test.cpp
   common_test.cpp
+  effect_test.cpp
   resource_test.cpp
 )
 
