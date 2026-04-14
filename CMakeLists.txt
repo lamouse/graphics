@@ -49,7 +49,7 @@ endif()
 find_package(SDL3 CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
-find_package(VulkanHeaders CONFIG)
+# find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
@@ -106,6 +106,10 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 include(ClangFormat)
+include(CPM)
+# CPMAddPackage(
+#   URI "gh:KhronosGroup/Vulkan-Headers@1.4.328"
+# )
 enable_testing()
 
 add_subdirectory(shader)
