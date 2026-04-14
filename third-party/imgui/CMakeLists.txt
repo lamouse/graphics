@@ -89,32 +89,3 @@ set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 message(STATUS "imgui Target architecture: docking")
-install(
-    TARGETS ${PROJECT_NAME}
-    EXPORT "${TARGETS_EXPORT_NAME}"
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(EXPORT "${TARGETS_EXPORT_NAME}"
-    FILE "${TARGETS_EXPORT_NAME}.cmake"
-    NAMESPACE imgui::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/imgui"
-)
-
-configure_package_config_file(CMakeModules/imguiConfig.cmake.in
-    ${PROJECT_NAME}Config.cmake
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/imgui"
-)
-write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake
-    COMPATIBILITY SameMajorVersion
-    ARCH_INDEPENDENT
-)
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/imgui"
-)
-
-install(DIRECTORY src/imgui TYPE INCLUDE FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")

@@ -284,13 +284,6 @@ auto ResourceManager::getMeshIndics(render::MeshId id) -> std::span<uint32_t> {
 }
 
 ResourceManager::ResourceManager(render::Graphic* graphic_) : graphic(graphic_) {
-    using json = nlohmann::json;
-    std::ifstream f(model::MODEL_HASH_PATH);
-    json j;
-    f >> j;
-    for (const auto& m : j["assets"]) {
-        model_file_hash[m["path"]] = m["hash"];
-    }
 
     initializeDefaultTextures();
 }

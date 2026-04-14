@@ -1,7 +1,9 @@
+option(USE_MINGW OFF)
 if(WIN32)
         if(CMAKE_C_COMPILER MATCHES "gcc" OR CMAKE_CXX_COMPILER MATCHES ".*/g\\+\\+$")
                 message(STATUS "Compiler is MinGW GCC on Windows")
                 set(VCPKG_TARGET_TRIPLET "x64-mingw-dynamic" CACHE STRING "target triplet" FORCE)
+                set(USE_MINGW ON CACHE BOOL "Use vcpkg for dependencies" FORCE)
         endif()
 endif()
 

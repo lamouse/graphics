@@ -31,15 +31,15 @@ set(BUILD_TESTING ON)
 
 # need vcpkg start
 find_package(assimp CONFIG REQUIRED)
+
 find_package(Boost REQUIRED COMPONENTS container lockfree process)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
+# find_package(tomlplusplus CONFIG REQUIRED)
 
 find_package(spirv-cross CONFIG QUIET)
-find_package(tomlplusplus CONFIG REQUIRED)
-
 if(NOT spirv-cross_FOUND)
         find_package(spirv_cross_core CONFIG REQUIRED)
         find_package(spirv_cross_glsl CONFIG REQUIRED)
@@ -49,17 +49,22 @@ endif()
 find_package(SDL3 CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
+
 # find_package(VulkanHeaders CONFIG)
-find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-find_package(VulkanUtilityLibraries CONFIG REQUIRED)
+# find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+# find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
+if(USE_MINGW)
+find_package(embree CONFIG REQUIRED PATHS "D:/Program/msys2/ucrt64/lib/cmake")
+else()
 find_package(embree CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
+endif()
+# find_package(embree CONFIG REQUIRED)
+# find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
 
 # need vcpkg end
-add_subdirectory(third-party)
 
 # This function should be passed a list of all files in a target. It will automatically generate
 # file groups following the directory hierarchy, so that the layout of the files in IDEs matches the
@@ -105,13 +110,29 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
+set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm" CACHE STRING "" FORCE)
 include(ClangFormat)
 include(CPM)
-# CPMAddPackage(
-#   URI "gh:KhronosGroup/Vulkan-Headers@1.4.328"
-# )
-enable_testing()
+CPMAddPackage(
+        URI "gh:KhronosGroup/Vulkan-Headers@1.4.328"
+)
+CPMAddPackage(
+        URI "gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.3.0"
+)
+CPMAddPackage(
+        URI "gh:KhronosGroup/Vulkan-Utility-Libraries@1.4.328"
+)
+CPMAddPackage(
+        URI "gh:marzer/tomlplusplus@3.4.0"
+)
 
+CPMAddPackage(
+        URI "gh:nlohmann/json@3.9.1"
+        OPTIONS "JSON_BuildTests OFF"
+)
+
+enable_testing()
+add_subdirectory(third-party)
 add_subdirectory(shader)
 add_subdirectory(models)
 add_subdirectory(images)

@@ -28,28 +28,6 @@ foreach(MODEL_FILE IN LISTS MODEL_FILES)
     list(APPEND MODEL_COPY_OUT_PUT ${COPY_OUTPUT_PATH})
 endforeach()
 
-find_program(PYTHON python)
-
-set(OUT_PATH "${CMAKE_BINARY_DIR}/bin/models/assets.json")
-add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${MODEL_OUTPUT_DIR}"
-
-    OUTPUT ${OUT_PATH}
-    COMMAND ${PYTHON} "${CMAKE_SOURCE_DIR}/models/gen_asset_hashes.py"
-    "${OUT_PATH}"
-    "${CMAKE_SOURCE_DIR}/models/assets.txt"
-    DEPENDS
-    "${CMAKE_SOURCE_DIR}/models/assets.txt"
-    "${CMAKE_SOURCE_DIR}/models/gen_asset_hashes.py"
-
-    # 你可能需要手动列出所有 asset 文件作为依赖，或用 configure_file 触发
-)
-
-
-
-add_custom_target(AssetHashManifest
-    DEPENDS "${OUT_PATH}" "${MODEL_COPY_OUT_PUT}"
-)
 
 
 set(MOUDLE_PATH_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/include PARENT_SCOPE)

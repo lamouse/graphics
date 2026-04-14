@@ -13,7 +13,7 @@
 #endif
 
 #define ASSERT(_a_)                            \
-    ([&]() ENGINE_NO_INLINE {                  \
+    ([&]() ENGINE_NO_INLINE -> auto {                  \
         if (!(_a_)) [[unlikely]] {             \
             SPDLOG_DEBUG("Assertion Failed!"); \
             Crash();                           \
@@ -21,7 +21,7 @@
     }())
 
 #define ASSERT_MSG(_a_, msg)                              \
-    ([&]() ENGINE_NO_INLINE {                             \
+    ([&]() ENGINE_NO_INLINE -> auto {                             \
         if (!(_a_)) [[unlikely]] {                        \
             SPDLOG_DEBUG("Assertion Failed! {} \n", msg); \
             Crash();                                      \

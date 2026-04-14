@@ -4,7 +4,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/resource.cmake)
 
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 add_dependencies(${LIB_RESOURCE_NAME} build_shaders)
-add_dependencies(${LIB_RESOURCE_NAME} AssetHashManifest)
 add_dependencies(${LIB_RESOURCE_NAME} skyboxes_ktx2)
 if (MSVC)
     target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
