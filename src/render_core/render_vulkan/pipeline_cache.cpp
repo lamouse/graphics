@@ -103,7 +103,7 @@ void PipelineCache::loadPipelineCacheFromDisk() {
                 file.seekg(sizeof(pipe_line_cache_header), std::ios::beg);
                 size_t vkDataSize = totalSize - sizeof(PipelineCacheHeader);
                 cacheData.resize(vkDataSize);
-                file.read(cacheData.data(), vkDataSize);
+                file.read(cacheData.data(), static_cast<long long>(vkDataSize));
                 file.close();
 
                 vk::PipelineCacheCreateInfo cacheInfo{};
@@ -146,7 +146,7 @@ void PipelineCache::savePipelineCache() {
         header.version = CACHE_VERSION;
         header.hash = hash;
         file.write(reinterpret_cast<const char*>(&header), sizeof(header));
-        file.write(cacheData.data(), dataSize);
+        file.write(cacheData.data(), static_cast<long long>(dataSize));
         file.close();
     }
 }
