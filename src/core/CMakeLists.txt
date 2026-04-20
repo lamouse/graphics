@@ -19,10 +19,10 @@ set (sources
 
 add_library(${LIB_CORE_NAME} STATIC ${sources})
 
-target_sources(${LIB_CORE_NAME} PUBLIC
-        FILE_SET CXX_MODULES
-        FILES ${MODULE_FILES} # 这里传入 setting.cppm
-)
+# target_sources(${LIB_CORE_NAME} PUBLIC
+#         FILE_SET CXX_MODULES
+#         FILES ${MODULE_FILES} # 这里传入 setting.cppm
+# )
 if (MSVC)
     target_compile_options(${LIB_CORE_NAME} PRIVATE
         /we4244 # 'conversion': conversion from 'type1' to 'type2', possible loss of data

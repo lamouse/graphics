@@ -5,6 +5,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/resource.cmake)
 add_library(${LIB_RESOURCE_NAME} STATIC ${sources})
 add_dependencies(${LIB_RESOURCE_NAME} build_shaders)
 add_dependencies(${LIB_RESOURCE_NAME} skyboxes_ktx2)
+add_dependencies(${LIB_RESOURCE_NAME} CopyDefaultModel)
+
 if (MSVC)
     target_compile_options(${LIB_RESOURCE_NAME} PRIVATE
         /we4242 # 'identifier': conversion from 'type1' to 'type2', possible loss of data
