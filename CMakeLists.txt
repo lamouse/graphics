@@ -34,7 +34,6 @@ find_package(assimp CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS container lockfree process)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(Microsoft.GSL CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 # find_package(tomlplusplus CONFIG REQUIRED)
 
