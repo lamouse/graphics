@@ -152,6 +152,7 @@ else()
             add_compile_options("-static")
         endif()
         #see https://github.com/msys2/mingw-packages/issues/29279
+        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=125151
         add_compile_definitions(__cpp_lib_constexpr_exceptions=0)
     endif()
 
