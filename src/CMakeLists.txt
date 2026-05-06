@@ -151,6 +151,7 @@ else()
             add_definitions(-DQT_STATICPLUGIN)
             add_compile_options("-static")
         endif()
+        add_compile_definitions(__cpp_lib_constexpr_exceptions=0)
     endif()
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR MINGW)

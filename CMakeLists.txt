@@ -14,7 +14,7 @@ if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
         message(FATAL_ERROR "This project requires the Ninja generator. Refers to https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html#generator-support")
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -25,6 +25,7 @@ option(TRACY_ON_DEMAND "Tracy on on demand" ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Executable output path")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin CACHE PATH "Library output path")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib CACHE PATH "Single Directory for all static libraries.")
+
 set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
 set(BUILD_TESTING ON)
 
@@ -56,7 +57,7 @@ find_package(Tracy CONFIG REQUIRED)
 find_package(embree CONFIG REQUIRED)
 # find_package(embree CONFIG REQUIRED)
 # find_package(nlohmann_json CONFIG REQUIRED)
-find_package(Ktx CONFIG REQUIRED)
+# find_package(Ktx CONFIG REQUIRED)
 
 # need vcpkg end
 
@@ -116,6 +117,10 @@ CPMAddPackage(
 CPMAddPackage(
         URI "gh:KhronosGroup/Vulkan-Utility-Libraries@1.4.328"
 )
+CPMAddPackage(
+        URI "gh:KhronosGroup/KTX-Software@4.4.2"
+)
+
 CPMAddPackage(
         URI "gh:marzer/tomlplusplus@3.4.0"
 )
