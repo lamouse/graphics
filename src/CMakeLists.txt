@@ -151,9 +151,10 @@ else()
             add_definitions(-DQT_STATICPLUGIN)
             add_compile_options("-static")
         endif()
-        #see https://github.com/msys2/mingw-packages/issues/29279
+
+        # see https://github.com/msys2/mingw-packages/issues/29279
         # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=125151
-        add_compile_definitions(__cpp_lib_constexpr_exceptions=0)
+        # add_compile_definitions(__cpp_lib_constexpr_exceptions=0)
     endif()
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR MINGW)
@@ -172,14 +173,17 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     foreach(target absl::base absl::strings)
         if(TARGET ${target})
             get_target_property(opts ${target} INTERFACE_LINK_LIBRARIES)
+
             if(opts AND NOT opts STREQUAL "opts-NOTFOUND")
                 # 转为列表（CMake 3.15+ 可直接操作列表）
                 set(cleaned_opts "")
+
                 foreach(item IN LISTS opts)
                     if(NOT item STREQUAL "-ignore:4221")
                         list(APPEND cleaned_opts "${item}")
                     endif()
                 endforeach()
+
                 set_target_properties(${target} PROPERTIES INTERFACE_LINK_LIBRARIES "${cleaned_opts}")
                 message(VERBOSE "Removed '-ignore:4221' from ${target}'s INTERFACE_LINK_LIBRARIES")
             endif()
@@ -187,6 +191,25 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endforeach()
 endif()
 
+if(MINGW)
+    foreach(target KTX::ktx)
+        if(TARGET ${target})
+            get_target_property(opts ${target} INTERFACE_LINK_OPTIONS)
+
+            if(opts AND NOT opts STREQUAL "opts-NOTFOUND")
+                set(remove_static_opts "")
+
+                foreach(item IN LISTS opts)
+                    if(NOT item STREQUAL "-static-libstdc++")
+                        list(APPEND remove_static_opts "${item}")
+                    endif()
+                endforeach()
+                set_target_properties(${target} PROPERTIES INTERFACE_LINK_OPTIONS "${remove_static_opts}")
+                message(VERBOSE "remove -static-libstdc++ from ${target} INTERFACE_LINK_LIBRARIES")
+            endif()
+        endif()
+    endforeach(target KTX::ktx)
+endif()
 
 add_subdirectory(common)
 add_subdirectory(core)

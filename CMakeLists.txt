@@ -36,9 +36,10 @@ find_package(Boost REQUIRED COMPONENTS container lockfree process)
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
-# find_package(tomlplusplus CONFIG REQUIRED)
 
+# find_package(tomlplusplus CONFIG REQUIRED)
 find_package(spirv-cross CONFIG QUIET)
+
 if(NOT spirv-cross_FOUND)
         find_package(spirv_cross_core CONFIG REQUIRED)
         find_package(spirv_cross_glsl CONFIG REQUIRED)
@@ -55,9 +56,10 @@ find_package(absl CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
 find_package(embree CONFIG REQUIRED)
+
 # find_package(embree CONFIG REQUIRED)
-# find_package(nlohmann_json CONFIG REQUIRED)
-# find_package(Ktx CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(Ktx CONFIG REQUIRED)
 
 # need vcpkg end
 
@@ -118,17 +120,13 @@ CPMAddPackage(
         URI "gh:KhronosGroup/Vulkan-Utility-Libraries@1.4.328"
 )
 CPMAddPackage(
-        URI "gh:KhronosGroup/KTX-Software@4.4.2"
-)
-
-CPMAddPackage(
         URI "gh:marzer/tomlplusplus@3.4.0"
 )
 
-CPMAddPackage(
-        URI "gh:nlohmann/json@3.9.1"
-        OPTIONS "JSON_BuildTests OFF"
-)
+# CPMAddPackage(
+#         URI "gh:nlohmann/json@3.9.1"
+#         OPTIONS "JSON_BuildTests OFF"
+# )
 
 enable_testing()
 add_subdirectory(third-party)

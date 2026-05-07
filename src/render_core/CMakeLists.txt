@@ -35,7 +35,7 @@ target_link_libraries(${LIB_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator)
 
 target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers Vulkan::UtilityHeaders)
 
-target_link_libraries(${LIB_NAME} PRIVATE xxHash::xxhash ktx)
+target_link_libraries(${LIB_NAME} PRIVATE xxHash::xxhash KTX::ktx)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)

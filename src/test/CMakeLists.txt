@@ -28,10 +28,6 @@ else()
     target_link_libraries(${TEST_NAME} PRIVATE vulkan-headers::vulkan-headers vulkan-utility-libraries::vulkan-utility-libraries)
 endif()
 
-if(MINGW)
-  target_link_libraries(${TEST_NAME} PRIVATE "-lstdc++exp")
-endif()
-
 
 target_include_directories(
   ${TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src
