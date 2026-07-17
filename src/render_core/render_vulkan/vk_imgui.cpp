@@ -6,6 +6,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include "common/enum_util.hpp"
 #include "imgui.h"
 #include "imgui_impl_vulkan.h"
 #include "present_manager.hpp"
@@ -84,7 +85,7 @@ void check_vk_result(VkResult err) {
     if (err == 0) {
         return;
     }
-    SPDLOG_ERROR("[vulkan] Error: VkResult = {}", string_VkResult(err));
+    SPDLOG_ERROR("[vulkan] Error: VkResult = {}", common::enum_to_string(err));
     if (err < 0) {
         // abort();
     }

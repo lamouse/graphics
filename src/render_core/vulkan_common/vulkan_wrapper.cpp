@@ -1,8 +1,8 @@
 
 #include "vulkan_wrapper.hpp"
 #include "common/common_types.hpp"
-#include <vulkan/vk_enum_string_helper.h>
 #include "vulkan_common.hpp"
+#include "common/enum_util.hpp"
 #include "vk_mem_alloc.h"
 #if VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
@@ -10,7 +10,7 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 namespace render::vulkan {
 namespace utils {
 auto VulkanException::what() const noexcept -> const char* {
-    return string_VkResult(static_cast<VkResult>(result));
+    return common::enum_to_string(static_cast<VkResult>(result)).data();
 }
 
 }  // namespace utils

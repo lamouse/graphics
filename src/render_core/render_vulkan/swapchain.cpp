@@ -1,10 +1,10 @@
 #include <algorithm>
 
+#include "common/enum_util.hpp"
 #include "swapchain.hpp"
 #include "vulkan_common/device.hpp"
 #include "common/settings.hpp"
 #include <spdlog/spdlog.h>
-#include <vulkan/vk_enum_string_helper.h>
 #include "scheduler.hpp"
 #include "vulkan_common/vulkan_wrapper.hpp"
 
@@ -136,9 +136,9 @@ auto Swapchain::acquireNextImage() -> bool {
         case vk::Result::eErrorSurfaceLostKHR:
             utils::check(result);
             break;
-        default:
+    default:
             SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
-                         string_VkResult(static_cast<VkResult>(result)));
+                         common::enum_to_string(static_cast<VkResult>(result)));
             break;
     }
     return is_suboptimal_ || is_outdated_;
@@ -257,7 +257,7 @@ void Swapchain::present(vk::Semaphore render_semaphore) {
                 break;
             default:
                 SPDLOG_CRITICAL("Failed to present with error {}",
-                                string_VkResult(static_cast<VkResult>(result)));
+                                common::enum_to_string(static_cast<VkResult>(result)));
                 break;
         }
         ++frame_index_;

@@ -33,7 +33,7 @@ target_include_directories(${LIB_NAME} PRIVATE ${HOST_SHADERS_INCLUDE})
 target_link_libraries(${LIB_NAME} PUBLIC core common shader Imgui::Imgui Boost::lockfree)
 target_link_libraries(${LIB_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator)
 
-target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers Vulkan::UtilityHeaders)
+target_link_libraries(${LIB_NAME} PRIVATE Vulkan::Headers)
 
 target_link_libraries(${LIB_NAME} PRIVATE xxHash::xxhash KTX::ktx)
 

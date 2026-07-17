@@ -116,9 +116,7 @@ CPMAddPackage(
 CPMAddPackage(
         URI "gh:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator@3.3.0"
 )
-CPMAddPackage(
-        URI "gh:KhronosGroup/Vulkan-Utility-Libraries@1.4.328"
-)
+
 CPMAddPackage(
         URI "gh:marzer/tomlplusplus@3.4.0"
 )
