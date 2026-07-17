@@ -151,6 +151,7 @@ else()
             add_definitions(-DQT_STATICPLUGIN)
             add_compile_options("-static")
         endif()
+        add_compile_options("-freflection")
 
         # see https://github.com/msys2/mingw-packages/issues/29279
         # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=125151

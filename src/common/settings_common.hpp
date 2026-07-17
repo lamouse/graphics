@@ -185,12 +185,6 @@ class BasicSetting {
         [[nodiscard]] virtual constexpr auto Ranged() const -> bool = 0;
 
         /**
-         * @returns The index of the enum if the underlying setting type is an enum, else max of
-         * u32.
-         */
-        [[nodiscard]] virtual constexpr auto EnumIndex() const -> u32 = 0;
-
-        /**
          * @returns True if the underlying type is a floating point storage
          */
         [[nodiscard]] virtual constexpr auto IsFloatingPoint() const -> bool = 0;

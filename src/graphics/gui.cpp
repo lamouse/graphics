@@ -1,5 +1,6 @@
 #include "gui.hpp"
 #include "common/file.hpp"
+#include "common/enum_util.hpp"
 #include "imgui.h"
 #include "imGuIZMOquat.h"
 #include <ImGuiFileDialog.h>
@@ -17,10 +18,9 @@
 #include <string>
 
 #include <glm/gtc/quaternion.hpp>
-#include <queue>
 #include <mutex>
 #include <filesystem>
-
+#include <queue>
 #include <limits>
 
 namespace {
@@ -599,8 +599,8 @@ void render_status_bar(settings::MenuData& menuData, StatusBarData& barData) {
     bar_text("Mouse: (%.1f, %.1f)", barData.mouseX_, barData.mouseY_);
     bar_text("Entities: %d", barData.registry_count);
     bar_text("device: %s", barData.device_name.c_str());
-    bar_text("scaling filter: %s",
-             settings::enums::CanonicalizeEnum(settings::values.scaling_filter.GetValue()).c_str());
+    auto scaling_filter_string = common::enum_to_string(settings::values.scaling_filter.GetValue());
+    bar_text("scaling filter: %s", scaling_filter_string.data());
 
     if (barData.build_shaders > 0) {
         bar_color_text({0.3f, .1f, 1.f, .0f}, "build shaders: %d", barData.build_shaders);

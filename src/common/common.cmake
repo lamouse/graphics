@@ -10,6 +10,7 @@ set(sources
     div_ceil.hpp
     error.hpp
     error.cpp
+    enum_util.hpp
     file.cpp
     file.hpp
     literals.hpp

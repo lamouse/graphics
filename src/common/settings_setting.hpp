@@ -4,6 +4,7 @@
 #define GRAPHICS_SETTINGS_SETTING_HPP
 #include "common/settings_common.hpp"
 #include "common/settings_enums.hpp"
+#include "common/enum_util.hpp"
 #include <algorithm>
 #include <fmt/format.h>
 namespace settings {
@@ -77,8 +78,11 @@ class Setting : public BasicSetting {
                            other_setting_),
               value{default_val},
               default_value{default_val},
-              maximum{enums::EnumMetadata<Type>::GetLast()},
-              minimum{enums::EnumMetadata<Type>::GetFirst()} {}
+              maximum{common::enum_last<Type>()},
+              minimum{common::enum_first<Type>()}
+        {
+        }
+
         /**
          *  Returns a reference to the setting's value.
          *
@@ -194,7 +198,7 @@ class Setting : public BasicSetting {
         }
         [[nodiscard]] auto Canonicalize() const -> std::string final {
             if constexpr (std::is_enum_v<Type>) {
-                return std::string{enums::CanonicalizeEnum(this->GetValue())};
+                return std::string(common::enum_to_string(this->GetValue()));
             } else {
                 return ToString(this->GetValue());
             }
@@ -207,14 +211,6 @@ class Setting : public BasicSetting {
          */
         [[nodiscard]] auto TypeId() const -> std::type_index final {
             return std::type_index(typeid(Type));
-        }
-
-        [[nodiscard]] constexpr auto EnumIndex() const -> u32 final {
-            if constexpr (std::is_enum_v<Type>) {
-                return enums::EnumMetadata<Type>::Index();
-            } else {
-                return (std::numeric_limits<u32>::max)();
-            }
         }
 
         [[nodiscard]] constexpr auto IsFloatingPoint() const -> bool final {
@@ -319,8 +315,8 @@ class SwitchableSetting : virtual public Setting<Type, ranged> {
             requires(ranged)
             : Setting<Type, true>{linkage,
                                   default_val,
-                                  enums::EnumMetadata<Type>::GetFirst(),
-                                  enums::EnumMetadata<Type>::GetLast(),
+                                  common::enum_first<Type>(),
+                                  common::enum_last<Type>(),
                                   name,
                                   category_,
                                   specialization_,

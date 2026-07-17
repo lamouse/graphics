@@ -6,7 +6,8 @@ namespace render::vulkan {
 namespace instance {
 namespace {
 constexpr const char* LOG_TAG = "Render_Vulkan: ";
-[[nodiscard]] auto layers(bool enable_validation) -> std::vector<const char*> {
+[[nodiscard]] auto layers(const bool enable_validation) -> std::vector<const char*>
+{
     std::vector<const char*> layers;
     if (enable_validation) {
         layers.push_back("VK_LAYER_KHRONOS_validation");
@@ -116,7 +117,7 @@ auto createInstance(uint32_t required_version, core::frontend::WindowSystemType 
     }
     uint32_t version = VK_MAKE_VERSION(1, 3, 0);
     uint32_t app_version = VK_MAKE_VERSION(0, 1, 0);
-    ::vk::ApplicationInfo appInfo{"graphics", app_version, "engine", app_version, version};
+    ::vk::ApplicationInfo appInfo{"graphics", app_version, "NO engine", app_version, version};
     ::vk::InstanceCreateInfo createInfo;
     createInfo
         .setPApplicationInfo(&appInfo)

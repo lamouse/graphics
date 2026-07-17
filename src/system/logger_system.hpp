@@ -1,9 +1,9 @@
 #pragma once
-#include <spdlog/sinks/sink.h>
+#include "common/settings.hpp"
+#include "common/enum_util.hpp"
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/async_logger.h>
 #include <ranges>
-#include "common/settings.hpp"
 #include <mutex>
 #include <deque>
 #include <imgui.h>
@@ -25,20 +25,15 @@ class ImGuiLogSink : public spdlog::sinks::base_sink<Mutex> {
             ImGui::TableNextColumn();
             ImGui::Checkbox("Auto-scroll", &auto_scroll_);
 
-            auto canon =
-                settings::enums::EnumMetadata<settings::enums::LogLevel>::canonicalizations();
-            std::vector<const char*> names;
-            for (auto& key : canon | std::views::keys) {
-                names.push_back(key.c_str());
-            }
+
+            std::vector<const char*> names = common::enum_to_c_str_list<settings::enums::LogLevel>();
 
             static int item_current = static_cast<int>(settings::values.log_level.GetValue());
             ImGui::TableNextColumn();
             ImGui::Combo("log level", &item_current, names.data(), static_cast<int>(names.size()));
             ImGui::EndTable();
-            const auto level =
-                settings::enums::ToEnum<settings::enums::LogLevel>(names[item_current]);
-            settings::values.log_level.SetValue(level);
+            const auto level = common::string_to_enum<settings::enums::LogLevel>(names[item_current]);
+            settings::values.log_level.SetValue(level.value());
             ImGui::Separator();
 
             ImGui::BeginChild("LogRegion", ImVec2(0, 0), false,
