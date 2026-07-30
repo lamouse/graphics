@@ -121,10 +121,10 @@ CPMAddPackage(
         URI "gh:marzer/tomlplusplus@3.4.0"
 )
 
-CPMAddPackage(
-        URI "gh:simdjson/simdjson@4.6.4"
-        OPTIONS "SIMDJSON_STATIC_REFLECTION ON"
-)
+#CPMAddPackage(
+#        URI "gh:simdjson/simdjson@4.6.4"
+#        OPTIONS "SIMDJSON_STATIC_REFLECTION ON"
+#)
 
 enable_testing()
 add_subdirectory(third-party)

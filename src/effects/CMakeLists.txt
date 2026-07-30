@@ -25,7 +25,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(${LIB_NAME} PUBLIC common Imgui::Imgui ecs resource render-core simdjson::simdjson)
+target_link_libraries(${LIB_NAME} PUBLIC common Imgui::Imgui ecs resource render-core)
 
 # 设置动态库/静态库生成路径
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
