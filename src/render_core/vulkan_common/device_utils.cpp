@@ -1,6 +1,5 @@
 #include "device_utils.hpp"
 #include <spdlog/spdlog.h>
-#include <vulkan/vk_enum_string_helper.h>
 namespace render::vulkan::utils {
 auto GetFormatProperties(vk::PhysicalDevice physical)
     -> std::unordered_map<vk::Format, vk::FormatProperties> {

@@ -13,8 +13,6 @@
 #include "scheduler.hpp"
 #include "common/settings.hpp"
 
-#include <vulkan/vk_enum_string_helper.h>
-
 namespace {
 void init_imgui(float scale) {
     // 这里使用了imgui的一个分支docking
