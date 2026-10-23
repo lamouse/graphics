@@ -22,36 +22,8 @@ struct NoOwner {
         NoOwner(std::nullptr_t) {}
         operator bool() const { return false; }  // NOLINT
 };
-inline void destroy(vk::Device owner, vk::Fence handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Image handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::DeviceMemory handle) noexcept { owner.free(handle); }
-inline void destroy(vk::Device owner, vk::CommandPool handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::ImageView handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::BufferView handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Framebuffer handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Event handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::SwapchainKHR handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::ShaderModule handle) noexcept { owner.destroy(handle); }
-inline void destroy(NoOwner /*unused*/, vk::Device handle) noexcept { handle.destroy(); }
-inline void destroy(vk::Device owner, vk::Pipeline handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::PipelineLayout handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::PipelineCache handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::RenderPass handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Sampler handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Semaphore handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::QueryPool handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::DescriptorPool handle) noexcept { owner.destroy(handle); }
-inline void destroy(vk::Device owner, vk::Buffer handle) noexcept { owner.destroy(handle); }
-
-inline void destroy(vk::Device owner, vk::DescriptorSetLayout handle) noexcept {
-    owner.destroy(handle);
-}
-inline void destroy(vk::Device owner, vk::DescriptorUpdateTemplate handle) noexcept {
-    owner.destroy(handle);
-}
 
 inline void destroy(vk::Instance owner, vk::SurfaceKHR val) noexcept { owner.destroy(val); }
-inline void destroy(NoOwner /*unused*/, vk::Instance val) noexcept { val.destroy(); }
 inline void destroy(vk::Instance owner, ::vk::DebugUtilsMessengerEXT handle) noexcept {
     owner.destroyDebugUtilsMessengerEXT(handle, nullptr);
 }
@@ -117,7 +89,18 @@ class Handle {
     private:
         /// Destroys the held object if it exists.
         void Release() noexcept {
-            if (handle) {
+            if (!handle) {
+                return;
+            }
+            if constexpr (std::is_same_v<vk::Device, OwnerType>) {
+                if constexpr (std::is_same_v<vk::DeviceMemory, Type>) {
+                    owner.free(handle);
+                } else {
+                    owner.destroy(handle);
+                }
+            } else if constexpr (std::is_same_v<NoOwner, OwnerType>) {
+                handle.destroy();
+            } else {
                 destroy(owner, handle);
             }
         }
@@ -219,6 +202,7 @@ class VulkanException final : public std::exception {
         explicit VulkanException(VkResult result_) : result{static_cast<vk::Result>(result_)} {}
         [[nodiscard]] auto what() const noexcept -> const char* override;
         [[nodiscard]] auto getResult() const noexcept -> vk::Result { return result; }
+
     private:
         vk::Result result;
 };
