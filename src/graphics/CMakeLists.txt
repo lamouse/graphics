@@ -23,17 +23,17 @@ add_custom_command(TARGET ${PROGRAM_NAME} POST_BUILD
 )
 endif()
 
-if(LINUX)
-    target_link_libraries(
-        ${PROGRAM_NAME} PRIVATE
-        X11 # 🔴 必须！解决 XInternAtom, XChangeProperty 等
-        Xrandr # 推荐：多屏支持
-        Xinerama # 推荐：虚拟桌面拼接检测
-        Xcursor # 推荐：鼠标光标
-        Xxf86vm # 推荐：全屏切换
-        Xi # 推荐：输入设备扩展
-    )
-endif()
+#if(LINUX)
+#    target_link_libraries(
+#        ${PROGRAM_NAME} PRIVATE
+#        X11 # 🔴 必须！解决 XInternAtom, XChangeProperty 等
+#        Xrandr # 推荐：多屏支持
+#        Xinerama # 推荐：虚拟桌面拼接检测
+#        Xcursor # 推荐：鼠标光标
+#        Xxf86vm # 推荐：全屏切换
+#        Xi # 推荐：输入设备扩展
+#    )
+#endif()
 
 # 添加生成的代码目录
 include_directories(${CMAKE_BINARY_DIR}/generated)
