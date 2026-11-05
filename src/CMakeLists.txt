@@ -151,7 +151,6 @@ else()
             add_definitions(-DQT_STATICPLUGIN)
             add_compile_options("-static")
         endif()
-        add_compile_options("-freflection")
 
         # see https://github.com/msys2/mingw-packages/issues/29279
         # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=125151
@@ -165,6 +164,8 @@ else()
         set(CMAKE_C_ARCHIVE_APPEND "<CMAKE_AR> qTP  <TARGET> <LINK_FLAGS> <OBJECTS>")
         set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcTP <TARGET> <LINK_FLAGS> <OBJECTS>")
         set(CMAKE_CXX_ARCHIVE_APPEND "<CMAKE_AR> qTP  <TARGET> <LINK_FLAGS> <OBJECTS>")
+        add_compile_options("-freflection")
+
     endif()
 endif()
 

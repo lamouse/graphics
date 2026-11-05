@@ -13,12 +13,8 @@
         "boost-container",
         "glslang",
         "spirv-cross",
-        "vulkan-memory-allocator",
-        "vulkan-utility-libraries",
         "xxhash",
         "embree",
-        "qtbase",
-        "qtdeclarative",
         "nlohmann-json",
         "tomlplusplus",
         {
