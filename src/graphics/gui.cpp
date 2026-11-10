@@ -648,10 +648,10 @@ auto add_model(std::string_view model_path) -> AddModelInfo {
         std::filesystem::path model(model_path);
         use_model = true;
         if (model_info->copy_local) {
-            auto path = (common::FS::get_module_path(common::FS::ModuleType::Model) /
+            const auto path = (common::FS::get_module_path(common::FS::ModuleType::Model) /
                          model_path_fs.filename())
                             .string();
-            auto rel_path =
+            const auto rel_path =
                 std::filesystem::relative(path, common::FS::get_current_path()).generic_string();
             model_info->source_path = rel_path;
         };

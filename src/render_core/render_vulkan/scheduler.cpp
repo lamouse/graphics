@@ -323,7 +323,7 @@ void Scheduler::requestRender(const RequestsRending& render) {
                 colorAttachments.push_back(
                     vk::RenderingAttachmentInfo()
                         .setImageView(view)
-                        .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                        .setImageLayout(vk::ImageLayout::eGeneral)
                         .setLoadOp(vk::AttachmentLoadOp::eLoad)
                         .setStoreOp(vk::AttachmentStoreOp::eStore)
                         .setClearValue(vk::ClearValue().setColor({1.0f, 1.0f, 1.0f, 1.0f})));
@@ -339,7 +339,7 @@ void Scheduler::requestRender(const RequestsRending& render) {
         if (dynamic_state.depth_view) {
             depthAttachment = vk::RenderingAttachmentInfo()
                                   .setImageView(dynamic_state.depth_view)
-                                  .setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal)
+                                  .setImageLayout(vk::ImageLayout::eGeneral)
                                   .setLoadOp(vk::AttachmentLoadOp::eLoad)
                                   .setStoreOp(vk::AttachmentStoreOp::eStore)
                                   .setClearValue(vk::ClearValue().setDepthStencil(

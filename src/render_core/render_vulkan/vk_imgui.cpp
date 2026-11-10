@@ -153,7 +153,7 @@ void ImguiCore::draw(const std::function<void()>& draw_func, present::Frame* fra
         vk::RenderingAttachmentInfo colorAttachment =
             vk::RenderingAttachmentInfo()
                 .setImageView(view)
-                .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                .setImageLayout(vk::ImageLayout::eGeneral)
                 .setLoadOp(vk::AttachmentLoadOp::eLoad)
                 .setStoreOp(vk::AttachmentStoreOp::eStore)
                 .setClearValue(vk::ClearValue().setColor({0.0f, 0.0f, 0.0f, 1.0f}));
