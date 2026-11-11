@@ -102,12 +102,20 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
-set(CPM_COMPILER_PATH "")
-if (MINGW)
-        set(CPM_COMPILER_PATH "/mingw")
-endif ()
-set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm${CPM_COMPILER_PATH}" CACHE STRING "" FORCE)
 include(ClangFormat)
+
+#CPM.cmake config
+
+if (WIN32)
+        set(CPM_COMPILER_PATH "")
+        if (MINGW)
+                set(CPM_COMPILER_PATH "/mingw")
+        endif ()
+        #can set yourself CPM.cmake cache path
+        set(CPM_SOURCE_CACHE "D:/libs/cmake/cache/cpm${CPM_COMPILER_PATH}" CACHE STRING "" FORCE)
+elseif (LINUX OR APPLE)
+        set(CPM_SOURCE_CACHE "~/.cmake/cache/cpm" CACHE STRING "" FORCE)
+endif ()
 include(CPM)
 CPMAddPackage(
         URI "gh:KhronosGroup/Vulkan-Headers@1.4.328"
