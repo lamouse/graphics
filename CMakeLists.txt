@@ -50,14 +50,9 @@ find_package(SDL3 CONFIG REQUIRED)
 find_package(EnTT CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
 
-# find_package(VulkanHeaders CONFIG)
-# find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-# find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
-find_package(Tracy CONFIG REQUIRED)
 find_package(embree CONFIG REQUIRED)
 
-# find_package(embree CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
 
@@ -107,7 +102,11 @@ if(USE_FASTER_LD AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
-set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm" CACHE STRING "" FORCE)
+set(CPM_COMPILER_PATH "")
+if (MINGW)
+        set(CPM_COMPILER_PATH "/mingw")
+endif ()
+set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm${CPM_COMPILER_PATH}" CACHE STRING "" FORCE)
 include(ClangFormat)
 include(CPM)
 CPMAddPackage(
@@ -120,7 +119,9 @@ CPMAddPackage(
 CPMAddPackage(
         URI "gh:marzer/tomlplusplus@3.4.0"
 )
-
+CPMAddPackage(
+        URI "gh:wolfpld/tracy@0.15.0"
+)
 #CPMAddPackage(
 #        URI "gh:simdjson/simdjson@4.6.4"
 #        OPTIONS "SIMDJSON_STATIC_REFLECTION ON"

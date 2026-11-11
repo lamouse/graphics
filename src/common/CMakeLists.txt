@@ -39,7 +39,7 @@ if(TRACY_ENABLE)
         target_compile_definitions(${LIB_COMMON_NAME} INTERFACE -DTRACY_ON_DEMAND)
     endif()
 
-    target_link_libraries(${LIB_COMMON_NAME} INTERFACE Tracy::TracyClient)
+    target_link_libraries(${LIB_COMMON_NAME} INTERFACE TracyClient)
 endif()
 
 target_link_libraries(${LIB_COMMON_NAME} PUBLIC spdlog::spdlog xxHash::xxhash Imgui::Imgui system tomlplusplus::tomlplusplus)
