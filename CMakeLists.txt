@@ -114,7 +114,7 @@ if (WIN32)
         #can set yourself CPM.cmake cache path
         set(CPM_SOURCE_CACHE "D:/libs/cmake/cache/cpm${CPM_COMPILER_PATH}" CACHE STRING "" FORCE)
 elseif (LINUX OR APPLE)
-        set(CPM_SOURCE_CACHE "~/.cmake/cache/cpm" CACHE STRING "" FORCE)
+        set(CPM_SOURCE_CACHE "$ENV{HOME}/.cmake/cache/cpm" CACHE STRING "" FORCE)
 endif ()
 include(CPM)
 CPMAddPackage(

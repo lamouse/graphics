@@ -90,12 +90,10 @@ SDLWindow::SDLWindow(std::shared_ptr<input::InputSystem> input_system, int width
         throw std::runtime_error(
             fmt::format("SDL could not initialize! SDL_Error: {}\n", SDL_GetError()));
     }
-    int const w = static_cast<int>((float)conf.extent.width * window_info.render_surface_scale);
-    int const h = static_cast<int>((float)conf.extent.height * window_info.render_surface_scale);
     // Create window with Vulkan graphics context
-    auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE |
-                                          SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
-    window_ = SDL_CreateWindow(title.data(), w, h, window_flags);
+    constexpr auto window_flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE |
+                                          SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN;
+    window_ = SDL_CreateWindow(title.data(), width, height, window_flags);
     if (window_ == nullptr) {
         throw std::runtime_error(
             fmt::format("SDL could not initialize! SDL_Error: {}\n", SDL_GetError()));

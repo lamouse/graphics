@@ -6,6 +6,25 @@
 #undef None
 #endif
 #endif
+
+namespace {
+#ifdef __linux__
+auto get_windows_display(SDL_Window *window) -> void * {
+#if defined(SDL_PLATFORM_LINUX)
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+        return SDL_GetPointerProperty(SDL_GetWindowProperties(window),
+                                      SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
+    }
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        return SDL_GetPointerProperty(SDL_GetWindowProperties(window),
+                                      SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
+    }
+#endif
+    return nullptr;
+}
+
+#endif
+}
 namespace graphics {
 auto get_window_system_info() -> core::frontend::WindowSystemType {
     const auto *platform = SDL_GetPlatform();
@@ -54,22 +73,7 @@ auto get_windows_handles(SDL_Window *window) -> void * {
     return nullptr;
 }
 
-#ifdef __linux__
-auto get_windows_display(SDL_Window *window) -> void * {
-#if defined(SDL_PLATFORM_LINUX)
-    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-        return SDL_GetPointerProperty(SDL_GetWindowProperties(window),
-                                      SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr);
-    }
-    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
-        return SDL_GetPointerProperty(SDL_GetWindowProperties(window),
-                                      SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
-    }
-#endif
-    return nullptr;
-}
 
-#endif
 
 auto get_window_info(SDL_Window *window) -> core::frontend::BaseWindow::WindowSystemInfo {
     core::frontend::BaseWindow::WindowSystemInfo window_info;

@@ -2,6 +2,7 @@
 find_program(TOKTX_EXECUTABLE ktx REQUIRED
     PATHS ${CMAKE_CURRENT_SOURCE_DIR/tool}
     PATHS ENV PATH
+    PATHS $ENV{HOME}/.bin
     DOC "Path to toktx executable from KTX-Software"
 )
 
