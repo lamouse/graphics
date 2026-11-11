@@ -121,11 +121,11 @@ void Swapchain::create(vk::SurfaceKHR surface, uint32_t width, uint32_t height) 
 }
 
 auto Swapchain::acquireNextImage() -> bool {
-    const auto result = device_.getLogical().acquireNextImageKHR(
-        *swapchain_, std::numeric_limits<uint64_t>::max(), *present_semaphores_[frame_index_],
-        nullptr, &image_index_);
-    switch (result) {
+    const auto result = device_.getLogical().acquireNextImageKHR(*swapchain_, std::numeric_limits<uint64_t>::max(),
+        *present_semaphores_[frame_index_]);
+    switch (result.result) {
         case vk::Result::eSuccess:
+            image_index_ = result.value;
             break;
         case vk::Result::eSuboptimalKHR:
             is_suboptimal_ = true;
@@ -134,11 +134,11 @@ auto Swapchain::acquireNextImage() -> bool {
             is_outdated_ = true;
             break;
         case vk::Result::eErrorSurfaceLostKHR:
-            utils::check(result);
+            utils::check(result.result);
             break;
     default:
             SPDLOG_ERROR("vkAcquireNextImageKHR returned {}",
-                         common::enum_to_string(static_cast<VkResult>(result)));
+                         common::enum_to_string(result.result));
             break;
     }
     return is_suboptimal_ || is_outdated_;

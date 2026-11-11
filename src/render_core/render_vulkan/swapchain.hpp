@@ -44,7 +44,7 @@ class Swapchain {
         }
 
         [[nodiscard]] auto currentRenderSemaphore() const -> vk::Semaphore {
-            return *render_semaphores_[frame_index_];
+            return *render_semaphores_[image_index_];
         }
 
         [[nodiscard]] auto getWidth() const { return width_; }
@@ -54,8 +54,8 @@ class Swapchain {
         [[nodiscard]] auto getExtent() const -> vk::Extent2D { return extent_; }
 
         [[nodiscard]] auto getImageFormat() const -> vk::Format { return surface_format_.format; }
-        static constexpr ::vk::Format DEFAULT_COLOR_FORMAT = ::vk::Format::eB8G8R8A8Unorm;
-        static constexpr ::vk::ColorSpaceKHR DEFAULT_COLOR_SPACE =
+        static constexpr auto DEFAULT_COLOR_FORMAT = ::vk::Format::eB8G8R8A8Unorm;
+        static constexpr auto DEFAULT_COLOR_SPACE =
             ::vk::ColorSpaceKHR::eSrgbNonlinear;
 
     private:
